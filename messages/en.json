@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "gallery": "Gallery",
+    "orders": "My Orders",
+    "wishlist": "Wishlist",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "gallery": {
+    "kids": "Kids",
+    "men": "Men",
+    "women": "Women",
+    "filters": {
+      "closure": "Closure",
+      "type": "Type",
+      "colour": "Colour",
+      "construction": "Construction",
+      "width": "Width",
+      "size": "Size",
+      "search": "Search models...",
+      "all": "Clear filters",
+      "new": "New"
+    },
+    "badges": {
+      "diabetic": "Diabetic"
+    },
+    "results": "{count} models"
+  },
+  "product": {
+    "sizes": "Sizes",
+    "constructions": "Constructions & Widths",
+    "colours": "Available Colours",
+    "also_available": "Also available in {closure}",
+    "order": "Order this model",
+    "diabetic": "Suitable for diabetics"
+  },
+  "order": {
+    "title": "New Order",
+    "both_feet": "Both feet",
+    "left_foot": "Left foot only",
+    "right_foot": "Right foot only",
+    "submit": "Submit Order",
+    "save_draft": "Save Draft"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "error": "Invalid email or password",
+    "register": "Create account",
+    "full_name": "Full name",
+    "confirm_password": "Confirm password",
+    "passwords_mismatch": "Passwords do not match",
+    "password_too_short": "Password must be at least 8 characters",
+    "register_check_email": "Check your email",
+    "register_confirm_sent": "We sent a confirmation link to",
+    "already_account": "Already have an account?",
+    "no_account": "Don't have an account?",
+    "back_to_login": "Back to login",
+    "pending_company": "Account pending approval",
+    "pending_company_desc": "Your account is being reviewed by Piedro International. You will receive an email when your access to orders is activated.",
+    "contact": "Contact"
+  }
+}

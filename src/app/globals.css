@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F9F7F4;
+  --foreground: #1C1917;
+}
+
+@theme {
+  --color-gold: #B8975A;
+  --color-gold-light: #D4B47A;
+  --color-gold-dark: #9A7A42;
+  --color-cream: #F9F7F4;
+  --color-surface: #FFFFFF;
+
+  --shadow-card: 0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08), 0 20px 40px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.12), 0 32px 64px rgba(0,0,0,0.06);
+  --shadow-nav: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
+}

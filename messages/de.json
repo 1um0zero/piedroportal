@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "gallery": "Galerie",
+    "orders": "Meine Bestellungen",
+    "wishlist": "Wunschliste",
+    "login": "Anmelden",
+    "logout": "Abmelden"
+  },
+  "gallery": {
+    "kids": "Kinder",
+    "men": "Herren",
+    "women": "Damen",
+    "filters": {
+      "closure": "Verschluss",
+      "type": "Typ",
+      "colour": "Farbe",
+      "construction": "Konstruktion",
+      "width": "Breite",
+      "size": "Größe",
+      "search": "Modelle suchen...",
+      "all": "Filter löschen",
+      "new": "Neu"
+    },
+    "badges": {
+      "diabetic": "Diabetisch"
+    },
+    "results": "{count} Modelle"
+  },
+  "product": {
+    "sizes": "Größen",
+    "constructions": "Konstruktionen & Breiten",
+    "colours": "Verfügbare Farben",
+    "also_available": "Auch erhältlich in {closure}",
+    "order": "Dieses Modell bestellen",
+    "diabetic": "Geeignet für Diabetiker"
+  },
+  "order": {
+    "title": "Neue Bestellung",
+    "both_feet": "Beide Füße",
+    "left_foot": "Nur linker Fuß",
+    "right_foot": "Nur rechter Fuß",
+    "submit": "Bestellung Einreichen",
+    "save_draft": "Entwurf Speichern"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "sign_in": "Einloggen",
+    "error": "Ungültige E-Mail oder Passwort",
+    "register": "Konto erstellen",
+    "full_name": "Vollständiger Name",
+    "confirm_password": "Passwort bestätigen",
+    "passwords_mismatch": "Passwörter stimmen nicht überein",
+    "password_too_short": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "register_check_email": "Überprüfen Sie Ihre E-Mail",
+    "register_confirm_sent": "Wir haben einen Bestätigungslink an gesendet",
+    "already_account": "Bereits ein Konto?",
+    "no_account": "Noch kein Konto?",
+    "back_to_login": "Zurück zur Anmeldung",
+    "pending_company": "Konto wartet auf Genehmigung",
+    "pending_company_desc": "Ihr Konto wird von Piedro International geprüft. Sie erhalten eine E-Mail, wenn Ihr Zugang zu Bestellungen aktiviert wurde.",
+    "contact": "Kontakt"
+  }
+}

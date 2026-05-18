@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "gallery": "Galerij",
+    "orders": "Mijn Bestellingen",
+    "wishlist": "Verlanglijst",
+    "login": "Inloggen",
+    "logout": "Uitloggen"
+  },
+  "gallery": {
+    "kids": "Kinderen",
+    "men": "Heren",
+    "women": "Dames",
+    "filters": {
+      "closure": "Sluiting",
+      "type": "Type",
+      "colour": "Kleur",
+      "construction": "Constructie",
+      "width": "Breedte",
+      "size": "Maat",
+      "search": "Modellen zoeken...",
+      "all": "Filters wissen",
+      "new": "Nieuw"
+    },
+    "badges": {
+      "diabetic": "Diabetisch"
+    },
+    "results": "{count} modellen"
+  },
+  "product": {
+    "sizes": "Maten",
+    "constructions": "Constructies & Breedtes",
+    "colours": "Beschikbare Kleuren",
+    "also_available": "Ook beschikbaar in {closure}",
+    "order": "Dit model bestellen",
+    "diabetic": "Geschikt voor diabetici"
+  },
+  "order": {
+    "title": "Nieuwe Bestelling",
+    "both_feet": "Beide voeten",
+    "left_foot": "Alleen linkervoet",
+    "right_foot": "Alleen rechtervoet",
+    "submit": "Bestelling Indienen",
+    "save_draft": "Concept Opslaan"
+  },
+  "auth": {
+    "login": "Inloggen",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "sign_in": "Aanmelden",
+    "error": "Ongeldig e-mailadres of wachtwoord",
+    "register": "Account aanmaken",
+    "full_name": "Volledige naam",
+    "confirm_password": "Wachtwoord bevestigen",
+    "passwords_mismatch": "Wachtwoorden komen niet overeen",
+    "password_too_short": "Wachtwoord moet minimaal 8 tekens bevatten",
+    "register_check_email": "Controleer uw e-mail",
+    "register_confirm_sent": "We hebben een bevestigingslink gestuurd naar",
+    "already_account": "Al een account?",
+    "no_account": "Nog geen account?",
+    "back_to_login": "Terug naar inloggen",
+    "pending_company": "Account in afwachting van goedkeuring",
+    "pending_company_desc": "Uw account wordt beoordeeld door Piedro International. U ontvangt een e-mail wanneer uw toegang tot bestellingen is geactiveerd.",
+    "contact": "Contact"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "gallery": "Galerie",
+    "orders": "Mes Commandes",
+    "wishlist": "Liste de souhaits",
+    "login": "Connexion",
+    "logout": "Déconnexion"
+  },
+  "gallery": {
+    "kids": "Enfants",
+    "men": "Hommes",
+    "women": "Femmes",
+    "filters": {
+      "closure": "Fermeture",
+      "type": "Type",
+      "colour": "Couleur",
+      "construction": "Construction",
+      "width": "Largeur",
+      "size": "Pointure",
+      "search": "Rechercher des modèles...",
+      "all": "Effacer les filtres",
+      "new": "Nouveau"
+    },
+    "badges": {
+      "diabetic": "Diabétique"
+    },
+    "results": "{count} modèles"
+  },
+  "product": {
+    "sizes": "Pointures",
+    "constructions": "Constructions & Largeurs",
+    "colours": "Couleurs Disponibles",
+    "also_available": "Aussi disponible en {closure}",
+    "order": "Commander ce modèle",
+    "diabetic": "Adapté aux diabétiques"
+  },
+  "order": {
+    "title": "Nouvelle Commande",
+    "both_feet": "Les deux pieds",
+    "left_foot": "Pied gauche seulement",
+    "right_foot": "Pied droit seulement",
+    "submit": "Soumettre la Commande",
+    "save_draft": "Enregistrer le Brouillon"
+  },
+  "auth": {
+    "login": "Connexion",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "sign_in": "Se Connecter",
+    "error": "Email ou mot de passe invalide",
+    "register": "Créer un compte",
+    "full_name": "Nom complet",
+    "confirm_password": "Confirmer le mot de passe",
+    "passwords_mismatch": "Les mots de passe ne correspondent pas",
+    "password_too_short": "Le mot de passe doit comporter au moins 8 caractères",
+    "register_check_email": "Vérifiez votre e-mail",
+    "register_confirm_sent": "Nous avons envoyé un lien de confirmation à",
+    "already_account": "Vous avez déjà un compte?",
+    "no_account": "Pas encore de compte?",
+    "back_to_login": "Retour à la connexion",
+    "pending_company": "Compte en attente d'approbation",
+    "pending_company_desc": "Votre compte est en cours d'examen par Piedro International. Vous recevrez un e-mail lorsque votre accès aux commandes sera activé.",
+    "contact": "Contact"
+  }
+}
