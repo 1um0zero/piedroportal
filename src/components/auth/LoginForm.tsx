@@ -35,11 +35,12 @@ export default function LoginForm() {
         return
       }
 
-      // Navigate via native link click — bypasses any JS navigation blockers
-      const a = document.createElement('a')
-      a.href = dest
-      document.body.appendChild(a)
-      a.click()
+      // Force full page load via form submit — nothing can intercept this
+      const form = document.createElement('form')
+      form.method = 'GET'
+      form.action = dest
+      document.body.appendChild(form)
+      form.submit()
     } catch (err) {
       console.error('Login error:', err)
       setError(t('error'))

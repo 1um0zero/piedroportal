@@ -59,12 +59,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, profile])
 
   const signOut = useCallback(async () => {
-    const sb = createClient()
-    await sb.auth.signOut()
-    const a = document.createElement('a')
-    a.href = '/login'
-    document.body.appendChild(a)
-    a.click()
+    try {
+      const sb = createClient()
+      await sb.auth.signOut()
+    } catch (e) {
+      console.error('signOut error:', e)
+    }
+    const form = document.createElement('form')
+    form.method = 'GET'
+    form.action = '/login'
+    document.body.appendChild(form)
+    form.submit()
   }, [])
 
   return (
