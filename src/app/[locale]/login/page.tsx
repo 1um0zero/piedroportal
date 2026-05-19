@@ -1,11 +1,13 @@
 import LoginForm from '@/components/auth/LoginForm'
 import { routing } from '@/i18n/routing'
 
-// Pre-generate for all locales at build time → served from CDN, no cold start
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }
 
-export default function LoginPage() {
-  return <LoginForm />
+type Props = { searchParams: Promise<{ error?: string }> }
+
+export default async function LoginPage({ searchParams }: Props) {
+  const params = await searchParams
+  return <LoginForm searchParams={params} />
 }

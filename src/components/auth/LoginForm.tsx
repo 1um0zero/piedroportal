@@ -1,50 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signInAction } from '@/app/[locale]/login/actions'
 
-// Joyful, light: child running in golden afternoon light — perfect for orthopedic brand
+// Joyful, light: children running — perfect for orthopedic brand
 const HERO = 'https://images.unsplash.com/photo-1476234251651-f353703a034d?auto=format&fit=crop&w=1800&q=85'
+const LOGO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png'
 
-function galleryUrl(locale: string) {
-  // With localePrefix: 'as-needed', default locale (en) has no prefix
-  return locale === 'en' ? '/gallery' : `/${locale}/gallery`
-}
-
-export default function LoginForm() {
-  const t      = useTranslations('auth')
-  const locale = useLocale()
-
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
-
-  // Guard: redirect already-authenticated users away from login
-  useEffect(() => {
-    createClient().auth.getUser().then(({ data }) => {
-      if (data.user) window.location.replace(galleryUrl(locale))
-    })
-  }, [locale])
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    const sb = createClient()
-    const { error: authError } = await sb.auth.signInWithPassword({ email, password })
-
-    if (authError) {
-      setError(t('error'))
-      setLoading(false)
-      return
-    }
-
-    window.location.replace(galleryUrl(locale))
-  }
+export default function LoginForm({ searchParams }: { searchParams?: { error?: string } }) {
+  const t = useTranslations('auth')
+  const hasError = searchParams?.error === '1'
 
   return (
     <div className="min-h-screen flex">
@@ -55,32 +21,26 @@ export default function LoginForm() {
         style={{
           backgroundImage: `url(${HERO})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 30%',
+          backgroundPosition: 'center 40%',
         }}
       >
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2c3d]/85 via-[#1a2c3d]/60 to-[#1a2c3d]/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2c3d]/80 via-[#1a2c3d]/50 to-[#1a2c3d]/20" />
 
-        {/* Logo top */}
+        {/* Logo in white pill */}
         <div className="relative z-10">
-          {/* White pill so logo (white bg PNG) is visible on dark overlay */}
           <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
-              alt="Piedro"
-              className="h-9 w-auto"
-            />
+            <img src={LOGO} alt="Piedro" className="h-9 w-auto" />
           </div>
         </div>
 
-        {/* Tagline bottom */}
-        <div className="relative z-10 space-y-3">
+        {/* Tagline */}
+        <div className="relative z-10 space-y-2">
           <p className="text-white/70 text-sm tracking-[0.3em] uppercase">Always</p>
           <p className="text-white text-4xl font-bold tracking-widest uppercase leading-tight">
             One Step<br />Ahead
           </p>
-          <div className="w-10 h-0.5 bg-[#B8975A]" />
+          <div className="w-10 h-0.5 bg-[#B8975A] mt-3" />
         </div>
       </div>
 
@@ -88,10 +48,10 @@ export default function LoginForm() {
       <div className="flex-1 flex flex-col items-center justify-center px-8 bg-[#F9F7F4]">
         <div className="w-full max-w-sm space-y-8">
 
-          {/* Logo — mobile */}
+          {/* Logo mobile */}
           <div className="flex justify-center lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png" alt="Piedro" className="h-10 w-auto" />
+            <img src={LOGO} alt="Piedro" className="h-10 w-auto" />
           </div>
 
           {/* Card */}
@@ -102,40 +62,42 @@ export default function LoginForm() {
               <p className="text-xs text-stone-400 mt-0.5">Piedro International B.V.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Server Action form — redirect handled server-side */}
+            <form action={signInAction} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">
                   {t('email')}
                 </label>
-                <input type="email" required autoComplete="email"
-                  value={email} onChange={(e) => setEmail(e.target.value)}
+                <input
+                  type="email" name="email" required autoComplete="email"
                   className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                              focus:outline-none focus:ring-2 focus:ring-[#B8975A]/30 focus:border-[#B8975A]
-                             transition-colors" />
+                             transition-colors"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">
                   {t('password')}
                 </label>
-                <input type="password" required autoComplete="current-password"
-                  value={password} onChange={(e) => setPassword(e.target.value)}
+                <input
+                  type="password" name="password" required autoComplete="current-password"
                   className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                              focus:outline-none focus:ring-2 focus:ring-[#B8975A]/30 focus:border-[#B8975A]
-                             transition-colors" />
+                             transition-colors"
+                />
               </div>
 
-              {error && (
+              {hasError && (
                 <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                  {error}
+                  {t('error')}
                 </p>
               )}
 
-              <button type="submit" disabled={loading}
+              <button
+                type="submit"
                 className="w-full h-11 bg-[#B8975A] text-white text-sm font-semibold rounded-lg
-                           hover:bg-[#9A7A42] transition-colors disabled:opacity-60
-                           flex items-center justify-center gap-2">
-                {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                           hover:bg-[#9A7A42] transition-colors flex items-center justify-center">
                 {t('sign_in')}
               </button>
             </form>
