@@ -12,43 +12,88 @@ import type { Product } from '@/types'
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 const src = (name: string) => `${BUCKET}/${name}`
 
-// ── Zoom image (hover magnifier, no click needed) ─────────────────────────────
+const LENS = 160   // lens diameter px
+const ZOOM = 2.5   // magnification
+
+// ── Loupe magnifier (classic e-commerce style) ────────────────────────────────
 function ZoomImage({ url, alt }: { url: string; alt: string }) {
-  const [zoomed, setZoomed] = useState(false)
-  const [origin, setOrigin] = useState('50% 50%')
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos]     = useState<{ x: number; y: number } | null>(null)
+  const [imgSize, setImgSize] = useState({ w: 1, h: 1 })  // natural size
+  const containerRef      = useRef<HTMLDivElement>(null)
+  const imgRef            = useRef<HTMLImageElement>(null)
 
   const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return
-    const r = ref.current.getBoundingClientRect()
-    const x = Math.round(((e.clientX - r.left) / r.width) * 100)
-    const y = Math.round(((e.clientY - r.top) / r.height) * 100)
-    setOrigin(`${x}% ${y}%`)
+    if (!containerRef.current) return
+    const r = containerRef.current.getBoundingClientRect()
+    setPos({ x: e.clientX - r.left, y: e.clientY - r.top })
   }, [])
+
+  // Lens background-position: show the zoomed portion of the image
+  // The img uses object-contain with p-4 (16px), so rendered area ≠ container
+  const lens = pos ? (() => {
+    const cw = containerRef.current?.clientWidth  ?? 1
+    const ch = containerRef.current?.clientHeight ?? 1
+    const pad = 16
+    // Rendered image area within container (object-contain)
+    const ir = Math.min((cw - pad*2) / imgSize.w, (ch - pad*2) / imgSize.h)
+    const iw = imgSize.w * ir
+    const ih = imgSize.h * ir
+    const ix = (cw - iw) / 2  // image left offset
+    const iy = (ch - ih) / 2  // image top offset
+    // Position within image (0-1)
+    const px = (pos.x - ix) / iw
+    const py = (pos.y - iy) / ih
+    // Background size = ZOOM × container
+    const bgW = iw * ZOOM
+    const bgH = ih * ZOOM
+    const bgX = -(px * bgW - LENS / 2)
+    const bgY = -(py * bgH - LENS / 2)
+    return { bgW, bgH, bgX, bgY, inside: px >= 0 && px <= 1 && py >= 0 && py <= 1 }
+  })() : null
 
   return (
     <div
-      ref={ref}
-      className="relative w-full h-full overflow-hidden cursor-crosshair"
-      onMouseEnter={() => setZoomed(true)}
-      onMouseLeave={() => setZoomed(false)}
+      ref={containerRef}
+      className="relative w-full h-full cursor-crosshair"
       onMouseMove={onMove}
+      onMouseLeave={() => setPos(null)}
     >
-      {/* Raw <img> — full original quality, no next/image downsampling */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={imgRef}
         src={url}
         alt={alt}
         className="w-full h-full object-contain p-4 select-none"
-        style={{
-          transform: zoomed ? 'scale(2.8)' : 'scale(1)',
-          transformOrigin: origin,
-          transition: zoomed ? 'transform-origin 0s' : 'transform 0.25s ease',
-          willChange: 'transform',
-        }}
         draggable={false}
+        onLoad={(e) => {
+          const img = e.currentTarget
+          setImgSize({ w: img.naturalWidth, h: img.naturalHeight })
+        }}
       />
-      {!zoomed && (
+
+      {/* Loupe lens */}
+      {pos && lens?.inside && (
+        <div
+          style={{
+            position: 'absolute',
+            left:  Math.min(Math.max(pos.x - LENS/2, 0), (containerRef.current?.clientWidth  ?? 0) - LENS),
+            top:   Math.min(Math.max(pos.y - LENS/2, 0), (containerRef.current?.clientHeight ?? 0) - LENS),
+            width:  LENS,
+            height: LENS,
+            borderRadius: '50%',
+            border: '2px solid #B8975A',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+            pointerEvents: 'none',
+            overflow: 'hidden',
+            backgroundImage: `url(${url})`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: `${lens.bgW}px ${lens.bgH}px`,
+            backgroundPosition: `${lens.bgX}px ${lens.bgY}px`,
+          }}
+        />
+      )}
+
+      {!pos && (
         <span className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm
                          rounded-full p-1.5 shadow text-stone-400 pointer-events-none">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
