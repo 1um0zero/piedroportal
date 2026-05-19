@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Product } from '@/types'
+import AdditionsForm from './AdditionsForm'
+import { emptyAdditions } from './additions-config'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -123,6 +125,7 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
 
   const companyId = userProfile.company_id
 
+  const [step, setStep]               = useState<1 | 2>(1)
   const [unit, setUnit]               = useState<Unit>('PAIR')
   const [clinician, setClinician]     = useState('')
   const [patientName, setPatientName] = useState('')
@@ -134,6 +137,7 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
   const [widthRight, setWidthRight]   = useState('')
   const [sizeLeft, setSizeLeft]       = useState('')
   const [sizeRight, setSizeRight]     = useState('')
+  const [additions, setAdditions]     = useState(emptyAdditions())
   const [submitting, setSubmitting]   = useState(false)
   const [error, setError]             = useState('')
 
@@ -160,6 +164,7 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
   async function handleSubmit(status: 'draft' | 'submitted') {
     setError('')
     setSubmitting(true)
+    const { comments, ...additionFields } = additions as Record<string, unknown>
     const sb = createClient()
     const { error: err } = await sb.from('orders').insert({
       user_id:            userId,
@@ -179,6 +184,8 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
       size_right:         mirror
         ? (sizeLeft ? parseFloat(sizeLeft) : null)
         : (sizeRight ? parseFloat(sizeRight) : null),
+      additions:          additionFields,
+      comments:           String(comments ?? '') || null,
     })
     setSubmitting(false)
     if (err) { setError(err.message); return }
@@ -188,16 +195,67 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
   const inputCls = 'w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg ' +
     'focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors'
 
+  const showAdditions = unit !== 'DIFF_SIZES'
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <h1 className="text-lg font-semibold text-stone-900 mb-6">{t('title')}</h1>
+
+      {/* Step tabs */}
+      <div className="flex gap-1 mb-8 border-b border-stone-200">
+        {[
+          { n: 1, label: 'Customer & Product' },
+          ...(showAdditions ? [{ n: 2, label: 'Additions' }] : []),
+        ].map(({ n, label }) => (
+          <button key={n} type="button"
+            onClick={() => n < step || (n === 2 && reference) ? setStep(n as 1 | 2) : undefined}
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors
+              ${step === n
+                ? 'border-gold text-gold'
+                : 'border-transparent text-stone-400 hover:text-stone-600'}`}>
+            {n}. {label}
+          </button>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10">
 
         {/* ── Form ─────────────────────────────────────────────────── */}
         <div className="space-y-8">
 
-          {/* Customer */}
+          {/* Step 2: Additions */}
+          {step === 2 && showAdditions && (
+            <div className="space-y-4">
+              <AdditionsForm
+                unit={unit}
+                closure={product.closure}
+                addsExclude={(product as any).adds_exclude ?? ''}
+                additions={additions}
+                onChange={setAdditions}
+              />
+              <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
+                <button onClick={() => handleSubmit('submitted')}
+                  disabled={submitting || !reference}
+                  className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
+                             hover:bg-gold-dark transition-colors disabled:opacity-50">
+                  {t('submit')}
+                </button>
+                <button onClick={() => handleSubmit('draft')}
+                  disabled={submitting}
+                  className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
+                             text-sm rounded-xl hover:border-stone-300 transition-colors">
+                  {t('save_draft')}
+                </button>
+                <button type="button" onClick={() => setStep(1)}
+                  className="text-sm text-stone-400 hover:text-stone-600 transition-colors ml-auto">
+                  ← Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 1 content */}
+          {step === 1 && <>
           <section className="space-y-4">
             <h2 className="text-sm font-bold text-stone-700 uppercase tracking-wider
                            border-b border-stone-100 pb-2">Customer</h2>
@@ -291,21 +349,34 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
             </p>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
-            <button onClick={() => handleSubmit('submitted')}
-              disabled={submitting || !reference}
-              className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
-                         hover:bg-gold-dark transition-colors disabled:opacity-50">
-              {t('submit')}
-            </button>
-            <button onClick={() => handleSubmit('draft')}
-              disabled={submitting}
-              className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
-                         text-sm rounded-xl hover:border-stone-300 transition-colors">
-              {t('save_draft')}
-            </button>
-          </div>
+          {/* Step 1 actions */}
+          {step === 1 && (
+            <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
+              {showAdditions ? (
+                <button type="button"
+                  disabled={!reference}
+                  onClick={() => setStep(2)}
+                  className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
+                             hover:bg-gold-dark transition-colors disabled:opacity-50">
+                  Additions →
+                </button>
+              ) : (
+                <button onClick={() => handleSubmit('submitted')}
+                  disabled={submitting || !reference}
+                  className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
+                             hover:bg-gold-dark transition-colors disabled:opacity-50">
+                  {t('submit')}
+                </button>
+              )}
+              <button onClick={() => handleSubmit('draft')}
+                disabled={submitting}
+                className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
+                           text-sm rounded-xl hover:border-stone-300 transition-colors">
+                {t('save_draft')}
+              </button>
+            </div>
+          )}
+          </>}
         </div>
 
         {/* ── Product sidebar ───────────────────────────────────────── */}

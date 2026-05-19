@@ -15,6 +15,7 @@
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { resolve, join, extname } from 'path'
 import { createClient } from '@supabase/supabase-js'
+import sharp from 'sharp'
 
 const env = Object.fromEntries(
   readFileSync(resolve(process.cwd(), '.env.local'), 'utf8')
@@ -105,29 +106,26 @@ for (const { colourId, file, num, name } of images) {
   const fields = FIELD_MAP[num]
   if (!fields) { skipped++; continue }
 
-  const buf = readFileSync(file)
-  const contentType = extname(file).toLowerCase() === '.png' ? 'image/png' : 'image/jpeg'
+  // PATCH with base64-encoded PNG — no quality loss, no format conversion
+  const base64 = readFileSync(file).toString('base64')
+  const body = Object.fromEntries(fields.map(f => [f, base64]))
 
-  for (const field of fields) {
-    const url = `${API}/cr56f_wpp_style_colorses(${dataverseId})/${field}`
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization:     `Bearer ${access_token}`,
-        'Content-Type':    contentType,
-        'OData-Version':   '4.0',
-        'OData-MaxVersion':'4.0',
-      },
-      body: buf,
-    })
+  const res = await fetch(`${API}/cr56f_wpp_style_colorses(${dataverseId})`, {
+    method: 'PATCH',
+    headers: {
+      Authorization:  `Bearer ${access_token}`,
+      'Content-Type': 'application/json',
+      'OData-Version':'4.0',
+    },
+    body: JSON.stringify(body),
+  })
 
-    if (res.ok || res.status === 204) {
-      uploaded++
-    } else {
-      const err = await res.text().catch(() => res.status)
-      console.error(`\n✗ ${name} → ${field}: ${res.status} ${String(err).slice(0,100)}`)
-      errors++
-    }
+  if (res.ok || res.status === 204) {
+    uploaded += fields.length
+  } else {
+    const err = await res.text().catch(() => res.status)
+    console.error(`\n✗ ${name}: ${res.status} ${String(err).slice(0,120)}`)
+    errors++
   }
 
   if ((uploaded + errors) % 20 === 0)
