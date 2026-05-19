@@ -153,21 +153,30 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   useEffect(() => autoClean('widths',        filters.widths,        optWidths),        [optWidths])        // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => autoClean('sizes',         filters.sizes,         optSizes),         [optSizes])         // eslint-disable-line react-hooks/exhaustive-deps
 
+  async function fetchSection(s: Section): Promise<Product[]> {
+    const base = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const url  = `${base}/rest/v1/products?select=${encodeURIComponent(FIELDS)}&active=eq.true&section=eq.${s}&order=style_name`
+    const res  = await fetch(url, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    })
+    if (!res.ok) throw new Error(`Supabase ${res.status}`)
+    return res.json()
+  }
+
   async function switchSection(s: Section) {
     setSection(s)
     setFilters(EMPTY)
-    if (cache[s]) return          // already cached
+    if (cache[s]) return
     setLoading(true)
-    const sb = createClient()
-    const { data, error } = await sb
-      .from('products')
-      .select(FIELDS)
-      .eq('active', true)
-      .eq('section', s)
-      .order('style_name')
-    if (error) console.error('[Gallery] fetch error:', s, error)
-    setCache((prev) => ({ ...prev, [s]: (data ?? []) as unknown as Product[] }))
-    setLoading(false)
+    try {
+      const data = await fetchSection(s)
+      setCache((prev) => ({ ...prev, [s]: data }))
+    } catch (err) {
+      console.error('[Gallery] fetch error:', s, err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
