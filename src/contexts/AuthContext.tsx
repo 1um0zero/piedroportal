@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     const sb = createClient()
     await sb.auth.signOut()
+    // Force full page reload so middleware clears session cookie
+    window.location.href = '/gallery'
   }, [])
 
   return (
