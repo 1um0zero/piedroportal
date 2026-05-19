@@ -98,36 +98,35 @@ function toggle<T>(arr: T[], val: T): T[] {
 export default function GalleryPage() {
   const t = useTranslations('gallery')
 
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [section, setSection]   = useState<Section>('KIDS')
-  const [filters, setFilters]   = useState<Filters>(EMPTY)
+  // ── Per-section cache — load on demand, never re-fetch ──
+  const [cache, setCache]           = useState<Partial<Record<Section, Product[]>>>({})
+  const [loading, setLoading]       = useState(true)
+  const [section, setSection]       = useState<Section>('KIDS')
+  const [filters, setFilters]       = useState<Filters>(EMPTY)
   const { ids: wishlistIds } = useWishlist()
 
-  // ── Fetch all active products (paginated) ──
-  useEffect(() => {
-    const sb = createClient()
-    async function fetchAll() {
-      let all: Product[] = [], offset = 0
-      while (true) {
-        const { data } = await sb.from('products').select('*').eq('active', true)
-          .order('style_name').range(offset, offset + 999)
-        if (!data?.length) break
-        all = all.concat(data as Product[])
-        if (data.length < 1000) break
-        offset += 1000
-      }
-      setProducts(all)
-      setLoading(false)
-    }
-    fetchAll()
-  }, [])
+  const FIELDS = [
+    'id','style_name','colour_id','picture_name','section',
+    'closure','type','color_basic','color_name',
+    'size_first','size_last','diabetics','new_until','constructions',
+  ].join(',')
 
-  // ── Section products ──
-  const sectionProducts = useMemo(
-    () => products.filter((p) => p.section === section),
-    [products, section],
-  )
+  useEffect(() => {
+    if (cache[section]) { setLoading(false); return }
+    setLoading(true)
+    const sb = createClient()
+    sb.from('products')
+      .select(FIELDS)
+      .eq('active', true)
+      .eq('section', section)
+      .order('style_name')
+      .then(({ data }) => {
+        setCache((prev) => ({ ...prev, [section]: (data ?? []) as unknown as Product[] }))
+        setLoading(false)
+      })
+  }, [section]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sectionProducts = cache[section] ?? []
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
