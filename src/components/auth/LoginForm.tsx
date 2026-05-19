@@ -1,20 +1,33 @@
 'use client'
 
-import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useState, useEffect } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// Free Unsplash image — energetic movement, suits "always one step ahead"
-const HERO = 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1800&q=85'
+// Joyful, light: child running in golden afternoon light — perfect for orthopedic brand
+const HERO = 'https://images.unsplash.com/photo-1476234251651-f353703a034d?auto=format&fit=crop&w=1800&q=85'
+
+function galleryUrl(locale: string) {
+  // With localePrefix: 'as-needed', default locale (en) has no prefix
+  return locale === 'en' ? '/gallery' : `/${locale}/gallery`
+}
 
 export default function LoginForm() {
-  const t = useTranslations('auth')
+  const t      = useTranslations('auth')
+  const locale = useLocale()
 
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
+
+  // Guard: redirect already-authenticated users away from login
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user) window.location.replace(galleryUrl(locale))
+    })
+  }, [locale])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,7 +43,7 @@ export default function LoginForm() {
       return
     }
 
-    window.location.href = '/gallery'
+    window.location.replace(galleryUrl(locale))
   }
 
   return (
@@ -50,12 +63,15 @@ export default function LoginForm() {
 
         {/* Logo top */}
         <div className="relative z-10">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
-            alt="Piedro"
-            className="h-12 w-auto brightness-0 invert"
-          />
+          {/* White pill so logo (white bg PNG) is visible on dark overlay */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
+              alt="Piedro"
+              className="h-9 w-auto"
+            />
+          </div>
         </div>
 
         {/* Tagline bottom */}
