@@ -248,9 +248,9 @@ export default function ProductDetail({ product, siblings }: Props) {
             </button>
           </div>
 
-          {/* Main image with zoom */}
-          <div className="relative aspect-square bg-stone-50 rounded-[14px] overflow-hidden"
-            style={{ boxShadow: 'var(--shadow-card)' }}>
+          {/* Main image — no card, drop-shadow creates floating effect */}
+          <div className="relative aspect-square"
+            style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
             {currentUrl ? (
               <ZoomImage url={currentUrl} alt={`${product.style_name} ${selected.color_name}`} />
             ) : (
@@ -363,10 +363,14 @@ export default function ProductDetail({ product, siblings }: Props) {
             Conta pendente de aprovação
           </div>
         ) : (
-          <button className="px-8 py-3 rounded-xl bg-gold text-white font-semibold text-sm
-                             hover:bg-gold-dark transition-colors uppercase tracking-wide">
+          <Link
+            href={`/gallery/${selected.id}/order`}
+            className="inline-flex items-center px-8 py-3 rounded-xl bg-gold text-white
+                       font-semibold text-sm hover:bg-gold-dark transition-colors uppercase
+                       tracking-wide"
+          >
             {t('order')}
-          </button>
+          </Link>
         )}
       </div>
     </div>

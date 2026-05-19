@@ -59,8 +59,9 @@ async function getToken() {
 // ── Dataverse image download ──────────────────────────────────────────────────
 
 async function downloadImage(recordId, field, token) {
+  // ?size=full returns 640×640px instead of the default 144×144px thumbnail
   const res = await fetch(
-    `${API}/cr56f_wpp_style_colorses(${recordId})/${field}/$value`,
+    `${API}/cr56f_wpp_style_colorses(${recordId})/${field}/$value?size=full`,
     { headers: { Authorization: `Bearer ${token}`, Accept: 'application/octet-stream' } }
   )
   if (res.status === 204 || res.status === 404) return null   // no image
