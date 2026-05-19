@@ -96,12 +96,14 @@ export default function Navbar({ locale }: Props) {
                 <span className="text-xs text-stone-400 max-w-[140px] truncate hidden sm:block">
                   {user.email}
                 </span>
-                <button
-                  onClick={signOut}
-                  className="text-xs text-stone-500 hover:text-stone-900 transition-colors duration-150"
-                >
-                  {t('logout')}
-                </button>
+                <form action="/auth/signout" method="POST">
+                  <button
+                    type="submit"
+                    className="text-xs text-stone-500 hover:text-stone-900 transition-colors duration-150"
+                  >
+                    {t('logout')}
+                  </button>
+                </form>
               </div>
             ) : (
               <div className="border-l border-stone-100 pl-3">
