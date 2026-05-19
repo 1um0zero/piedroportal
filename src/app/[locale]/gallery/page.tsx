@@ -1,6 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import GalleryPage from '@/components/gallery/GalleryPage'
 import type { Product } from '@/types'
+
+// Cache this page on Vercel CDN — rebuild every 5 minutes
+export const revalidate = 300
 
 const FIELDS = [
   'id','style_name','colour_id','picture_name','section',
@@ -9,7 +12,11 @@ const FIELDS = [
 ].join(',')
 
 export default async function GalleryRoute() {
-  const supabase = await createClient()
+  // Use anon key directly (no cookies) so the page can be statically cached
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
 
   const { data } = await supabase
     .from('products')
