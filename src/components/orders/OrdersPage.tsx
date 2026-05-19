@@ -1,0 +1,245 @@
+'use client'
+
+import { useState, useMemo } from 'react'
+import Image from 'next/image'
+import { Link } from '@/i18n/navigation'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/products`
+
+const STATUS_STYLES: Record<string, string> = {
+  draft:         'bg-stone-100 text-stone-500',
+  submitted:     'bg-blue-50 text-blue-600',
+  approved:      'bg-green-50 text-green-600',
+  in_production: 'bg-amber-50 text-amber-600',
+  shipped:       'bg-purple-50 text-purple-600',
+  delivered:     'bg-teal-50 text-teal-600',
+  cancelled:     'bg-red-50 text-red-400',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  draft:         'Draft',
+  submitted:     'Submitted',
+  approved:      'Approved',
+  in_production: 'In Production',
+  shipped:       'Shipped',
+  delivered:     'Delivered',
+  cancelled:     'Cancelled',
+}
+
+type Metrics = {
+  total: number; draft: number; submitted: number
+  approved: number; production: number; urgent: number
+}
+
+type Props = {
+  orders: any[]
+  metrics: Metrics
+  isAdmin: boolean
+}
+
+export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
+  const [search, setSearch]         = useState('')
+  const [statusFilter, setStatus]   = useState('')
+  const [urgentOnly, setUrgentOnly] = useState(false)
+
+  const filtered = useMemo(() => {
+    return orders.filter(o => {
+      if (statusFilter && o.status !== statusFilter) return false
+      if (urgentOnly && !o.additions?.urgent) return false
+      if (search) {
+        const q = search.toLowerCase()
+        const style = o.products?.style_name?.toLowerCase() ?? ''
+        const colour = o.products?.colour_id?.toLowerCase() ?? ''
+        const patient = (o.patient_name ?? '').toLowerCase()
+        const ref = (o.reference_customer ?? '').toLowerCase()
+        const company = (o.companies?.name ?? '').toLowerCase()
+        if (!style.includes(q) && !colour.includes(q) && !patient.includes(q)
+          && !ref.includes(q) && !company.includes(q)) return false
+      }
+      return true
+    })
+  }, [orders, search, statusFilter, urgentOnly])
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold text-stone-900">Orders</h1>
+        {!isAdmin && (
+          <Link href="/gallery"
+            className="px-4 py-2 text-sm font-medium bg-gold text-white rounded-lg
+                       hover:bg-gold-dark transition-colors">
+            + New Order
+          </Link>
+        )}
+      </div>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          { label: 'Total', value: metrics.total, filter: '' },
+          { label: 'Draft', value: metrics.draft, filter: 'draft' },
+          { label: 'Submitted', value: metrics.submitted, filter: 'submitted' },
+          { label: 'Approved', value: metrics.approved, filter: 'approved' },
+          { label: 'Production', value: metrics.production, filter: 'in_production' },
+          { label: '🔴 Urgent', value: metrics.urgent, filter: '', urgent: true },
+        ].map(({ label, value, filter, urgent }) => (
+          <button key={label}
+            onClick={() => urgent ? setUrgentOnly(u => !u) : setStatus(s => s === filter ? '' : filter)}
+            className={`p-3 rounded-xl border text-left transition-all
+              ${(urgent ? urgentOnly : statusFilter === filter) && filter !== ''
+                ? 'border-gold bg-gold/5'
+                : urgent && urgentOnly
+                  ? 'border-gold bg-gold/5'
+                  : 'border-stone-100 bg-white hover:border-stone-200'}`}
+            style={{ boxShadow: 'var(--shadow-card)' }}>
+            <p className="text-2xl font-bold text-stone-800">{value}</p>
+            <p className="text-xs text-stone-500 mt-0.5">{label}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex items-center">
+          <svg className="absolute left-2.5 w-3.5 h-3.5 text-stone-400 pointer-events-none"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+          <input
+            type="search" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search style, patient, ref..."
+            className="h-9 pl-8 pr-3 text-sm bg-white border border-stone-200 rounded-lg w-56
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
+                       transition-all focus:w-72"/>
+        </div>
+
+        <div className="relative">
+          <select value={statusFilter} onChange={e => setStatus(e.target.value)}
+            className="h-9 px-3 pr-8 text-sm bg-white border border-stone-200 rounded-lg
+                       appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30">
+            <option value="">All statuses</option>
+            {Object.entries(STATUS_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </select>
+          <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+
+        {urgentOnly && (
+          <button onClick={() => setUrgentOnly(false)}
+            className="h-9 px-3 text-sm font-medium text-red-500 border border-red-200
+                       rounded-lg hover:bg-red-50 transition-colors">
+            🔴 Urgent only ×
+          </button>
+        )}
+
+        <p className="ml-auto text-sm text-stone-400">
+          {filtered.length} of {orders.length} orders
+        </p>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-[14px] overflow-hidden"
+        style={{ boxShadow: 'var(--shadow-card)' }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-stone-100">
+              <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
+                <th className="px-4 py-3 text-left">Product</th>
+                <th className="px-4 py-3 text-left">Patient / Ref</th>
+                {isAdmin && <th className="px-4 py-3 text-left">Company</th>}
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3 text-left">Unit</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-50">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={isAdmin ? 6 : 5}
+                    className="px-4 py-12 text-center text-stone-400 text-sm">
+                    No orders found
+                  </td>
+                </tr>
+              ) : filtered.map(o => {
+                const product = o.products
+                const company = o.companies
+                const isUrgent = o.additions?.urgent === true
+                return (
+                  <tr key={o.id} className="hover:bg-stone-50 transition-colors">
+                    {/* Product */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {product?.picture_name ? (
+                          <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-stone-50 shrink-0">
+                            <Image
+                              src={`${BUCKET}/${product.picture_name}`}
+                              alt={product.style_name ?? ''}
+                              fill sizes="40px" className="object-contain p-0.5"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-stone-100 shrink-0
+                                          flex items-center justify-center text-xs text-stone-400">
+                            {product?.style_name?.slice(0, 4) ?? '—'}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-stone-800 truncate">
+                            {product?.style_name ?? '—'}
+                            {isUrgent && <span className="ml-1.5 text-red-500">🔴</span>}
+                          </p>
+                          <p className="text-xs text-stone-400 truncate">
+                            {product?.colour_id} · {product?.closure}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    {/* Patient */}
+                    <td className="px-4 py-3">
+                      <p className="text-stone-700 truncate max-w-[150px]">
+                        {o.patient_name ?? '—'}
+                      </p>
+                      <p className="text-xs text-stone-400">{o.reference_customer ?? ''}</p>
+                    </td>
+                    {/* Company (admin only) */}
+                    {isAdmin && (
+                      <td className="px-4 py-3">
+                        <p className="text-stone-700 text-sm truncate max-w-[180px]">
+                          {company?.name ?? '—'}
+                        </p>
+                        <p className="text-xs text-stone-400">{company?.erp_code ?? ''}</p>
+                      </td>
+                    )}
+                    {/* Status */}
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full
+                                       ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
+                        {STATUS_LABELS[o.status] ?? o.status}
+                      </span>
+                    </td>
+                    {/* Date */}
+                    <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
+                      {o.created_at
+                        ? new Date(o.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' })
+                        : '—'}
+                    </td>
+                    {/* Unit */}
+                    <td className="px-4 py-3 text-stone-500 text-xs">
+                      {o.unit ?? '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
