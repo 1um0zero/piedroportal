@@ -35,8 +35,11 @@ export default function LoginForm() {
         return
       }
 
-      // Client-side login: sets both localStorage + cookie — navbar syncs automatically
-      window.location.replace(dest)
+      // Navigate via native link click — bypasses any JS navigation blockers
+      const a = document.createElement('a')
+      a.href = dest
+      document.body.appendChild(a)
+      a.click()
     } catch (err) {
       console.error('Login error:', err)
       setError(t('error'))
