@@ -95,21 +95,25 @@ function toggle<T>(arr: T[], val: T): T[] {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function GalleryPage() {
-  const t = useTranslations('gallery')
+type Props = { initialSection?: Section; initialProducts?: Product[] }
 
-  // ── Per-section cache — load on demand, never re-fetch ──
-  const [cache, setCache]           = useState<Partial<Record<Section, Product[]>>>({})
-  const [loading, setLoading]       = useState(true)
-  const [section, setSection]       = useState<Section>('KIDS')
-  const [filters, setFilters]       = useState<Filters>(EMPTY)
-  const { ids: wishlistIds } = useWishlist()
+export default function GalleryPage({ initialSection = 'KIDS', initialProducts = [] }: Props) {
+  const t = useTranslations('gallery')
 
   const FIELDS = [
     'id','style_name','colour_id','picture_name','section',
     'closure','type','color_basic','color_name',
     'size_first','size_last','diabetics','new_until','constructions',
   ].join(',')
+
+  // ── Per-section cache — seed with server-rendered initial data ──
+  const [cache, setCache] = useState<Partial<Record<Section, Product[]>>>(
+    initialProducts.length ? { [initialSection]: initialProducts } : {}
+  )
+  const [loading, setLoading] = useState(!initialProducts.length)
+  const [section, setSection] = useState<Section>(initialSection)
+  const [filters, setFilters] = useState<Filters>(EMPTY)
+  const { ids: wishlistIds }  = useWishlist()
 
   useEffect(() => {
     if (cache[section]) { setLoading(false); return }
