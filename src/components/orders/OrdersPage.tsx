@@ -42,8 +42,11 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatus]   = useState('')
   const [urgentOnly, setUrgentOnly] = useState(false)
+  const [page, setPage]             = useState(1)
+  const PER_PAGE = 50
 
   const filtered = useMemo(() => {
+    setPage(1)  // reset to first page on filter change
     return orders.filter(o => {
       if (statusFilter && o.status !== statusFilter) return false
       if (urgentOnly && !o.additions?.urgent) return false
@@ -139,7 +142,8 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
         )}
 
         <p className="ml-auto text-sm text-stone-400">
-          {filtered.length} of {orders.length} orders
+          {filtered.length} orders
+          {filtered.length > PER_PAGE && ` · page ${page}/${Math.ceil(filtered.length / PER_PAGE)}`}
         </p>
       </div>
 
@@ -166,7 +170,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                     No orders found
                   </td>
                 </tr>
-              ) : filtered.map(o => {
+              ) : filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(o => {
                 const product = o.products
                 const company = o.companies
                 const isUrgent = o.additions?.urgent === true
@@ -240,6 +244,45 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {filtered.length > PER_PAGE && (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg
+                       disabled:opacity-40 hover:border-stone-300 transition-colors">
+            ← Prev
+          </button>
+
+          {Array.from({ length: Math.min(7, Math.ceil(filtered.length / PER_PAGE)) }, (_, i) => {
+            const total = Math.ceil(filtered.length / PER_PAGE)
+            let p: number
+            if (total <= 7) p = i + 1
+            else if (page <= 4) p = i + 1
+            else if (page >= total - 3) p = total - 6 + i
+            else p = page - 3 + i
+            return (
+              <button key={p} onClick={() => setPage(p)}
+                className={`w-9 h-9 text-sm rounded-lg border transition-colors
+                  ${p === page
+                    ? 'bg-gold text-white border-gold'
+                    : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>
+                {p}
+              </button>
+            )
+          })}
+
+          <button
+            onClick={() => setPage(p => Math.min(Math.ceil(filtered.length / PER_PAGE), p + 1))}
+            disabled={page >= Math.ceil(filtered.length / PER_PAGE)}
+            className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg
+                       disabled:opacity-40 hover:border-stone-300 transition-colors">
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   )
 }

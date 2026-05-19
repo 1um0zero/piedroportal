@@ -45,7 +45,7 @@ export default async function OrdersRoute() {
       companies(id, name, erp_code)
     `)
     .order('created_at', { ascending: false })
-    .limit(500)
+    .limit(5000)
 
   if (!isAdmin && companyId) {
     query = query.eq('company_id', companyId)
