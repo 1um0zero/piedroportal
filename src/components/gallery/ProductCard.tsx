@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import type { Product } from '@/types'
 import { isNew } from './GalleryPage'
 import { useWishlist } from '@/contexts/WishlistContext'
@@ -22,17 +23,17 @@ export default function ProductCard({ product }: Props) {
   const wishlisted = ids.has(product.id)
 
   return (
-    <article
-      className="group bg-white rounded-[14px] overflow-hidden flex flex-col cursor-pointer
-                 transition-all duration-300 ease-out
-                 hover:translate-y-[-2px]"
+    <Link
+      href={`/gallery/${product.id}`}
+      className="group bg-white rounded-[14px] overflow-hidden flex flex-col
+                 transition-all duration-300 ease-out hover:translate-y-[-2px]"
       style={{ boxShadow: 'var(--shadow-card)' }}
       onMouseEnter={(e) => {
-        const el = e.currentTarget
+        const el = e.currentTarget as HTMLElement
         el.style.boxShadow = '0 0 0 2px #B8975A, var(--shadow-card-hover)'
       }}
       onMouseLeave={(e) => {
-        const el = e.currentTarget
+        const el = e.currentTarget as HTMLElement
         el.style.boxShadow = 'var(--shadow-card)'
       }}
     >
@@ -54,9 +55,10 @@ export default function ProductCard({ product }: Props) {
             </span>
           </div>
         )}
-        {/* Wishlist heart */}
+
+        {/* Wishlist heart — intercepts click so it doesn't navigate */}
         <button
-          onClick={(e) => { e.stopPropagation(); toggle(product.id) }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(product.id) }}
           className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center
                       transition-all duration-200 shadow-sm
                       ${wishlisted
@@ -91,17 +93,14 @@ export default function ProductCard({ product }: Props) {
         <h3 className="font-semibold text-stone-900 text-sm leading-tight tracking-wide">
           {product.style_name}
         </h3>
-
         <div className="flex items-center gap-1.5 text-[11px] text-stone-500 font-medium">
           <span>{product.closure}</span>
           <span className="text-stone-300">·</span>
           <span>{product.type}</span>
         </div>
-
         <p className="text-[11px] text-stone-400">
           {t('sizes')}&nbsp;{product.size_first}–{product.size_last}
         </p>
-
         {product.color_name && (
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
@@ -112,6 +111,6 @@ export default function ProductCard({ product }: Props) {
           </div>
         )}
       </div>
-    </article>
+    </Link>
   )
 }
