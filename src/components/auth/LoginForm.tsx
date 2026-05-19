@@ -35,12 +35,14 @@ export default function LoginForm() {
         return
       }
 
-      // Force full page load via form submit — nothing can intercept this
-      const form = document.createElement('form')
-      form.method = 'GET'
-      form.action = dest
-      document.body.appendChild(form)
-      form.submit()
+      // Wait for React state flush, then navigate
+      setTimeout(() => {
+        const form = document.createElement('form')
+        form.method = 'GET'
+        form.action = dest
+        document.body.appendChild(form)
+        form.submit()
+      }, 100)
     } catch (err) {
       console.error('Login error:', err)
       setError(t('error'))

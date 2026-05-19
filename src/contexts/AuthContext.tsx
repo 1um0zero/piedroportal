@@ -58,18 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else if (!user) setLoading(false)
   }, [user, profile])
 
-  const signOut = useCallback(async () => {
-    try {
-      const sb = createClient()
-      await sb.auth.signOut()
-    } catch (e) {
-      console.error('signOut error:', e)
-    }
-    const form = document.createElement('form')
-    form.method = 'GET'
-    form.action = '/login'
-    document.body.appendChild(form)
-    form.submit()
+  const signOut = useCallback(() => {
+    // Fire-and-forget — signOut clears localStorage synchronously,
+    // don't await the API call which can hang
+    createClient().auth.signOut().catch(() => {})
+    setTimeout(() => {
+      const form = document.createElement('form')
+      form.method = 'GET'
+      form.action = '/login'
+      document.body.appendChild(form)
+      form.submit()
+    }, 100)
   }, [])
 
   return (
