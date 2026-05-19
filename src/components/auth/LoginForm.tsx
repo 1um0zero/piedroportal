@@ -52,19 +52,10 @@ export default function LoginForm() {
         <div className="relative z-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/piedro-logo.png"
+            src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
             alt="Piedro"
             className="h-12 w-auto brightness-0 invert"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none'
-              const el = e.currentTarget.nextElementSibling as HTMLElement
-              if (el) el.style.display = 'block'
-            }}
           />
-          <div style={{ display: 'none' }}>
-            <p className="text-white text-2xl font-semibold tracking-[0.25em] uppercase">Piedro</p>
-            <p className="text-[#B8975A] text-[11px] tracking-[0.35em] uppercase mt-0.5">Portal</p>
-          </div>
         </div>
 
         {/* Tagline bottom */}
@@ -84,8 +75,7 @@ export default function LoginForm() {
           {/* Logo — mobile */}
           <div className="flex justify-center lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/piedro-logo.png" alt="Piedro" className="h-10 w-auto"
-              onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            <img src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png" alt="Piedro" className="h-10 w-auto" />
           </div>
 
           {/* Card */}
