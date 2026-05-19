@@ -20,14 +20,23 @@ export default function Navbar({ locale }: Props) {
     <header className="bg-white border-b border-stone-100" style={{ boxShadow: 'var(--shadow-nav)' }}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
         {/* Logo */}
-        <Link href="/gallery" className="flex items-center shrink-0">
+        <Link href="/gallery" className="flex items-center gap-2 shrink-0" id="nav-logo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/piedro-logo.png"
             alt="Piedro International"
             className="h-9 w-auto"
             style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.12)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))' }}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+              const fb = document.getElementById('nav-logo-fallback')
+              if (fb) fb.style.display = 'flex'
+            }}
           />
+          <span id="nav-logo-fallback" className="items-baseline gap-2" style={{ display: 'none' }}>
+            <span className="text-lg font-semibold tracking-[0.22em] text-stone-900 uppercase">Piedro</span>
+            <span className="text-[10px] font-medium tracking-[0.3em] text-[#B8975A] uppercase">Portal</span>
+          </span>
         </Link>
 
         {/* Nav links */}
