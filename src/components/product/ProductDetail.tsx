@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
@@ -10,65 +10,124 @@ import { isNew } from '@/components/gallery/GalleryPage'
 import type { Product } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
-const img = (name: string) => `${BUCKET}/${name}`
+const src = (name: string) => `${BUCKET}/${name}`
 
+// ── Zoom image (hover magnifier, no click needed) ─────────────────────────────
+function ZoomImage({ url, alt }: { url: string; alt: string }) {
+  const [zoomed, setZoomed] = useState(false)
+  const [origin, setOrigin] = useState('50% 50%')
+  const ref = useRef<HTMLDivElement>(null)
+
+  const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    const x = Math.round(((e.clientX - r.left) / r.width) * 100)
+    const y = Math.round(((e.clientY - r.top) / r.height) * 100)
+    setOrigin(`${x}% ${y}%`)
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className="relative w-full h-full overflow-hidden cursor-crosshair"
+      onMouseEnter={() => setZoomed(true)}
+      onMouseLeave={() => setZoomed(false)}
+      onMouseMove={onMove}
+    >
+      {/* Raw <img> — full original quality, no next/image downsampling */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={url}
+        alt={alt}
+        className="w-full h-full object-contain p-4 select-none"
+        style={{
+          transform: zoomed ? 'scale(2.8)' : 'scale(1)',
+          transformOrigin: origin,
+          transition: zoomed ? 'transform-origin 0s' : 'transform 0.25s ease',
+          willChange: 'transform',
+        }}
+        draggable={false}
+      />
+      {!zoomed && (
+        <span className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm
+                         rounded-full p-1.5 shadow text-stone-400 pointer-events-none">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607zM10.5 7.5v6m3-3h-6"/>
+          </svg>
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 type Props = { product: Product; siblings: Product[] }
 
 export default function ProductDetail({ product, siblings }: Props) {
   const t  = useTranslations('product')
   const tn = useTranslations('nav')
   const { hasCompany, user } = useAuth()
-  const { ids, toggle } = useWishlist()
+  const { ids, toggle }     = useWishlist()
 
-  // All variants of this style (current + siblings)
   const allVariants = useMemo(() => [product, ...siblings], [product, siblings])
-
-  // Available closure types for this style
-  const closures = useMemo(
+  const closures    = useMemo(
     () => [...new Set(allVariants.map((p) => p.closure))].sort(),
     [allVariants],
   )
 
-  // Interactive state
-  const [activeClosure, setActiveClosure] = useState<string>(product.closure)
+  const [activeClosure, setActiveClosure] = useState(product.closure)
   const [selected, setSelected]           = useState<Product>(product)
   const [activeImg, setActiveImg]         = useState(0)
   const [failed, setFailed]               = useState<Set<number>>(new Set())
-  const [lightbox, setLightbox]           = useState(false)
+  const [playing, setPlaying]             = useState(false)
+  const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Products shown in the colour grid (filtered by selected closure tab)
   const colourGrid = useMemo(
     () => allVariants.filter((p) => p.closure === activeClosure),
     [allVariants, activeClosure],
   )
 
-  // Gallery images for the currently selected variant
   const base = selected.picture_name?.replace(/\.jpg$/i, '') ?? ''
-  const galleryImages = [
+  const allImages = useMemo(() => [
     selected.picture_name,
     ...[2,3,4,5,6,7,8].map((n) => `${base}_${String(n).padStart(2,'0')}.jpg`),
-  ].filter(Boolean) as string[]
+  ].filter(Boolean) as string[], [selected, base])
 
-  function selectClosure(closure: string) {
-    setActiveClosure(closure)
-    const first = allVariants.find((p) => p.closure === closure)
+  const validImages = allImages.filter((_, i) => !failed.has(i))
+
+  // ── Auto-rotate (play) ─────────────────────────────────────────────────────
+  function startPlay() {
+    setPlaying(true)
+    let i = 0
+    playRef.current = setInterval(() => {
+      i = (i + 1) % validImages.length
+      setActiveImg(allImages.indexOf(validImages[i]))
+    }, 700)
+  }
+  function stopPlay() {
+    setPlaying(false)
+    if (playRef.current) clearInterval(playRef.current)
+  }
+  // Stop when images change (new variant selected)
+  useEffect(() => { stopPlay() }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function selectClosure(cl: string) {
+    setActiveClosure(cl)
+    const first = allVariants.find((p) => p.closure === cl)
     if (first) { setSelected(first); setActiveImg(0); setFailed(new Set()) }
   }
-
   function selectVariant(p: Product) {
-    setSelected(p)
-    setActiveClosure(p.closure)
-    setActiveImg(0)
-    setFailed(new Set())
+    setSelected(p); setActiveClosure(p.closure)
+    setActiveImg(0); setFailed(new Set())
   }
 
-  const markFailed = (i: number) => setFailed((prev) => new Set([...prev, i]))
   const wishlisted = ids.has(selected.id)
+  const currentUrl = allImages[activeImg] && !failed.has(activeImg)
+    ? src(allImages[activeImg]) : null
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-
-      {/* Back */}
       <Link href="/gallery"
         className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800
                    border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg
@@ -78,9 +137,8 @@ export default function ProductDetail({ product, siblings }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-10 lg:gap-16">
 
-        {/* ── LEFT ──────────────────────────────────────────────────── */}
-        <div className="space-y-5">
-
+        {/* ── LEFT ─────────────────────────────────────────────────── */}
+        <div className="space-y-4">
           {/* Style info */}
           <div className="border border-stone-100 rounded-xl overflow-hidden text-sm">
             <div className="grid grid-cols-3 bg-stone-50 px-4 py-2 text-xs font-semibold
@@ -94,7 +152,7 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
           </div>
 
-          {/* Constructions & Widths */}
+          {/* Constructions */}
           {product.constructions?.length > 0 && (
             <div className="border border-stone-100 rounded-xl overflow-hidden text-sm">
               <div className="grid grid-cols-2 bg-stone-50 px-4 py-2 text-xs font-semibold
@@ -103,15 +161,11 @@ export default function ProductDetail({ product, siblings }: Props) {
               </div>
               {product.constructions.map((c, i) => (
                 <div key={i}
-                  className={`grid grid-cols-2 px-4 py-2.5 gap-4
-                              ${i % 2 === 0 ? 'bg-white' : 'bg-stone-50/50'}`}>
+                  className={`grid grid-cols-2 px-4 py-2.5 gap-4 ${i%2===0?'bg-white':'bg-stone-50/50'}`}>
                   <span className="font-medium text-stone-700">{c.construction}</span>
                   <span className="flex flex-wrap gap-1">
                     {c.widths.map((w) => (
-                      <span key={w}
-                        className="px-1.5 py-0.5 text-xs bg-stone-100 rounded font-mono text-stone-700">
-                        {w}
-                      </span>
+                      <span key={w} className="px-1.5 py-0.5 text-xs bg-stone-100 rounded font-mono text-stone-700">{w}</span>
                     ))}
                   </span>
                 </div>
@@ -119,7 +173,7 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
           )}
 
-          {/* Active colour + wishlist */}
+          {/* Colour strip + wishlist */}
           <div className="flex items-center gap-3">
             <span className="w-8 h-8 rounded-full border-2 border-stone-200 shrink-0 shadow-sm"
               style={{ background: selected.color_basic || '#ccc' }} />
@@ -133,12 +187,9 @@ export default function ProductDetail({ product, siblings }: Props) {
             )}
             {selected.diabetics && (
               <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase
-                               bg-stone-700 text-white rounded-full">
-                {t('diabetic')}
-              </span>
+                               bg-stone-700 text-white rounded-full">{t('diabetic')}</span>
             )}
-            <button
-              onClick={() => toggle(selected.id)}
+            <button onClick={() => toggle(selected.id)}
               className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0
                           transition-all ${wishlisted
                             ? 'bg-gold/10 border-gold text-gold'
@@ -147,124 +198,108 @@ export default function ProductDetail({ product, siblings }: Props) {
                 fill={wishlisted ? 'currentColor' : 'none'}
                 stroke="currentColor" strokeWidth={wishlisted ? 0 : 2}>
                 <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
               </svg>
             </button>
           </div>
 
-          {/* Main image — click to open lightbox */}
-          <div
-            className="relative aspect-square bg-stone-50 rounded-[14px] overflow-hidden cursor-zoom-in"
-            style={{ boxShadow: 'var(--shadow-card)' }}
-            onClick={() => !failed.has(activeImg) && galleryImages[activeImg] && setLightbox(true)}
-          >
-            {!failed.has(activeImg) && galleryImages[activeImg] ? (
-              <Image key={`${selected.id}-${activeImg}`}
-                src={img(galleryImages[activeImg])}
-                alt={`${product.style_name} ${selected.color_name}`}
-                fill sizes="(max-width: 1024px) 100vw, 600px"
-                className="object-contain p-4" priority quality={90}
-                onError={() => markFailed(activeImg)} />
+          {/* Main image with zoom */}
+          <div className="relative aspect-square bg-stone-50 rounded-[14px] overflow-hidden"
+            style={{ boxShadow: 'var(--shadow-card)' }}>
+            {currentUrl ? (
+              <ZoomImage url={currentUrl} alt={`${product.style_name} ${selected.color_name}`} />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-5xl font-light text-stone-200 tracking-widest">
-                  {product.style_name}
-                </span>
+                <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
               </div>
-            )}
-            {/* Zoom hint */}
-            {!failed.has(activeImg) && galleryImages[activeImg] && (
-              <span className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm
-                               rounded-full p-1.5 shadow-sm text-stone-400">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607zM10.5 7.5v6m3-3h-6" />
-                </svg>
-              </span>
             )}
           </div>
 
-          {/* Lightbox */}
-          {lightbox && galleryImages[activeImg] && (
-            <div
-              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-              onClick={() => setLightbox(false)}
-            >
+          {/* Thumbnails + play button */}
+          {allImages.length > 1 && (
+            <div className="flex items-center gap-2">
+              {/* Play/Stop */}
               <button
-                className="absolute top-4 right-4 text-white/70 hover:text-white"
-                onClick={() => setLightbox(false)}
-              >
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
+                onClick={playing ? stopPlay : startPlay}
+                className={`shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center
+                            transition-all ${playing
+                              ? 'border-gold bg-gold/10 text-gold'
+                              : 'border-stone-200 text-stone-400 hover:border-gold hover:text-gold'}`}
+                title={playing ? 'Stop' : 'Auto-rotate'}>
+                {playing ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="4" width="4" height="16" rx="1"/>
+                    <rect x="14" y="4" width="4" height="16" rx="1"/>
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                )}
               </button>
-              <div className="relative w-full max-w-3xl aspect-square"
-                onClick={(e) => e.stopPropagation()}>
-                <Image
-                  src={img(galleryImages[activeImg])}
-                  alt={`${product.style_name} ${selected.color_name}`}
-                  fill sizes="90vw" quality={100}
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          )}
 
-          {/* Thumbnails */}
-          {galleryImages.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {galleryImages.map((name, i) => failed.has(i) ? null : (
-                <button key={i} onClick={() => setActiveImg(i)}
-                  className={`relative shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-stone-50
-                              border-2 transition-all
-                              ${i === activeImg
-                                ? 'border-gold' : 'border-stone-100 hover:border-stone-300'}`}>
-                  <Image src={img(name)} alt="" fill sizes="56px"
-                    className="object-contain p-1"
-                    onError={() => markFailed(i)} />
-                </button>
-              ))}
+              {/* Thumbnails — hover switches image, click locks */}
+              <div className="flex gap-1.5 overflow-x-auto pb-1 flex-1">
+                {allImages.map((name, i) => failed.has(i) ? null : (
+                  <button key={i}
+                    onMouseEnter={() => { stopPlay(); setActiveImg(i) }}
+                    onClick={() => setActiveImg(i)}
+                    className={`relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-stone-50
+                                border-2 transition-all
+                                ${i === activeImg
+                                  ? 'border-gold' : 'border-stone-100 hover:border-stone-300'}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src(name)} alt="" className="w-full h-full object-contain p-1"
+                      onError={() => setFailed((p) => new Set([...p, i]))} />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        {/* ── RIGHT ─────────────────────────────────────────────────── */}
-        <div className="space-y-5">
+        {/* ── RIGHT ────────────────────────────────────────────────── */}
+        <div className="space-y-6">
 
           {/* Closure tabs */}
           {closures.length > 1 && (
-            <div className="flex gap-2 flex-wrap">
-              {closures.map((cl) => (
-                <button key={cl} onClick={() => selectClosure(cl)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all
-                              ${cl === activeClosure
-                                ? 'bg-gold text-white border-gold shadow-sm'
-                                : 'border-stone-200 text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
-                  {cl}
-                </button>
-              ))}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Closure</p>
+              <div className="flex gap-2 flex-wrap">
+                {closures.map((cl) => (
+                  <button key={cl} onClick={() => selectClosure(cl)}
+                    className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all
+                                ${cl === activeClosure
+                                  ? 'bg-gold text-white border-gold shadow-sm'
+                                  : 'border-stone-200 text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
+                    {cl}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {/* Colour grid */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
               {t('colours')} — {activeClosure}
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
               {colourGrid.map((p) => (
-                <button key={p.id} onClick={() => selectVariant(p)}
-                  className={`group text-left space-y-1 rounded-xl overflow-hidden
-                              transition-all ${p.id === selected.id ? 'ring-2 ring-gold' : ''}`}>
+                <button key={p.id} onClick={() => selectVariant(p)} className="text-left">
                   <ColourCard product={p} isSelected={p.id === selected.id} />
                 </button>
               ))}
             </div>
           </div>
+
+          {product.info && (
+            <p className="text-sm text-stone-500 italic">{product.info}</p>
+          )}
         </div>
       </div>
 
-      {/* ── ORDER button ────────────────────────────────────────────── */}
+      {/* ORDER button */}
       <div className="border-t border-stone-100 pt-6">
         {!user ? (
           <Link href="/login"
@@ -278,7 +313,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                           bg-stone-100 text-stone-400 font-medium text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
             </svg>
             Conta pendente de aprovação
           </div>
@@ -293,17 +328,17 @@ export default function ProductDetail({ product, siblings }: Props) {
   )
 }
 
-// ── Colour card (in grid) ─────────────────────────────────────────────────────
-
+// ── ColourCard ────────────────────────────────────────────────────────────────
 function ColourCard({ product, isSelected }: { product: Product; isSelected: boolean }) {
   const [failed, setFailed] = useState(false)
   return (
     <div className={`rounded-xl overflow-hidden border-2 transition-all bg-stone-50
-                     ${isSelected ? 'border-gold' : 'border-transparent hover:border-stone-200'}`}>
+                     ${isSelected ? 'border-gold shadow-sm' : 'border-transparent hover:border-stone-200'}`}>
       <div className="relative aspect-square">
         {product.picture_name && !failed ? (
-          <Image src={`${BUCKET}/${product.picture_name}`} alt={product.color_name ?? ''}
-            fill sizes="120px" className="object-contain p-2"
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={`${BUCKET}/${product.picture_name}`} alt={product.color_name ?? ''}
+            className="w-full h-full object-contain p-2"
             onError={() => setFailed(true)} />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">

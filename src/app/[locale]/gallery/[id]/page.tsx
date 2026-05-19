@@ -14,29 +14,45 @@ async function getProduct(id: string): Promise<Product | null> {
   return (data as unknown as Product) ?? null
 }
 
-async function getSiblings(styleName: string, excludeId: string): Promise<Product[]> {
+async function getSiblings(product: Product): Promise<Product[]> {
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
-  const { data } = await sb
+  const SELECT = 'id,style_name,colour_id,picture_name,color_basic,color_name,closure,size_first,size_last,new_until,diabetics'
+
+  // Fetch same style_name
+  const { data: same } = await sb
     .from('products')
-    .select('id,style_name,colour_id,picture_name,color_basic,color_name,closure,new_until')
-    .eq('style_name', styleName)
+    .select(SELECT)
+    .eq('style_name', product.style_name)
     .eq('active', true)
-    .neq('id', excludeId)
+    .neq('id', product.id)
     .order('color_name')
-  return (data ?? []) as unknown as Product[]
+
+  // If product has a sibling style (e.g. "5305" ↔ "5305K"), fetch those too
+  let linked: Product[] = []
+  if (product.sibling) {
+    const { data } = await sb
+      .from('products')
+      .select(SELECT)
+      .eq('style_name', product.sibling)
+      .eq('active', true)
+      .order('color_name')
+    linked = (data ?? []) as unknown as Product[]
+  }
+
+  const all = [...(same ?? []), ...linked] as unknown as Product[]
+  // Deduplicate by id
+  return [...new Map(all.map((p) => [p.id, p])).values()]
 }
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function ProductPage({ params }: Props) {
   const { id } = await params
-  const [product, siblings] = await Promise.all([
-    getProduct(id),
-    getProduct(id).then((p) => p ? getSiblings(p.style_name, id) : []),
-  ])
+  const product = await getProduct(id)
+  const siblings = product ? await getSiblings(product) : []
 
   if (!product) notFound()
 
