@@ -133,11 +133,23 @@ export default function ProductDetail({ product, siblings }: Props) {
     [allVariants, activeClosure],
   )
 
-  const base = selected.picture_name?.replace(/\.jpg$/i, '') ?? ''
-  const allImages = useMemo(() => [
-    selected.picture_name,
-    ...[2,3,4,5,6,7,8].map((n) => `${base}_${String(n).padStart(2,'0')}.jpg`),
-  ].filter(Boolean) as string[], [selected, base])
+  // Support two naming conventions:
+  //   .png (new): 1700.0393.01.png → gallery: 1700.0393.02.png, .03.png …
+  //   .jpg (old): 1700.0393.01.jpg → gallery: 1700.0393.01_02.jpg, _03.jpg …
+  const allImages = useMemo(() => {
+    const p = selected.picture_name
+    if (!p) return []
+    const isPng = /\.png$/i.test(p)
+    if (isPng) {
+      const base = p.replace(/\.\d{2}\.png$/i, '')
+      const ext  = p.match(/\.(\d{2}\.png)$/i)?.[1] ?? '01.png'
+      const num  = parseInt(ext)
+      return [p, ...[2,3,4,5,6,7,8].map(n => `${base}.${String(n).padStart(2,'0')}.png`)]
+    } else {
+      const base = p.replace(/\.jpg$/i, '')
+      return [p, ...[2,3,4,5,6,7,8].map(n => `${base}_${String(n).padStart(2,'0')}.jpg`)]
+    }
+  }, [selected])
 
   const validImages = allImages.filter((_, i) => !failed.has(i))
 
