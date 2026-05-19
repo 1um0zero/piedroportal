@@ -76,7 +76,7 @@ export default function ProductDetail({ product, siblings }: Props) {
     [allVariants],
   )
 
-  const [activeClosure, setActiveClosure] = useState(product.closure)
+  const [activeClosure, setActiveClosure] = useState<string>(product.closure)
   const [selected, setSelected]           = useState<Product>(product)
   const [activeImg, setActiveImg]         = useState(0)
   const [failed, setFailed]               = useState<Set<number>>(new Set())
