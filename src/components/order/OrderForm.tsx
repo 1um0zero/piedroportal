@@ -9,7 +9,7 @@ import type { Product } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
-type Unit = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT'
+type Unit = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT' | 'DIFF_SIZES'
 
 type Profile = { company_id: string | null; full_name: string | null; role: string }
 type Props   = { product: Product; userId: string; userProfile: Profile }
@@ -226,6 +226,7 @@ export default function OrderForm({ product, userId, userProfile }: Props) {
                     ['LEFT',       'Left only'],
                     ['RIGHT',      'Right only'],
                     ['LEFT_RIGHT', 'Left ≠ Right'],
+                    ['DIFF_SIZES', 'Different sizes'],
                   ] as [Unit, string][]).map(([val, lbl]) => (
                     <button key={val} type="button"
                       onClick={() => setUnit(val)}
