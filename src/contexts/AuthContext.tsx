@@ -29,11 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadProfile(userId: string) {
     const sb = createClient()
-    const { data } = await sb
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    const { data } = await sb.from('profiles').select('*').eq('id', userId).single()
     setProfile(data as Profile | null)
   }
 
@@ -57,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Mark loading done once profile resolves
   useEffect(() => {
     if (user && profile !== undefined) setLoading(false)
     else if (!user) setLoading(false)
@@ -65,17 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     const sb = createClient()
-    await sb.auth.signOut()
-    // Force full page reload so middleware clears session cookie
-    window.location.href = '/gallery'
+    await sb.auth.signOut()          // clears localStorage + cookie
+    window.location.replace('/login') // full reload to clean all state
   }, [])
 
   return (
     <Ctx.Provider value={{
-      user,
-      profile,
-      loading,
-      signOut,
+      user, profile, loading, signOut,
       isAdmin:    profile?.role === 'piedro_admin',
       hasCompany: !!profile?.company_id,
     }}>

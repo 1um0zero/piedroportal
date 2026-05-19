@@ -5,9 +5,6 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }
 
-type Props = { searchParams: Promise<{ error?: string }> }
-
-export default async function LoginPage({ searchParams }: Props) {
-  const params = await searchParams
-  return <LoginForm searchParams={params} />
+export default function LoginPage() {
+  return <LoginForm />
 }
