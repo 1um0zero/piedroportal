@@ -12,14 +12,14 @@ interface AuthCtx {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signOut: () => Promise<void>
+  signOut: () => void
   isAdmin: boolean
   hasCompany: boolean
 }
 
 const Ctx = createContext<AuthCtx>({
   user: null, profile: null, loading: true,
-  signOut: async () => {}, isAdmin: false, hasCompany: false,
+  signOut: () => {}, isAdmin: false, hasCompany: false,
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
