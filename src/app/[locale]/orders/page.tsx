@@ -36,22 +36,32 @@ export default async function OrdersRoute() {
 
   // Fetch orders (admin: all; user: own company)
   const service = createServiceClient()
-  let query = service
-    .from('orders')
-    .select(`
-      id, status, unit, patient_name, reference_customer, quantity,
-      created_at, updated_at, size_left, size_right, additions, comments,
-      products(id, style_name, colour_id, color_name, closure, picture_name, section),
-      companies(id, name, erp_code)
-    `)
-    .order('created_at', { ascending: false })
-    .limit(5000)
+  const SELECT = `
+    id, status, unit, patient_name, reference_customer, quantity,
+    created_at, updated_at, size_left, size_right, additions, comments,
+    products(id, style_name, colour_id, color_name, closure, picture_name, section),
+    companies(id, name, erp_code)
+  `
 
-  if (!isAdmin && companyId) {
-    query = query.eq('company_id', companyId)
+  // Paginate server-side (Supabase PostgREST max = 1000/request)
+  let allOrders: any[] = []
+  let offset = 0
+  const PAGE = 1000
+  while (true) {
+    let q = service
+      .from('orders')
+      .select(SELECT)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + PAGE - 1)
+    if (!isAdmin && companyId) q = q.eq('company_id', companyId)
+    const { data, error } = await q
+    if (error || !data?.length) break
+    allOrders = allOrders.concat(data)
+    if (data.length < PAGE) break
+    offset += PAGE
   }
 
-  const { data: orders, error } = await query
+  const orders = allOrders
 
   // Metrics
   const all       = orders ?? []
