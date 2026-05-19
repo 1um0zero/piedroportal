@@ -12,14 +12,14 @@ interface AuthCtx {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signOut: () => void
+  signOut: () => Promise<void>
   isAdmin: boolean
   hasCompany: boolean
 }
 
 const Ctx = createContext<AuthCtx>({
   user: null, profile: null, loading: true,
-  signOut: () => {}, isAdmin: false, hasCompany: false,
+  signOut: async () => {}, isAdmin: false, hasCompany: false,
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -58,10 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else if (!user) setLoading(false)
   }, [user, profile])
 
-  const signOut = useCallback(() => {
-    // Fire-and-forget — signOut clears localStorage synchronously,
-    // don't await the API call which can hang
-    createClient().auth.signOut().catch(() => {})
+  const signOut = useCallback(async () => {
+    const sb = createClient()
+    // Await signOut with 3s timeout — revokes server session before navigating
+    await Promise.race([
+      sb.auth.signOut(),
+      new Promise<void>(resolve => setTimeout(resolve, 3000)),
+    ])
     setTimeout(() => {
       const form = document.createElement('form')
       form.method = 'GET'
