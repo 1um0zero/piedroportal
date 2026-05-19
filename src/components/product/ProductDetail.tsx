@@ -34,6 +34,7 @@ export default function ProductDetail({ product, siblings }: Props) {
   const [selected, setSelected]           = useState<Product>(product)
   const [activeImg, setActiveImg]         = useState(0)
   const [failed, setFailed]               = useState<Set<number>>(new Set())
+  const [lightbox, setLightbox]           = useState(false)
 
   // Products shown in the colour grid (filtered by selected closure tab)
   const colourGrid = useMemo(
@@ -151,15 +152,18 @@ export default function ProductDetail({ product, siblings }: Props) {
             </button>
           </div>
 
-          {/* Main image */}
-          <div className="relative aspect-square bg-stone-50 rounded-[14px] overflow-hidden"
-            style={{ boxShadow: 'var(--shadow-card)' }}>
+          {/* Main image — click to open lightbox */}
+          <div
+            className="relative aspect-square bg-stone-50 rounded-[14px] overflow-hidden cursor-zoom-in"
+            style={{ boxShadow: 'var(--shadow-card)' }}
+            onClick={() => !failed.has(activeImg) && galleryImages[activeImg] && setLightbox(true)}
+          >
             {!failed.has(activeImg) && galleryImages[activeImg] ? (
               <Image key={`${selected.id}-${activeImg}`}
                 src={img(galleryImages[activeImg])}
                 alt={`${product.style_name} ${selected.color_name}`}
-                fill sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-contain p-6" priority
+                fill sizes="(max-width: 1024px) 100vw, 600px"
+                className="object-contain p-4" priority quality={90}
                 onError={() => markFailed(activeImg)} />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -168,7 +172,43 @@ export default function ProductDetail({ product, siblings }: Props) {
                 </span>
               </div>
             )}
+            {/* Zoom hint */}
+            {!failed.has(activeImg) && galleryImages[activeImg] && (
+              <span className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm
+                               rounded-full p-1.5 shadow-sm text-stone-400">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607zM10.5 7.5v6m3-3h-6" />
+                </svg>
+              </span>
+            )}
           </div>
+
+          {/* Lightbox */}
+          {lightbox && galleryImages[activeImg] && (
+            <div
+              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+              onClick={() => setLightbox(false)}
+            >
+              <button
+                className="absolute top-4 right-4 text-white/70 hover:text-white"
+                onClick={() => setLightbox(false)}
+              >
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="relative w-full max-w-3xl aspect-square"
+                onClick={(e) => e.stopPropagation()}>
+                <Image
+                  src={img(galleryImages[activeImg])}
+                  alt={`${product.style_name} ${selected.color_name}`}
+                  fill sizes="90vw" quality={100}
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Thumbnails */}
           {galleryImages.length > 1 && (
