@@ -8,6 +8,10 @@ const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 export const metadata: Metadata = {
   title: 'Piedro Portal',
   description: 'Piedro International — Orthopedic Footwear Portal',
+  icons: {
+    icon: '/piedro-foot.svg',
+    shortcut: '/piedro-foot.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
