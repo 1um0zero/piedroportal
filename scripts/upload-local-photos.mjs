@@ -27,7 +27,10 @@ const sb      = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_
 const BUCKET  = 'products'
 const DRY_RUN = process.argv.includes('--dry-run')
 
-const BASE_DIR = 'C:\\Users\\Jorge\\OneDrive - Umzero\\platuz\\Clientes\\piedro\\fotos\\wetransfer_more-images_2026-05-19_1231'
+// Pass folder as argument: node scripts/upload-local-photos.mjs "C:\path\to\folder"
+// Or set default here:
+const BASE_DIR = process.argv.find((a, i) => i > 1 && !a.startsWith('--'))
+  ?? 'C:\\Users\\Jorge\\OneDrive - Umzero\\platuz\\Clientes\\piedro\\fotos\\wetransfer_more-images_2026-05-19_1231'
 
 // ── Collect all image files ───────────────────────────────────────────────────
 
