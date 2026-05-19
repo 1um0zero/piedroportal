@@ -73,13 +73,9 @@ export default function LoginForm() {
         <div className="w-full max-w-sm space-y-8">
 
           {/* Logo (mobile only) */}
-          <div className="text-center lg:hidden">
-            <p className="text-2xl font-semibold tracking-[0.22em] text-stone-900 uppercase mb-1">
-              Piedro
-            </p>
-            <p className="text-[11px] font-medium tracking-[0.3em] text-gold uppercase">
-              Portal
-            </p>
+          <div className="flex justify-center lg:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/piedro-logo.png" alt="Piedro" className="h-10 w-auto" />
           </div>
 
           {/* Card */}

@@ -19,21 +19,14 @@ export default function Navbar({ locale }: Props) {
   return (
     <header className="bg-white border-b border-stone-100" style={{ boxShadow: 'var(--shadow-nav)' }}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
-        {/* Logo — replace img src with real logo file when available */}
+        {/* Logo */}
         <Link href="/gallery" className="flex items-center shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/piedro-logo.png"
-            alt="Piedro"
-            className="h-8 w-auto"
-            onError={(e) => {
-              // Fallback to text if logo file not yet added
-              const t = e.currentTarget.parentElement!
-              e.currentTarget.style.display = 'none'
-              if (!t.querySelector('span')) {
-                t.innerHTML += '<span style="font-size:1.1rem;font-weight:600;letter-spacing:.22em;color:#1C1917;text-transform:uppercase">Piedro</span><span style="font-size:.6rem;font-weight:500;letter-spacing:.3em;color:#B8975A;text-transform:uppercase;margin-left:.5rem">Portal</span>'
-              }
-            }}
+            alt="Piedro International"
+            className="h-9 w-auto"
+            style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.12)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))' }}
           />
         </Link>
 
