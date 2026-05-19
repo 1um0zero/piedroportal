@@ -115,21 +115,6 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const { ids: wishlistIds }  = useWishlist()
 
-  useEffect(() => {
-    if (cache[section]) { setLoading(false); return }
-    setLoading(true)
-    const sb = createClient()
-    sb.from('products')
-      .select(FIELDS)
-      .eq('active', true)
-      .eq('section', section)
-      .order('style_name')
-      .then(({ data }) => {
-        setCache((prev) => ({ ...prev, [section]: (data ?? []) as unknown as Product[] }))
-        setLoading(false)
-      })
-  }, [section]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const sectionProducts = cache[section] ?? []
 
   // ── Options for each dimension (apply all OTHER active filters) ──
@@ -168,9 +153,21 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   useEffect(() => autoClean('widths',        filters.widths,        optWidths),        [optWidths])        // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => autoClean('sizes',         filters.sizes,         optSizes),         [optSizes])         // eslint-disable-line react-hooks/exhaustive-deps
 
-  function switchSection(s: Section) {
+  async function switchSection(s: Section) {
     setSection(s)
     setFilters(EMPTY)
+    if (cache[s]) return          // already cached
+    setLoading(true)
+    const sb = createClient()
+    const { data, error } = await sb
+      .from('products')
+      .select(FIELDS)
+      .eq('active', true)
+      .eq('section', s)
+      .order('style_name')
+    if (error) console.error('[Gallery] fetch error:', s, error)
+    setCache((prev) => ({ ...prev, [s]: (data ?? []) as unknown as Product[] }))
+    setLoading(false)
   }
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
