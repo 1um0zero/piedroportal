@@ -60,8 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     const sb = createClient()
-    await sb.auth.signOut()          // clears localStorage + cookie
-    window.location.replace('/login') // full reload to clean all state
+    await sb.auth.signOut()
+    const a = document.createElement('a')
+    a.href = '/login'
+    document.body.appendChild(a)
+    a.click()
   }, [])
 
   return (
