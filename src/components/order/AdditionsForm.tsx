@@ -70,6 +70,74 @@ function MmInput({ values, value, onChange }: {
   )
 }
 
+// ── Shared option picker (one strip, click fills active foot) ─────────────────
+function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR,
+  showRight, mirror }: {
+  options: string[]
+  valueL: string; valueR: string
+  onChangeL: (v: string | null) => void
+  onChangeR: (v: string | null) => void
+  showRight: boolean; mirror: boolean
+}) {
+  const [active, setActive] = useState<'l'|'r'>('l')
+  const current = active === 'l' ? valueL : valueR
+
+  function pick(opt: string) {
+    const newVal = current === opt ? null : opt
+    if (active === 'l') { onChangeL(newVal); if (mirror) onChangeR(newVal) }
+    else onChangeR(newVal)
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Shared options strip */}
+      <div className="flex flex-wrap gap-1.5">
+        {options.map(opt => (
+          <button key={opt} type="button" onClick={() => pick(opt)}
+            className={`px-3 py-1.5 text-xs font-medium rounded border transition-all
+              ${current === opt
+                ? 'bg-gold text-white border-gold shadow-sm'
+                : 'text-stone-600 border-stone-200 bg-white hover:border-gold/60 hover:text-gold'}`}>
+            {opt}
+          </button>
+        ))}
+      </div>
+
+      {/* Foot selectors showing current value */}
+      <div className="flex gap-2 flex-wrap">
+        <button type="button" onClick={() => setActive('l')}
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs transition-all
+            ${active === 'l' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
+          <span className="text-stone-500 font-bold">L</span>
+          <span className={valueL ? 'text-stone-800' : 'text-stone-300'}>{valueL || '—'}</span>
+          {valueL && (
+            <span className="text-stone-300 hover:text-red-400 ml-0.5 cursor-pointer"
+              onClick={e => { e.stopPropagation(); onChangeL(null); if (mirror) onChangeR(null) }}>
+              ×
+            </span>
+          )}
+        </button>
+
+        {showRight && (
+          <button type="button"
+            onClick={() => !mirror && setActive('r')}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs transition-all
+              ${mirror ? 'opacity-50 cursor-default' : active === 'r' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
+            <span className="text-stone-500 font-bold">R</span>
+            <span className={valueR ? 'text-stone-800' : 'text-stone-300'}>
+              {mirror ? `= L` : valueR || '—'}
+            </span>
+            {!mirror && valueR && (
+              <span className="text-stone-300 hover:text-red-400 ml-0.5 cursor-pointer"
+                onClick={e => { e.stopPropagation(); onChangeR(null) }}>×</span>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function OptionChips({ values, value, onChange }: {
   values: (number | string)[]
   value: unknown
@@ -262,7 +330,19 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         {field.label.replace(/\s*\(mm\)/gi, '')}
                       </p>
 
-                      {/* Sided fields */}
+                      {/* Shared picker (experiment for Lining) */}
+                      {field.key === 'lining' && field.type === 'option' ? (
+                        <SharedOptionPicker
+                          options={(field.values ?? []).map(String)}
+                          valueL={String((additions[field.key] as SidedVal)?.l ?? '')}
+                          valueR={String((additions[field.key] as SidedVal)?.r ?? '')}
+                          onChangeL={v => update(field.key, 'l', v)}
+                          onChangeR={v => update(field.key, 'r', v)}
+                          showRight={showRight}
+                          mirror={mirror}
+                        />
+                      ) : (
+                      /* Standard sided fields */
                       <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
                         {showLeft && leftActive && (
                           <div className="space-y-1">
@@ -283,6 +363,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           </div>
                         )}
                       </div>
+                      )}
                     </div>
                   )
                 })}
