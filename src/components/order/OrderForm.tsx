@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Product } from '@/types'
+import AdditionsForm from './AdditionsForm'
+import { emptyAdditions, countFilled, SECTIONS } from './additions-config'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -101,8 +103,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [widthRight,  setWidthR]    = useState('')
   const [sizeLeft,    setSizeL]     = useState('')
   const [sizeRight,   setSizeR]     = useState('')
+  const [additions,   setAdditions] = useState<Record<string, unknown>>(emptyAdditions())
+  const [step,        setStep]      = useState<1 | 2 | 3>(1)
   const [submitting,  setSubmitting] = useState(false)
   const [error,       setError]     = useState('')
+
+  const showAdditions = unit !== 'DIFF_SIZES'
+  const steps = showAdditions ? [1, 2, 3] : [1, 3]
 
   const showLeft  = unit !== 'RIGHT'
   const showRight = unit !== 'LEFT'
@@ -145,6 +152,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   async function handleSubmit(status: 'draft' | 'submitted') {
     setError(''); setSubmitting(true)
     const sb = createClient()
+    const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
     const { error: err } = await sb.from('orders').insert({
       user_id:            userId,
       company_id:         selectedCompanyId || userProfile.company_id,
@@ -157,6 +165,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       width_right:        mirror ? widthLeft || null : widthRight || null,
       size_left:          sizeLeft  ? parseFloat(sizeLeft)  : null,
       size_right:         (mirror ? sizeLeft : sizeRight) ? parseFloat(mirror ? sizeLeft : sizeRight) : null,
+      additions:          additionFields,
+      comments:           String(addComments ?? '') || null,
     })
     setSubmitting(false)
     if (err) { setError(err.message); return }
@@ -171,10 +181,119 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     ? (companies.find(c => c.id === selectedCompanyId)?.name ?? '')
     : (userCompany?.name ?? '')
 
+  const stepLabels: Record<number, string> = { 1: t('tab1'), 2: t('tab2'), 3: t('tab3') }
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <h1 className="text-lg font-semibold text-stone-900 mb-6">{t('title')}</h1>
+      <h1 className="text-lg font-semibold text-stone-900 mb-4">{t('title')}</h1>
 
+      {/* Step tabs */}
+      <div className="flex gap-0 border-b border-stone-200 mb-6">
+        {(showAdditions ? [1, 2, 3] : [1, 3]).map((n, idx) => (
+          <button key={n} type="button"
+            onClick={() => n < step ? setStep(n as 1|2|3) : undefined}
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors
+              ${step === n ? 'border-gold text-gold' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>
+            {idx + 1}. {stepLabels[n]}
+          </button>
+        ))}
+      </div>
+
+      {/* ── TAB 2: Additions ─────────────────────────────────────────── */}
+      {step === 2 && showAdditions && (
+        <div className="space-y-4">
+          <AdditionsForm
+            unit={unit}
+            closure={product.closure}
+            addsExclude={(product as unknown as Record<string, string>).adds_exclude ?? ''}
+            additions={additions}
+            onChange={setAdditions}
+          />
+          <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
+            <button onClick={() => setStep(3)}
+              className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
+                         hover:bg-gold-dark transition-colors">
+              {t('tab3')} →
+            </button>
+            <button onClick={() => setStep(1)}
+              className="text-sm text-stone-400 hover:text-stone-600 transition-colors ml-auto">
+              ← {t('tab1')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 3: Confirmation ──────────────────────────────────────── */}
+      {step === 3 && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Product summary */}
+            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('tab1').split(' ')[2] ?? 'Product'}</h3>
+              <p className="font-bold text-stone-900">{product.colour_id}</p>
+              <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
+              {constrLeft && <p className="text-xs text-stone-400">{t('construction')}: {constrLeft}{!mirror && constrRight && constrRight !== constrLeft ? ` / ${constrRight}` : ''}</p>}
+              {widthLeft  && <p className="text-xs text-stone-400">{t('width')}: {widthLeft}{!mirror && widthRight && widthRight !== widthLeft ? ` / ${widthRight}` : ''}</p>}
+              {sizeLeft   && <p className="text-xs text-stone-400">{t('size')}: {sizeLeft}{!mirror && sizeRight && sizeRight !== sizeLeft ? ` / ${sizeRight}` : ''}</p>}
+            </div>
+
+            {/* Customer summary */}
+            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('customer')}</h3>
+              <p className="font-semibold text-stone-900">{companyName}</p>
+              {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
+              {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
+              {reference   && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
+              <p className="text-xs text-stone-400">{t('unit')}: {unit} · {t('quantity')}: {quantity}</p>
+            </div>
+          </div>
+
+          {/* Additions summary */}
+          {showAdditions && (
+            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">{t('tab2')}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {SECTIONS.map(s => {
+                  const count = countFilled(additions, s.key)
+                  return (
+                    <button key={s.key} type="button" onClick={() => setStep(2)}
+                      className="text-left p-3 border border-stone-100 rounded-lg hover:border-gold/40 transition-colors">
+                      <p className="text-xs font-semibold text-stone-600">{s.label}</p>
+                      <p className={`text-lg font-bold ${count > 0 ? 'text-gold' : 'text-stone-300'}`}>{count}</p>
+                      <p className="text-[10px] text-stone-400">{count > 0 ? 'filled' : 'none'}</p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</p>
+          )}
+
+          <div className="flex items-center gap-3 pt-2">
+            <button onClick={() => handleSubmit('submitted')}
+              disabled={submitting || !reference}
+              className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
+                         hover:bg-gold-dark transition-colors disabled:opacity-50">
+              {submitting ? '...' : t('submit')}
+            </button>
+            <button onClick={() => handleSubmit('draft')} disabled={submitting}
+              className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
+                         text-sm rounded-xl hover:border-stone-300 transition-colors">
+              {t('save_draft')}
+            </button>
+            <button type="button" onClick={() => setStep(showAdditions ? 2 : 1)}
+              className="text-sm text-stone-400 hover:text-stone-600 transition-colors ml-auto">
+              ← {showAdditions ? t('tab2') : t('tab1')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 1: Customer + Product ────────────────────────────────── */}
+      {step === 1 && (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8">
 
         {/* ── LEFT: Form ───────────────────────────────────────────── */}
@@ -356,13 +475,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
             )}
 
-            {/* Actions */}
+            {/* Tab 1 actions → next step */}
             <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
-              <button onClick={() => handleSubmit('submitted')}
-                disabled={submitting || !reference}
+              <button type="button"
+                disabled={!reference}
+                onClick={() => setStep(showAdditions ? 2 : 3)}
                 className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                            hover:bg-gold-dark transition-colors disabled:opacity-50">
-                {t('submit')}
+                {showAdditions ? `${t('tab2')} →` : `${t('tab3')} →`}
               </button>
               <button onClick={() => handleSubmit('draft')} disabled={submitting}
                 className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
@@ -404,6 +524,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         </div>
 
       </div>
+      )} {/* end step 1 */}
+
     </div>
   )
 }
