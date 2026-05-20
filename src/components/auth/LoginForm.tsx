@@ -1,62 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signInAction } from '@/app/[locale]/login/actions'
+import { useActionState } from 'react'
 
 const HERO = 'https://images.unsplash.com/photo-1476234251651-f353703a034d?auto=format&fit=crop&w=1800&q=85'
 const LOGO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png'
 
-export default function LoginForm() {
-  const t      = useTranslations('auth')
-  const locale = useLocale()
-
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
-
-  // Destination after login — locale-aware
-  const dest = locale === 'en' ? '/gallery' : `/${locale}/gallery`
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const sb = createClient()
-      const { error: authError } = await sb.auth.signInWithPassword({ email, password })
-
-      if (authError) {
-        setError(t('error'))
-        setLoading(false)
-        return
-      }
-
-      // Wait for React state flush, then navigate
-      setTimeout(() => {
-        const form = document.createElement('form')
-        form.method = 'GET'
-        form.action = dest
-        document.body.appendChild(form)
-        form.submit()
-      }, 100)
-    } catch (err) {
-      console.error('Login error:', err)
-      setError(t('error'))
-      setLoading(false)
-    }
-  }
+export default function LoginForm({ hasError }: { hasError?: boolean }) {
+  const t = useTranslations('auth')
+  const [, action, pending] = useActionState(signInAction, null)
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Left: hero ─────────────────────────────── */}
-      <div
-        className="hidden lg:flex lg:w-3/5 relative flex-col justify-between p-12"
-        style={{ backgroundImage: `url(${HERO})`, backgroundSize: 'cover', backgroundPosition: 'center 40%' }}
-      >
+      {/* Hero */}
+      <div className="hidden lg:flex lg:w-3/5 relative flex-col justify-between p-12"
+        style={{ backgroundImage: `url(${HERO})`, backgroundSize: 'cover', backgroundPosition: 'center 40%' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a2c3d]/80 via-[#1a2c3d]/50 to-[#1a2c3d]/20" />
         <div className="relative z-10">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 inline-block">
@@ -71,7 +31,7 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* ── Right: form ────────────────────────────── */}
+      {/* Form */}
       <div className="flex-1 flex flex-col items-center justify-center px-8 bg-[#F9F7F4]">
         <div className="w-full max-w-sm space-y-8">
           <div className="flex justify-center lg:hidden">
@@ -86,31 +46,31 @@ export default function LoginForm() {
               <p className="text-xs text-stone-400 mt-0.5">Piedro International B.V.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form action={action} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('email')}</label>
-                <input type="email" required autoComplete="email" value={email}
-                  onChange={e => setEmail(e.target.value)}
+                <input name="email" type="email" required autoComplete="email"
                   className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                              focus:outline-none focus:ring-2 focus:ring-[#B8975A]/30 focus:border-[#B8975A] transition-colors" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('password')}</label>
-                <input type="password" required autoComplete="current-password" value={password}
-                  onChange={e => setPassword(e.target.value)}
+                <input name="password" type="password" required autoComplete="current-password"
                   className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                              focus:outline-none focus:ring-2 focus:ring-[#B8975A]/30 focus:border-[#B8975A] transition-colors" />
               </div>
 
-              {error && (
-                <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+              {hasError && (
+                <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                  {t('error')}
+                </p>
               )}
 
-              <button type="submit" disabled={loading}
+              <button type="submit" disabled={pending}
                 className="w-full h-11 bg-[#B8975A] text-white text-sm font-semibold rounded-lg
                            hover:bg-[#9A7A42] transition-colors disabled:opacity-60
                            flex items-center justify-center gap-2">
-                {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                {pending && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {t('sign_in')}
               </button>
             </form>

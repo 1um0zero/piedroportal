@@ -1,82 +1,47 @@
 'use client'
 
+// AuthContext now only manages wishlist-sync and profile data
+// Auth state is managed server-side via Supabase cookies + Server Components
 import {
   createContext, useContext, useState, useEffect,
-  useCallback, type ReactNode,
+  type ReactNode,
 } from 'react'
-import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types'
 
 interface AuthCtx {
-  user: User | null
   profile: Profile | null
-  loading: boolean
-  signOut: () => Promise<void>
   isAdmin: boolean
   hasCompany: boolean
+  isLoggedIn: boolean
 }
 
-const Ctx = createContext<AuthCtx>({
-  user: null, profile: null, loading: true,
-  signOut: async () => {}, isAdmin: false, hasCompany: false,
-})
+const Ctx = createContext<AuthCtx>({ profile: null, isAdmin: false, hasCompany: false, isLoggedIn: false })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  async function loadProfile(userId: string) {
-    const sb = createClient()
-    const { data } = await sb.from('profiles').select('*').eq('id', userId).single()
-    setProfile(data as Profile | null)
-  }
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     const sb = createClient()
-
     sb.auth.getUser().then(({ data }) => {
-      setUser(data.user)
-      if (data.user) loadProfile(data.user.id)
-      else setLoading(false)
+      setIsLoggedIn(!!data.user)
+      if (!data.user) return
+      sb.from('profiles').select('*').eq('id', data.user.id).single()
+        .then(({ data: p }) => setProfile(p as Profile | null))
     })
-
-    const { data: { subscription } } = sb.auth.onAuthStateChange(async (_event, session) => {
-      const u = session?.user ?? null
-      setUser(u)
-      if (u) await loadProfile(u.id)
-      else setProfile(null)
-      setLoading(false)
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user)
+      if (!session?.user) { setProfile(null); return }
+      sb.from('profiles').select('*').eq('id', session.user.id).single()
+        .then(({ data: p }) => setProfile(p as Profile | null))
     })
-
     return () => subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    if (user && profile !== undefined) setLoading(false)
-    else if (!user) setLoading(false)
-  }, [user, profile])
-
-  const signOut = useCallback(async () => {
-    const sb = createClient()
-    // Await signOut with 3s timeout — revokes server session before navigating
-    await Promise.race([
-      sb.auth.signOut(),
-      new Promise<void>(resolve => setTimeout(resolve, 3000)),
-    ])
-    setTimeout(() => {
-      const form = document.createElement('form')
-      form.method = 'GET'
-      form.action = '/login'
-      document.body.appendChild(form)
-      form.submit()
-    }, 100)
   }, [])
 
   return (
     <Ctx.Provider value={{
-      user, profile, loading, signOut,
+      profile, isLoggedIn,
       isAdmin:    profile?.role === 'piedro_admin',
       hasCompany: !!profile?.company_id,
     }}>

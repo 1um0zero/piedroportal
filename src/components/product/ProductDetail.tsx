@@ -112,7 +112,8 @@ type Props = { product: Product; siblings: Product[] }
 export default function ProductDetail({ product, siblings }: Props) {
   const t  = useTranslations('product')
   const tn = useTranslations('nav')
-  const { hasCompany, user } = useAuth()
+  const { hasCompany, isLoggedIn } = useAuth()
+  const user = isLoggedIn
   const { ids, toggle }     = useWishlist()
 
   const allVariants = useMemo(() => [product, ...siblings], [product, siblings])
