@@ -22,33 +22,39 @@ type Props = {
 
 // ── Chip components ───────────────────────────────────────────────────────────
 
-// Replaced MmChips with a text input — snaps to nearest valid value on blur
+// Text input with datalist — shows valid options, snaps to nearest on blur
+let _mmId = 0
 function MmInput({ values, value, onChange }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: number | string | null) => void
 }) {
+  const [id] = useState(() => `mm-${++_mmId}`)
   const strValues = values.map(String)
   return (
-    <input
-      type="number"
-      value={value == null ? '' : String(value)}
-      placeholder="mm"
-      onChange={e => {
-        const v = e.target.value === '' ? null : parseFloat(e.target.value)
-        onChange(v)
-      }}
-      onBlur={e => {
-        const v = parseFloat(e.target.value)
-        if (isNaN(v) || e.target.value === '') { onChange(null); return }
-        const nearest = strValues.reduce((p, c) =>
-          Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
-        )
-        onChange(parseFloat(nearest))
-      }}
-      className="w-20 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
-                 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
-    />
+    <div className="relative">
+      <input
+        list={id}
+        type="text"
+        inputMode="numeric"
+        value={value == null ? '' : String(value)}
+        placeholder="mm"
+        onChange={e => onChange(e.target.value === '' ? null : e.target.value)}
+        onBlur={e => {
+          const v = parseFloat(e.target.value)
+          if (isNaN(v) || e.target.value === '') { onChange(null); return }
+          const nearest = strValues.reduce((p, c) =>
+            Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
+          )
+          onChange(parseFloat(nearest))
+        }}
+        className="w-24 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
+                   focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
+      />
+      <datalist id={id}>
+        {strValues.map(v => <option key={v} value={v} />)}
+      </datalist>
+    </div>
   )
 }
 
