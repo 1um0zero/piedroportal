@@ -191,32 +191,36 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   const t = useTranslations('gallery.filters')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
 
-  const showLeft  = unit !== 'RIGHT'
-  const showRight = unit !== 'LEFT'
-  const mirror    = unit === 'PAIR'
+  // Key concept: PAIR / LEFT / RIGHT → single column
+  //              LEFT_RIGHT           → two columns
+  const isDouble    = unit === 'LEFT_RIGHT'
+  const displaySide: 'l' | 'r' = unit === 'RIGHT' ? 'r' : 'l'
+  const sideLabel   = unit === 'PAIR'  ? 'PAR'
+                    : unit === 'LEFT'  ? 'Left'
+                    : unit === 'RIGHT' ? 'Right'
+                    : ''  // LEFT_RIGHT uses its own labels
 
-  // Update helper
-  const update = useCallback((key: string, side: 'l' | 'r' | 'global', value: unknown) => {
-    onChange({
-      ...additions,
-      [key]: side === 'global'
-        ? value
-        : { ...(additions[key] as SidedVal ?? { l: null, r: null }), [side]: value },
-    })
-  }, [additions, onChange])
-
-  function handleLeft(key: string, value: unknown) {
-    if (mirror) {
-      onChange({
-        ...additions,
-        [key]: { l: value, r: value },
-      })
+  // Update a single field — handles mirror (PAIR) automatically
+  const updateField = useCallback((key: string, side: 'l'|'r', value: unknown) => {
+    const existing = additions[key] as SidedVal ?? { l: null, r: null }
+    let next: SidedVal
+    if (!isDouble) {
+      // Single mode: PAIR writes both, LEFT writes l, RIGHT writes r
+      next = unit === 'PAIR'
+        ? { l: value, r: value }
+        : { ...existing, [side]: value }
     } else {
-      update(key, 'l', value)
+      next = { ...existing, [side]: value }
     }
-  }
+    onChange({ ...additions, [key]: next })
+  }, [additions, onChange, unit, isDouble])
 
-  // Is a conditional field's parent active (for left or right)?
+  const update = useCallback((key: string, side: 'l'|'r'|'global', value: unknown) => {
+    if (side === 'global') { onChange({ ...additions, [key]: value }); return }
+    updateField(key, side, value)
+  }, [additions, onChange, updateField])
+
+  // Is a conditional field's parent active?
   function isParentActive(field: AdditionField, side: 'l' | 'r'): boolean {
     if (!field.conditionalOn) return true
     const parent = additions[field.conditionalOn]
@@ -229,7 +233,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   function renderControl(field: AdditionField, side: 'l' | 'r', disabled = false) {
     const sv = additions[field.key] as SidedVal | null
     const val = sv?.[side] ?? null
-    const setVal = (v: unknown) => side === 'l' ? handleLeft(field.key, v) : update(field.key, 'r', v)
+    const setVal = (v: unknown) => updateField(field.key, side, v)
 
     if (disabled) {
       return <div className="opacity-40 pointer-events-none">{renderControl(field, 'l')}</div>
@@ -330,39 +334,50 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         {field.label.replace(/\s*\(mm\)/gi, '')}
                       </p>
 
-                      {/* Shared picker (experiment for Lining) */}
+                      {/* Lining experiment: SharedOptionPicker */}
                       {field.key === 'lining' && field.type === 'option' ? (
-                        <SharedOptionPicker
-                          options={(field.values ?? []).map(String)}
-                          valueL={String((additions[field.key] as SidedVal)?.l ?? '')}
-                          valueR={String((additions[field.key] as SidedVal)?.r ?? '')}
-                          onChangeL={v => update(field.key, 'l', v)}
-                          onChangeR={v => update(field.key, 'r', v)}
-                          showRight={showRight}
-                          mirror={mirror}
-                        />
+                        !isDouble ? (
+                          // Single mode (PAR/Left/Right): just the options with foot label
+                          <div className="space-y-1.5">
+                            {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
+                            <OptionChips
+                              values={field.values ?? []}
+                              value={(additions[field.key] as SidedVal)?.[displaySide]}
+                              onChange={v => updateField(field.key, displaySide, v)}
+                            />
+                          </div>
+                        ) : (
+                          <SharedOptionPicker
+                            options={(field.values ?? []).map(String)}
+                            valueL={String((additions[field.key] as SidedVal)?.l ?? '')}
+                            valueR={String((additions[field.key] as SidedVal)?.r ?? '')}
+                            onChangeL={v => updateField(field.key, 'l', v)}
+                            onChangeR={v => updateField(field.key, 'r', v)}
+                            showRight mirror={false}
+                          />
+                        )
+                      ) : !isDouble ? (
+                        /* Single column (PAR / Left / Right) */
+                        <div className="space-y-1">
+                          {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
+                          {renderControl(field, displaySide)}
+                        </div>
                       ) : (
-                      /* Standard sided fields */
-                      <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                        {showLeft && leftActive && (
-                          <div className="space-y-1">
-                            {showRight && (
+                        /* Two columns (LEFT_RIGHT) */
+                        <div className="grid grid-cols-2 gap-4">
+                          {leftActive && (
+                            <div className="space-y-1">
                               <p className="text-[10px] text-stone-400 uppercase tracking-wide">Left</p>
-                            )}
-                            {renderControl(field, 'l')}
-                          </div>
-                        )}
-                        {showRight && rightActive && (
-                          <div className="space-y-1">
-                            {showLeft && (
-                              <p className="text-[10px] text-stone-400 uppercase tracking-wide">
-                                Right {mirror ? <span className="normal-case text-stone-300">= Left</span> : ''}
-                              </p>
-                            )}
-                            {renderControl(field, 'r', mirror)}
-                          </div>
-                        )}
-                      </div>
+                              {renderControl(field, 'l')}
+                            </div>
+                          )}
+                          {rightActive && (
+                            <div className="space-y-1">
+                              <p className="text-[10px] text-stone-400 uppercase tracking-wide">Right</p>
+                              {renderControl(field, 'r')}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   )
