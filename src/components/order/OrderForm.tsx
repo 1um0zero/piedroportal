@@ -505,7 +505,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 <span className="text-sm font-medium text-gold">{product.closure}</span>
               </div>
               <p className="text-xs text-stone-500 mt-0.5">{product.color_name}</p>
-              <p className="text-[10px] text-stone-400">{product.style_name}</p>
             </div>
 
             {/* Product image — no card, dropshadow like detail page */}

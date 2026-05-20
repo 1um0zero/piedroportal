@@ -22,24 +22,33 @@ type Props = {
 
 // ── Chip components ───────────────────────────────────────────────────────────
 
-function MmChips({ values, value, onChange }: {
+// Replaced MmChips with a text input — snaps to nearest valid value on blur
+function MmInput({ values, value, onChange }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: number | string | null) => void
 }) {
+  const strValues = values.map(String)
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {values.map((v) => (
-        <button key={String(v)} type="button"
-          onClick={() => onChange(value === v ? null : v)}
-          className={`min-w-[2.5rem] h-8 px-2 text-xs font-medium rounded border transition-all
-            ${value === v
-              ? 'bg-gold text-white border-gold shadow-sm'
-              : 'text-stone-600 border-stone-200 bg-white hover:border-gold/60 hover:text-gold'}`}>
-          {v}
-        </button>
-      ))}
-    </div>
+    <input
+      type="number"
+      value={value == null ? '' : String(value)}
+      placeholder="mm"
+      onChange={e => {
+        const v = e.target.value === '' ? null : parseFloat(e.target.value)
+        onChange(v)
+      }}
+      onBlur={e => {
+        const v = parseFloat(e.target.value)
+        if (isNaN(v) || e.target.value === '') { onChange(null); return }
+        const nearest = strValues.reduce((p, c) =>
+          Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
+        )
+        onChange(parseFloat(nearest))
+      }}
+      className="w-20 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
+                 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
+    />
   )
 }
 
@@ -141,7 +150,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     }
 
     if (field.type === 'mm' || field.type === 'image')
-      return <MmChips values={field.values ?? []} value={val} onChange={setVal} />
+      return <MmInput values={field.values ?? []} value={val} onChange={setVal} />
     if (field.type === 'option')
       return <OptionChips values={field.values ?? []} value={val} onChange={setVal} />
     if (field.type === 'toggle')
@@ -161,7 +170,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return (
       <div key={field.key} className="flex items-center justify-between py-2
            border-b border-stone-50 last:border-0">
-        <span className="text-sm text-stone-700">{field.label}</span>
+        <span className="text-sm text-stone-700">{field.label.replace(/\s*\(mm\)/gi, '')}</span>
         <YesNoToggle value={val} onChange={(v) => update(field.key, 'global', v)} />
       </div>
     )
@@ -232,7 +241,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       className={`space-y-2 ${isSubField ? 'ml-4 pl-3 border-l-2 border-gold/20' : ''}`}>
                       <p className={`text-xs font-semibold uppercase tracking-wide
                                      ${isSubField ? 'text-gold/70' : 'text-stone-500'}`}>
-                        {field.label}
+                        {field.label.replace(/\s*\(mm\)/gi, '')}
                       </p>
 
                       {/* Sided fields */}
