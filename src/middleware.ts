@@ -20,9 +20,9 @@ export async function middleware(request: NextRequest) {
     pathname,
   )
 
-  const needsAuth = AUTH_REQUIRED.some(
-    (r) => withoutLocale === r || withoutLocale.startsWith(r + '/'),
-  )
+  const needsAuth =
+    AUTH_REQUIRED.some((r) => withoutLocale === r || withoutLocale.startsWith(r + '/')) ||
+    withoutLocale.endsWith('/order')  // e.g. /gallery/[id]/order
 
   if (needsAuth) {
     const supabase = createServerClient(
