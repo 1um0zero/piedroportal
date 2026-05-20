@@ -39,10 +39,22 @@ function MmInput({ values, value, onChange }: {
         inputMode="numeric"
         value={value == null ? '' : String(value)}
         placeholder="mm"
-        onChange={e => onChange(e.target.value === '' ? null : e.target.value)}
+        onChange={e => {
+          const typed = e.target.value
+          if (typed === '') { onChange(null); return }
+          // Only accept if typed is a valid prefix of any list value
+          const allowed = strValues.some(v => v.startsWith(typed) || typed === v)
+          if (allowed) onChange(typed)
+          // else: don't update — input reverts to previous value
+        }}
         onBlur={e => {
-          const v = parseFloat(e.target.value)
-          if (isNaN(v) || e.target.value === '') { onChange(null); return }
+          const typed = e.target.value
+          if (!typed) { onChange(null); return }
+          // Snap to exact match or nearest valid value
+          const exact = strValues.find(v => v === typed)
+          if (exact) { onChange(parseFloat(exact)); return }
+          const v = parseFloat(typed)
+          if (isNaN(v)) { onChange(null); return }
           const nearest = strValues.reduce((p, c) =>
             Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
           )
