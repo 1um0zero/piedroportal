@@ -183,11 +183,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           {/* ── CUSTOMER BOX ── */}
           <div className="bg-white rounded-[14px] p-6 space-y-4"
             style={{ boxShadow: 'var(--shadow-card)' }}>
-            <h2 className="text-xs font-bold text-stone-500 uppercase tracking-wider">Customer</h2>
 
-            {/* Company */}
+            {/* Company — no section title, label = Customer */}
             <div className="space-y-1.5">
-              <label className={labelCls}>Account</label>
+              <label className={labelCls}>{t('customer')}</label>
               {isAdmin ? (
                 <div className="relative">
                   <select className={inputCls + ' appearance-none pr-8'}
@@ -213,19 +212,19 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
             {/* Clinician */}
             <div className="space-y-1.5">
-              <label className={labelCls}>Clinician</label>
+              <label className={labelCls}>{t('clinician')}</label>
               <input className={inputCls} value={clinician} onChange={e => setClinician(e.target.value)} />
             </div>
 
-            {/* Patient name (below Clinician) */}
+            {/* Patient name */}
             <div className="space-y-1.5">
-              <label className={labelCls}>Patient Name or number</label>
+              <label className={labelCls}>{t('patient')}</label>
               <input className={inputCls} value={patientName} onChange={e => setPatient(e.target.value)} />
             </div>
 
             {/* Reference */}
             <div className="space-y-1.5">
-              <label className={labelCls}>Reference customer <span className="text-red-400">*</span></label>
+              <label className={labelCls}>{t('reference')} <span className="text-red-400">*</span></label>
               <input className={inputCls} value={reference} onChange={e => setReference(e.target.value)} required />
             </div>
           </div>
@@ -233,18 +232,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           {/* ── ORDER DETAILS BOX ── */}
           <div className="bg-white rounded-[14px] p-6 space-y-5"
             style={{ boxShadow: 'var(--shadow-card)' }}>
-            <h2 className="text-xs font-bold text-stone-500 uppercase tracking-wider">Order details</h2>
+            <h2 className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('order_details')}</h2>
 
             {/* Unit */}
             <div className="space-y-2">
-              <label className={labelCls}>Unit <span className="text-red-400">*</span></label>
+              <label className={labelCls}>{t('unit')} <span className="text-red-400">*</span></label>
               <div className="flex flex-wrap gap-2">
                 {([
-                  ['PAIR',       'Pair (L = R)'],
-                  ['LEFT',       'Left only'],
-                  ['RIGHT',      'Right only'],
-                  ['LEFT_RIGHT', 'Left ≠ Right'],
-                  ['DIFF_SIZES', 'Different sizes'],
+                  ['PAIR',       t('unit_pair')],
+                  ['LEFT',       t('unit_left')],
+                  ['RIGHT',      t('unit_right')],
+                  ['LEFT_RIGHT', t('unit_lr')],
+                  ['DIFF_SIZES', t('unit_sizes')],
                 ] as [Unit, string][]).map(([val, lbl]) => (
                   <button key={val} type="button" onClick={() => setUnit(val)}
                     className={`px-3.5 py-1.5 rounded-lg border text-sm font-medium transition-all
@@ -259,21 +258,21 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
             {/* Quantity */}
             <div className="space-y-1.5 max-w-[120px]">
-              <label className={labelCls}>Quantity <span className="text-red-400">*</span></label>
+              <label className={labelCls}>{t('quantity')} <span className="text-red-400">*</span></label>
               <input type="number" min={1} className={inputCls} value={quantity}
                 onChange={e => setQuantity(parseInt(e.target.value) || 1)} />
             </div>
 
-            {/* Construction — only if model has constructions */}
+            {/* Construction */}
             {constructionOpts.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
-                  Construction style
+                  {t('construction')}
                 </h3>
                 <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   {showLeft && (
                     <div className="space-y-1.5">
-                      {showRight && <p className="text-[10px] text-stone-400 uppercase tracking-wide">Left <span className="text-red-400">*</span></p>}
+                      {showRight && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>}
                       <Chips options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
                     </div>
                   )}
@@ -281,8 +280,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     <div className="space-y-1.5">
                       {showLeft && (
                         <p className="text-[10px] text-stone-400 uppercase tracking-wide">
-                          Right <span className="text-red-400">*</span>
-                          {mirror && <span className="text-stone-300 normal-case font-normal ml-1">= Left</span>}
+                          {t('right')} <span className="text-red-400">*</span>
+                          {mirror && <span className="text-stone-300 normal-case font-normal ml-1">= {t('left')}</span>}
                         </p>
                       )}
                       <div className={mirror ? 'opacity-40 pointer-events-none' : ''}>
@@ -295,14 +294,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               </div>
             )}
 
-            {/* Width */}
-            {(widthsL.length > 0 || widthsR.length > 0) && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">Width</h3>
+            {/* Width — shows placeholder if no construction selected */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
+                {t('width')}
+              </h3>
+              {!constrLeft && constructionOpts.length > 0 ? (
+                <p className="text-xs text-stone-400 italic">{t('select_construction')}</p>
+              ) : (
                 <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   {showLeft && (
                     <div className="space-y-1.5">
-                      {showRight && <p className="text-[10px] text-stone-400 uppercase tracking-wide">Left <span className="text-red-400">*</span></p>}
+                      {showRight && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>}
                       <Chips options={widthsL} value={widthLeft} onChange={setWidthLeft} pill />
                     </div>
                   )}
@@ -310,8 +313,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     <div className="space-y-1.5">
                       {showLeft && (
                         <p className="text-[10px] text-stone-400 uppercase tracking-wide">
-                          Right <span className="text-red-400">*</span>
-                          {mirror && <span className="text-stone-300 normal-case font-normal ml-1">= Left</span>}
+                          {t('right')} <span className="text-red-400">*</span>
+                          {mirror && <span className="text-stone-300 normal-case font-normal ml-1">= {t('left')}</span>}
                         </p>
                       )}
                       <div className={mirror ? 'opacity-40 pointer-events-none' : ''}>
@@ -321,13 +324,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Size */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
-                Size
+                {t('size')}
                 <span className="ml-2 text-gold font-normal text-xs normal-case">
                   EU {product.size_first}–{product.size_last}
                 </span>
@@ -335,14 +338,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 {showLeft && (
                   <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft}
-                    label={showRight ? 'Left *' : 'Size *'} />
+                    label={showRight ? `${t('left')} *` : `${t('size')} *`} />
                 )}
                 {showRight && (
                   <div className={mirror ? 'opacity-40 pointer-events-none' : ''}>
                     <SizeInput sizes={sizes}
                       value={mirror ? sizeLeft : sizeRight}
                       onChange={setSizeR}
-                      label={showLeft ? `Right *${mirror ? ' (= Left)' : ''}` : 'Size *'} />
+                      label={showLeft ? `${t('right')} *${mirror ? ` (= ${t('left')})` : ''}` : `${t('size')} *`} />
                   </div>
                 )}
               </div>
@@ -373,16 +376,16 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         {/* ── RIGHT: Sticky product panel ───────────────────────────── */}
         <div className="hidden lg:block">
           <div className="sticky top-24 space-y-4">
-            {/* Model header */}
+            {/* Model header — colour_id prominent, style_name smaller */}
             <div>
               <div className="flex items-baseline justify-between">
                 <span className="text-lg font-bold text-stone-900 tracking-wide">
-                  {product.style_name}
+                  {product.colour_id}
                 </span>
                 <span className="text-sm font-medium text-gold">{product.closure}</span>
               </div>
               <p className="text-xs text-stone-500 mt-0.5">{product.color_name}</p>
-              <p className="text-[10px] text-stone-400">{product.colour_id}</p>
+              <p className="text-[10px] text-stone-400">{product.style_name}</p>
             </div>
 
             {/* Product image — no card, dropshadow like detail page */}
