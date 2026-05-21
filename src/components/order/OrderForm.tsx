@@ -166,26 +166,31 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   // ── Submit ──
   async function handleSubmit(status: 'draft' | 'submitted') {
     setError(''); setSubmitting(true)
-    const sb = createClient()
-    const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
-    const { error: err } = await sb.from('orders').insert({
-      user_id:            userId,
-      company_id:         selectedCompanyId || userProfile.company_id,
-      product_id:         product.id,
-      status, unit, clinician, patient_name: patientName,
-      reference_customer: reference, quantity,
-      construction_left:  constrLeft || null,
-      construction_right: mirror ? constrLeft || null : constrRight || null,
-      width_left:         widthLeft || null,
-      width_right:        mirror ? widthLeft || null : widthRight || null,
-      size_left:          sizeLeft  ? parseFloat(sizeLeft)  : null,
-      size_right:         (mirror ? sizeLeft : sizeRight) ? parseFloat(mirror ? sizeLeft : sizeRight) : null,
-      additions:          additionFields,
-      comments:           String(addComments ?? '') || null,
-    })
-    setSubmitting(false)
-    if (err) { setError(err.message); return }
-    router.push('/orders')
+    try {
+      const sb = createClient()
+      const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
+      const { error: err } = await sb.from('orders').insert({
+        user_id:            userId,
+        company_id:         selectedCompanyId || userProfile.company_id,
+        product_id:         product.id,
+        status, unit, clinician, patient_name: patientName,
+        reference_customer: reference, quantity,
+        construction_left:  constrLeft || null,
+        construction_right: mirror ? constrLeft || null : constrRight || null,
+        width_left:         widthLeft || null,
+        width_right:        mirror ? widthLeft || null : widthRight || null,
+        size_left:          sizeLeft  ? parseFloat(sizeLeft)  : null,
+        size_right:         (mirror ? sizeLeft : sizeRight) ? parseFloat(mirror ? sizeLeft : sizeRight) : null,
+        additions:          additionFields,
+        comments:           String(addComments ?? '') || null,
+      })
+      if (err) throw new Error(err.message)
+      router.push('/orders')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const inputCls = 'w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors'
