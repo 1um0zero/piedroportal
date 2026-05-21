@@ -169,7 +169,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     try {
       const sb = createClient()
       const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
-      const { error: err } = await sb.from('orders').insert({
+      const { data, error: err } = await sb.from('orders').insert({
         user_id:            userId,
         company_id:         selectedCompanyId || userProfile.company_id,
         product_id:         product.id,
@@ -183,8 +183,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         size_right:         (mirror ? sizeLeft : sizeRight) ? parseFloat(mirror ? sizeLeft : sizeRight) : null,
         additions:          additionFields,
         comments:           String(addComments ?? '') || null,
-      })
+      }).select('id').single()
       if (err) throw new Error(err.message)
+
+      // Send PDF email for submitted orders (fire-and-forget — don't block redirect)
+      if (status === 'submitted' && data?.id) {
+        fetch('/api/orders/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: data.id }),
+        }).catch(e => console.error('PDF send error:', e))
+      }
+
       router.push('/orders')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
