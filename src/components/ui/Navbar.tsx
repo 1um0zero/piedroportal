@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
+import { NavbarLocale } from './NavbarLocale'
 
 type Props = { locale: string }
 
@@ -45,6 +46,9 @@ export default async function Navbar({ locale }: Props) {
           )}
           {user && isAdmin && (
             <>
+              <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                Dashboard
+              </Link>
               <Link href="/admin/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 Orders
               </Link>
@@ -59,17 +63,8 @@ export default async function Navbar({ locale }: Props) {
 
         {/* Right: language + auth */}
         <div className="flex items-center gap-3">
-          {/* Language switcher */}
-          <div className="flex items-center gap-0.5">
-            {routing.locales.map((l) => (
-              <Link key={l} href="/" locale={l}
-                className={`px-2 py-1 text-[11px] font-semibold rounded transition-colors ${
-                  l === locale ? 'text-gold bg-gold/10' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'
-                }`}>
-                {l.toUpperCase()}
-              </Link>
-            ))}
-          </div>
+          {/* Language switcher — saves preference to profile */}
+          <NavbarLocale locales={[...routing.locales]} current={locale} />
 
           {/* Auth — server-rendered, no flash */}
           <div className="border-l border-stone-100 pl-3">

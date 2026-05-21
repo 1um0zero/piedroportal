@@ -3,7 +3,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { renderToBuffer } from '@react-pdf/renderer'
+import { Resend } from 'resend'
 import React from 'react'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+const TO_EMAIL = process.env.ORDER_NOTIFY_EMAIL ?? 'suporte@umzero.pt'
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 
 
@@ -87,6 +91,28 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     if (uploadErr) return { pdfError: `Storage: ${uploadErr.message}` }
     const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(`${orderId}.pdf`)
     await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
+
+    // Send email with PDF attached
+    const ref = row.reference_customer ?? orderId.slice(0, 8)
+    const { error: emailErr } = await resend.emails.send({
+      from:    'Piedro Portal <onboarding@resend.dev>',
+      to:      [TO_EMAIL],
+      subject: `Nova Encomenda Piedro — ${ref}`,
+      html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
+        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
+        <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 20px">Nova encomenda submetida</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
+          <tr><td style="padding:8px 0;color:#78716C;width:120px">Referência</td><td style="padding:8px 0;font-weight:500">${ref}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C">Empresa</td><td style="padding:8px 0;font-weight:500">${pdfMeta.companyName}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C">Paciente</td><td style="padding:8px 0">${row.patient_name ?? '—'}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C">Modelo</td><td style="padding:8px 0">${pdfMeta.productColourId}</td></tr>
+        </table>
+        <p style="font-size:12px;color:#A8A29E;margin-top:24px">PDF em anexo.</p>
+      </div>`,
+      attachments: [{ filename: `encomenda-${ref}.pdf`, content: pdfBytes.toString('base64') }],
+    })
+    if (emailErr) console.error('Email error:', emailErr)
+
     return { pdf_url: publicUrl }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)

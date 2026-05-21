@@ -22,9 +22,18 @@ export async function signInAction(_: unknown, formData: FormData) {
     },
   )
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) redirect('/login?error=1')
-  redirect('/gallery')
+
+  // Redirect to the user's preferred locale
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('preferred_locale')
+    .eq('id', data.user.id)
+    .single()
+
+  const loc = profile?.preferred_locale ?? 'en'
+  redirect(loc === 'en' ? '/gallery' : `/${loc}/gallery`)
 }
 
 export async function signOutAction() {
