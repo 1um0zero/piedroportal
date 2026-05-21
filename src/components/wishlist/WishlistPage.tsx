@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { useWishlist } from '@/contexts/WishlistContext'
 import ProductCard from '@/components/gallery/ProductCard'
 import type { Product, Section } from '@/types'
+
+const BASE = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,size_first,size_last,diabetics,new_until,constructions'
 
 const SECTION_ORDER: Section[] = ['KIDS', 'MEN', 'WOMEN']
 
@@ -23,16 +26,15 @@ export default function WishlistPage() {
     if (!idKey) { setProducts([]); setLoading(false); return }
 
     setLoading(true)
-    const sb = createClient()
-    sb.from('products')
-      .select('id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,size_first,size_last,diabetics,new_until,constructions')
-      .in('id', idKey.split(','))
-      .order('section')
-      .order('style_name')
-      .then(({ data, error }) => {
-        if (!error) setProducts((data ?? []) as Product[])
-        setLoading(false)
-      })
+    // Use raw REST fetch (same pattern as gallery) — avoids SDK session hang
+    const ids = idKey.split(',').map(id => `"${id}"`).join(',')
+    fetch(`${BASE}/rest/v1/products?select=${FIELDS}&id=in.(${ids})&order=section,style_name`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
+    })
+      .then(r => r.json())
+      .then(data => { setProducts(Array.isArray(data) ? data as Product[] : []) })
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idKey])
 
