@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F9F7F4;
+  --background: #F4F4F5;
   --foreground: #1C1917;
 }
 
@@ -9,7 +9,7 @@
   --color-gold: #B8975A;
   --color-gold-light: #D4B47A;
   --color-gold-dark: #9A7A42;
-  --color-cream: #F9F7F4;
+  --color-cream: #F4F4F5;
   --color-surface: #FFFFFF;
 
   --shadow-card: 0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08), 0 20px 40px rgba(0,0,0,0.04);

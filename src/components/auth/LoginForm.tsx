@@ -42,7 +42,7 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
       </div>
 
       {/* Form */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 bg-[#F9F7F4]">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 bg-[#F4F4F5]">
         <div className="w-full max-w-sm space-y-8">
           <div className="flex justify-center lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
