@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Image from 'next/image'
-import { Link, useRouter } from '@/i18n/navigation'
+import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { duplicateOrderAction } from '@/app/actions/orders'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -41,6 +41,8 @@ type Props = {
 
 export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
+  const isAdminPath = pathname.startsWith('/admin')
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatus]   = useState('')
   const [urgentOnly, setUrgentOnly] = useState(false)
@@ -193,7 +195,9 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                 const company = o.companies
                 const isUrgent = o.additions?.urgent === true
                 return (
-                  <tr key={o.id} className="hover:bg-stone-50 transition-colors">
+                  <tr key={o.id} className="hover:bg-stone-50 transition-colors cursor-pointer"
+                    onClick={() => router.push((isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`) as Parameters<typeof router.push>[0])}>
+
                     {/* Product */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
