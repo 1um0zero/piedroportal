@@ -30,12 +30,8 @@ export function LoginHeroSvg() {
         </marker>
       </defs>
 
-      {/* Sole */}
-      <path d="M100 320 Q110 350 160 365 Q240 382 370 378 Q470 374 530 355 Q570 340 575 320 L560 308 Q530 318 470 324 Q370 330 240 328 Q160 326 120 320 Z" fill="rgba(255,255,255,0.06)" stroke="#7a9bb5" strokeWidth="1.5"/>
-      <path d="M100 320 Q110 350 160 365 Q240 382 370 378 Q470 374 530 355 Q570 340 575 320" fill="none" stroke="#a0bdd0" strokeWidth="2" strokeLinecap="round"/>
-      {[160,210,270,330,390,450,510].map((x,i) => (
-        <line key={i} x1={x} y1={350+i%3*4} x2={x-2+i%2*4} y2={363+i%3*4} stroke="#3a5a70" strokeWidth="0.8"/>
-      ))}
+      {/* Sole outline — single subtle stroke, no bright bottom edge */}
+      <path d="M100 320 Q110 350 160 365 Q240 382 370 378 Q470 374 530 355 Q570 340 575 320 L560 308 Q530 318 470 324 Q370 330 240 328 Q160 326 120 320 Z" fill="none" stroke="#5a7a90" strokeWidth="1.2" strokeDasharray="4,3"/>
 
       {/* Upper */}
       <path d="M120 320 Q118 290 125 260 Q132 230 155 210 Q180 192 220 184 Q260 178 300 180 Q340 182 365 192 Q395 205 415 228 Q430 245 440 268 Q448 285 450 300 L470 305 L510 290 L560 308 Q530 318 470 324 Q370 330 240 328 Q160 326 120 320 Z" fill="rgba(255,255,255,0.05)" stroke="#b8cfe0" strokeWidth="1.8"/>
@@ -45,8 +41,8 @@ export function LoginHeroSvg() {
       <path d="M270 182 Q300 180 340 182 Q370 185 395 205 Q385 230 372 255 Q350 272 305 286 Q280 288 258 282 Q255 258 268 235 Q270 210 272 182 Z" fill="none" stroke="#4a7a9a" strokeWidth="1.2" strokeDasharray="5,4"/>
       <path d="M390 205 Q415 228 430 245 Q440 268 448 285 Q450 300 450 308 Q420 316 380 320 Q310 322 260 320 Q258 282 280 288 Q330 282 375 252 Q392 232 390 205 Z" fill="none" stroke="#3a6a8a" strokeWidth="1.2" strokeDasharray="5,4"/>
 
-      {/* Heel */}
-      <path d="M450 300 L470 305 L510 290 L560 308 Q530 318 470 324 L450 320 Q448 308 450 300 Z" fill="rgba(180,210,230,0.08)" stroke="#7a9bb5" strokeWidth="1.5"/>
+      {/* Heel counter — just a dashed zone, no fill */}
+      <path d="M450 300 L470 305 L510 290 L560 308 Q530 318 470 324 L450 320 Q448 308 450 300 Z" fill="none" stroke="#4a6a80" strokeWidth="1" strokeDasharray="4,3"/>
 
       {/* Insole */}
       <path d="M155 300 Q240 318 380 314 Q440 312 460 305" fill="none" stroke="#3a6070" strokeWidth="1" strokeDasharray="3,3"/>
