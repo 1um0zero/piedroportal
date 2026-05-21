@@ -40,7 +40,6 @@ export function GlbViewer({ file }: { file: string }) {
         </div>
       )}
       {ready && (
-        // @ts-expect-error – model-viewer is a custom element registered by the CDN script
         <model-viewer
           src={`${BASE}${file}`}
           camera-controls
