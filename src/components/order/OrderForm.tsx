@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/navigation'
 import type { Product } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, SECTIONS } from './additions-config'
-import { insertOrderAction } from '@/app/actions/orders'
+import { insertOrderAction, type PdfMeta } from '@/app/actions/orders'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -184,16 +184,15 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         comments:           String(addComments ?? '') || null,
       }
 
-      const result = await insertOrderAction(row, status === 'submitted')
-      if (result.error) throw new Error(result.error)
+      const pdfMeta: PdfMeta | undefined = status === 'submitted' ? {
+        productColourId:  product.colour_id,
+        productColorName: product.color_name,
+        productClosure:   product.closure,
+        companyName,
+      } : undefined
 
-      if (status === 'submitted' && result.id) {
-        fetch('/api/orders/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: result.id }),
-        }).catch(e => console.error('PDF send error:', e))
-      }
+      const result = await insertOrderAction(row, pdfMeta)
+      if (result.error) throw new Error(result.error)
 
       router.push('/orders')
     } catch (e) {

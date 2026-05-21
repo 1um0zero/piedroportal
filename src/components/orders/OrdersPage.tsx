@@ -160,12 +160,13 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Unit</th>
+                <th className="px-4 py-3 text-left">PDF</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5}
+                  <td colSpan={isAdmin ? 7 : 6}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     No orders found
                   </td>
@@ -236,6 +237,22 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                     {/* Unit */}
                     <td className="px-4 py-3 text-stone-500 text-xs">
                       {o.unit ?? '—'}
+                    </td>
+                    {/* PDF */}
+                    <td className="px-4 py-3">
+                      {o.pdf_url ? (
+                        <a href={o.pdf_url} target="_blank" rel="noopener noreferrer"
+                          title="Download PDF"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg
+                                     text-gold hover:bg-gold/10 transition-colors">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round"
+                              d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                          </svg>
+                        </a>
+                      ) : (
+                        <span className="text-stone-200 text-xs pl-1">—</span>
+                      )}
                     </td>
                   </tr>
                 )
