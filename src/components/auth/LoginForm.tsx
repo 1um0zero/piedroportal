@@ -5,6 +5,8 @@ import { Link } from '@/i18n/navigation'
 import { signInAction } from '@/app/[locale]/login/actions'
 import { useActionState } from 'react'
 
+import { LoginHeroSvg } from './LoginHeroSvg'
+
 const LOGO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png'
 
 export default function LoginForm({ hasError }: { hasError?: boolean }) {
@@ -21,14 +23,9 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-        {/* SVG illustration — centred, slightly faded */}
+        {/* SVG inline — avoids external file loading issues, enables hover animations */}
         <div className="flex-1 flex items-center justify-center px-10 pt-16 pb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/login-hero.svg"
-            alt="Piedro orthopedic shoe diagram"
-            className="w-full max-w-[520px]"
-          />
+          <LoginHeroSvg />
         </div>
 
         {/* One Step Ahead tagline */}
