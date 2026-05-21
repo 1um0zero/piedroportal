@@ -30,7 +30,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   // ── Sync with Supabase when auth state changes ─────────────────────────────
   useEffect(() => {
     const sb = createClient()
-    const { data: { subscription } } = sb.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
+      // Clear wishlist on logout
+      if (event === 'SIGNED_OUT') {
+        setIds(new Set())
+        localStorage.removeItem(STORAGE_KEY)
+        return
+      }
       if (!session?.user) return
 
       const { data } = await sb
