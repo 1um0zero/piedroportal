@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/ui/Navbar'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ChatWidget } from '@/components/chat/ChatWidget'
 import type { Profile } from '@/types'
 
 type Props = {
@@ -48,6 +49,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           <div className="flex flex-col min-h-screen">
             <Navbar locale={locale} />
             <div className="flex-1">{children}</div>
+            {user && <ChatWidget />}
           </div>
         </WishlistProvider>
       </AuthProvider>
