@@ -40,9 +40,14 @@ export default async function Navbar({ locale }: Props) {
             {t('gallery')}
           </Link>
           {user && !isAdmin && (
-            <Link href="/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-              {t('orders')}
-            </Link>
+            <>
+              <Link href="/orders/dashboard" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                {t('orders')}
+              </Link>
+            </>
           )}
           {user && isAdmin && (
             <>

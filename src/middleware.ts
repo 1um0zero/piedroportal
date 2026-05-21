@@ -6,7 +6,7 @@ import { routing } from './i18n/routing'
 const handleI18n = createMiddleware(routing)
 
 // Routes requiring authentication (locale-relative)
-const AUTH_REQUIRED = ['/orders', '/wishlist', '/admin']
+const AUTH_REQUIRED = ['/orders', '/orders/dashboard', '/wishlist', '/admin']
 
 // next.js 16: file should be proxy.ts, but Turbopack 16.2.6 only watches src/
 // eagerly and doesn't invoke proxy.ts at runtime — using src/middleware.ts instead.

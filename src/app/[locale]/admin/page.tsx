@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 const STATUS_LABEL: Record<string, string> = {
   draft: 'Draft', submitted: 'Submitted', approved: 'Approved',
@@ -18,6 +18,11 @@ const STATUS_BADGE: Record<string, string> = {
   shipped: 'bg-purple-50 text-purple-600', delivered: 'bg-teal-50 text-teal-600',
   cancelled: 'bg-red-50 text-red-400',
 }
+const FLAG: Record<string, string> = {
+  NL:'🇳🇱', BE:'🇧🇪', DE:'🇩🇪', FR:'🇫🇷', GB:'🇬🇧', PT:'🇵🇹', ES:'🇪🇸',
+  IT:'🇮🇹', AT:'🇦🇹', CH:'🇨🇭', DK:'🇩🇰', SE:'🇸🇪', NO:'🇳🇴', FI:'🇫🇮',
+  LU:'🇱🇺', PL:'🇵🇱', CZ:'🇨🇿', HU:'🇭🇺', RO:'🇷🇴', US:'🇺🇸',
+}
 
 function countAdditions(adds: Record<string, unknown> | null): number {
   if (!adds) return 0
@@ -32,7 +37,6 @@ function countAdditions(adds: Record<string, unknown> | null): number {
   return n
 }
 
-// ── Bar chart row ─────────────────────────────────────────────────────────────
 function Bar({ label, count, max, sub }: { label: string; count: number; max: number; sub?: string }) {
   const pct = max > 0 ? Math.round((count / max) * 100) : 0
   return (
@@ -41,29 +45,27 @@ function Bar({ label, count, max, sub }: { label: string; count: number; max: nu
         <p className="text-sm font-medium text-stone-700 truncate">{label}</p>
         {sub && <p className="text-[10px] text-stone-400 truncate">{sub}</p>}
       </div>
-      <div className="flex-1 bg-stone-100 rounded-full h-2 overflow-hidden">
-        <div className="bg-gold h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+      <div className="flex-1 bg-stone-100 rounded-full h-2">
+        <div className="bg-gold h-2 rounded-full" style={{ width: `${pct}%` }} />
       </div>
       <span className="text-sm font-bold text-stone-700 w-8 text-right shrink-0">{count}</span>
     </div>
   )
 }
 
-// ── Vertical bar (monthly trend) ──────────────────────────────────────────────
 function VBar({ label, count, max }: { label: string; count: number; max: number }) {
   const pct = max > 0 ? (count / max) * 100 : 0
   return (
     <div className="flex flex-col items-center gap-1 flex-1">
       <span className="text-xs font-semibold text-stone-600">{count || ''}</span>
       <div className="w-full bg-stone-100 rounded-t flex flex-col justify-end" style={{ height: 80 }}>
-        <div className="w-full bg-gold rounded-t transition-all" style={{ height: `${pct}%`, minHeight: count > 0 ? 4 : 0 }} />
+        <div className="w-full bg-gold rounded-t" style={{ height: `${pct}%`, minHeight: count > 0 ? 4 : 0 }} />
       </div>
       <span className="text-[10px] text-stone-400">{label}</span>
     </div>
   )
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, color = 'text-stone-800', sub }: { label: string; value: number; color?: string; sub?: string }) {
   return (
     <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
@@ -74,8 +76,6 @@ function StatCard({ label, value, color = 'text-stone-800', sub }: { label: stri
   )
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 export default async function AdminDashboard() {
   const sb = await createClient()
   const { data: { user } } = await sb.auth.getUser()
@@ -85,10 +85,9 @@ export default async function AdminDashboard() {
 
   const service = createServiceClient()
   const SELECT = `id, status, unit, patient_name, reference_customer, created_at, additions,
-    products(id, colour_id, color_name, style_name),
-    companies(id, name)`
+    products(id, colour_id, color_name, style_name, picture_name),
+    companies(id, name, country)`
 
-  // Fetch all orders
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let all: any[] = []
   let offset = 0
@@ -103,51 +102,62 @@ export default async function AdminDashboard() {
     offset += 1000
   }
 
-  const total = all.length
-  const urgent = all.filter(o => (o.additions as Record<string,unknown>)?.urgent === true).length
-
-  // Status counts
+  const total   = all.length
+  const urgent  = all.filter(o => (o.additions as Record<string,unknown>)?.urgent === true).length
   const bySt: Record<string, number> = {}
   all.forEach(o => { bySt[o.status] = (bySt[o.status] ?? 0) + 1 })
 
-  // Top clients by order count
+  // ── Best clients ──────────────────────────────────────────────────────────
   const clientMap = new Map<string, { count: number; submitted: number }>()
   all.forEach(o => {
     const n = o.companies?.name ?? '—'
     const cur = clientMap.get(n) ?? { count: 0, submitted: 0 }
-    clientMap.set(n, {
-      count:     cur.count + 1,
-      submitted: cur.submitted + (o.status !== 'draft' ? 1 : 0),
-    })
+    clientMap.set(n, { count: cur.count + 1, submitted: cur.submitted + (o.status !== 'draft' ? 1 : 0) })
   })
   const topClients = [...clientMap.entries()]
     .map(([name, v]) => ({ name, ...v }))
     .sort((a, b) => b.count - a.count).slice(0, 8)
 
-  // Top models by order count
-  const modelMap = new Map<string, { count: number; name: string }>()
+  // ── Models grouped by style_name, colors with photos ─────────────────────
+  type ColorEntry = { count: number; picture_name: string; colour_id: string; color_name: string }
+  const styleMap = new Map<string, { total: number; colors: Map<string, ColorEntry> }>()
   all.forEach(o => {
     if (!o.products) return
-    const id = o.products.colour_id
-    const cur = modelMap.get(id) ?? { count: 0, name: o.products.color_name ?? '' }
-    modelMap.set(id, { count: cur.count + 1, name: cur.name })
+    const style = o.products.style_name ?? '—'
+    if (!styleMap.has(style)) styleMap.set(style, { total: 0, colors: new Map() })
+    const sd = styleMap.get(style)!
+    sd.total++
+    const cid = o.products.colour_id
+    const cc = sd.colors.get(cid) ?? { count: 0, picture_name: o.products.picture_name ?? '', colour_id: cid, color_name: o.products.color_name ?? '' }
+    cc.count++
+    sd.colors.set(cid, cc)
   })
-  const topModels = [...modelMap.entries()]
-    .map(([id, v]) => ({ id, ...v }))
-    .sort((a, b) => b.count - a.count).slice(0, 8)
+  const topStyles = [...styleMap.entries()]
+    .map(([style, d]) => ({ style, total: d.total, colors: [...d.colors.values()].sort((a, b) => b.count - a.count) }))
+    .sort((a, b) => b.total - a.total).slice(0, 8)
+  const styleMax = topStyles[0]?.total ?? 1
 
-  // Most additions by company
+  // ── Countries ─────────────────────────────────────────────────────────────
+  const countryMap = new Map<string, number>()
+  all.forEach(o => {
+    const c = o.companies?.country?.toUpperCase() ?? null
+    if (c) countryMap.set(c, (countryMap.get(c) ?? 0) + 1)
+  })
+  const topCountries = [...countryMap.entries()]
+    .map(([code, count]) => ({ code, count }))
+    .sort((a, b) => b.count - a.count)
+  const countryMax = topCountries[0]?.count ?? 1
+  const hasCountries = topCountries.length > 0
+
+  // ── Additions ─────────────────────────────────────────────────────────────
   const addsMap = new Map<string, number>()
   all.forEach(o => {
     const n = o.companies?.name ?? '—'
-    const c = countAdditions(o.additions as Record<string, unknown> | null)
-    addsMap.set(n, (addsMap.get(n) ?? 0) + c)
+    addsMap.set(n, (addsMap.get(n) ?? 0) + countAdditions(o.additions as Record<string, unknown> | null))
   })
-  const topAdds = [...addsMap.entries()]
-    .map(([name, total]) => ({ name, total }))
-    .sort((a, b) => b.total - a.total).slice(0, 6)
+  const topAdds = [...addsMap.entries()].map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total).slice(0, 6)
+  const addsMax = topAdds[0]?.total ?? 1
 
-  // Most common individual additions
   const fieldCounts = new Map<string, number>()
   all.forEach(o => {
     const adds = o.additions as Record<string, unknown> | null
@@ -156,87 +166,126 @@ export default async function AdminDashboard() {
       if (v === null || v === undefined || v === false || v === '') return
       if (typeof v === 'boolean') { fieldCounts.set(key, (fieldCounts.get(key) ?? 0) + 1); return }
       const sv = v as { l: unknown; r: unknown }
-      if ((sv.l != null && sv.l !== '' && sv.l !== false) ||
-          (sv.r != null && sv.r !== '' && sv.r !== false))
+      if ((sv.l != null && sv.l !== '' && sv.l !== false) || (sv.r != null && sv.r !== '' && sv.r !== false))
         fieldCounts.set(key, (fieldCounts.get(key) ?? 0) + 1)
     })
   })
-  const topFields = [...fieldCounts.entries()]
-    .sort((a, b) => b[1] - a[1]).slice(0, 6)
-    .map(([key, count]) => ({
-      key,
-      label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-      count,
-    }))
+  const topFields = [...fieldCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([key, count]) => ({ key, label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), count }))
 
-  // Monthly trend (last 6 months)
+  // ── Monthly trend ─────────────────────────────────────────────────────────
   const now = new Date()
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-    const label = d.toLocaleString('pt-PT', { month: 'short' })
-    const count = all.filter(o => {
-      const od = new Date(o.created_at)
-      return od.getFullYear() === d.getFullYear() && od.getMonth() === d.getMonth()
-    }).length
-    return { label, count }
+    return {
+      label: d.toLocaleString('pt-PT', { month: 'short' }),
+      count: all.filter(o => { const od = new Date(o.created_at); return od.getFullYear() === d.getFullYear() && od.getMonth() === d.getMonth() }).length,
+    }
   })
   const monthMax = Math.max(...months.map(m => m.count), 1)
 
-  // Recent 8 submitted orders
   const recent = all.filter(o => o.status !== 'draft').slice(0, 8)
-
-  const clientMax = topClients[0]?.count ?? 1
-  const modelMax  = topModels[0]?.count ?? 1
-  const addsMax   = topAdds[0]?.total ?? 1
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
       <div className="flex items-baseline justify-between">
         <h1 className="text-xl font-bold text-stone-900">Dashboard</h1>
-        <p className="text-xs text-stone-400">{total} encomendas no total</p>
+        <p className="text-xs text-stone-400">{total} encomendas · {new Date().toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })}</p>
       </div>
 
-      {/* ── KPI strip ── */}
+      {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <StatCard label="Total" value={total} />
-        <StatCard label="Draft"        value={bySt.draft        ?? 0} color="text-stone-500" />
-        <StatCard label="Submitted"    value={bySt.submitted    ?? 0} color="text-blue-600"  />
-        <StatCard label="Approved"     value={bySt.approved     ?? 0} color="text-emerald-600" />
-        <StatCard label="Production"   value={bySt.in_production ?? 0} color="text-amber-600" />
-        <StatCard label="Shipped"      value={bySt.shipped      ?? 0} color="text-violet-600" />
-        <StatCard label="🔴 Urgent"    value={urgent}                  color="text-red-500"   />
+        <StatCard label="Total"       value={total}                   />
+        <StatCard label="Draft"       value={bySt.draft        ?? 0} color="text-stone-500" />
+        <StatCard label="Submitted"   value={bySt.submitted    ?? 0} color="text-blue-600"  />
+        <StatCard label="Approved"    value={bySt.approved     ?? 0} color="text-emerald-600" />
+        <StatCard label="Production"  value={bySt.in_production ?? 0} color="text-amber-600" />
+        <StatCard label="Shipped"     value={bySt.shipped      ?? 0} color="text-violet-600" />
+        <StatCard label="🔴 Urgent"   value={urgent}                  color="text-red-500"  />
       </div>
 
-      {/* ── Row: Best clients + Top models ── */}
+      {/* Best clients + Countries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Melhores Clientes</h2>
           <div className="space-y-0.5">
             {topClients.map(c => (
-              <Bar key={c.name} label={c.name} count={c.count} max={clientMax}
+              <Bar key={c.name} label={c.name} count={c.count} max={topClients[0]?.count ?? 1}
                 sub={`${c.submitted} submetidas`} />
             ))}
           </div>
         </div>
 
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Modelos Mais Pedidos</h2>
-          <div className="space-y-0.5">
-            {topModels.map(m => (
-              <Bar key={m.id} label={m.id} count={m.count} max={modelMax} sub={m.name} />
-            ))}
-          </div>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Por País</h2>
+          {hasCountries ? (
+            <div className="space-y-1.5">
+              {topCountries.map(c => (
+                <div key={c.code} className="flex items-center gap-3 py-1">
+                  <span className="text-xl w-8 text-center shrink-0">{FLAG[c.code] ?? '🏳️'}</span>
+                  <span className="text-sm font-medium text-stone-700 w-8">{c.code}</span>
+                  <div className="flex-1 bg-stone-100 rounded-full h-2">
+                    <div className="bg-gold h-2 rounded-full" style={{ width: `${Math.round((c.count / countryMax) * 100)}%` }} />
+                  </div>
+                  <span className="text-sm font-bold text-stone-700 w-8 text-right">{c.count}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 space-y-2">
+              <p className="text-sm text-stone-400">Sem dados de país</p>
+              <p className="text-xs text-stone-300">Preenche o campo <span className="font-mono">country</span> nas companies</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Row: Additions + Monthly trend ── */}
+      {/* Models by style_name with color thumbnails */}
+      <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
+        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-5">Modelos Mais Pedidos</h2>
+        <div className="space-y-5">
+          {topStyles.map(s => (
+            <div key={s.style}>
+              {/* Model header with bar */}
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-sm font-bold text-stone-800 w-20 shrink-0">{s.style}</span>
+                <div className="flex-1 bg-stone-100 rounded-full h-2">
+                  <div className="bg-gold h-2 rounded-full" style={{ width: `${Math.round((s.total / styleMax) * 100)}%` }} />
+                </div>
+                <span className="text-lg font-bold text-gold w-10 text-right shrink-0">{s.total}</span>
+              </div>
+              {/* Color swatches with photos and count badge */}
+              <div className="flex gap-2 flex-wrap pl-[92px]">
+                {s.colors.map(c => (
+                  <div key={c.colour_id} className="relative w-14 h-14 rounded-xl overflow-hidden bg-stone-100 border border-stone-100 group"
+                    title={`${c.colour_id} — ${c.color_name}`}>
+                    {c.picture_name ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={`${BUCKET}/${c.picture_name}`} alt={c.colour_id}
+                        className="w-full h-full object-contain p-1" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-[8px] text-stone-400 text-center px-0.5 leading-tight">{c.colour_id}</span>
+                      </div>
+                    )}
+                    {/* Count badge */}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent pt-2 pb-0.5 flex items-end justify-center">
+                      <span className="text-white text-[10px] font-bold">{c.count}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Additions + Monthly trend */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Clientes com Mais Adições</h2>
-          <div className="space-y-0.5 mb-6">
-            {topAdds.map(a => (
-              <Bar key={a.name} label={a.name} count={a.total} max={addsMax} sub="campos preenchidos" />
-            ))}
+          <div className="space-y-0.5 mb-5">
+            {topAdds.map(a => <Bar key={a.name} label={a.name} count={a.total} max={addsMax} sub="campos preenchidos" />)}
           </div>
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">Adições Mais Comuns</h2>
           <div className="grid grid-cols-2 gap-2">
@@ -251,18 +300,15 @@ export default async function AdminDashboard() {
 
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Tendência Mensal</h2>
-          <div className="flex items-end gap-2 px-2">
-            {months.map(m => (
-              <VBar key={m.label} label={m.label} count={m.count} max={monthMax} />
-            ))}
+          <div className="flex items-end gap-2 px-2 mb-6">
+            {months.map(m => <VBar key={m.label} label={m.label} count={m.count} max={monthMax} />)}
           </div>
-
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mt-6 mb-3">Distribuição por Estado</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">Distribuição por Estado</h2>
           <div className="space-y-2">
             {Object.entries(bySt)
               .sort((a, b) => {
-                const order = ['submitted','approved','in_production','shipped','delivered','draft','cancelled']
-                return order.indexOf(a[0]) - order.indexOf(b[0])
+                const ord = ['submitted','approved','in_production','shipped','delivered','draft','cancelled']
+                return ord.indexOf(a[0]) - ord.indexOf(b[0])
               })
               .map(([st, n]) => (
                 <div key={st} className="flex items-center gap-2">
@@ -279,7 +325,7 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* ── Recent activity ── */}
+      {/* Recent activity */}
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="px-6 py-4 border-b border-stone-100">
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Actividade Recente</h2>
@@ -288,9 +334,7 @@ export default async function AdminDashboard() {
           {recent.map(o => (
             <div key={o.id} className="flex items-center gap-4 px-6 py-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-stone-800 truncate">
-                  {o.companies?.name ?? '—'}
-                </p>
+                <p className="text-sm font-medium text-stone-800 truncate">{o.companies?.name ?? '—'}</p>
                 <p className="text-xs text-stone-400">
                   {o.products?.colour_id ?? '—'} · {o.patient_name ?? o.reference_customer ?? '—'}
                 </p>
