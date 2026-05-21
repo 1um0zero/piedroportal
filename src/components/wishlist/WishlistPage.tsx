@@ -16,20 +16,25 @@ export default function WishlistPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!ids.size) { setProducts([]); setLoading(false); return }
+  // Use a stable string key so the effect only re-runs when IDs actually change
+  const idKey = [...ids].sort().join(',')
 
+  useEffect(() => {
+    if (!idKey) { setProducts([]); setLoading(false); return }
+
+    setLoading(true)
     const sb = createClient()
     sb.from('products')
-      .select('*')
-      .in('id', [...ids])
+      .select('id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,size_first,size_last,diabetics,new_until,constructions')
+      .in('id', idKey.split(','))
       .order('section')
       .order('style_name')
-      .then(({ data }) => {
-        setProducts((data ?? []) as Product[])
+      .then(({ data, error }) => {
+        if (!error) setProducts((data ?? []) as Product[])
         setLoading(false)
       })
-  }, [ids])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idKey])
 
   if (loading) {
     return (

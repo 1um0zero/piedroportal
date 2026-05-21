@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { updateProfileAction, uploadAvatarAction } from '@/app/actions/profile'
 import { useRouter } from '@/i18n/navigation'
+import { CameraModal } from '@/components/ui/CameraModal'
 
 type Props = {
   email: string
@@ -20,8 +21,8 @@ const GENDERS = [
 
 export default function ProfileForm({ email, initialName, initialGender, initialAvatar }: Props) {
   const router     = useRouter()
-  const fileRef    = useRef<HTMLInputElement>(null)
-  const cameraRef  = useRef<HTMLInputElement>(null)
+  const fileRef      = useRef<HTMLInputElement>(null)
+  const [showCamera, setShowCamera] = useState(false)
   const [name, setName]     = useState(initialName)
   const [gender, setGender] = useState(initialGender)
   const [avatar, setAvatar] = useState(initialAvatar)
@@ -44,11 +45,7 @@ export default function ProfileForm({ email, initialName, initialGender, initial
     else { setMsg(result.error ?? 'Error'); setErr(true) }
   }
 
-  async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Local preview immediately
+  async function handleFile(file: File) {
     setPreview(URL.createObjectURL(file))
     setUploading(true); setMsg(''); setErr(false)
 
@@ -61,7 +58,19 @@ export default function ProfileForm({ email, initialName, initialGender, initial
     else { setMsg(result.error ?? 'Upload failed'); setErr(true); setPreview(avatar) }
   }
 
+  function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
+  }
+
   return (
+    <>
+    {showCamera && (
+      <CameraModal
+        onCapture={file => { setShowCamera(false); handleFile(file) }}
+        onClose={() => setShowCamera(false)}
+      />
+    )}
     <form onSubmit={handleSave} className="space-y-7">
 
       {/* Avatar */}
@@ -94,7 +103,7 @@ export default function ProfileForm({ email, initialName, initialGender, initial
           <p className="text-sm font-medium text-stone-700">Profile photo</p>
           <p className="text-xs text-stone-400 mt-0.5">JPG or PNG, max 2MB</p>
           <div className="flex gap-2 mt-2">
-            <button type="button" onClick={() => cameraRef.current?.click()}
+                <button type="button" onClick={() => setShowCamera(true)}
               className="inline-flex items-center gap-1 text-xs font-medium text-stone-600
                          bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-lg transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -115,10 +124,7 @@ export default function ProfileForm({ email, initialName, initialGender, initial
             </button>
           </div>
         </div>
-        {/* Camera input — opens camera app on mobile */}
-        <input ref={cameraRef} type="file" accept="image/*" capture="user" className="hidden" onChange={handleAvatar} />
-        {/* Gallery input — opens file picker */}
-        <input ref={fileRef}   type="file" accept="image/*" className="hidden" onChange={handleAvatar} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileInput} />
       </div>
 
       {/* Email (read-only) */}
@@ -173,5 +179,6 @@ export default function ProfileForm({ email, initialName, initialGender, initial
         {saving ? 'Saving…' : 'Save Profile'}
       </button>
     </form>
+    </>
   )
 }
