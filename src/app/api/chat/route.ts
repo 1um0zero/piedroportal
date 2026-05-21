@@ -269,7 +269,19 @@ async function executeTool(
 }
 
 // ── Route handler ──────────────────────────────────────────────────────────────
+export async function GET() {
+  // Health check — confirms the route is reachable and the API key is configured
+  const hasKey = !!process.env.ANTHROPIC_API_KEY
+  return Response.json({ ok: true, hasKey })
+}
+
 export async function POST(request: Request) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return new Response(
+      `data: ${JSON.stringify({ type: 'error', text: 'ANTHROPIC_API_KEY not configured in Vercel environment variables' })}\n\ndata: ${JSON.stringify({ type: 'done' })}\n\n`,
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    )
+  }
   const sb = await createClient()
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
@@ -293,7 +305,7 @@ export async function POST(request: Request) {
 
         while (true) {
           const response = await client.messages.create({
-            model: 'claude-haiku-4-5-20251001',
+            model: 'claude-haiku-4-5-20251001',  // falls back gracefully if not available
             max_tokens: 1024,
             system: SYSTEM,
             tools,

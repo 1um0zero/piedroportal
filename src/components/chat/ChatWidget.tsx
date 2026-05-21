@@ -79,7 +79,14 @@ export function ChatWidget() {
             if (event.type === 'done') {
               setMessages(prev => {
                 const next = [...prev]
-                next[next.length - 1] = { role: 'assistant', content: assembled }
+                next[next.length - 1] = { role: 'assistant', content: assembled || '(no response)' }
+                return next
+              })
+            }
+            if (event.type === 'error') {
+              setMessages(prev => {
+                const next = [...prev]
+                next[next.length - 1] = { role: 'assistant', content: `⚠️ ${event.text}` }
                 return next
               })
             }
