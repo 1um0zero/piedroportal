@@ -190,6 +190,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
     || filters.search || filters.onlyNew || filters.onlyWishlist
 
+  const [showWishlist, setShowWishlist] = useState(false)
+
   const wishlistCount = useMemo(
     () => sectionProducts.filter((p) => wishlistIds.has(p.id)).length,
     [sectionProducts, wishlistIds],
@@ -232,6 +234,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         hasFilters={!!hasFilters}
         onClear={() => setFilters(EMPTY)}
         resultCount={filtered.length}
+        showWishlist={showWishlist}
+        onToggleBuildWishlist={() => setShowWishlist(s => !s)}
       />
 
       {/* Grid */}
@@ -248,7 +252,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} />
+            <ProductCard key={p.id} product={p} showWishlist={showWishlist} />
           ))}
         </div>
       )}

@@ -18,6 +18,8 @@ type Props = {
   onClear: () => void
   resultCount: number
   wishlistCount: number
+  showWishlist: boolean
+  onToggleBuildWishlist: () => void
 }
 
 // ── Size range buckets ────────────────────────────────────────────────────────
@@ -272,6 +274,7 @@ export default function GalleryFilters({
   filters, setFilters,
   optClosures, optTypes, optColours, optConstructions, optWidths, optSizes,
   hasNew, hasFilters, onClear, resultCount, wishlistCount,
+  showWishlist, onToggleBuildWishlist,
 }: Props) {
   const t = useTranslations('gallery.filters')
   const tg = useTranslations('gallery')
@@ -346,8 +349,25 @@ export default function GalleryFilters({
           />
         </div>
 
-        {/* Wishlist filter */}
-        {wishlistCount > 0 && (
+        {/* Build wishlist toggle */}
+        <button
+          onClick={onToggleBuildWishlist}
+          className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all duration-150
+            ${showWishlist
+              ? 'bg-gold/10 border-gold text-gold font-semibold shadow-sm'
+              : 'text-stone-500 border-stone-200 hover:border-gold/40 hover:text-gold bg-white'}`}
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24"
+            fill={showWishlist ? 'currentColor' : 'none'}
+            stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+          Wishlist
+        </button>
+
+        {/* Filter by wishlist (only when build mode active and has items) */}
+        {showWishlist && wishlistCount > 0 && (
           <button
             onClick={() => setFilters((f) => ({ ...f, onlyWishlist: !f.onlyWishlist }))}
             className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all duration-150
@@ -355,13 +375,7 @@ export default function GalleryFilters({
                 ? 'bg-gold text-white border-gold shadow-sm'
                 : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24"
-              fill={filters.onlyWishlist ? 'currentColor' : 'none'}
-              stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-            </svg>
-            {wishlistCount}
+            {wishlistCount} selected
           </button>
         )}
 
