@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
+import { GlbViewer } from './GlbViewer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -427,6 +428,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               if (!isDouble) {
                 if (field.conditionalOn && !isParentActive(field, displaySide)) return null
                 const checked = addExpanded.has(`${field.key}:${displaySide}`)
+                const glbFile = field.glb ? (displaySide === 'r' ? field.glb.r : field.glb.l) : null
                 return (
                   <div key={field.key} className="py-2.5">
                     <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
@@ -436,7 +438,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
                     </label>
                     {checked && (
-                      <div className="mt-2.5 pl-1">{renderControl(field, displaySide)}</div>
+                      <>
+                        <div className="mt-2.5 pl-1">{renderControl(field, displaySide)}</div>
+                        {glbFile && <GlbViewer file={glbFile} />}
+                      </>
                     )}
                   </div>
                 )
@@ -470,8 +475,12 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                                 }
                               }} />
                           ) : checkedL ? renderControl(field, 'l') : null}
+                          {checkedL && field.glb && <GlbViewer file={field.glb.l} />}
                         </div>
-                        <div>{checkedR ? renderControl(field, 'r') : null}</div>
+                        <div>
+                          {checkedR ? renderControl(field, 'r') : null}
+                          {checkedR && field.glb && <GlbViewer file={field.glb.r} />}
+                        </div>
                       </div>
                     )}
                   </div>

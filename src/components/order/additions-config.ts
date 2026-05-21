@@ -17,6 +17,7 @@ export interface AdditionField {
   dataverse?:      string         // for global (non-sided) fields
   closureOnly?:    'LACE' | 'VELCRO'  // show only when product has this closure
   collapse?:       boolean        // hide other chips once one is selected
+  glb?:            { l: string; r: string }  // 3D model filenames in Supabase products/3d/
 }
 
 export interface AdditionSection {
@@ -40,28 +41,28 @@ export const SECTIONS: AdditionSection[] = [
     key: 'additions', label: 'Additions',
     labelNl: 'Leest Aanpassingen', labelFr: 'Suppléments', labelDe: 'Ergänzungen',
     fields: [
-      { key: 'lat_joint_w',  label: 'Lateral Joint Width (mm)',    labelNl: 'Lateraal Bal Verbreding',       type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_lateraljointwidth' },
-      { key: 'med_joint_w',  label: 'Medial Joint Width (mm)',     labelNl: 'Mediaal Bal Verbreding',        type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_medialjointwidth' },
-      { key: 'lat_heel_w',   label: 'Lateral Heel Width (mm)',     labelNl: 'Lateraal Hiel Verbreding',      type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_lateralheelwidth' },
-      { key: 'med_heel_w',   label: 'Medial Heel Width (mm)',      labelNl: 'Mediaal Hiel Verbreding',       type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_medialheelwidth' },
-      { key: 'hammer_toe',   label: 'Hammer Toe (mm)',             labelNl: 'Hamer Tenen',                   type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2hammertoe' },
-      { key: 'toe_box',      label: 'Toe Box (mm)',                labelNl: 'Teenhoogte',                    type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_2toebox' },
-      { key: 'bunionette',   label: 'Bunionette (mm)',             labelNl: 'Bunionette',                    type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2bunionette' },
-      { key: 'hallux_v',     label: 'Hallux Valgus (mm)',          labelNl: 'Hallux Valgus',                 type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2halluxvalgus' },
-      { key: 'depth_fore',   label: 'Depth to Forepart (mm)',      labelNl: 'Voorvoet Verdieping',           type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2depthtoforepart' },
-      { key: 'depth_toe',    label: 'Depth to Toe Heel (mm)',      labelNl: 'Totaal Verdieping',             type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2depthtotoeheel' },
-      { key: 'xw_cone',      label: 'Extra Width on Cone (mm)',    labelNl: 'Wreefkap',                      type: 'mm',  side: 'both',  values: mm1to20,  dataverseKey: 'cr56f_2extrawidthoncone' },
-      { key: 'str_heel',     label: 'Straighten Heel Clip (mm)',   labelNl: '90° Hiel Lijn',                 type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2straightenheelclip' },
-      { key: 'heel_depth',   label: 'Heel Depth Only (mm)',        labelNl: 'Verdieping Hak',                type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2heeldepthonly' },
+      { key: 'lat_joint_w',  label: 'Lateral Joint Width (mm)',    labelNl: 'Lateraal Bal Verbreding',       type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_lateraljointwidth',     glb: { l: 'joint_lateral_l.glb',   r: 'joint_lateral_r.glb' } },
+      { key: 'med_joint_w',  label: 'Medial Joint Width (mm)',     labelNl: 'Mediaal Bal Verbreding',        type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_medialjointwidth',      glb: { l: 'joint_medial_l.glb',    r: 'joint_medial_r.glb' } },
+      { key: 'lat_heel_w',   label: 'Lateral Heel Width (mm)',     labelNl: 'Lateraal Hiel Verbreding',      type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_lateralheelwidth',      glb: { l: 'heel_lateral_l.glb',    r: 'heel_lateral_r.glb' } },
+      { key: 'med_heel_w',   label: 'Medial Heel Width (mm)',      labelNl: 'Mediaal Hiel Verbreding',       type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_medialheelwidth',       glb: { l: 'heel_medial_l.glb',     r: 'heel_medial_r.glb' } },
+      { key: 'hammer_toe',   label: 'Hammer Toe (mm)',             labelNl: 'Hamer Tenen',                   type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2hammertoe',            glb: { l: 'hammer_toe_l.glb',      r: 'hammer_toe_r.glb' } },
+      { key: 'toe_box',      label: 'Toe Box (mm)',                labelNl: 'Teenhoogte',                    type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_2toebox',               glb: { l: 'toe_box_l.glb',         r: 'toe_box_r.glb' } },
+      { key: 'bunionette',   label: 'Bunionette (mm)',             labelNl: 'Bunionette',                    type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2bunionette',           glb: { l: 'bunionette_l.glb',      r: 'bunionette_r.glb' } },
+      { key: 'hallux_v',     label: 'Hallux Valgus (mm)',          labelNl: 'Hallux Valgus',                 type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2halluxvalgus',         glb: { l: 'hallux_valgus_l.glb',   r: 'hallux_valgus_r.glb' } },
+      { key: 'depth_fore',   label: 'Depth to Forepart (mm)',      labelNl: 'Voorvoet Verdieping',           type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2depthtoforepart',      glb: { l: 'depth_forefoot_l.glb',  r: 'depth_forefoot_r.glb' } },
+      { key: 'depth_toe',    label: 'Depth to Toe Heel (mm)',      labelNl: 'Totaal Verdieping',             type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2depthtotoeheel',       glb: { l: 'depth_plantair_l.glb',  r: 'depth_plantair_r.glb' } },
+      { key: 'xw_cone',      label: 'Extra Width on Cone (mm)',    labelNl: 'Wreefkap',                      type: 'mm',  side: 'both',  values: mm1to20,  dataverseKey: 'cr56f_2extrawidthoncone',     glb: { l: 'width_cone_l.glb',      r: 'width_cone_r.glb' } },
+      { key: 'str_heel',     label: 'Straighten Heel Clip (mm)',   labelNl: '90° Hiel Lijn',                 type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2straightenheelclip',   glb: { l: 'straighten_heel_l.glb', r: 'straighten_heel_r.glb' } },
+      { key: 'heel_depth',   label: 'Heel Depth Only (mm)',        labelNl: 'Verdieping Hak',                type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2heeldepthonly',        glb: { l: 'heel_depth_l.glb',      r: 'heel_depth_r.glb' } },
       // Haglund + conditionals
-      { key: 'haglund',      label: 'Haglund Heel Exostosis (mm)', labelNl: 'Haglund Exostosis',             type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2haglundheelexostosis' },
+      { key: 'haglund',      label: 'Haglund Heel Exostosis (mm)', labelNl: 'Haglund Exostosis',             type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2haglundheelexostosis', glb: { l: 'heel_exostosis_l.glb',  r: 'heel_exostosis_r.glb' } },
       { key: 'haglund_h',    label: '↳ Haglund Height (mm)',       labelNl: 'Haglund hoogte',                type: 'mm',  side: 'both',  values: mm4to10,  conditionalOn: 'haglund', dataverseKey: 'cr56f_3haglund_height_conditional' },
       { key: 'haglund_p',    label: '↳ Haglund Position (mm)',     labelNl: 'Haglund positie',               type: 'mm',  side: 'both',  values: mm4to10,  conditionalOn: 'haglund', dataverseKey: 'cr56f_3haglund_position_conditional' },
       // Medial Ankle + conditional height
-      { key: 'xs_med_ank',   label: 'Extra Space Medial Ankle (mm)',labelNl: 'Extra ruimte mediale enkel',   type: 'text', side: 'both', dataverseKey: 'cr56f_3extraspacemedialankle' },
+      { key: 'xs_med_ank',   label: 'Extra Space Medial Ankle (mm)',labelNl: 'Extra ruimte mediale enkel',   type: 'text', side: 'both', dataverseKey: 'cr56f_3extraspacemedialankle', glb: { l: 'ankle_medial_l.glb',    r: 'ankle_medial_r.glb' } },
       { key: 'med_ank_h',    label: '↳ Medial Ankle Height (mm)',  labelNl: 'Mediale enkelhoogte',           type: 'text', side: 'both', conditionalOn: 'xs_med_ank', dataverseKey: 'cr56f_3mankle_height_conditional' },
       // Lateral Ankle + conditional height
-      { key: 'xs_lat_ank',   label: 'Extra Space Lateral Ankle (mm)',labelNl:'Extra ruimte laterale enkel', type: 'text', side: 'both', dataverseKey: 'cr56f_3extraspacelateralankle' },
+      { key: 'xs_lat_ank',   label: 'Extra Space Lateral Ankle (mm)',labelNl:'Extra ruimte laterale enkel', type: 'text', side: 'both', dataverseKey: 'cr56f_3extraspacelateralankle', glb: { l: 'ankle_lateral_l.glb',   r: 'ankle_lateral_r.glb' } },
       { key: 'lat_ank_h',    label: '↳ Ankle Height (mm)',         labelNl: 'Enkelhoogte',                   type: 'text', side: 'both', conditionalOn: 'xs_lat_ank', dataverseKey: 'cr56f_3ankle_height_conditional' },
     ],
   },
