@@ -209,6 +209,18 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   const t = useTranslations('gallery.filters')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
 
+  // Checkbox-expand state for Additions section
+  const [addExpanded, setAddExpanded] = useState<Set<string>>(() => {
+    const s = new Set<string>()
+    const addSection = SECTIONS.find(sec => sec.key === 'additions')
+    for (const field of addSection?.fields ?? []) {
+      const sv = additions[field.key] as SidedVal | null
+      if (sv?.l != null && sv.l !== '') s.add(`${field.key}:l`)
+      if (sv?.r != null && sv.r !== '') s.add(`${field.key}:r`)
+    }
+    return s
+  })
+
   // Key concept: PAIR / LEFT / RIGHT → single column
   //              LEFT_RIGHT           → two columns
   const isDouble    = unit === 'LEFT_RIGHT'
@@ -292,6 +304,19 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     })
   }
 
+  function toggleAddField(key: string, side: 'l' | 'r', on: boolean) {
+    setAddExpanded(prev => {
+      const next = new Set(prev)
+      if (on) {
+        next.add(`${key}:${side}`)
+      } else {
+        next.delete(`${key}:${side}`)
+        updateField(key, side, null)
+      }
+      return next
+    })
+  }
+
   return (
     <div className="space-y-3">
       {SECTIONS.map((section) => {
@@ -302,6 +327,104 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         })
         const filled = countFilled(additions, section.key)
         const open   = expanded.has(section.key)
+
+        // ── Additions section: checkbox-expand pattern ─────────────────────────
+        if (section.key === 'additions') {
+          return (
+            <div key={section.key} className="border border-stone-100 rounded-xl overflow-hidden bg-white"
+              style={{ boxShadow: 'var(--shadow-card)' }}>
+
+              <button type="button" onClick={() => toggleSection(section.key)}
+                className="w-full flex items-center justify-between px-5 py-3.5
+                           hover:bg-stone-50 transition-colors text-left">
+                <span className="font-semibold text-sm text-stone-800">{section.label}</span>
+                <div className="flex items-center gap-2.5">
+                  {filled > 0 && (
+                    <span className="min-w-[20px] h-5 px-1.5 text-[10px] font-bold bg-gold/10
+                                     text-gold rounded-full flex items-center justify-center">
+                      {filled}
+                    </span>
+                  )}
+                  <svg className={`w-4 h-4 text-stone-400 transition-transform ${open ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {open && (
+                <div className="px-5 pb-3 pt-1 border-t border-stone-100 divide-y divide-stone-50">
+                  {fields.map(field => {
+                    if (field.side === 'global') return null
+                    const isSubField = field.label.startsWith('↳')
+
+                    if (!isDouble) {
+                      if (field.conditionalOn && !isParentActive(field, displaySide)) return null
+                      const checked = addExpanded.has(`${field.key}:${displaySide}`)
+                      return (
+                        <div key={field.key}
+                          className={`py-2.5 ${isSubField ? 'pl-4 ml-1 border-l-2 border-gold/20' : ''}`}>
+                          <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
+                            <span className={isSubField ? 'text-xs text-stone-400' : 'text-sm text-stone-700'}>
+                              {field.label.replace(/\s*\(mm\)/gi, '')}
+                            </span>
+                            <input type="checkbox" checked={checked}
+                              onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
+                              className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                          </label>
+                          {checked && (
+                            <div className="mt-2.5 pl-1">{renderControl(field, displaySide)}</div>
+                          )}
+                        </div>
+                      )
+                    } else {
+                      const parentSv = field.conditionalOn
+                        ? additions[field.conditionalOn] as SidedVal | null
+                        : null
+                      const parentActiveL = parentSv ? (parentSv.l != null && parentSv.l !== '') : true
+                      const parentActiveR = parentSv ? (parentSv.r != null && parentSv.r !== '') : true
+                      if (!parentActiveL && !parentActiveR) return null
+                      const checkedL = parentActiveL && addExpanded.has(`${field.key}:l`)
+                      const checkedR = parentActiveR && addExpanded.has(`${field.key}:r`)
+                      return (
+                        <div key={field.key}
+                          className={`py-2.5 ${isSubField ? 'pl-4 ml-1 border-l-2 border-gold/20' : ''}`}>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className={isSubField ? 'text-xs text-stone-400' : 'text-sm text-stone-700'}>
+                              {field.label.replace(/\s*\(mm\)/gi, '')}
+                            </span>
+                            <div className="flex items-center gap-5 shrink-0">
+                              {parentActiveL && (
+                                <label className="flex items-center gap-1.5 text-xs text-stone-400 cursor-pointer select-none">
+                                  Left <input type="checkbox" checked={checkedL}
+                                    onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
+                                    className="w-4 h-4 cursor-pointer accent-stone-700" />
+                                </label>
+                              )}
+                              {parentActiveR && (
+                                <label className="flex items-center gap-1.5 text-xs text-stone-400 cursor-pointer select-none">
+                                  Right <input type="checkbox" checked={checkedR}
+                                    onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
+                                    className="w-4 h-4 cursor-pointer accent-stone-700" />
+                                </label>
+                              )}
+                            </div>
+                          </div>
+                          {(checkedL || checkedR) && (
+                            <div className="mt-2.5 grid grid-cols-2 gap-4">
+                              <div>{checkedL ? renderControl(field, 'l') : null}</div>
+                              <div>{checkedR ? renderControl(field, 'r') : null}</div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    }
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        }
 
         return (
           <div key={section.key}
