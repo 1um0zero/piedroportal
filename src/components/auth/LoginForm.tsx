@@ -5,8 +5,6 @@ import { Link } from '@/i18n/navigation'
 import { signInAction } from '@/app/[locale]/login/actions'
 import { useActionState } from 'react'
 
-// Replace with Supabase Storage URL after uploading the image to __brand/login-hero.jpg
-const HERO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/login-hero.jpg'
 const LOGO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png'
 
 export default function LoginForm({ hasError }: { hasError?: boolean }) {
@@ -15,19 +13,33 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
 
   return (
     <div className="min-h-screen flex">
-      {/* Hero */}
-      <div className="hidden lg:flex lg:w-3/5 relative flex-col justify-end"
-        style={{ backgroundImage: `url(${HERO})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        {/* Subtle gradient only at bottom for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="relative z-10 p-12 space-y-3">
+      {/* Hero — SVG technical illustration on dark background */}
+      <div className="hidden lg:flex lg:w-3/5 flex-col relative overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #1a2c3d 0%, #0f1d2a 60%, #0a1520 100%)' }}>
+
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+        {/* SVG illustration — centred, slightly faded */}
+        <div className="flex-1 flex items-center justify-center px-10 pt-16 pb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/login-hero.svg"
+            alt="Piedro orthopedic shoe diagram"
+            className="w-full max-w-[520px] opacity-80"
+            style={{ filter: 'invert(1) brightness(0.75) sepia(0.15) hue-rotate(185deg)' }}
+          />
+        </div>
+
+        {/* One Step Ahead tagline */}
+        <div className="relative z-10 px-12 pb-12 space-y-3">
           <a href="https://www.piedro.com" target="_blank" rel="noopener noreferrer"
             className="group inline-block">
-            <p className="text-white/60 text-xs tracking-[0.4em] uppercase font-light mb-1 group-hover:text-[#B8975A] transition-colors">
+            <p className="text-white/50 text-xs tracking-[0.4em] uppercase font-light mb-1 group-hover:text-[#B8975A] transition-colors">
               Always
             </p>
-            <p className="text-white text-5xl font-bold tracking-[0.15em] uppercase leading-none group-hover:text-[#B8975A] transition-colors"
-              style={{ textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
+            <p className="text-white text-4xl font-bold tracking-[0.15em] uppercase leading-none group-hover:text-[#B8975A] transition-colors">
               One Step<br />Ahead
             </p>
             <div className="flex items-center gap-3 mt-4">
