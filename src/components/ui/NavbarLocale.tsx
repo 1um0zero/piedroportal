@@ -1,17 +1,18 @@
 'use client'
 
 import { useTransition } from 'react'
-import { useRouter } from '@/i18n/navigation'
+import { useRouter, usePathname } from '@/i18n/navigation'
 import { setLocaleAction } from '@/app/actions/locale'
 
 export function NavbarLocale({ locales, current }: { locales: string[]; current: string }) {
-  const router = useRouter()
+  const router   = useRouter()
+  const pathname = usePathname()   // current path without locale prefix
   const [, start] = useTransition()
 
   function change(l: string) {
     start(async () => {
       await setLocaleAction(l)
-      router.push('/', { locale: l })
+      router.push(pathname, { locale: l })   // stay on same page, switch locale
     })
   }
 
