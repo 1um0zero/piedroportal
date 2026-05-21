@@ -3,11 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { SECTIONS } from './additions-config'
-import {
-  updateOrderAdminAction, translateTextAction,
-  APPROVAL_STATES, PRODUCTION_STATES,
-  type ApprovalState, type ProductionState,
-} from '@/app/actions/admin-orders'
+import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
+import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
