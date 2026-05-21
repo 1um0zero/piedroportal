@@ -60,26 +60,20 @@ export function LoginHeroSvg() {
         </g>
       ))}
 
-      {/* Tape — horizontal */}
-      <rect x="100" y="415" width="475" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="#5a7a90" strokeWidth="0.8"/>
-      <line x1="100" y1="415" x2="100" y2="429" stroke="#7a9bb5" strokeWidth="1.2"/>
-      <line x1="575" y1="415" x2="575" y2="429" stroke="#7a9bb5" strokeWidth="1.2"/>
-      <line x1="102" y1="408" x2="573" y2="408" stroke="#7a9bb5" strokeWidth="0.8" markerStart="url(#lh-arrow)" markerEnd="url(#lh-arrow)"/>
-      <line x1="100" y1="325" x2="100" y2="413" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
-      <line x1="575" y1="318" x2="575" y2="413" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
-      <text x="337" y="448" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">Length / Lengte</text>
+      {/* Dimension — horizontal (length) */}
+      <line x1="100" y1="325" x2="100" y2="398" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
+      <line x1="575" y1="318" x2="575" y2="398" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
+      <line x1="102" y1="400" x2="573" y2="400" stroke="#7a9bb5" strokeWidth="0.8" markerStart="url(#lh-arrow)" markerEnd="url(#lh-arrow)"/>
+      <text x="337" y="418" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">Length / Lengte</text>
 
-      {/* Tape — vertical */}
-      <rect x="618" y="180" width="14" height="148" rx="2" fill="rgba(255,255,255,0.04)" stroke="#5a7a90" strokeWidth="0.8"/>
-      <line x1="618" y1="180" x2="632" y2="180" stroke="#7a9bb5" strokeWidth="1.2"/>
-      <line x1="618" y1="328" x2="632" y2="328" stroke="#7a9bb5" strokeWidth="1.2"/>
-      <line x1="610" y1="182" x2="610" y2="326" stroke="#7a9bb5" strokeWidth="0.8" markerStart="url(#lh-arrow)" markerEnd="url(#lh-arrow)"/>
-      <line x1="575" y1="180" x2="616" y2="180" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
-      <line x1="560" y1="328" x2="616" y2="328" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
-      <text x="648" y="258" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">Height</text>
-      <text x="648" y="272" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">Hoogte</text>
+      {/* Dimension — vertical (height) */}
+      <line x1="575" y1="180" x2="606" y2="180" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
+      <line x1="560" y1="328" x2="606" y2="328" stroke="#3a5a70" strokeWidth="0.6" strokeDasharray="3,3"/>
+      <line x1="608" y1="182" x2="608" y2="326" stroke="#7a9bb5" strokeWidth="0.8" markerStart="url(#lh-arrow)" markerEnd="url(#lh-arrow)"/>
+      <text x="634" y="258" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">Height</text>
+      <text x="634" y="272" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">Hoogte</text>
 
-      {/* Width */}
+      {/* Dimension — width */}
       <line x1="150" y1="298" x2="150" y2="337" stroke="#6a8ba5" strokeWidth="0.8" markerStart="url(#lh-arrow)" markerEnd="url(#lh-arrow)"/>
       <text x="132" y="316" textAnchor="middle" fontFamily="sans-serif" fontSize="11" fill="#6a8ba5">W</text>
 
