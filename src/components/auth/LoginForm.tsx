@@ -27,8 +27,7 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
           <img
             src="/login-hero.svg"
             alt="Piedro orthopedic shoe diagram"
-            className="w-full max-w-[520px] opacity-80"
-            style={{ filter: 'invert(1) brightness(0.75) sepia(0.15) hue-rotate(185deg)' }}
+            className="w-full max-w-[520px]"
           />
         </div>
 
