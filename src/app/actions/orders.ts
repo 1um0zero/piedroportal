@@ -58,54 +58,109 @@ export async function insertOrderAction(
 
   // For submitted orders: generate PDF → upload to Storage (email disabled for now — diagnosing)
   if (row.status === 'submitted' && pdfMeta) {
-    try {
-      const pdfProps: OrderPdfProps = {
-        reference:          row.reference_customer,
-        status:             row.status,
-        unit:               row.unit,
-        clinician:          row.clinician,
-        patient_name:       row.patient_name,
-        quantity:           row.quantity,
-        construction_left:  row.construction_left,
-        construction_right: row.construction_right,
-        width_left:         row.width_left,
-        width_right:        row.width_right,
-        size_left:          row.size_left,
-        size_right:         row.size_right,
-        additions:          row.additions,
-        comments:           row.comments,
-        created_at:         new Date().toISOString(),
-        companyName:        pdfMeta.companyName,
-        productColourId:    pdfMeta.productColourId,
-        productColorName:   pdfMeta.productColorName,
-        productClosure:     pdfMeta.productClosure,
-        productImageUrl:    pdfMeta.productImageUrl,
-      }
-
-      const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
-      const pdfBuffer = await renderToBuffer(element)
-      const pdfBytes = Buffer.from(pdfBuffer)
-
-      const pdfPath = `${orderId}.pdf`
-      const { error: uploadErr } = await service.storage
-        .from('order-pdfs')
-        .upload(pdfPath, pdfBytes, { contentType: 'application/pdf', upsert: true })
-
-      if (uploadErr) {
-        console.error('Storage upload error:', uploadErr)
-        return { id: orderId, pdfError: `Storage: ${uploadErr.message}` }
-      }
-
-      const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(pdfPath)
-      await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
-
-      return { id: orderId, pdf_url: publicUrl }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e)
-      console.error('PDF error:', msg)
-      return { id: orderId, pdfError: msg }
-    }
+    const pdfResult = await generatePdf(orderId, row, pdfMeta, service)
+    return { id: orderId, ...pdfResult }
   }
-
   return { id: orderId }
+}
+
+// ── Shared PDF generation helper ──────────────────────────────────────────────
+async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>): Promise<{ pdf_url?: string; pdfError?: string }> {
+  try {
+    const pdfProps: OrderPdfProps = {
+      reference: row.reference_customer, status: row.status, unit: row.unit,
+      clinician: row.clinician, patient_name: row.patient_name, quantity: row.quantity,
+      construction_left: row.construction_left, construction_right: row.construction_right,
+      width_left: row.width_left, width_right: row.width_right,
+      size_left: row.size_left, size_right: row.size_right,
+      additions: row.additions, comments: row.comments,
+      created_at: new Date().toISOString(),
+      companyName: pdfMeta.companyName, productColourId: pdfMeta.productColourId,
+      productColorName: pdfMeta.productColorName, productClosure: pdfMeta.productClosure,
+      productImageUrl: pdfMeta.productImageUrl,
+    }
+    const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
+    const pdfBytes = Buffer.from(await renderToBuffer(element))
+    const { error: uploadErr } = await service.storage
+      .from('order-pdfs')
+      .upload(`${orderId}.pdf`, pdfBytes, { contentType: 'application/pdf', upsert: true })
+    if (uploadErr) return { pdfError: `Storage: ${uploadErr.message}` }
+    const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(`${orderId}.pdf`)
+    await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
+    return { pdf_url: publicUrl }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('PDF error:', msg)
+    return { pdfError: msg }
+  }
+}
+
+// ── Update existing order (draft → submit or re-save) ─────────────────────────
+export async function updateOrderAction(
+  draftId: string,
+  row: OrderRow,
+  pdfMeta?: PdfMeta,
+): Promise<{ id?: string; pdf_url?: string; error?: string; pdfError?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('orders')
+    .update({ ...row, user_id: user.id })
+    .eq('id', draftId)
+    .eq('user_id', user.id)
+  if (error) return { error: `${error.message} [${error.code}]` }
+
+  if (row.status === 'submitted' && pdfMeta) {
+    const pdfResult = await generatePdf(draftId, row, pdfMeta, service)
+    return { id: draftId, ...pdfResult }
+  }
+  return { id: draftId }
+}
+
+// ── Duplicate an order as draft ───────────────────────────────────────────────
+export async function duplicateOrderAction(
+  orderId: string,
+): Promise<{ id?: string; productId?: string; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const service = createServiceClient()
+  const { data: src, error: fetchErr } = await service
+    .from('orders')
+    .select('company_id,product_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments')
+    .eq('id', orderId)
+    .single()
+  if (fetchErr || !src) return { error: 'Order not found' }
+
+  const { data: copy, error: insertErr } = await service
+    .from('orders')
+    .insert({ ...src, user_id: user.id, status: 'draft', pdf_url: null })
+    .select('id, product_id')
+    .single()
+  if (insertErr || !copy) return { error: insertErr?.message ?? 'Duplicate failed' }
+
+  return { id: copy.id, productId: copy.product_id }
+}
+
+// ── Delete a draft order ──────────────────────────────────────────────────────
+export async function deleteOrderAction(
+  orderId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('orders')
+    .delete()
+    .eq('id', orderId)
+    .eq('user_id', user.id)
+    .eq('status', 'draft')
+  if (error) return { error: error.message }
+  return { ok: true }
 }

@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/navigation'
 import type { Product } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, SECTIONS } from './additions-config'
-import { insertOrderAction, type PdfMeta } from '@/app/actions/orders'
+import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -18,9 +18,12 @@ type Props = {
   product:     Product
   userId:      string
   userProfile: Profile
-  userCompany: Company | null   // user's own company (null if admin)
-  companies:   Company[]        // all companies (admin only)
+  userCompany: Company | null
+  companies:   Company[]
   isAdmin:     boolean
+  draftId?:    string                          // set when editing/duplicating a draft
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  draftData?:  Record<string, any> | null      // pre-fill values from existing order
 }
 
 // ── Single-select chip ────────────────────────────────────────────────────────
@@ -89,27 +92,30 @@ function SizeInput({ sizes, value, onChange, label, onBlurAfterSnap }: {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin }: Props) {
+export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData }: Props) {
   const t      = useTranslations('order')
   const locale = useLocale()
   const router = useRouter()
 
-  // ── Form state ──
-  const [selectedCompanyId, setCompanyId] = useState(userProfile.company_id ?? '')
-  const [unit,        setUnit]      = useState<Unit>('PAIR')
-  const [clinician,   setClinician] = useState('')
-  const [patientName, setPatient]   = useState('')
-  const [reference,   setReference] = useState('')
-  const [quantity,    setQuantity]  = useState(1)
-  const [constrLeft,  setConstrL]   = useState('')
-  const [constrRight, setConstrR]   = useState('')
-  const [widthLeft,   setWidthL]    = useState('')
-  const [widthRight,  setWidthR]    = useState('')
-  const [sizeLeft,    setSizeL]     = useState('')
-  const [sizeRight,   setSizeR]     = useState('')
-  const [additions,   setAdditions] = useState<Record<string, unknown>>(emptyAdditions())
+  const d = draftData  // shorthand for pre-fill
+
+  // ── Form state — pre-filled from draftData when duplicating ──
+  const [selectedCompanyId, setCompanyId] = useState(d?.company_id ?? userProfile.company_id ?? '')
+  const [unit,        setUnit]      = useState<Unit>((d?.unit as Unit) ?? 'PAIR')
+  const [clinician,   setClinician] = useState(d?.clinician ?? '')
+  const [patientName, setPatient]   = useState(d?.patient_name ?? '')
+  const [reference,   setReference] = useState(d?.reference_customer ?? '')
+  const [quantity,    setQuantity]  = useState(d?.quantity ?? 1)
+  const [constrLeft,  setConstrL]   = useState(d?.construction_left ?? '')
+  const [constrRight, setConstrR]   = useState(d?.construction_right ?? '')
+  const [widthLeft,   setWidthL]    = useState(d?.width_left ?? '')
+  const [widthRight,  setWidthR]    = useState(d?.width_right ?? '')
+  const [sizeLeft,    setSizeL]     = useState(d?.size_left != null ? String(d.size_left) : '')
+  const [sizeRight,   setSizeR]     = useState(d?.size_right != null ? String(d.size_right) : '')
+  const [additions,   setAdditions] = useState<Record<string, unknown>>(d?.additions ?? emptyAdditions())
   const [step,        setStep]      = useState<1 | 2 | 3>(1)
   const [submitting,  setSubmitting] = useState(false)
+  const [discarding,  setDiscarding] = useState(false)
   const [error,       setError]     = useState('')
   const [successMsg,  setSuccessMsg] = useState('')
 
@@ -195,7 +201,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         companyName,
       } : undefined
 
-      const result = await insertOrderAction(row, pdfMeta)
+      const result = draftId
+        ? await updateOrderAction(draftId, row, pdfMeta)
+        : await insertOrderAction(row, pdfMeta)
       if (result.error) throw new Error(result.error)
 
       if (status === 'submitted') {
@@ -212,6 +220,20 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       setError(e instanceof Error ? e.message : String(e))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function handleDiscard() {
+    if (!draftId) return
+    setDiscarding(true)
+    try {
+      const result = await deleteOrderAction(draftId)
+      if (result.error) throw new Error(result.error)
+      router.push('/orders')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDiscarding(false)
     }
   }
 
@@ -316,9 +338,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           )}
 
           {/* Submit actions — top for easy access */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button onClick={() => handleSubmit('submitted')}
-              disabled={submitting || !reference || !!successMsg}
+              disabled={submitting || discarding || !reference || !!successMsg}
               className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                          hover:bg-gold-dark transition-colors disabled:opacity-50 inline-flex items-center gap-2">
               {submitting && (
@@ -329,11 +351,24 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               )}
               {submitting ? 'A processar…' : t('submit')}
             </button>
-            <button onClick={() => handleSubmit('draft')} disabled={submitting || !!successMsg}
+            <button onClick={() => handleSubmit('draft')} disabled={submitting || discarding || !!successMsg}
               className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
                          text-sm rounded-xl hover:border-stone-300 transition-colors">
               {t('save_draft')}
             </button>
+            {draftId && (
+              <button onClick={handleDiscard} disabled={submitting || discarding || !!successMsg}
+                className="px-4 py-2.5 border border-red-200 text-red-500 font-medium text-sm
+                           rounded-xl hover:bg-red-50 transition-colors inline-flex items-center gap-1.5">
+                {discarding && (
+                  <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                )}
+                Descartar
+              </button>
+            )}
             <button type="button" onClick={() => setStep(showAdditions ? 2 : 1)}
               className="text-sm text-stone-400 hover:text-stone-600 transition-colors ml-auto">
               ← {showAdditions ? t('tab2') : t('tab1')}

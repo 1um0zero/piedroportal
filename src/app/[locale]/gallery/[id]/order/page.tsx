@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import OrderForm from '@/components/order/OrderForm'
 import type { Product } from '@/types'
 
@@ -18,10 +19,14 @@ async function getProduct(id: string): Promise<Product | null> {
 }
 
 type Company = { id: string; name: string; erp_code: string }
-type Props   = { params: Promise<{ locale: string; id: string }> }
+type Props   = {
+  params:       Promise<{ locale: string; id: string }>
+  searchParams: Promise<{ draft?: string }>
+}
 
-export default async function OrderPage({ params }: Props) {
+export default async function OrderPage({ params, searchParams }: Props) {
   const { id } = await params
+  const { draft: draftId } = await searchParams
 
   const supabase  = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -32,7 +37,6 @@ export default async function OrderPage({ params }: Props) {
 
   const isAdmin = profile?.role === 'piedro_admin'
 
-  // Admin sees all companies; regular user sees their own
   let companies: Company[] = []
   let userCompany: Company | null = null
 
@@ -48,6 +52,19 @@ export default async function OrderPage({ params }: Props) {
   const product = await getProduct(id)
   if (!product) notFound()
 
+  // Load draft data if draftId is provided (duplicate/edit flow)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let draftData: Record<string, any> | null = null
+  if (draftId) {
+    const service = createServiceClient()
+    const { data } = await service
+      .from('orders')
+      .select('unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,company_id')
+      .eq('id', draftId)
+      .single()
+    draftData = data
+  }
+
   return (
     <OrderForm
       product={product}
@@ -56,6 +73,8 @@ export default async function OrderPage({ params }: Props) {
       userCompany={userCompany}
       companies={companies}
       isAdmin={isAdmin}
+      draftId={draftId}
+      draftData={draftData}
     />
   )
 }

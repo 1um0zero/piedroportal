@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import Image from 'next/image'
-import { Link } from '@/i18n/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
+import { duplicateOrderAction } from '@/app/actions/orders'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/products`
@@ -39,11 +40,26 @@ type Props = {
 }
 
 export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
+  const router = useRouter()
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatus]   = useState('')
   const [urgentOnly, setUrgentOnly] = useState(false)
   const [page, setPage]             = useState(1)
+  const [repeating, setRepeating]   = useState<string | null>(null)
   const PER_PAGE = 50
+
+  async function handleRepeat(orderId: string, productId: string) {
+    setRepeating(orderId)
+    try {
+      const result = await duplicateOrderAction(orderId)
+      if (result.error || !result.id) throw new Error(result.error ?? 'Failed')
+      router.push(`/gallery/${result.productId ?? productId}/order?draft=${result.id}`)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e))
+    } finally {
+      setRepeating(null)
+    }
+  }
 
   const filtered = useMemo(() => {
     setPage(1)  // reset to first page on filter change
@@ -161,12 +177,13 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Unit</th>
                 <th className="px-4 py-3 text-left">PDF</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6}
+                  <td colSpan={isAdmin ? 8 : 7}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     No orders found
                   </td>
@@ -253,6 +270,28 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                       ) : (
                         <span className="text-stone-200 text-xs pl-1">—</span>
                       )}
+                    </td>
+                    {/* Repeat */}
+                    <td className="px-2 py-3">
+                      <button
+                        onClick={() => handleRepeat(o.id, o.products?.id)}
+                        disabled={repeating === o.id}
+                        title="Repetir encomenda"
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-lg
+                                   text-stone-400 hover:text-gold hover:bg-gold/10 transition-colors
+                                   disabled:opacity-40">
+                        {repeating === o.id ? (
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round"
+                              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                          </svg>
+                        )}
+                      </button>
                     </td>
                   </tr>
                 )
