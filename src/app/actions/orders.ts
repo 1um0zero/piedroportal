@@ -40,7 +40,7 @@ export type PdfMeta = {
 export async function insertOrderAction(
   row:     OrderRow,
   pdfMeta?: PdfMeta,   // provided only when status === 'submitted'
-): Promise<{ id?: string; pdf_url?: string; error?: string }> {
+): Promise<{ id?: string; pdf_url?: string; error?: string; pdfError?: string }> {
 
   // Verify session server-side
   const sb = await createClient()
@@ -130,9 +130,10 @@ export async function insertOrderAction(
 
       return { id: orderId, pdf_url: pdfUrl }
     } catch (e) {
-      // Order already saved — log PDF/email error but don't fail
-      console.error('PDF/email error:', e)
-      return { id: orderId }
+      const msg = e instanceof Error ? e.message : String(e)
+      console.error('PDF/email error:', msg)
+      // Order already saved — return id + error detail so the form can show it
+      return { id: orderId, pdfError: msg }
     }
   }
 

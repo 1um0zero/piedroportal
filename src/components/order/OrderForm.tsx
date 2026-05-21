@@ -111,6 +111,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [step,        setStep]      = useState<1 | 2 | 3>(1)
   const [submitting,  setSubmitting] = useState(false)
   const [error,       setError]     = useState('')
+  const [successMsg,  setSuccessMsg] = useState('')
 
   const showAdditions = unit !== 'DIFF_SIZES'
   const steps = showAdditions ? [1, 2, 3] : [1, 3]
@@ -194,6 +195,15 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       const result = await insertOrderAction(row, pdfMeta)
       if (result.error) throw new Error(result.error)
 
+      if (status === 'submitted') {
+        const msg = result.pdf_url
+          ? `Encomenda submetida. Email com PDF enviado para ${process.env.NEXT_PUBLIC_ORDER_NOTIFY_EMAIL ?? 'suporte@umzero.pt'}.`
+          : result.pdfError
+            ? `Encomenda submetida. Erro ao gerar PDF/email: ${result.pdfError}`
+            : 'Encomenda submetida.'
+        setSuccessMsg(msg)
+        await new Promise(r => setTimeout(r, 3000))
+      }
       router.push('/orders')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -279,7 +289,20 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         return (
         <div className="space-y-4">
 
-          {/* Prominent error — top of confirmation */}
+          {/* Success banner */}
+          {successMsg && (
+            <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+              <svg className="w-4 h-4 text-green-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+              </svg>
+              <div>
+                <p className="text-sm text-green-700 font-medium">{successMsg}</p>
+                <p className="text-xs text-green-600 mt-0.5">A redirecionar para My Orders…</p>
+              </div>
+            </div>
+          )}
+
+          {/* Error banner */}
           {error && (
             <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -292,12 +315,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           {/* Submit actions — top for easy access */}
           <div className="flex items-center gap-3">
             <button onClick={() => handleSubmit('submitted')}
-              disabled={submitting || !reference}
+              disabled={submitting || !reference || !!successMsg}
               className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
-                         hover:bg-gold-dark transition-colors disabled:opacity-50">
-              {submitting ? '…' : t('submit')}
+                         hover:bg-gold-dark transition-colors disabled:opacity-50 inline-flex items-center gap-2">
+              {submitting && (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              )}
+              {submitting ? 'A processar…' : t('submit')}
             </button>
-            <button onClick={() => handleSubmit('draft')} disabled={submitting}
+            <button onClick={() => handleSubmit('draft')} disabled={submitting || !!successMsg}
               className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
                          text-sm rounded-xl hover:border-stone-300 transition-colors">
               {t('save_draft')}
@@ -579,8 +608,15 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               </button>
               <button onClick={() => handleSubmit('draft')} disabled={submitting}
                 className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
-                           text-sm rounded-xl hover:border-stone-300 transition-colors">
-                {t('save_draft')}
+                           text-sm rounded-xl hover:border-stone-300 transition-colors
+                           inline-flex items-center gap-2">
+                {submitting && (
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                )}
+                {submitting ? 'A guardar…' : t('save_draft')}
               </button>
             </div>
           </div>
