@@ -207,6 +207,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   const t = useTranslations('gallery.filters')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
 
+  const [showOnlyActive, setShowOnlyActive] = useState(false)
+
   // Checkbox-expand state for Additions section
   const [addExpanded, setAddExpanded] = useState<Set<string>>(() => {
     const s = new Set<string>()
@@ -351,21 +353,53 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 </div>
               </button>
 
-              {open && (
+              {open && (() => {
+                const hasActive = addExpanded.size > 0
+                const effectiveFilter = showOnlyActive && hasActive
+                const unitColLabel = unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'L' : unit === 'RIGHT' ? 'R' : ''
+                return (
                 <div className="px-5 pb-3 pt-1 border-t border-stone-100 divide-y divide-stone-50">
 
-                  {/* Column header — only in LEFT_RIGHT mode */}
-                  {isDouble && (
-                    <div className="flex items-center justify-end gap-5 pb-2 pt-1 pr-0.5">
-                      <span className="w-4 text-center text-[11px] font-semibold text-stone-400">L</span>
-                      <span className="w-4 text-center text-[11px] font-semibold text-stone-400">R</span>
+                  {/* Sub-header: filter toggle left, column label(s) right */}
+                  <div className="flex items-center justify-between pb-2 pt-1.5">
+                    <button type="button"
+                      disabled={!hasActive}
+                      onClick={() => setShowOnlyActive(v => !v)}
+                      className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md transition-all
+                        ${effectiveFilter
+                          ? 'bg-gold/10 text-gold'
+                          : hasActive
+                            ? 'text-stone-400 hover:text-stone-600 hover:bg-stone-50'
+                            : 'text-stone-300 cursor-not-allowed'}`}>
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd"/>
+                      </svg>
+                      active
+                    </button>
+                    <div className="flex gap-5 pr-0.5">
+                      {isDouble ? (
+                        <>
+                          <span className="w-4 text-center text-[11px] font-semibold text-stone-400">L</span>
+                          <span className="w-4 text-center text-[11px] font-semibold text-stone-400">R</span>
+                        </>
+                      ) : (
+                        <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{unitColLabel}</span>
+                      )}
                     </div>
-                  )}
+                  </div>
 
                   {fields.map(field => {
                     if (field.side === 'global') return null
                     const isSubField = field.label.startsWith('↳')
                     const cleanLabel = field.label.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
+
+                    // Filter: show only checked fields (sub-fields follow parent naturally)
+                    if (effectiveFilter && !isSubField) {
+                      const active = isDouble
+                        ? (addExpanded.has(`${field.key}:l`) || addExpanded.has(`${field.key}:r`))
+                        : addExpanded.has(`${field.key}:${displaySide}`)
+                      if (!active) return null
+                    }
 
                     // ── Sub-fields: no checkbox, auto-show when parent is expanded ──
                     if (isSubField) {
@@ -453,7 +487,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                     }
                   })}
                 </div>
-              )}
+                )
+              })()}
             </div>
           )
         }
