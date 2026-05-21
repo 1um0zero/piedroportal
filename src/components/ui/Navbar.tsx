@@ -5,6 +5,7 @@ import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
 import { NavbarLocale } from './NavbarLocale'
+import { NavbarMobile } from './NavbarMobile'
 
 type Props = { locale: string }
 
@@ -21,7 +22,7 @@ export default async function Navbar({ locale }: Props) {
   }
 
   return (
-    <header className="bg-white border-b border-stone-100" style={{ boxShadow: 'var(--shadow-nav)' }}>
+    <header className="bg-white border-b border-stone-100 relative" style={{ boxShadow: 'var(--shadow-nav)' }}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
 
         {/* Logo */}
@@ -34,8 +35,8 @@ export default async function Navbar({ locale }: Props) {
           />
         </Link>
 
-        {/* Nav links */}
-        <nav className="flex items-center gap-6 flex-1">
+        {/* Nav links — hidden on mobile */}
+        <nav className="hidden lg:flex items-center gap-6 flex-1">
           <Link href="/gallery" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
             {t('gallery')}
           </Link>
@@ -66,8 +67,8 @@ export default async function Navbar({ locale }: Props) {
           <NavbarClient locale={locale} />
         </nav>
 
-        {/* Right: language + auth */}
-        <div className="flex items-center gap-3">
+        {/* Right: language + auth — hidden on mobile */}
+        <div className="hidden lg:flex items-center gap-3">
           {/* Language switcher — saves preference to profile */}
           <NavbarLocale locales={[...routing.locales]} current={locale} />
 
@@ -92,6 +93,14 @@ export default async function Navbar({ locale }: Props) {
             )}
           </div>
         </div>
+
+        {/* Mobile hamburger — only on mobile */}
+        <NavbarMobile
+          isAdmin={isAdmin}
+          isLoggedIn={!!user}
+          locale={locale}
+          locales={[...routing.locales]}
+        />
       </div>
     </header>
   )
