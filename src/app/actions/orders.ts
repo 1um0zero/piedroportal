@@ -7,7 +7,7 @@ import { Resend } from 'resend'
 import React from 'react'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const TO_EMAIL = process.env.ORDER_NOTIFY_EMAIL ?? 'suporte@umzero.pt'
+const TO_EMAIL = process.env.ORDER_NOTIFY_EMAIL ?? 'tavares@umzero.pt'
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 
 
