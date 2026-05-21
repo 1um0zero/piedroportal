@@ -24,15 +24,17 @@ type Props = {
 }
 
 // ── Single-select chip ────────────────────────────────────────────────────────
-function Chips({ options, value, onChange, pill = false }: {
+function Chips({ options, value, onChange, pill = false, collapse = false }: {
   options: string[]
   value: string
   onChange: (v: string) => void
   pill?: boolean
+  collapse?: boolean
 }) {
+  const displayed = collapse && value ? [value] : options
   return (
     <div className="flex flex-wrap gap-1.5">
-      {options.map(o => (
+      {displayed.map(o => (
         <button key={o} type="button" onClick={() => onChange(o === value ? '' : o)}
           className={`px-2.5 py-1 text-xs font-medium border transition-all whitespace-nowrap
             ${pill ? 'rounded-full' : 'rounded'}
@@ -47,11 +49,12 @@ function Chips({ options, value, onChange, pill = false }: {
 }
 
 // ── Size input with datalist ──────────────────────────────────────────────────
-function SizeInput({ sizes, value, onChange, label }: {
+function SizeInput({ sizes, value, onChange, label, onBlurAfterSnap }: {
   sizes: string[]
   value: string
   onChange: (v: string) => void
   label: string
+  onBlurAfterSnap?: (v: string) => void
 }) {
   const id = `size-list-${label}`
   return (
@@ -64,11 +67,12 @@ function SizeInput({ sizes, value, onChange, label }: {
           onChange={e => onChange(e.target.value)}
           onBlur={e => {
             const v = parseFloat(e.target.value)
-            if (isNaN(v)) { onChange(''); return }
+            if (isNaN(v)) { onChange(''); onBlurAfterSnap?.(''); return }
             const nearest = sizes.reduce((p, c) =>
               Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
             )
             onChange(nearest)
+            onBlurAfterSnap?.(nearest)
           }}
           placeholder="—"
           className="w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
@@ -142,14 +146,22 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   for (let s = product.size_first; s <= product.size_last; s += 0.5)
     sizes.push(String(Math.round(s * 2) / 2))
 
-  // Mirror helpers
+  // Mirror helpers — PAIR mirrors both feet; LEFT_RIGHT copies to right if right is empty
   function setConstrLeft(v: string) {
     setConstrL(v)
-    if (mirror) setConstrR(v)
-    setWidthL(''); if (mirror) setWidthR('')
+    if (mirror) { setConstrR(v); setWidthR('') }
+    else if (isDouble && !constrRight) setConstrR(v)
+    setWidthL('')
   }
-  function setWidthLeft(v: string)  { setWidthL(v); if (mirror) setWidthR(v) }
-  function setSizeLeft(v: string)   { setSizeL(v);  if (mirror) setSizeR(v) }
+  function setWidthLeft(v: string) {
+    setWidthL(v)
+    if (mirror) setWidthR(v)
+    else if (isDouble && !widthRight) setWidthR(v)
+  }
+  function setSizeLeft(v: string) {
+    setSizeL(v)
+    if (mirror) setSizeR(v)
+  }
 
   // ── Submit ──
   async function handleSubmit(status: 'draft' | 'submitted') {
@@ -177,7 +189,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   }
 
   const inputCls = 'w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors'
-  const labelCls = 'text-xs font-semibold text-stone-500 uppercase tracking-wide'
+  const labelCls = 'text-xs font-bold text-stone-700 uppercase tracking-wide'
 
   // ── Company display ──
   const companyName = isAdmin
@@ -394,7 +406,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 {!isDouble ? (
                   <div className="space-y-1.5">
                     {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
-                    <Chips
+                    <Chips collapse
                       options={constructionOpts}
                       value={unit === 'RIGHT' ? constrRight : constrLeft}
                       onChange={unit === 'RIGHT'
@@ -406,11 +418,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
-                      <Chips options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
+                      <Chips collapse options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
                     </div>
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
-                      <Chips options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
+                      <Chips collapse options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
                     </div>
                   </div>
                 )}
@@ -427,22 +439,21 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               ) : !isDouble ? (
                 <div className="space-y-1.5">
                   {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
-                  <Chips
+                  <Chips collapse pill
                     options={unit === 'RIGHT' ? widthsR : widthsL}
                     value={unit === 'RIGHT' ? widthRight : widthLeft}
                     onChange={unit === 'RIGHT' ? setWidthR : setWidthLeft}
-                    pill
                   />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
-                    <Chips options={widthsL} value={widthLeft} onChange={setWidthLeft} pill />
+                    <Chips collapse pill options={widthsL} value={widthLeft} onChange={setWidthLeft} />
                   </div>
                   <div className="space-y-1.5">
                     <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
-                    <Chips options={widthsR} value={widthRight} onChange={setWidthR} pill />
+                    <Chips collapse pill options={widthsR} value={widthRight} onChange={setWidthR} />
                   </div>
                 </div>
               )}
@@ -465,7 +476,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 />
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft} label={`${t('left')} *`} />
+                  <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft} label={`${t('left')} *`}
+                    onBlurAfterSnap={v => { if (v && !sizeRight) setSizeR(v) }} />
                   <SizeInput sizes={sizes} value={sizeRight} onChange={setSizeR} label={`${t('right')} *`} />
                 </div>
               )}

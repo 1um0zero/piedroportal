@@ -24,10 +24,11 @@ type Props = {
 
 // Text input with datalist — shows valid options, snaps to nearest on blur
 let _mmId = 0
-function MmInput({ values, value, onChange }: {
+function MmInput({ values, value, onChange, onBlurDone }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: number | string | null) => void
+  onBlurDone?: (v: number | string | null) => void
 }) {
   const [id] = useState(() => `mm-${++_mmId}`)
   const strValues = values.map(String)
@@ -42,23 +43,20 @@ function MmInput({ values, value, onChange }: {
         onChange={e => {
           const typed = e.target.value
           if (typed === '') { onChange(null); return }
-          // Only accept if typed is a valid prefix of any list value
           const allowed = strValues.some(v => v.startsWith(typed) || typed === v)
           if (allowed) onChange(typed)
-          // else: don't update — input reverts to previous value
         }}
         onBlur={e => {
           const typed = e.target.value
-          if (!typed) { onChange(null); return }
-          // Snap to exact match or nearest valid value
+          if (!typed) { onChange(null); onBlurDone?.(null); return }
           const exact = strValues.find(v => v === typed)
-          if (exact) { onChange(parseFloat(exact)); return }
+          if (exact) { const n = parseFloat(exact); onChange(n); onBlurDone?.(n); return }
           const v = parseFloat(typed)
-          if (isNaN(v)) { onChange(null); return }
+          if (isNaN(v)) { onChange(null); onBlurDone?.(null); return }
           const nearest = strValues.reduce((p, c) =>
             Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
           )
-          onChange(parseFloat(nearest))
+          const n = parseFloat(nearest); onChange(n); onBlurDone?.(n)
         }}
         className="w-24 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
                    focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
@@ -305,16 +303,17 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   }
 
   function toggleAddField(key: string, side: 'l' | 'r', on: boolean) {
-    setAddExpanded(prev => {
-      const next = new Set(prev)
-      if (on) {
-        next.add(`${key}:${side}`)
-      } else {
-        next.delete(`${key}:${side}`)
-        updateField(key, side, null)
+    if (on) {
+      // When activating Right and Left already has a value, pre-fill Right
+      if (side === 'r') {
+        const leftVal = (additions[key] as SidedVal | null)?.l
+        if (leftVal != null && leftVal !== '') updateField(key, 'r', leftVal)
       }
-      return next
-    })
+      setAddExpanded(prev => { const next = new Set(prev); next.add(`${key}:${side}`); return next })
+    } else {
+      updateField(key, side, null)
+      setAddExpanded(prev => { const next = new Set(prev); next.delete(`${key}:${side}`); return next })
+    }
   }
 
   return (
@@ -354,20 +353,55 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
 
               {open && (
                 <div className="px-5 pb-3 pt-1 border-t border-stone-100 divide-y divide-stone-50">
+
+                  {/* Column header — only in LEFT_RIGHT mode */}
+                  {isDouble && (
+                    <div className="flex items-center justify-end gap-5 pb-2 pt-1 pr-0.5">
+                      <span className="w-4 text-center text-[11px] font-semibold text-stone-400">L</span>
+                      <span className="w-4 text-center text-[11px] font-semibold text-stone-400">R</span>
+                    </div>
+                  )}
+
                   {fields.map(field => {
                     if (field.side === 'global') return null
                     const isSubField = field.label.startsWith('↳')
+                    const cleanLabel = field.label.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
 
+                    // ── Sub-fields: no checkbox, auto-show when parent is expanded ──
+                    if (isSubField) {
+                      const parentKey = field.conditionalOn!
+                      if (!isDouble) {
+                        if (!addExpanded.has(`${parentKey}:${displaySide}`)) return null
+                        return (
+                          <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
+                            <p className="text-xs text-stone-400 mb-2">{cleanLabel}</p>
+                            {renderControl(field, displaySide)}
+                          </div>
+                        )
+                      } else {
+                        const parentCheckedL = addExpanded.has(`${parentKey}:l`)
+                        const parentCheckedR = addExpanded.has(`${parentKey}:r`)
+                        if (!parentCheckedL && !parentCheckedR) return null
+                        return (
+                          <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
+                            <p className="text-xs text-stone-400 mb-2">{cleanLabel}</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>{parentCheckedL ? renderControl(field, 'l') : null}</div>
+                              <div>{parentCheckedR ? renderControl(field, 'r') : null}</div>
+                            </div>
+                          </div>
+                        )
+                      }
+                    }
+
+                    // ── Top-level fields with checkbox(es) ──
                     if (!isDouble) {
                       if (field.conditionalOn && !isParentActive(field, displaySide)) return null
                       const checked = addExpanded.has(`${field.key}:${displaySide}`)
                       return (
-                        <div key={field.key}
-                          className={`py-2.5 ${isSubField ? 'pl-4 ml-1 border-l-2 border-gold/20' : ''}`}>
+                        <div key={field.key} className="py-2.5">
                           <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
-                            <span className={isSubField ? 'text-xs text-stone-400' : 'text-sm text-stone-700'}>
-                              {field.label.replace(/\s*\(mm\)/gi, '')}
-                            </span>
+                            <span className="text-sm text-stone-700">{cleanLabel}</span>
                             <input type="checkbox" checked={checked}
                               onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
                               className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
@@ -378,41 +412,39 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         </div>
                       )
                     } else {
-                      const parentSv = field.conditionalOn
-                        ? additions[field.conditionalOn] as SidedVal | null
-                        : null
-                      const parentActiveL = parentSv ? (parentSv.l != null && parentSv.l !== '') : true
-                      const parentActiveR = parentSv ? (parentSv.r != null && parentSv.r !== '') : true
-                      if (!parentActiveL && !parentActiveR) return null
-                      const checkedL = parentActiveL && addExpanded.has(`${field.key}:l`)
-                      const checkedR = parentActiveR && addExpanded.has(`${field.key}:r`)
+                      const checkedL = addExpanded.has(`${field.key}:l`)
+                      const checkedR = addExpanded.has(`${field.key}:r`)
+                      const sv = additions[field.key] as SidedVal | null
                       return (
-                        <div key={field.key}
-                          className={`py-2.5 ${isSubField ? 'pl-4 ml-1 border-l-2 border-gold/20' : ''}`}>
-                          <div className="flex items-center justify-between gap-3">
-                            <span className={isSubField ? 'text-xs text-stone-400' : 'text-sm text-stone-700'}>
-                              {field.label.replace(/\s*\(mm\)/gi, '')}
-                            </span>
-                            <div className="flex items-center gap-5 shrink-0">
-                              {parentActiveL && (
-                                <label className="flex items-center gap-1.5 text-xs text-stone-400 cursor-pointer select-none">
-                                  Left <input type="checkbox" checked={checkedL}
-                                    onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
-                                    className="w-4 h-4 cursor-pointer accent-stone-700" />
-                                </label>
-                              )}
-                              {parentActiveR && (
-                                <label className="flex items-center gap-1.5 text-xs text-stone-400 cursor-pointer select-none">
-                                  Right <input type="checkbox" checked={checkedR}
-                                    onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
-                                    className="w-4 h-4 cursor-pointer accent-stone-700" />
-                                </label>
-                              )}
+                        <div key={field.key} className="py-2.5">
+                          <div className="flex items-center gap-3">
+                            <span className="flex-1 text-sm text-stone-700 min-w-0">{cleanLabel}</span>
+                            <div className="flex gap-5 shrink-0">
+                              <input type="checkbox" checked={checkedL}
+                                onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer accent-stone-700" />
+                              <input type="checkbox" checked={checkedR}
+                                onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer accent-stone-700" />
                             </div>
                           </div>
                           {(checkedL || checkedR) && (
                             <div className="mt-2.5 grid grid-cols-2 gap-4">
-                              <div>{checkedL ? renderControl(field, 'l') : null}</div>
+                              <div>
+                                {checkedL && field.type === 'mm' ? (
+                                  <MmInput
+                                    values={field.values ?? []}
+                                    value={sv?.l}
+                                    onChange={v => updateField(field.key, 'l', v)}
+                                    onBlurDone={v => {
+                                      if (checkedR && v != null) {
+                                        const rVal = (additions[field.key] as SidedVal | null)?.r
+                                        if (rVal == null || rVal === '') updateField(field.key, 'r', v)
+                                      }
+                                    }}
+                                  />
+                                ) : checkedL ? renderControl(field, 'l') : null}
+                              </div>
                               <div>{checkedR ? renderControl(field, 'r') : null}</div>
                             </div>
                           )}
