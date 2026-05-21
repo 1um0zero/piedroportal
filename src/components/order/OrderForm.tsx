@@ -207,11 +207,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       if (result.error) throw new Error(result.error)
 
       if (status === 'submitted') {
-        const msg = result.pdf_url
-          ? 'Encomenda submetida. PDF gerado e anexado.'
-          : result.pdfError
-            ? `Encomenda submetida. Erro no PDF: ${result.pdfError}`
-            : 'Encomenda submetida.'
+        const msg = result.pdfError
+          ? `Encomenda submetida. Erro no PDF: ${result.pdfError}`
+          : result.emailError
+            ? `Encomenda submetida. PDF gerado. Erro no email: ${result.emailError}`
+            : result.pdf_url
+              ? 'Encomenda submetida. PDF gerado e email enviado.'
+              : 'Encomenda submetida.'
         setSuccessMsg(msg)
         await new Promise(r => setTimeout(r, 3000))
       }

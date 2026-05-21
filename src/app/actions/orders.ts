@@ -42,7 +42,7 @@ export type PdfMeta = {
 export async function insertOrderAction(
   row:     OrderRow,
   pdfMeta?: PdfMeta,   // provided only when status === 'submitted'
-): Promise<{ id?: string; pdf_url?: string; error?: string; pdfError?: string }> {
+): Promise<{ id?: string; pdf_url?: string; error?: string; pdfError?: string; emailError?: string }> {
 
   // Verify session server-side
   const sb = await createClient()
@@ -60,7 +60,6 @@ export async function insertOrderAction(
   if (error) return { error: `${error.message} [${error.code}]` }
   const orderId: string = data.id
 
-  // For submitted orders: generate PDF → upload to Storage (email disabled for now — diagnosing)
   if (row.status === 'submitted' && pdfMeta) {
     const pdfResult = await generatePdf(orderId, row, pdfMeta, service)
     return { id: orderId, ...pdfResult }
@@ -69,7 +68,7 @@ export async function insertOrderAction(
 }
 
 // ── Shared PDF generation helper ──────────────────────────────────────────────
-async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>): Promise<{ pdf_url?: string; pdfError?: string }> {
+async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>): Promise<{ pdf_url?: string; pdfError?: string; emailError?: string }> {
   try {
     const pdfProps: OrderPdfProps = {
       reference: row.reference_customer, status: row.status, unit: row.unit,
@@ -111,7 +110,11 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
       </div>`,
       attachments: [{ filename: `encomenda-${ref}.pdf`, content: pdfBytes.toString('base64') }],
     })
-    if (emailErr) console.error('Email error:', emailErr)
+
+    if (emailErr) {
+      console.error('Email error:', emailErr)
+      return { pdf_url: publicUrl, emailError: emailErr.message }
+    }
 
     return { pdf_url: publicUrl }
   } catch (e) {
