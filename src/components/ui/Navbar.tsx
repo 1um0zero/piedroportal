@@ -29,27 +29,26 @@ export default async function Navbar({ locale }: Props) {
           <img
             src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
             alt="Piedro International"
-            className="h-9 w-auto"
-            style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.12)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))' }}
+            className="h-12 w-auto"
           />
         </Link>
 
         {/* Nav links */}
         <nav className="flex items-center gap-6 flex-1">
-          <Link href="/gallery" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+          <Link href="/gallery" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
             {t('gallery')}
           </Link>
           {user && !isAdmin && (
-            <Link href="/orders" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+            <Link href="/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
               {t('orders')}
             </Link>
           )}
           {user && isAdmin && (
             <>
-              <Link href="/admin/orders" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+              <Link href="/admin/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 Orders
               </Link>
-              <Link href="/admin/users" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+              <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 Users
               </Link>
             </>

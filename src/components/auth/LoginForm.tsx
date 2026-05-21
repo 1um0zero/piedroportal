@@ -5,7 +5,8 @@ import { Link } from '@/i18n/navigation'
 import { signInAction } from '@/app/[locale]/login/actions'
 import { useActionState } from 'react'
 
-const HERO = 'https://images.unsplash.com/photo-1476234251651-f353703a034d?auto=format&fit=crop&w=1800&q=85'
+// Replace with Supabase Storage URL after uploading the image to __brand/login-hero.jpg
+const HERO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/login-hero.jpg'
 const LOGO = 'https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png'
 
 export default function LoginForm({ hasError }: { hasError?: boolean }) {
@@ -15,19 +16,28 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
   return (
     <div className="min-h-screen flex">
       {/* Hero */}
-      <div className="hidden lg:flex lg:w-3/5 relative flex-col justify-between p-12"
-        style={{ backgroundImage: `url(${HERO})`, backgroundSize: 'cover', backgroundPosition: 'center 40%' }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a2c3d]/80 via-[#1a2c3d]/50 to-[#1a2c3d]/20" />
-        <div className="relative z-10">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 inline-block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO} alt="Piedro" className="h-9 w-auto" />
-          </div>
-        </div>
-        <div className="relative z-10 space-y-2">
-          <p className="text-white/70 text-sm tracking-[0.3em] uppercase">Always</p>
-          <p className="text-white text-4xl font-bold tracking-widest uppercase leading-tight">One Step<br />Ahead</p>
-          <div className="w-10 h-0.5 bg-[#B8975A] mt-3" />
+      <div className="hidden lg:flex lg:w-3/5 relative flex-col justify-end"
+        style={{ backgroundImage: `url(${HERO})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        {/* Subtle gradient only at bottom for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="relative z-10 p-12 space-y-3">
+          <a href="https://www.piedro.com" target="_blank" rel="noopener noreferrer"
+            className="group inline-block">
+            <p className="text-white/60 text-xs tracking-[0.4em] uppercase font-light mb-1 group-hover:text-[#B8975A] transition-colors">
+              Always
+            </p>
+            <p className="text-white text-5xl font-bold tracking-[0.15em] uppercase leading-none group-hover:text-[#B8975A] transition-colors"
+              style={{ textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
+              One Step<br />Ahead
+            </p>
+            <div className="flex items-center gap-3 mt-4">
+              <div className="h-px w-12 bg-[#B8975A]" />
+              <span className="text-[#B8975A] text-xs tracking-[0.3em] uppercase font-medium
+                               group-hover:tracking-[0.5em] transition-all duration-500">
+                piedro.com
+              </span>
+            </div>
+          </a>
         </div>
       </div>
 
