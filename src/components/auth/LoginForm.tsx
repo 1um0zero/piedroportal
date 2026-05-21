@@ -23,13 +23,8 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-        {/* SVG inline — avoids external file loading issues, enables hover animations */}
-        <div className="flex-1 flex items-center justify-center px-10 pt-16 pb-4">
-          <LoginHeroSvg />
-        </div>
-
-        {/* One Step Ahead tagline */}
-        <div className="relative z-10 px-12 pb-12 space-y-3">
+        {/* One Step Ahead — top */}
+        <div className="relative z-10 px-12 pt-10 pb-2">
           <a href="https://www.piedro.com" target="_blank" rel="noopener noreferrer"
             className="group inline-block">
             <p className="text-white/50 text-xs tracking-[0.4em] uppercase font-light mb-1 group-hover:text-[#B8975A] transition-colors">
@@ -46,6 +41,11 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
               </span>
             </div>
           </a>
+        </div>
+
+        {/* SVG — fills remaining space below the tagline */}
+        <div className="flex-1 flex items-center justify-center px-8 pb-8">
+          <LoginHeroSvg />
         </div>
       </div>
 
