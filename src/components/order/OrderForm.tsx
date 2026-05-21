@@ -111,9 +111,12 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const showAdditions = unit !== 'DIFF_SIZES'
   const steps = showAdditions ? [1, 2, 3] : [1, 3]
 
-  const showLeft  = unit !== 'RIGHT'
-  const showRight = unit !== 'LEFT'
-  const mirror    = unit === 'PAIR'
+  const isDouble    = unit === 'LEFT_RIGHT'
+  const mirror      = unit === 'PAIR'
+  const displaySide: 'l' | 'r' = unit === 'RIGHT' ? 'r' : 'l'
+  const sideLabel   = unit === 'LEFT'  ? t('left')
+                    : unit === 'RIGHT' ? t('right')
+                    : ''
 
   // ── Product data ──
   const constructions = product.constructions ?? []
@@ -388,28 +391,29 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                   {t('construction')}
                 </h3>
-                <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                  {showLeft && (
+                {!isDouble ? (
+                  <div className="space-y-1.5">
+                    {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
+                    <Chips
+                      options={constructionOpts}
+                      value={unit === 'RIGHT' ? constrRight : constrLeft}
+                      onChange={unit === 'RIGHT'
+                        ? (v) => { setConstrR(v); setWidthR('') }
+                        : setConstrLeft}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      {showRight && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>}
+                      <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
                       <Chips options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
                     </div>
-                  )}
-                  {showRight && (
                     <div className="space-y-1.5">
-                      {showLeft && (
-                        <p className="text-[10px] text-stone-400 uppercase tracking-wide">
-                          {t('right')} <span className="text-red-400">*</span>
-                          {mirror && <span className="text-stone-300 normal-case font-normal ml-1">= {t('left')}</span>}
-                        </p>
-                      )}
-                      <div className={mirror ? 'opacity-40 pointer-events-none' : ''}>
-                        <Chips options={constructionOpts} value={mirror ? constrLeft : constrRight}
-                          onChange={setConstrR} />
-                      </div>
+                      <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
+                      <Chips options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -418,30 +422,28 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                 {t('width')}
               </h3>
-              {!constrLeft && constructionOpts.length > 0 ? (
+              {!isDouble && !(unit === 'RIGHT' ? constrRight : constrLeft) && constructionOpts.length > 0 ? (
                 <p className="text-xs text-stone-400 italic">{t('select_construction')}</p>
+              ) : !isDouble ? (
+                <div className="space-y-1.5">
+                  {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
+                  <Chips
+                    options={unit === 'RIGHT' ? widthsR : widthsL}
+                    value={unit === 'RIGHT' ? widthRight : widthLeft}
+                    onChange={unit === 'RIGHT' ? setWidthR : setWidthLeft}
+                    pill
+                  />
+                </div>
               ) : (
-                <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                  {showLeft && (
-                    <div className="space-y-1.5">
-                      {showRight && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>}
-                      <Chips options={widthsL} value={widthLeft} onChange={setWidthLeft} pill />
-                    </div>
-                  )}
-                  {showRight && (
-                    <div className="space-y-1.5">
-                      {showLeft && (
-                        <p className="text-[10px] text-stone-400 uppercase tracking-wide">
-                          {t('right')} <span className="text-red-400">*</span>
-                          {mirror && <span className="text-stone-300 normal-case font-normal ml-1">= {t('left')}</span>}
-                        </p>
-                      )}
-                      <div className={mirror ? 'opacity-40 pointer-events-none' : ''}>
-                        <Chips options={mirror ? widthsL : widthsR}
-                          value={mirror ? widthLeft : widthRight} onChange={setWidthR} pill />
-                      </div>
-                    </div>
-                  )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
+                    <Chips options={widthsL} value={widthLeft} onChange={setWidthLeft} pill />
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
+                    <Chips options={widthsR} value={widthRight} onChange={setWidthR} pill />
+                  </div>
                 </div>
               )}
             </div>
@@ -454,20 +456,19 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   EU {product.size_first}–{product.size_last}
                 </span>
               </h3>
-              <div className={`grid gap-4 ${showLeft && showRight ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                {showLeft && (
-                  <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft}
-                    label={showRight ? `${t('left')} *` : `${t('size')} *`} />
-                )}
-                {showRight && (
-                  <div className={mirror ? 'opacity-40 pointer-events-none' : ''}>
-                    <SizeInput sizes={sizes}
-                      value={mirror ? sizeLeft : sizeRight}
-                      onChange={setSizeR}
-                      label={showLeft ? `${t('right')} *${mirror ? ` (= ${t('left')})` : ''}` : `${t('size')} *`} />
-                  </div>
-                )}
-              </div>
+              {!isDouble ? (
+                <SizeInput
+                  sizes={sizes}
+                  value={unit === 'RIGHT' ? sizeRight : sizeLeft}
+                  onChange={unit === 'RIGHT' ? setSizeR : setSizeLeft}
+                  label={sideLabel ? `${sideLabel} *` : `${t('size')} *`}
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft} label={`${t('left')} *`} />
+                  <SizeInput sizes={sizes} value={sizeRight} onChange={setSizeR} label={`${t('right')} *`} />
+                </div>
+              )}
             </div>
 
             {/* Error */}

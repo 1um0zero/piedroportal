@@ -71,26 +71,49 @@ function MmInput({ values, value, onChange }: {
 }
 
 // ── Shared option picker (one strip, click fills active foot) ─────────────────
-function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR,
-  showRight, mirror }: {
+function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR }: {
   options: string[]
   valueL: string; valueR: string
   onChangeL: (v: string | null) => void
   onChangeR: (v: string | null) => void
-  showRight: boolean; mirror: boolean
 }) {
   const [active, setActive] = useState<'l'|'r'>('l')
   const current = active === 'l' ? valueL : valueR
 
   function pick(opt: string) {
     const newVal = current === opt ? null : opt
-    if (active === 'l') { onChangeL(newVal); if (mirror) onChangeR(newVal) }
+    if (active === 'l') onChangeL(newVal)
     else onChangeR(newVal)
   }
 
   return (
     <div className="space-y-2">
-      {/* Shared options strip */}
+      {/* Foot selectors — grid matching other two-column fields */}
+      <div className="grid grid-cols-2 gap-4">
+        <button type="button" onClick={() => setActive('l')}
+          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg border text-xs transition-all
+            ${active === 'l' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
+          <span className="text-stone-500 font-bold">Left</span>
+          <span className={`mx-1 truncate ${valueL ? 'text-stone-800' : 'text-stone-300'}`}>{valueL || '—'}</span>
+          {valueL && (
+            <span className="shrink-0 text-stone-300 hover:text-red-400 cursor-pointer"
+              onClick={e => { e.stopPropagation(); onChangeL(null) }}>×</span>
+          )}
+        </button>
+
+        <button type="button" onClick={() => setActive('r')}
+          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg border text-xs transition-all
+            ${active === 'r' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
+          <span className="text-stone-500 font-bold">Right</span>
+          <span className={`mx-1 truncate ${valueR ? 'text-stone-800' : 'text-stone-300'}`}>{valueR || '—'}</span>
+          {valueR && (
+            <span className="shrink-0 text-stone-300 hover:text-red-400 cursor-pointer"
+              onClick={e => { e.stopPropagation(); onChangeR(null) }}>×</span>
+          )}
+        </button>
+      </div>
+
+      {/* Options strip */}
       <div className="flex flex-wrap gap-1.5">
         {options.map(opt => (
           <button key={opt} type="button" onClick={() => pick(opt)}
@@ -101,38 +124,6 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR,
             {opt}
           </button>
         ))}
-      </div>
-
-      {/* Foot selectors showing current value */}
-      <div className="flex gap-2 flex-wrap">
-        <button type="button" onClick={() => setActive('l')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs transition-all
-            ${active === 'l' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
-          <span className="text-stone-500 font-bold">L</span>
-          <span className={valueL ? 'text-stone-800' : 'text-stone-300'}>{valueL || '—'}</span>
-          {valueL && (
-            <span className="text-stone-300 hover:text-red-400 ml-0.5 cursor-pointer"
-              onClick={e => { e.stopPropagation(); onChangeL(null); if (mirror) onChangeR(null) }}>
-              ×
-            </span>
-          )}
-        </button>
-
-        {showRight && (
-          <button type="button"
-            onClick={() => !mirror && setActive('r')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs transition-all
-              ${mirror ? 'opacity-50 cursor-default' : active === 'r' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
-            <span className="text-stone-500 font-bold">R</span>
-            <span className={valueR ? 'text-stone-800' : 'text-stone-300'}>
-              {mirror ? `= L` : valueR || '—'}
-            </span>
-            {!mirror && valueR && (
-              <span className="text-stone-300 hover:text-red-400 ml-0.5 cursor-pointer"
-                onClick={e => { e.stopPropagation(); onChangeR(null) }}>×</span>
-            )}
-          </button>
-        )}
       </div>
     </div>
   )
@@ -353,7 +344,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             valueR={String((additions[field.key] as SidedVal)?.r ?? '')}
                             onChangeL={v => updateField(field.key, 'l', v)}
                             onChangeR={v => updateField(field.key, 'r', v)}
-                            showRight mirror={false}
                           />
                         )
                       ) : !isDouble ? (
