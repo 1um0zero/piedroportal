@@ -374,7 +374,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd"/>
                       </svg>
-                      active
+                      Selected
                     </button>
                     <div className="flex gap-5 pr-0.5">
                       {isDouble ? (
@@ -401,27 +401,26 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       if (!active) return null
                     }
 
-                    // ── Sub-fields: no checkbox, auto-show when parent is expanded ──
+                    // ── Sub-fields: appear only when parent has a value (mandatory) ──
                     if (isSubField) {
-                      const parentKey = field.conditionalOn!
                       if (!isDouble) {
-                        if (!addExpanded.has(`${parentKey}:${displaySide}`)) return null
+                        if (!isParentActive(field, displaySide)) return null
                         return (
                           <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
-                            <p className="text-xs text-stone-400 mb-2">{cleanLabel}</p>
+                            <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
                             {renderControl(field, displaySide)}
                           </div>
                         )
                       } else {
-                        const parentCheckedL = addExpanded.has(`${parentKey}:l`)
-                        const parentCheckedR = addExpanded.has(`${parentKey}:r`)
-                        if (!parentCheckedL && !parentCheckedR) return null
+                        const parentFilledL = isParentActive(field, 'l')
+                        const parentFilledR = isParentActive(field, 'r')
+                        if (!parentFilledL && !parentFilledR) return null
                         return (
                           <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
-                            <p className="text-xs text-stone-400 mb-2">{cleanLabel}</p>
+                            <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
                             <div className="grid grid-cols-2 gap-4">
-                              <div>{parentCheckedL ? renderControl(field, 'l') : null}</div>
-                              <div>{parentCheckedR ? renderControl(field, 'r') : null}</div>
+                              <div>{parentFilledL ? renderControl(field, 'l') : null}</div>
+                              <div>{parentFilledR ? renderControl(field, 'r') : null}</div>
                             </div>
                           </div>
                         )
