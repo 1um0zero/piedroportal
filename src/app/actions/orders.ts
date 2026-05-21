@@ -129,7 +129,7 @@ export async function updateOrderAction(
   draftId: string,
   row: OrderRow,
   pdfMeta?: PdfMeta,
-): Promise<{ id?: string; pdf_url?: string; error?: string; pdfError?: string }> {
+): Promise<{ id?: string; pdf_url?: string; error?: string; pdfError?: string; emailError?: string }> {
   const sb = await createClient()
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
