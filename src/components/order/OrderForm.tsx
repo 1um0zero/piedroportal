@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/client'
 import type { Product } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, SECTIONS } from './additions-config'
+import { insertOrderAction } from '@/app/actions/orders'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -163,11 +163,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     if (mirror) setSizeR(v)
   }
 
-  // ── Submit ──
+  // ── Submit — uses Server Action to avoid client-side auth issues ──
   async function handleSubmit(status: 'draft' | 'submitted') {
     setError(''); setSubmitting(true)
     try {
-      const sb = createClient()
       const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
       const row = {
         user_id:            userId,
@@ -185,30 +184,20 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         comments:           String(addComments ?? '') || null,
       }
 
-      // For submit we need the inserted ID for the email; for draft a plain insert suffices
-      if (status === 'submitted') {
-        const { data, error: err } = await sb.from('orders').insert(row).select('id').single()
-        if (err) throw err
-        if (data?.id) {
-          fetch('/api/orders/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId: data.id }),
-          }).catch(e => console.error('PDF send error:', e))
-        }
-      } else {
-        const { error: err } = await sb.from('orders').insert(row)
-        if (err) throw err
+      const result = await insertOrderAction(row, status === 'submitted')
+      if (result.error) throw new Error(result.error)
+
+      if (status === 'submitted' && result.id) {
+        fetch('/api/orders/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: result.id }),
+        }).catch(e => console.error('PDF send error:', e))
       }
 
       router.push('/orders')
     } catch (e) {
-      // Show the full Supabase error (includes code, message, details)
-      const msg = (e as Record<string, string>)?.message
-        ?? (e as Record<string, string>)?.details
-        ?? String(e)
-      console.error('[handleSubmit]', e)
-      setError(msg)
+      setError(e instanceof Error ? e.message : String(e))
     } finally {
       setSubmitting(false)
     }
