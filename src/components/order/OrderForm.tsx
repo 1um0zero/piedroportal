@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Product } from '@/types'
 import AdditionsForm from './AdditionsForm'
-import { emptyAdditions, countFilled, SECTIONS } from './additions-config'
+import { emptyAdditions, SECTIONS } from './additions-config'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -254,60 +254,49 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       )}
 
       {/* ── TAB 3: Confirmation ──────────────────────────────────────── */}
-      {step === 3 && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Product summary */}
-            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('tab1').split(' ')[2] ?? 'Product'}</h3>
-              <p className="font-bold text-stone-900">{product.colour_id}</p>
-              <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
-              {constrLeft && <p className="text-xs text-stone-400">{t('construction')}: {constrLeft}{!mirror && constrRight && constrRight !== constrLeft ? ` / ${constrRight}` : ''}</p>}
-              {widthLeft  && <p className="text-xs text-stone-400">{t('width')}: {widthLeft}{!mirror && widthRight && widthRight !== widthLeft ? ` / ${widthRight}` : ''}</p>}
-              {sizeLeft   && <p className="text-xs text-stone-400">{t('size')}: {sizeLeft}{!mirror && sizeRight && sizeRight !== sizeLeft ? ` / ${sizeRight}` : ''}</p>}
-            </div>
+      {step === 3 && (() => {
+        // Build detailed additions list for display
+        type SidedVal = { l: unknown; r: unknown }
+        const addDetail = SECTIONS.map(sec => {
+          const filled = sec.fields.flatMap(field => {
+            if (field.side === 'global') {
+              return additions[field.key] === true
+                ? [{ label: field.label.replace(/\s*\(mm\)/gi, ''), l: 'Yes', r: null }]
+                : []
+            }
+            const sv = additions[field.key] as SidedVal | null
+            const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
+            const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
+            if (!hasL && !hasR) return []
+            return [{
+              label: field.label.replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
+              l: hasL ? String(sv!.l) : null,
+              r: hasR ? String(sv!.r) : null,
+            }]
+          })
+          return { key: sec.key, label: sec.label, filled }
+        }).filter(s => s.filled.length > 0)
 
-            {/* Customer summary */}
-            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('customer')}</h3>
-              <p className="font-semibold text-stone-900">{companyName}</p>
-              {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
-              {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
-              {reference   && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
-              <p className="text-xs text-stone-400">{t('unit')}: {unit} · {t('quantity')}: {quantity}</p>
-            </div>
-          </div>
+        return (
+        <div className="space-y-4">
 
-          {/* Additions summary */}
-          {showAdditions && (
-            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">{t('tab2')}</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {SECTIONS.map(s => {
-                  const count = countFilled(additions, s.key)
-                  return (
-                    <button key={s.key} type="button" onClick={() => setStep(2)}
-                      className="text-left p-3 border border-stone-100 rounded-lg hover:border-gold/40 transition-colors">
-                      <p className="text-xs font-semibold text-stone-600">{s.label}</p>
-                      <p className={`text-lg font-bold ${count > 0 ? 'text-gold' : 'text-stone-300'}`}>{count}</p>
-                      <p className="text-[10px] text-stone-400">{count > 0 ? 'filled' : 'none'}</p>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
+          {/* Prominent error — top of confirmation */}
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</p>
+            <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+              <p className="text-sm text-red-700 font-medium">{error}</p>
+            </div>
           )}
 
-          <div className="flex items-center gap-3 pt-2">
+          {/* Submit actions — top for easy access */}
+          <div className="flex items-center gap-3">
             <button onClick={() => handleSubmit('submitted')}
               disabled={submitting || !reference}
               className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                          hover:bg-gold-dark transition-colors disabled:opacity-50">
-              {submitting ? '...' : t('submit')}
+              {submitting ? '…' : t('submit')}
             </button>
             <button onClick={() => handleSubmit('draft')} disabled={submitting}
               className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
@@ -319,8 +308,85 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               ← {showAdditions ? t('tab2') : t('tab1')}
             </button>
           </div>
+
+          {/* Customer + Product */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('customer')}</h3>
+              <p className="font-semibold text-stone-900">{companyName}</p>
+              {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
+              {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
+              {reference   && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
+              <p className="text-xs text-stone-400">{t('unit')}: {unit} · {t('quantity')}: {quantity}</p>
+            </div>
+            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Produto</h3>
+              <p className="font-bold text-stone-900">{product.colour_id}</p>
+              <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
+              {(constrLeft || constrRight) && (
+                <p className="text-xs text-stone-400">{t('construction')}: {
+                  isDouble && constrRight && constrRight !== constrLeft
+                    ? `L: ${constrLeft || '—'}  R: ${constrRight || '—'}`
+                    : unit === 'RIGHT' ? constrRight : constrLeft
+                }</p>
+              )}
+              {(widthLeft || widthRight) && (
+                <p className="text-xs text-stone-400">{t('width')}: {
+                  isDouble && widthRight && widthRight !== widthLeft
+                    ? `L: ${widthLeft || '—'}  R: ${widthRight || '—'}`
+                    : unit === 'RIGHT' ? widthRight : widthLeft
+                }</p>
+              )}
+              {(sizeLeft || sizeRight) && (
+                <p className="text-xs text-stone-400">{t('size')}: {
+                  isDouble && sizeRight && sizeRight !== sizeLeft
+                    ? `L: ${sizeLeft || '—'}  R: ${sizeRight || '—'}`
+                    : unit === 'RIGHT' ? sizeRight : sizeLeft
+                }</p>
+              )}
+            </div>
+          </div>
+
+          {/* Additions detail */}
+          {showAdditions && addDetail.length > 0 && (
+            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('tab2')}</h3>
+                <button type="button" onClick={() => setStep(2)}
+                  className="text-xs text-gold hover:underline">editar</button>
+              </div>
+              <div className="space-y-4">
+                {addDetail.map(sec => (
+                  <div key={sec.key}>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">{sec.label}</p>
+                    <div className="divide-y divide-stone-50">
+                      {sec.filled.map((f, i) => (
+                        <div key={i} className="flex items-baseline justify-between py-1.5 gap-4">
+                          <span className="text-xs text-stone-500 min-w-0">{f.label}</span>
+                          {isDouble && f.r !== null ? (
+                            <span className="text-xs font-semibold text-stone-700 shrink-0">
+                              L: {f.l ?? '—'} · R: {f.r}
+                            </span>
+                          ) : (
+                            <span className="text-xs font-semibold text-stone-700 shrink-0">{f.l ?? f.r}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {showAdditions && addDetail.length === 0 && (
+            <p className="text-xs text-stone-400 italic px-1">
+              {t('tab2')}: nenhuma adição registada.{' '}
+              <button type="button" onClick={() => setStep(2)} className="text-gold hover:underline">Adicionar</button>
+            </p>
+          )}
         </div>
-      )}
+        )
+      })()}
 
       {/* ── TAB 1: Customer + Product ────────────────────────────────── */}
       {step === 1 && (
