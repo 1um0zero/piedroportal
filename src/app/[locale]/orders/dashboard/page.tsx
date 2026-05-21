@@ -66,12 +66,15 @@ export default async function ClientDashboard() {
   orders.forEach(o => { bySt[o.status] = (bySt[o.status] ?? 0) + 1 })
 
   // Top models this company ordered
+  type Prod = { id: string; colour_id: string; color_name: string; style_name: string; picture_name: string }
   type ModelEntry = { total: number; picture_name: string; color_name: string }
   const modelMap = new Map<string, ModelEntry>()
   orders.forEach(o => {
-    if (!o.products) return
-    const id = o.products.colour_id
-    const cur = modelMap.get(id) ?? { total: 0, picture_name: o.products.picture_name ?? '', color_name: o.products.color_name ?? '' }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = (Array.isArray(o.products) ? o.products[0] : o.products) as Prod | null
+    if (!p) return
+    const id = p.colour_id
+    const cur = modelMap.get(id) ?? { total: 0, picture_name: p.picture_name ?? '', color_name: p.color_name ?? '' }
     modelMap.set(id, { ...cur, total: cur.total + 1 })
   })
   const topModels = [...modelMap.entries()]
@@ -175,38 +178,38 @@ export default async function ClientDashboard() {
           <Link href="/orders" className="text-xs text-gold hover:underline">Ver todas</Link>
         </div>
         <div className="divide-y divide-stone-50">
-          {recent.map(o => (
-            <div key={o.id} className="flex items-center gap-4 px-6 py-3">
-              {o.products?.picture_name && (
-                <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-100 shrink-0 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`${BUCKET}/${o.products.picture_name}`} alt=""
-                    className="w-full h-full object-contain p-1" />
+          {recent.map(o => {
+            const p = (Array.isArray(o.products) ? o.products[0] : o.products) as Prod | null
+            return (
+              <div key={o.id} className="flex items-center gap-4 px-6 py-3">
+                {p?.picture_name && (
+                  <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-100 shrink-0 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`${BUCKET}/${p.picture_name}`} alt="" className="w-full h-full object-contain p-1" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-800 truncate">{p?.colour_id ?? '—'}</p>
+                  <p className="text-xs text-stone-400">{o.patient_name ?? o.reference_customer ?? '—'}</p>
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-stone-800 truncate">
-                  {o.products?.colour_id ?? '—'}
-                </p>
-                <p className="text-xs text-stone-400">{o.patient_name ?? o.reference_customer ?? '—'}</p>
+                <span className={`shrink-0 inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_BADGE[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
+                  {STATUS_LABEL[o.status] ?? o.status}
+                </span>
+                {o.pdf_url && (
+                  <a href={o.pdf_url} target="_blank" rel="noopener noreferrer"
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-gold hover:bg-gold/10 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                    </svg>
+                  </a>
+                )}
+                <span className="shrink-0 text-xs text-stone-400 whitespace-nowrap">
+                  {new Date(o.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' })}
+                </span>
               </div>
-              <span className={`shrink-0 inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_BADGE[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
-                {STATUS_LABEL[o.status] ?? o.status}
-              </span>
-              {o.pdf_url && (
-                <a href={o.pdf_url} target="_blank" rel="noopener noreferrer"
-                  className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-gold hover:bg-gold/10 transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
-                  </svg>
-                </a>
-              )}
-              <span className="shrink-0 text-xs text-stone-400 whitespace-nowrap">
-                {new Date(o.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' })}
-              </span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
