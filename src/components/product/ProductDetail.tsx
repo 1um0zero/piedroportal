@@ -237,7 +237,7 @@ export default function ProductDetail({ product, siblings }: Props) {
             <h1 className="text-3xl font-bold text-stone-900 tracking-wide leading-tight">
               {selected.colour_id}
             </h1>
-            <p className="text-stone-500 mt-1">{product.style_name} · {selected.color_name}</p>
+            <p className="text-stone-500 mt-1">{selected.color_name}</p>
           </div>
 
           {/* Badges + wishlist */}
@@ -319,16 +319,15 @@ export default function ProductDetail({ product, siblings }: Props) {
         {/* ── RIGHT: info + constructions + available colours ──────── */}
         <div className="space-y-6">
 
-          {/* Style info */}
+          {/* Info + Sizes */}
           <div className="border border-stone-100 rounded-xl overflow-hidden text-sm">
-            <div className="grid grid-cols-3 bg-stone-50 px-4 py-2 text-xs font-semibold
+            <div className="grid grid-cols-2 bg-stone-50 px-4 py-2 text-xs font-semibold
                             text-stone-500 uppercase tracking-wider">
-              <span>Style</span><span>Info</span><span>Sizes</span>
+              <span>Info</span><span>Sizes</span>
             </div>
-            <div className="grid grid-cols-3 px-4 py-3 text-stone-800">
-              <span className="font-semibold">{product.style_name}</span>
+            <div className="grid grid-cols-2 px-4 py-3 text-stone-800">
               <span className="text-stone-500">{product.info ?? '—'}</span>
-              <span>{selected.size_first}–{selected.size_last}</span>
+              <span>EU {selected.size_first}–{selected.size_last}</span>
             </div>
           </div>
 
