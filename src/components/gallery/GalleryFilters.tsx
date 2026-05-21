@@ -368,10 +368,18 @@ export default function GalleryFilters({
         <div className="border border-stone-200 rounded-xl bg-white px-5 py-4 space-y-4"
           style={{ boxShadow: 'var(--shadow-card)' }}>
 
-          {/* Dropdowns row */}
+          {/* Closure chips */}
+          {optClosures.length > 0 && (
+            <SquareChips label={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} />
+          )}
+
+          {/* Type chips */}
+          {optTypes.length > 0 && (
+            <SquareChips label={t('type')} options={optTypes} selected={filters.types} onToggle={(v) => toggleArr('types', v)} />
+          )}
+
+          {/* Colour dropdown (can be very long) + NEW */}
           <div className="flex flex-wrap gap-2 items-center">
-            <MultiDropdown placeholder={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} />
-            <MultiDropdown placeholder={t('type')} options={optTypes} selected={filters.types} onToggle={(v) => toggleArr('types', v)} />
             <MultiDropdown placeholder={t('colour')} options={optColours} selected={filters.colours} onToggle={(v) => toggleArr('colours', v)} />
             {hasNew && (
               <button onClick={() => setFilters((f) => ({ ...f, onlyNew: !f.onlyNew }))}
