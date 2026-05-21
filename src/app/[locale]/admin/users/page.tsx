@@ -19,7 +19,7 @@ export default async function AdminUsersPage() {
   const [{ data: profiles }, { data: companies }] = await Promise.all([
     service
       .from('profiles')
-      .select('id, email, full_name, company_id, created_at, companies(name)')
+      .select('id, email, full_name, role, company_id, created_at, companies(name)')
       .order('created_at', { ascending: false }),
     service
       .from('companies')
@@ -31,6 +31,7 @@ export default async function AdminUsersPage() {
     id:           p.id,
     email:        p.email,
     full_name:    p.full_name ?? '',
+    role:         p.role ?? 'user',
     company_id:   p.company_id ?? null,
     company_name: p.companies?.name ?? null,
     created_at:   p.created_at,
