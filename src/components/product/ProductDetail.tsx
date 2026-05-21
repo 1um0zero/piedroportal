@@ -122,6 +122,19 @@ export default function ProductDetail({ product, siblings }: Props) {
     [allVariants],
   )
 
+  // Group constructions sharing the same set of widths
+  const groupedConstructions = useMemo(() => {
+    if (!product.constructions?.length) return []
+    const groups = new Map<string, { names: string[]; widths: string[] }>()
+    for (const c of product.constructions) {
+      const key = [...c.widths].sort().join('|')
+      const g = groups.get(key)
+      if (g) g.names.push(c.construction)
+      else groups.set(key, { names: [c.construction], widths: c.widths })
+    }
+    return [...groups.values()]
+  }, [product.constructions])
+
   const [activeClosure, setActiveClosure] = useState<string>(product.closure)
   const [selected, setSelected]           = useState<Product>(product)
   const [activeImg, setActiveImg]         = useState(0)
@@ -184,19 +197,128 @@ export default function ProductDetail({ product, siblings }: Props) {
   const currentUrl = allImages[activeImg] && !failed.has(activeImg)
     ? src(allImages[activeImg]) : null
 
+  const orderBtn = !user ? (
+    <Link href="/login"
+      className="inline-flex items-center px-8 py-3 rounded-xl border-2 border-gold
+                 text-gold font-semibold text-sm hover:bg-gold hover:text-white transition-all">
+      {t('order')}
+    </Link>
+  ) : !hasCompany ? (
+    <div className="inline-flex items-center gap-2 px-8 py-3 rounded-xl
+                    bg-stone-100 text-stone-400 font-medium text-sm">
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+      </svg>
+      Conta pendente de aprovação
+    </div>
+  ) : (
+    <Link href={`/gallery/${selected.id}/order`}
+      className="inline-flex items-center px-8 py-3 rounded-xl bg-gold text-white
+                 font-semibold text-sm hover:bg-gold-dark transition-colors uppercase tracking-wide">
+      {t('order')}
+    </Link>
+  )
+
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       <Link href="/gallery"
         className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800
-                   border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg
-                   transition-colors">
+                   border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg transition-colors">
         ← {tn('gallery')}
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-10 lg:gap-16">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-10 lg:gap-14">
 
-        {/* ── LEFT ─────────────────────────────────────────────────── */}
+        {/* ── LEFT: model header + photo + thumbnails + ORDER ─────── */}
         <div className="space-y-4">
+          {/* Model / version — large */}
+          <div>
+            <h1 className="text-3xl font-bold text-stone-900 tracking-wide leading-tight">
+              {selected.colour_id}
+            </h1>
+            <p className="text-stone-500 mt-1">{product.style_name} · {selected.color_name}</p>
+          </div>
+
+          {/* Badges + wishlist */}
+          <div className="flex items-center gap-2.5">
+            <span className="w-5 h-5 rounded-full border border-stone-200 shrink-0 shadow-sm"
+              style={{ background: selected.color_basic || '#ccc' }} />
+            {isNew(selected) && (
+              <span className="px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase
+                               bg-gold text-white rounded">NEW</span>
+            )}
+            {selected.diabetics && (
+              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase
+                               bg-stone-700 text-white rounded-full">{t('diabetic')}</span>
+            )}
+            <button onClick={() => toggle(selected.id)}
+              className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0
+                          transition-all ${wishlisted
+                            ? 'bg-gold/10 border-gold text-gold'
+                            : 'border-stone-200 text-stone-400 hover:border-gold hover:text-gold'}`}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24"
+                fill={wishlisted ? 'currentColor' : 'none'}
+                stroke="currentColor" strokeWidth={wishlisted ? 0 : 2}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Main image */}
+          <div className="relative aspect-square"
+            style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
+            {currentUrl ? (
+              <ZoomImage url={currentUrl} alt={`${product.style_name} ${selected.color_name}`} />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnails + play */}
+          {allImages.length > 1 && (
+            <div className="flex items-center gap-2">
+              <button onClick={playing ? stopPlay : startPlay}
+                className={`shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center
+                            transition-all ${playing
+                              ? 'border-gold bg-gold/10 text-gold'
+                              : 'border-stone-200 text-stone-400 hover:border-gold hover:text-gold'}`}>
+                {playing ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="4" width="4" height="16" rx="1"/>
+                    <rect x="14" y="4" width="4" height="16" rx="1"/>
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                )}
+              </button>
+              <div className="flex gap-1.5 overflow-x-auto pb-1 flex-1">
+                {allImages.map((name, i) => failed.has(i) ? null : (
+                  <button key={i}
+                    onMouseEnter={() => { stopPlay(); setActiveImg(i) }}
+                    onClick={() => setActiveImg(i)}
+                    className={`relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-stone-50
+                                border-2 transition-all
+                                ${i === activeImg ? 'border-gold' : 'border-stone-100 hover:border-stone-300'}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src(name)} alt="" className="w-full h-full object-contain p-1"
+                      onError={() => setFailed((p) => new Set([...p, i]))} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ORDER button */}
+          <div className="pt-2">{orderBtn}</div>
+        </div>
+
+        {/* ── RIGHT: info + constructions + available colours ──────── */}
+        <div className="space-y-6">
+
           {/* Style info */}
           <div className="border border-stone-100 rounded-xl overflow-hidden text-sm">
             <div className="grid grid-cols-3 bg-stone-50 px-4 py-2 text-xs font-semibold
@@ -210,19 +332,22 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
           </div>
 
-          {/* Constructions */}
-          {product.constructions?.length > 0 && (
+          {/* Constructions grouped by shared widths */}
+          {groupedConstructions.length > 0 && (
             <div className="border border-stone-100 rounded-xl overflow-hidden text-sm">
               <div className="grid grid-cols-2 bg-stone-50 px-4 py-2 text-xs font-semibold
                               text-stone-500 uppercase tracking-wider">
-                <span>Construction</span><span>Widths</span>
+                <span>{t('constructions').split('&')[0].trim()}</span>
+                <span>Widths</span>
               </div>
-              {product.constructions.map((c, i) => (
+              {groupedConstructions.map((g, i) => (
                 <div key={i}
-                  className={`grid grid-cols-2 px-4 py-2.5 gap-4 ${i%2===0?'bg-white':'bg-stone-50/50'}`}>
-                  <span className="font-medium text-stone-700">{c.construction}</span>
+                  className={`grid grid-cols-2 px-4 py-2.5 gap-4 ${i % 2 === 0 ? 'bg-white' : 'bg-stone-50/50'}`}>
+                  <span className="font-medium text-stone-700 leading-snug">
+                    {g.names.join(', ')}
+                  </span>
                   <span className="flex flex-wrap gap-1">
-                    {c.widths.map((w) => (
+                    {g.widths.map((w) => (
                       <span key={w} className="px-1.5 py-0.5 text-xs bg-stone-100 rounded font-mono text-stone-700">{w}</span>
                     ))}
                   </span>
@@ -231,102 +356,16 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
           )}
 
-          {/* Colour strip + wishlist */}
-          <div className="flex items-center gap-3">
-            <span className="w-8 h-8 rounded-full border-2 border-stone-200 shrink-0 shadow-sm"
-              style={{ background: selected.color_basic || '#ccc' }} />
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-stone-800 text-sm">{selected.colour_id}</p>
-              <p className="text-stone-500 text-xs truncate">{selected.color_name}</p>
-            </div>
-            {isNew(selected) && (
-              <span className="px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase
-                               bg-gold text-white rounded">NEW</span>
-            )}
-            {selected.diabetics && (
-              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase
-                               bg-stone-700 text-white rounded-full">{t('diabetic')}</span>
-            )}
-            <button onClick={() => toggle(selected.id)}
-              className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0
-                          transition-all ${wishlisted
-                            ? 'bg-gold/10 border-gold text-gold'
-                            : 'border-stone-200 text-stone-400 hover:border-gold hover:text-gold'}`}>
-              <svg className="w-4 h-4" viewBox="0 0 24 24"
-                fill={wishlisted ? 'currentColor' : 'none'}
-                stroke="currentColor" strokeWidth={wishlisted ? 0 : 2}>
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Main image — no card, drop-shadow creates floating effect */}
-          <div className="relative aspect-square"
-            style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
-            {currentUrl ? (
-              <ZoomImage url={currentUrl} alt={`${product.style_name} ${selected.color_name}`} />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Thumbnails + play button */}
-          {allImages.length > 1 && (
-            <div className="flex items-center gap-2">
-              {/* Play/Stop */}
-              <button
-                onClick={playing ? stopPlay : startPlay}
-                className={`shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center
-                            transition-all ${playing
-                              ? 'border-gold bg-gold/10 text-gold'
-                              : 'border-stone-200 text-stone-400 hover:border-gold hover:text-gold'}`}
-                title={playing ? 'Stop' : 'Auto-rotate'}>
-                {playing ? (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="4" width="4" height="16" rx="1"/>
-                    <rect x="14" y="4" width="4" height="16" rx="1"/>
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                )}
-              </button>
-
-              {/* Thumbnails — hover switches image, click locks */}
-              <div className="flex gap-1.5 overflow-x-auto pb-1 flex-1">
-                {allImages.map((name, i) => failed.has(i) ? null : (
-                  <button key={i}
-                    onMouseEnter={() => { stopPlay(); setActiveImg(i) }}
-                    onClick={() => setActiveImg(i)}
-                    className={`relative shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-stone-50
-                                border-2 transition-all
-                                ${i === activeImg
-                                  ? 'border-gold' : 'border-stone-100 hover:border-stone-300'}`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src(name)} alt="" className="w-full h-full object-contain p-1"
-                      onError={() => setFailed((p) => new Set([...p, i]))} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── RIGHT ────────────────────────────────────────────────── */}
-        <div className="space-y-6">
-
-          {/* Closure tabs */}
-          {closures.length > 1 && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Closure</p>
+          {/* Available colours — closure chips (if multiple) + colour grid */}
+          <div className="space-y-3">
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+              {t('colours')}
+            </h2>
+            {closures.length > 1 && (
               <div className="flex gap-2 flex-wrap">
                 {closures.map((cl) => (
                   <button key={cl} onClick={() => selectClosure(cl)}
-                    className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all
                                 ${cl === activeClosure
                                   ? 'bg-gold text-white border-gold shadow-sm'
                                   : 'border-stone-200 text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
@@ -334,14 +373,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Colour grid */}
-          <div className="space-y-3">
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-              {t('colours')} — {activeClosure}
-            </h2>
+            )}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
               {colourGrid.map((p) => (
                 <button key={p.id} onClick={() => selectVariant(p)} className="text-left">
@@ -355,36 +387,6 @@ export default function ProductDetail({ product, siblings }: Props) {
             <p className="text-sm text-stone-500 italic">{product.info}</p>
           )}
         </div>
-      </div>
-
-      {/* ORDER button */}
-      <div className="border-t border-stone-100 pt-6">
-        {!user ? (
-          <Link href="/login"
-            className="inline-flex items-center px-8 py-3 rounded-xl border-2 border-gold
-                       text-gold font-semibold text-sm hover:bg-gold hover:text-white
-                       transition-all">
-            {t('order')}
-          </Link>
-        ) : !hasCompany ? (
-          <div className="inline-flex items-center gap-2 px-8 py-3 rounded-xl
-                          bg-stone-100 text-stone-400 font-medium text-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
-            </svg>
-            Conta pendente de aprovação
-          </div>
-        ) : (
-          <Link
-            href={`/gallery/${selected.id}/order`}
-            className="inline-flex items-center px-8 py-3 rounded-xl bg-gold text-white
-                       font-semibold text-sm hover:bg-gold-dark transition-colors uppercase
-                       tracking-wide"
-          >
-            {t('order')}
-          </Link>
-        )}
       </div>
     </div>
   )

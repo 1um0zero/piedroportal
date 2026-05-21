@@ -130,7 +130,9 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const optTypes         = useMemo(() => [...new Set(forType.map((p) => p.type).filter(Boolean))].sort() as string[], [forType])
   const optColours       = useMemo(() => [...new Set(forColour.map((p) => p.color_basic).filter(Boolean))].sort(), [forColour])
   const optConstructions = useMemo(() => [...new Set(forConstructions.flatMap((p) => p.constructions?.map((c) => c.construction) ?? []))].sort(), [forConstructions])
-  const optWidths        = useMemo(() => [...new Set(forWidths.flatMap((p) => p.constructions?.flatMap((c) => c.widths ?? []) ?? []))].sort(sortWidths), [forWidths])
+  const optWidths        = useMemo(() => [...new Set(forWidths.flatMap((p) => p.constructions?.flatMap((c) => c.widths ?? []) ?? []))]
+    .filter(w => w && w !== '--' && w !== '-')
+    .sort(sortWidths), [forWidths])
   const optSizes         = useMemo(() => availableSizes(forSizes), [forSizes])
 
   // ── Final filtered list (wishlist filter applied here, needs context) ──

@@ -117,7 +117,7 @@ function PillChips({
   )
 }
 
-// ── Size range chips ──────────────────────────────────────────────────────────
+// ── Size range chips + custom input ──────────────────────────────────────────
 function SizeChips({
   label,
   sizes,
@@ -129,29 +129,63 @@ function SizeChips({
   selected: number[]
   onToggleBucket: (vals: number[]) => void
 }) {
+  const [custom, setCustom] = useState('')
   const buckets = buildSizeBuckets(sizes)
   if (!buckets.length) return null
+
+  // Sizes selected that don't belong to any bucket (manually typed)
+  const bucketVals = new Set(buckets.flatMap(b => b.values))
+  const customSelected = selected.filter(s => !bucketVals.has(s))
+
+  function submitCustom() {
+    const v = parseFloat(custom)
+    if (!isNaN(v) && v > 0) { onToggleBucket([v]); setCustom('') }
+  }
+
   return (
     <div className="flex items-start gap-3">
       <span className="shrink-0 text-xs font-medium text-stone-400 uppercase tracking-wide pt-1.5 w-24">
         {label}
       </span>
-      <div className="flex flex-wrap gap-1.5">
-        {buckets.map((b) => {
-          const anySelected = b.values.some((v) => selected.includes(v))
-          return (
-            <button
-              key={b.label}
-              onClick={() => onToggleBucket(b.values)}
-              className={`px-2.5 py-1 text-xs font-medium rounded border transition-all duration-150
-                ${anySelected
-                  ? 'bg-gold text-white border-gold shadow-sm'
-                  : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
-            >
-              {b.label}
+      <div className="space-y-1.5">
+        <div className="flex flex-wrap gap-1.5">
+          {buckets.map((b) => {
+            const anySelected = b.values.some((v) => selected.includes(v))
+            return (
+              <button
+                key={b.label}
+                onClick={() => onToggleBucket(b.values)}
+                className={`px-2.5 py-1 text-xs font-medium rounded border transition-all duration-150
+                  ${anySelected
+                    ? 'bg-gold text-white border-gold shadow-sm'
+                    : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+              >
+                {b.label}
+              </button>
+            )
+          })}
+          {customSelected.map(s => (
+            <button key={s} onClick={() => onToggleBucket([s])}
+              className="px-2.5 py-1 text-xs font-medium rounded border bg-gold text-white border-gold shadow-sm">
+              {s} ×
             </button>
-          )
-        })}
+          ))}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number" step="0.5" placeholder="EU …"
+            value={custom}
+            onChange={e => setCustom(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submitCustom()}
+            className="h-7 w-20 px-2 text-xs bg-white border border-stone-200 rounded-lg
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
+          />
+          <button onClick={submitCustom}
+            className="h-7 px-2 text-xs font-semibold bg-stone-100 hover:bg-gold/10
+                       hover:text-gold text-stone-500 rounded-lg border border-stone-200 transition-colors">
+            +
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -260,7 +294,17 @@ export default function GalleryFilters({
 
   return (
     <div className="space-y-3">
-      {/* Row 1: multi-select dropdowns + search + NEW + clear + count */}
+      {/* Row 1: construction square chips (most useful filter — shown first) */}
+      {optConstructions.length > 1 && (
+        <SquareChips
+          label={t('construction')}
+          options={optConstructions}
+          selected={filters.constructions}
+          onToggle={(v) => toggleArr('constructions', v)}
+        />
+      )}
+
+      {/* Row 2: multi-select dropdowns + search + NEW + clear + count */}
       <div className="flex flex-wrap items-center gap-2">
         <MultiDropdown
           placeholder={t('closure')}
@@ -342,16 +386,6 @@ export default function GalleryFilters({
           {tg('results', { count: resultCount })}
         </p>
       </div>
-
-      {/* Row 2: construction square chips */}
-      {optConstructions.length > 1 && (
-        <SquareChips
-          label={t('construction')}
-          options={optConstructions}
-          selected={filters.constructions}
-          onToggle={(v) => toggleArr('constructions', v)}
-        />
-      )}
 
       {optWidths.length > 1 && (
         <PillChips
