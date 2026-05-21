@@ -150,6 +150,31 @@ function OptionChips({ values, value, onChange }: {
   )
 }
 
+// Classic select dropdown — used for closure fields in LEFT_RIGHT mode
+function SelectCombo({ values, value, onChange }: {
+  values: (number | string)[]
+  value: unknown
+  onChange: (v: string | null) => void
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={String(value ?? '')}
+        onChange={e => onChange(e.target.value || null)}
+        className="w-full h-9 pl-3 pr-8 text-sm bg-stone-50 border border-stone-200 rounded-lg
+                   appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
+                   transition-colors text-stone-700">
+        <option value="">—</option>
+        {values.map(v => <option key={String(v)} value={String(v)}>{v}</option>)}
+      </select>
+      <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  )
+}
+
 function YesNoToggle({ value, onChange }: {
   value: boolean
   onChange: (v: boolean) => void
@@ -345,6 +370,41 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             onChangeL={v => updateField(field.key, 'l', v)}
                             onChangeR={v => updateField(field.key, 'r', v)}
                           />
+                        )
+                      ) : field.closureOnly && field.type === 'option' ? (
+                        /* Closure fields: chips in single mode, combos in LEFT_RIGHT */
+                        !isDouble ? (
+                          <div className="space-y-1.5">
+                            {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
+                            <OptionChips
+                              values={field.values ?? []}
+                              value={(additions[field.key] as SidedVal)?.[displaySide]}
+                              onChange={v => updateField(field.key, displaySide, v)}
+                            />
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-4">
+                            {leftActive && (
+                              <div className="space-y-1">
+                                <p className="text-[10px] text-stone-400 uppercase tracking-wide">Left</p>
+                                <SelectCombo
+                                  values={field.values ?? []}
+                                  value={(additions[field.key] as SidedVal)?.l}
+                                  onChange={v => updateField(field.key, 'l', v)}
+                                />
+                              </div>
+                            )}
+                            {rightActive && (
+                              <div className="space-y-1">
+                                <p className="text-[10px] text-stone-400 uppercase tracking-wide">Right</p>
+                                <SelectCombo
+                                  values={field.values ?? []}
+                                  value={(additions[field.key] as SidedVal)?.r}
+                                  onChange={v => updateField(field.key, 'r', v)}
+                                />
+                              </div>
+                            )}
+                          </div>
                         )
                       ) : !isDouble ? (
                         /* Single column (PAR / Left / Right) */
