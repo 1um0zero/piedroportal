@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import type { ReactNode } from 'react'
 
@@ -21,10 +20,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen bg-cream text-stone-900 antialiased">
         {children}
       </body>
-      <Script
-        src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
-        strategy="lazyOnload"
-      />
     </html>
   )
 }
