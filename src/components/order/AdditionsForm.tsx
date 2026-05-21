@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { SECTIONS, filterExcluded, countFilled, type AdditionField } from './additions-config'
+import { SECTIONS, filterExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -207,16 +207,20 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   const t = useTranslations('gallery.filters')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
 
-  const [showOnlyActive, setShowOnlyActive] = useState(false)
+  // Per-section filter state (replaces single showOnlyActive)
+  const [sectionFilter, setSectionFilter] = useState<Record<string, boolean>>({})
 
-  // Checkbox-expand state for Additions section
+  // Checkbox-expand state — covers additions, upper, sole sections
   const [addExpanded, setAddExpanded] = useState<Set<string>>(() => {
     const s = new Set<string>()
-    const addSection = SECTIONS.find(sec => sec.key === 'additions')
-    for (const field of addSection?.fields ?? []) {
-      const sv = additions[field.key] as SidedVal | null
-      if (sv?.l != null && sv.l !== '') s.add(`${field.key}:l`)
-      if (sv?.r != null && sv.r !== '') s.add(`${field.key}:r`)
+    for (const section of SECTIONS) {
+      if (section.key === 'others') continue
+      for (const field of section.fields) {
+        if (field.side === 'global') continue
+        const sv = additions[field.key] as SidedVal | null
+        if (sv?.l != null && sv.l !== '' && sv.l !== false) s.add(`${field.key}:l`)
+        if (sv?.r != null && sv.r !== '' && sv.r !== false) s.add(`${field.key}:r`)
+      }
     }
     return s
   })
@@ -318,6 +322,168 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     }
   }
 
+  // ── Reusable checkbox-expand render for additions / upper / sole ─────────────
+  function renderCheckboxSection(
+    section: AdditionSection, fields: AdditionField[], filled: number, open: boolean
+  ) {
+    const hasActive = fields.some(f =>
+      f.side !== 'global' && (addExpanded.has(`${f.key}:l`) || addExpanded.has(`${f.key}:r`))
+    )
+    const effectiveFilter = (sectionFilter[section.key] ?? false) && hasActive
+    const unitColLabel = unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'L' : unit === 'RIGHT' ? 'R' : ''
+
+    return (
+      <div key={section.key} className="border border-stone-100 rounded-xl overflow-hidden bg-white"
+        style={{ boxShadow: 'var(--shadow-card)' }}>
+
+        <button type="button" onClick={() => toggleSection(section.key)}
+          className="w-full flex items-center justify-between px-5 py-3.5
+                     hover:bg-stone-50 transition-colors text-left">
+          <span className="font-semibold text-sm text-stone-800">{section.label}</span>
+          <div className="flex items-center gap-2.5">
+            {filled > 0 && (
+              <span className="min-w-[20px] h-5 px-1.5 text-[10px] font-bold bg-gold/10
+                               text-gold rounded-full flex items-center justify-center">
+                {filled}
+              </span>
+            )}
+            <svg className={`w-4 h-4 text-stone-400 transition-transform ${open ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </button>
+
+        {open && (
+          <div className="px-5 pb-3 pt-1 border-t border-stone-100 divide-y divide-stone-50">
+
+            {/* Sub-header: filter toggle + column labels */}
+            <div className="flex items-center justify-between pb-2 pt-1.5">
+              <button type="button" disabled={!hasActive}
+                onClick={() => setSectionFilter(prev => ({ ...prev, [section.key]: !(prev[section.key]) }))}
+                className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md transition-all
+                  ${effectiveFilter
+                    ? 'bg-gold/10 text-gold'
+                    : hasActive
+                      ? 'text-stone-400 hover:text-stone-600 hover:bg-stone-50'
+                      : 'text-stone-300 cursor-not-allowed'}`}>
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd"/>
+                </svg>
+                Selected
+              </button>
+              <div className="flex gap-5 pr-0.5">
+                {isDouble ? (
+                  <>
+                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">L</span>
+                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">R</span>
+                  </>
+                ) : (
+                  <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{unitColLabel}</span>
+                )}
+              </div>
+            </div>
+
+            {fields.map(field => {
+              if (field.side === 'global') return renderGlobal(field)
+              const isSubField = field.label.startsWith('↳')
+              const cleanLabel = field.label.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
+
+              // Active filter — top-level only (sub-fields follow parent)
+              if (effectiveFilter && !isSubField) {
+                const active = isDouble
+                  ? (addExpanded.has(`${field.key}:l`) || addExpanded.has(`${field.key}:r`))
+                  : addExpanded.has(`${field.key}:${displaySide}`)
+                if (!active) return null
+              }
+
+              // Sub-fields: appear only when parent has a value (mandatory)
+              if (isSubField) {
+                if (!isDouble) {
+                  if (!isParentActive(field, displaySide)) return null
+                  return (
+                    <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
+                      <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
+                      {renderControl(field, displaySide)}
+                    </div>
+                  )
+                } else {
+                  const parentFilledL = isParentActive(field, 'l')
+                  const parentFilledR = isParentActive(field, 'r')
+                  if (!parentFilledL && !parentFilledR) return null
+                  return (
+                    <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
+                      <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>{parentFilledL ? renderControl(field, 'l') : null}</div>
+                        <div>{parentFilledR ? renderControl(field, 'r') : null}</div>
+                      </div>
+                    </div>
+                  )
+                }
+              }
+
+              // Top-level: single checkbox or two checkboxes
+              if (!isDouble) {
+                if (field.conditionalOn && !isParentActive(field, displaySide)) return null
+                const checked = addExpanded.has(`${field.key}:${displaySide}`)
+                return (
+                  <div key={field.key} className="py-2.5">
+                    <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
+                      <span className="text-sm text-stone-700">{cleanLabel}</span>
+                      <input type="checkbox" checked={checked}
+                        onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
+                        className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                    </label>
+                    {checked && (
+                      <div className="mt-2.5 pl-1">{renderControl(field, displaySide)}</div>
+                    )}
+                  </div>
+                )
+              } else {
+                const checkedL = addExpanded.has(`${field.key}:l`)
+                const checkedR = addExpanded.has(`${field.key}:r`)
+                const sv = additions[field.key] as SidedVal | null
+                return (
+                  <div key={field.key} className="py-2.5">
+                    <div className="flex items-center gap-3">
+                      <span className="flex-1 text-sm text-stone-700 min-w-0">{cleanLabel}</span>
+                      <div className="flex gap-5 shrink-0">
+                        <input type="checkbox" checked={checkedL}
+                          onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
+                          className="w-4 h-4 cursor-pointer accent-stone-700" />
+                        <input type="checkbox" checked={checkedR}
+                          onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
+                          className="w-4 h-4 cursor-pointer accent-stone-700" />
+                      </div>
+                    </div>
+                    {(checkedL || checkedR) && (
+                      <div className="mt-2.5 grid grid-cols-2 gap-4">
+                        <div>
+                          {checkedL && field.type === 'mm' ? (
+                            <MmInput values={field.values ?? []} value={sv?.l}
+                              onChange={v => updateField(field.key, 'l', v)}
+                              onBlurDone={v => {
+                                if (checkedR && v != null) {
+                                  const rVal = (additions[field.key] as SidedVal | null)?.r
+                                  if (rVal == null || rVal === '') updateField(field.key, 'r', v)
+                                }
+                              }} />
+                          ) : checkedL ? renderControl(field, 'l') : null}
+                        </div>
+                        <div>{checkedR ? renderControl(field, 'r') : null}</div>
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3">
       {SECTIONS.map((section) => {
@@ -329,167 +495,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         const filled = countFilled(additions, section.key)
         const open   = expanded.has(section.key)
 
-        // ── Additions section: checkbox-expand pattern ─────────────────────────
-        if (section.key === 'additions') {
-          return (
-            <div key={section.key} className="border border-stone-100 rounded-xl overflow-hidden bg-white"
-              style={{ boxShadow: 'var(--shadow-card)' }}>
-
-              <button type="button" onClick={() => toggleSection(section.key)}
-                className="w-full flex items-center justify-between px-5 py-3.5
-                           hover:bg-stone-50 transition-colors text-left">
-                <span className="font-semibold text-sm text-stone-800">{section.label}</span>
-                <div className="flex items-center gap-2.5">
-                  {filled > 0 && (
-                    <span className="min-w-[20px] h-5 px-1.5 text-[10px] font-bold bg-gold/10
-                                     text-gold rounded-full flex items-center justify-center">
-                      {filled}
-                    </span>
-                  )}
-                  <svg className={`w-4 h-4 text-stone-400 transition-transform ${open ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </button>
-
-              {open && (() => {
-                const hasActive = addExpanded.size > 0
-                const effectiveFilter = showOnlyActive && hasActive
-                const unitColLabel = unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'L' : unit === 'RIGHT' ? 'R' : ''
-                return (
-                <div className="px-5 pb-3 pt-1 border-t border-stone-100 divide-y divide-stone-50">
-
-                  {/* Sub-header: filter toggle left, column label(s) right */}
-                  <div className="flex items-center justify-between pb-2 pt-1.5">
-                    <button type="button"
-                      disabled={!hasActive}
-                      onClick={() => setShowOnlyActive(v => !v)}
-                      className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md transition-all
-                        ${effectiveFilter
-                          ? 'bg-gold/10 text-gold'
-                          : hasActive
-                            ? 'text-stone-400 hover:text-stone-600 hover:bg-stone-50'
-                            : 'text-stone-300 cursor-not-allowed'}`}>
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd"/>
-                      </svg>
-                      Selected
-                    </button>
-                    <div className="flex gap-5 pr-0.5">
-                      {isDouble ? (
-                        <>
-                          <span className="w-4 text-center text-[11px] font-semibold text-stone-400">L</span>
-                          <span className="w-4 text-center text-[11px] font-semibold text-stone-400">R</span>
-                        </>
-                      ) : (
-                        <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{unitColLabel}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {fields.map(field => {
-                    if (field.side === 'global') return null
-                    const isSubField = field.label.startsWith('↳')
-                    const cleanLabel = field.label.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
-
-                    // Filter: show only checked fields (sub-fields follow parent naturally)
-                    if (effectiveFilter && !isSubField) {
-                      const active = isDouble
-                        ? (addExpanded.has(`${field.key}:l`) || addExpanded.has(`${field.key}:r`))
-                        : addExpanded.has(`${field.key}:${displaySide}`)
-                      if (!active) return null
-                    }
-
-                    // ── Sub-fields: appear only when parent has a value (mandatory) ──
-                    if (isSubField) {
-                      if (!isDouble) {
-                        if (!isParentActive(field, displaySide)) return null
-                        return (
-                          <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
-                            <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
-                            {renderControl(field, displaySide)}
-                          </div>
-                        )
-                      } else {
-                        const parentFilledL = isParentActive(field, 'l')
-                        const parentFilledR = isParentActive(field, 'r')
-                        if (!parentFilledL && !parentFilledR) return null
-                        return (
-                          <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
-                            <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>{parentFilledL ? renderControl(field, 'l') : null}</div>
-                              <div>{parentFilledR ? renderControl(field, 'r') : null}</div>
-                            </div>
-                          </div>
-                        )
-                      }
-                    }
-
-                    // ── Top-level fields with checkbox(es) ──
-                    if (!isDouble) {
-                      if (field.conditionalOn && !isParentActive(field, displaySide)) return null
-                      const checked = addExpanded.has(`${field.key}:${displaySide}`)
-                      return (
-                        <div key={field.key} className="py-2.5">
-                          <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
-                            <span className="text-sm text-stone-700">{cleanLabel}</span>
-                            <input type="checkbox" checked={checked}
-                              onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
-                              className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
-                          </label>
-                          {checked && (
-                            <div className="mt-2.5 pl-1">{renderControl(field, displaySide)}</div>
-                          )}
-                        </div>
-                      )
-                    } else {
-                      const checkedL = addExpanded.has(`${field.key}:l`)
-                      const checkedR = addExpanded.has(`${field.key}:r`)
-                      const sv = additions[field.key] as SidedVal | null
-                      return (
-                        <div key={field.key} className="py-2.5">
-                          <div className="flex items-center gap-3">
-                            <span className="flex-1 text-sm text-stone-700 min-w-0">{cleanLabel}</span>
-                            <div className="flex gap-5 shrink-0">
-                              <input type="checkbox" checked={checkedL}
-                                onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
-                                className="w-4 h-4 cursor-pointer accent-stone-700" />
-                              <input type="checkbox" checked={checkedR}
-                                onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
-                                className="w-4 h-4 cursor-pointer accent-stone-700" />
-                            </div>
-                          </div>
-                          {(checkedL || checkedR) && (
-                            <div className="mt-2.5 grid grid-cols-2 gap-4">
-                              <div>
-                                {checkedL && field.type === 'mm' ? (
-                                  <MmInput
-                                    values={field.values ?? []}
-                                    value={sv?.l}
-                                    onChange={v => updateField(field.key, 'l', v)}
-                                    onBlurDone={v => {
-                                      if (checkedR && v != null) {
-                                        const rVal = (additions[field.key] as SidedVal | null)?.r
-                                        if (rVal == null || rVal === '') updateField(field.key, 'r', v)
-                                      }
-                                    }}
-                                  />
-                                ) : checkedL ? renderControl(field, 'l') : null}
-                              </div>
-                              <div>{checkedR ? renderControl(field, 'r') : null}</div>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    }
-                  })}
-                </div>
-                )
-              })()}
-            </div>
-          )
+        // ── Additions, Upper Adaptions, Sole & Heel: checkbox-expand pattern ─────
+        if (['additions', 'upper', 'sole'].includes(section.key)) {
+          return renderCheckboxSection(section, fields, filled, open)
         }
 
         return (
