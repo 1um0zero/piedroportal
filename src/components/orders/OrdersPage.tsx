@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { duplicateOrderAction } from '@/app/actions/orders'
+import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/products`
@@ -243,11 +244,29 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                       </td>
                     )}
                     {/* Status */}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 space-y-1">
                       <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full
                                        ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
                         {STATUS_LABELS[o.status] ?? o.status}
                       </span>
+                      {/* Approval state badge */}
+                      {o.approval_state && o.approval_state !== 'registered' && (() => {
+                        const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
+                        return a ? (
+                          <span className={`inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full ${a.color}`}>
+                            {a.label}
+                          </span>
+                        ) : null
+                      })()}
+                      {/* Production state badge */}
+                      {o.production_state && (() => {
+                        const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
+                        return p ? (
+                          <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-50 text-amber-700">
+                            {p.label}
+                          </span>
+                        ) : null
+                      })()}
                     </td>
                     {/* Date */}
                     <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">

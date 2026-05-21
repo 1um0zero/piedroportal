@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const SELECT = `
-  id, status, unit, patient_name, reference_customer, quantity,
+  id, status, approval_state, production_state, unit, patient_name, reference_customer, quantity,
   created_at, updated_at, size_left, size_right, additions, comments, pdf_url,
   products(id, style_name, colour_id, color_name, closure, picture_name, section),
   companies(id, name, erp_code)
