@@ -15,9 +15,11 @@ export default async function Navbar({ locale }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let isAdmin = false
+  let profile: { role: string; full_name?: string; avatar_url?: string } | null = null
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles').select('role').eq('id', user.id).single()
+    const { data } = await supabase
+      .from('profiles').select('role, full_name, avatar_url').eq('id', user.id).single()
+    profile = data
     isAdmin = profile?.role === 'piedro_admin'
   }
 
@@ -75,10 +77,27 @@ export default async function Navbar({ locale }: Props) {
           {/* Auth — server-rendered, no flash */}
           <div className="border-l border-stone-100 pl-3">
             {user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-stone-400 max-w-[140px] truncate hidden sm:block">
-                  {user.email}
-                </span>
+              <div className="flex items-center gap-2.5">
+                {/* Profile avatar link */}
+                {(() => {
+                  const avatarUrl = (profile as unknown as Record<string,string> | null)?.avatar_url
+                  const initials  = (profile as unknown as Record<string,string> | null)?.full_name
+                    ?.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+                    ?? user.email?.[0]?.toUpperCase() ?? '?'
+                  return (
+                    <Link href="/profile"
+                      className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-stone-200 hover:ring-gold transition-all shrink-0">
+                      {avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="w-full h-full bg-gold/10 flex items-center justify-center text-[11px] font-bold text-gold">
+                          {initials}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })()}
                 <form action={signOutAction}>
                   <button type="submit"
                     className="text-xs text-stone-500 hover:text-stone-900 transition-colors">

@@ -66,6 +66,10 @@ export function NavbarMobile({ isAdmin, isLoggedIn, locale, locales }: Props) {
                 </>
               )}
 
+              {isLoggedIn && (
+                <Link href="/profile" onClick={close} className={linkCls}>Profile</Link>
+              )}
+
               {/* Language + auth */}
               <div className="flex items-center justify-between py-4">
                 <NavbarLocale locales={locales} current={locale} />
