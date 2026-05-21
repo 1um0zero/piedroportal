@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation'
 const SELECT = `id, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   additions, comments, created_at, pdf_url, piedro_order_id, piedro_notes,
+  approval_state, production_state,
   products(id, colour_id, color_name, closure, picture_name),
   companies(id, name)`
 
