@@ -16,6 +16,7 @@ export interface AdditionField {
   dataverseKey?:   string         // Dataverse column name (without lf/rf suffix)
   dataverse?:      string         // for global (non-sided) fields
   closureOnly?:    'LACE' | 'VELCRO'  // show only when product has this closure
+  collapse?:       boolean        // hide other chips once one is selected
 }
 
 export interface AdditionSection {
@@ -73,7 +74,7 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'lining',       label: 'Lining',                      labelNl: 'Voering',                       type: 'option', side: 'both', values: ['Leather','Synthetic Fur','Real Fur','Sympatex','Diabetic','Microfiber'], dataverseKey: 'cr56f_lining' },
       { key: 'cl_laces',     label: 'Closure Laces',               labelNl: 'Vetersluiting',                 type: 'option', side: 'both', closureOnly: 'LACE', values: ['Eyelets','Hooks','D-Rings','Blind Eyelets','Buckle & Strap','Twist Lock System'], dataverseKey: 'cr56f_closurelaces' },
       { key: 'cl_velcro',    label: 'Closure Velcro Straps',       labelNl: 'Klittenbandsluiting',           type: 'option', side: 'both', closureOnly: 'VELCRO', values: ['Return Velcro','Lap-Over Velcro','Single Hand Velcro','Velcro Separate'], dataverseKey: 'cr56f_closurevelcrostraps' },
-      { key: 'stiff_hard',   label: 'Stiffener Hardness',          labelNl: 'Contrefort Hardheid',           type: 'option', side: 'both', values: ['Soft - 1.0 mm','Standard - 1.5 mm','Hard - 1.9 mm','Double - 2 x 1.5 mm','Extra padding - 6 mm'], dataverseKey: 'cr56f_stiffenerhardness' },
+      { key: 'stiff_hard',   label: 'Stiffener Hardness',          labelNl: 'Contrefort Hardheid',           type: 'option', side: 'both', collapse: true, values: ['Soft - 1.0 mm','Standard - 1.5 mm','Hard - 1.9 mm','Double - 2 x 1.5 mm','Extra padding - 6 mm'], dataverseKey: 'cr56f_stiffenerhardness' },
       { key: 'toe_puffs',    label: 'Toe Puffs',                   labelNl: 'Neuskap',                       type: 'option', side: 'both', values: ['Soft - 0.5 mm','Standard - 0.8 mm','Hard - 0.9 mm'], dataverseKey: 'cr56f_toepuffs' },
       { key: 'toe_puffs_rim',label: 'Toe Puffs Rim',               labelNl: 'Vleugel Neus',                  type: 'toggle', side: 'both', dataverseKey: 'cr56f_toepuffsrim' },
       { key: 'str_leather',  label: 'Stretch Leather',             labelNl: 'Stretch leer',                  type: 'toggle', side: 'both', dataverseKey: 'cr56f_stretchleather' },

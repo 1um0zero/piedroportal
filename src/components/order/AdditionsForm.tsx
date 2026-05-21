@@ -129,14 +129,16 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR }: {
   )
 }
 
-function OptionChips({ values, value, onChange }: {
+function OptionChips({ values, value, onChange, collapse = false }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: string | null) => void
+  collapse?: boolean
 }) {
+  const displayed = collapse && value != null ? [value as number | string] : values
   return (
     <div className="flex flex-wrap gap-1.5">
-      {values.map((v) => (
+      {displayed.map((v) => (
         <button key={String(v)} type="button"
           onClick={() => onChange(value === v ? null : String(v))}
           className={`px-3 py-1.5 text-xs font-medium rounded border transition-all
@@ -258,7 +260,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     if (field.type === 'mm' || field.type === 'image')
       return <MmInput values={field.values ?? []} value={val} onChange={setVal} />
     if (field.type === 'option')
-      return <OptionChips values={field.values ?? []} value={val} onChange={setVal} />
+      return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
     if (field.type === 'toggle')
       return <YesNoToggle value={val === true} onChange={setVal} />
     if (field.type === 'text')
@@ -346,7 +348,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                     <div key={field.key}
                       className={`space-y-2 ${isSubField ? 'ml-4 pl-3 border-l-2 border-gold/20' : ''}`}>
                       <p className={`text-xs font-semibold uppercase tracking-wide
-                                     ${isSubField ? 'text-gold/70' : 'text-stone-500'}`}>
+                                     ${isSubField ? 'text-gold/70' : 'text-slate-500'}`}>
                         {field.label.replace(/\s*\(mm\)/gi, '')}
                       </p>
 
