@@ -189,6 +189,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         productColourId:  product.colour_id,
         productColorName: product.color_name,
         productClosure:   product.closure,
+        productImageUrl:  product.picture_name
+          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${product.picture_name}`
+          : undefined,
         companyName,
       } : undefined
 

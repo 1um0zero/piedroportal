@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, View, Text, StyleSheet, Image } from '@react-pdf/renderer'
 import { SECTIONS } from './additions-config'
 
 const GOLD = '#C9A96E'
@@ -61,6 +61,7 @@ export type OrderPdfProps = {
   productColourId: string
   productColorName: string
   productClosure: string
+  productImageUrl?: string
 }
 
 const UNIT_LABELS: Record<string, string> = {
@@ -78,7 +79,7 @@ export function OrderPdf({
   reference, status, unit, clinician, patient_name, quantity,
   construction_left, construction_right, width_left, width_right,
   size_left, size_right, additions, comments, created_at,
-  companyName, productColourId, productColorName, productClosure,
+  companyName, productColourId, productColorName, productClosure, productImageUrl,
 }: OrderPdfProps) {
   const isDouble = unit === 'LEFT_RIGHT'
   const date = new Date(created_at).toLocaleDateString('pt-PT', {
@@ -135,9 +136,17 @@ export function OrderPdf({
           </View>
           <View style={s.card}>
             <Text style={s.cardTitle}>Produto</Text>
-            <View style={s.kv}><Text style={s.kLabel}>Modelo</Text><Text style={s.kValue}>{productColourId}</Text></View>
-            <View style={s.kv}><Text style={s.kLabel}>Cor</Text><Text style={s.kValue}>{productColorName}</Text></View>
-            <View style={s.kv}><Text style={s.kLabel}>Fecho</Text><Text style={s.kValue}>{productClosure}</Text></View>
+            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+              {productImageUrl && (
+                <Image src={productImageUrl}
+                  style={{ width: 64, height: 64, objectFit: 'contain', backgroundColor: LIGHT, borderRadius: 4 }} />
+              )}
+              <View style={{ flex: 1 }}>
+                <View style={s.kv}><Text style={s.kLabel}>Modelo</Text><Text style={s.kValue}>{productColourId}</Text></View>
+                <View style={s.kv}><Text style={s.kLabel}>Cor</Text><Text style={s.kValue}>{productColorName}</Text></View>
+                <View style={s.kv}><Text style={s.kLabel}>Fecho</Text><Text style={s.kValue}>{productClosure}</Text></View>
+              </View>
+            </View>
           </View>
         </View>
 

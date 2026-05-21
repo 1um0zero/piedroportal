@@ -31,6 +31,7 @@ export type PdfMeta = {
   productColourId:  string
   productColorName: string
   productClosure:   string
+  productImageUrl?: string
   companyName:      string
 }
 
@@ -78,6 +79,7 @@ export async function insertOrderAction(
         productColourId:    pdfMeta.productColourId,
         productColorName:   pdfMeta.productColorName,
         productClosure:     pdfMeta.productClosure,
+        productImageUrl:    pdfMeta.productImageUrl,
       }
 
       const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
