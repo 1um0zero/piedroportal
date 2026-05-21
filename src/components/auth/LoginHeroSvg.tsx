@@ -30,11 +30,11 @@ export function LoginHeroSvg() {
         </marker>
       </defs>
 
-      {/* Sole outline — single subtle stroke, no bright bottom edge */}
-      <path d="M100 320 Q110 350 160 365 Q240 382 370 378 Q470 374 530 355 Q570 340 575 320 L560 308 Q530 318 470 324 Q370 330 240 328 Q160 326 120 320 Z" fill="none" stroke="#5a7a90" strokeWidth="1.2" strokeDasharray="4,3"/>
+      {/* Sole — bottom curve only, open path */}
+      <path d="M120 320 Q110 345 155 360 Q240 378 370 375 Q470 371 530 352 Q565 338 575 320" fill="none" stroke="#5a7a90" strokeWidth="1.2" strokeDasharray="4,3" strokeLinecap="round"/>
 
-      {/* Upper */}
-      <path d="M120 320 Q118 290 125 260 Q132 230 155 210 Q180 192 220 184 Q260 178 300 180 Q340 182 365 192 Q395 205 415 228 Q430 245 440 268 Q448 285 450 300 L470 305 L510 290 L560 308 Q530 318 470 324 Q370 330 240 328 Q160 326 120 320 Z" fill="rgba(255,255,255,0.05)" stroke="#b8cfe0" strokeWidth="1.8"/>
+      {/* Upper — top arc only (no closed bottom to avoid the cap shape) */}
+      <path d="M120 320 Q118 290 125 260 Q132 230 155 210 Q180 192 220 184 Q260 178 300 180 Q340 182 365 192 Q395 205 415 228 Q430 245 440 268 Q448 285 450 300" fill="none" stroke="#7a9bb5" strokeWidth="1.2" strokeLinecap="round"/>
 
       {/* Zones */}
       <path d="M125 260 Q132 230 155 210 Q180 192 220 184 Q250 178 272 182 Q270 210 268 235 Q255 258 240 278 Q215 288 185 295 Q155 290 132 285 Q120 320 118 290 Q125 260 125 260 Z" fill="none" stroke="#5a8aaa" strokeWidth="1.2" strokeDasharray="6,4"/>
