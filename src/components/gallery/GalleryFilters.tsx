@@ -378,21 +378,28 @@ export default function GalleryFilters({
             <SquareChips label={t('type')} options={optTypes} selected={filters.types} onToggle={(v) => toggleArr('types', v)} />
           )}
 
-          {/* Colour dropdown (can be very long) + NEW */}
-          <div className="flex flex-wrap gap-2 items-center">
-            <MultiDropdown placeholder={t('colour')} options={optColours} selected={filters.colours} onToggle={(v) => toggleArr('colours', v)} />
-            {hasNew && (
-              <button onClick={() => setFilters((f) => ({ ...f, onlyNew: !f.onlyNew }))}
-                className={`h-9 px-3 text-xs font-bold tracking-widest rounded-lg border transition-all
-                  ${filters.onlyNew ? 'bg-gold text-white border-gold' : 'text-gold border-gold/40 hover:border-gold hover:bg-gold/5'}`}>
-                {t('new')}
-              </button>
-            )}
-          </div>
-
-          {/* Construction chips */}
+          {/* Construction chips — above colour */}
           {optConstructions.length > 1 && (
             <SquareChips label={t('construction')} options={optConstructions} selected={filters.constructions} onToggle={(v) => toggleArr('constructions', v)} />
+          )}
+
+          {/* Colour — label left, dropdown right (no placeholder text), NEW inline */}
+          {optColours.length > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="shrink-0 text-xs font-medium text-stone-400 uppercase tracking-wide w-24">
+                {t('colour')}
+              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <MultiDropdown placeholder="—" options={optColours} selected={filters.colours} onToggle={(v) => toggleArr('colours', v)} />
+                {hasNew && (
+                  <button onClick={() => setFilters((f) => ({ ...f, onlyNew: !f.onlyNew }))}
+                    className={`h-9 px-3 text-xs font-bold tracking-widest rounded-lg border transition-all
+                      ${filters.onlyNew ? 'bg-gold text-white border-gold' : 'text-gold border-gold/40 hover:border-gold hover:bg-gold/5'}`}>
+                    {t('new')}
+                  </button>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Width pills */}
