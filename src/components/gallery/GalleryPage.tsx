@@ -201,22 +201,41 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-      {/* Section tabs */}
-      <div className="flex items-end gap-0 border-b border-stone-200">
-        {SECTIONS.map((s) => (
-          <button
-            key={s}
-            onClick={() => switchSection(s)}
-            className={`relative px-6 py-3 text-sm font-semibold tracking-wider uppercase
-                        transition-colors duration-200
-                        ${s === section ? 'text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
-          >
-            {t(SECTION_KEY[s])}
-            {s === section && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold rounded-full" />
-            )}
-          </button>
-        ))}
+      {/* Section tabs + search aligned right */}
+      <div className="flex items-end justify-between border-b border-stone-200">
+        <div className="flex items-end gap-0">
+          {SECTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => switchSection(s)}
+              className={`relative px-6 py-3 text-sm font-semibold tracking-wider uppercase
+                          transition-colors duration-200
+                          ${s === section ? 'text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              {t(SECTION_KEY[s])}
+              {s === section && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
+        {/* Search — top right, aligned with section tabs */}
+        <div className="relative flex items-center pb-1.5">
+          <svg className="absolute left-2.5 w-3.5 h-3.5 text-stone-400 pointer-events-none"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+          <input
+            type="search"
+            value={filters.search}
+            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+            placeholder="Search models…"
+            className="h-8 pl-8 pr-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
+                       text-stone-700 w-40 transition-all duration-200
+                       hover:border-stone-300 focus:outline-none focus:ring-2
+                       focus:ring-gold/30 focus:border-gold focus:w-52"
+          />
+        </div>
       </div>
 
       {/* Filters */}

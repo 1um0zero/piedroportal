@@ -30,13 +30,18 @@ async function getSiblings(product: Product): Promise<Product[]> {
     .neq('id', product.id)
     .order('color_name')
 
-  // If product has a sibling style (e.g. "5305" ↔ "5305K"), fetch those too
+  // Sibling style lookup: use the stored field, or infer by K-suffix if missing
+  const siblingStyle = product.sibling
+    ?? (product.style_name.endsWith('K')
+        ? product.style_name.slice(0, -1)      // 1700K → 1700
+        : `${product.style_name}K`)             // 1700  → 1700K
+
   let linked: Product[] = []
-  if (product.sibling) {
+  if (siblingStyle !== product.style_name) {
     const { data } = await sb
       .from('products')
       .select(SELECT)
-      .eq('style_name', product.sibling)
+      .eq('style_name', siblingStyle)
       .eq('active', true)
       .order('color_name')
     linked = (data ?? []) as unknown as Product[]

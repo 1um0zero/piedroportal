@@ -278,6 +278,7 @@ export default function GalleryFilters({
 }: Props) {
   const t = useTranslations('gallery.filters')
   const tg = useTranslations('gallery')
+  const [open, setOpen] = useState(false)
 
   function toggleArr(key: keyof Filters, val: string) {
     setFilters((f) => {
@@ -297,103 +298,62 @@ export default function GalleryFilters({
     })
   }
 
+  const activeCount = filters.closures.length + filters.types.length + filters.colours.length
+    + filters.constructions.length + filters.widths.length + filters.sizes.length
+    + (filters.onlyNew ? 1 : 0)
+
   return (
-    <div className="space-y-3">
-      {/* Row 1: construction square chips (most useful filter — shown first) */}
-      {optConstructions.length > 1 && (
-        <SquareChips
-          label={t('construction')}
-          options={optConstructions}
-          selected={filters.constructions}
-          onToggle={(v) => toggleArr('constructions', v)}
-        />
-      )}
-
-      {/* Row 2: multi-select dropdowns + search + NEW + clear + count */}
+    <div className="space-y-2">
+      {/* Always-visible bar */}
       <div className="flex flex-wrap items-center gap-2">
-        <MultiDropdown
-          placeholder={t('closure')}
-          options={optClosures}
-          selected={filters.closures}
-          onToggle={(v) => toggleArr('closures', v)}
-        />
-        <MultiDropdown
-          placeholder={t('type')}
-          options={optTypes}
-          selected={filters.types}
-          onToggle={(v) => toggleArr('types', v)}
-        />
-        <MultiDropdown
-          placeholder={t('colour')}
-          options={optColours}
-          selected={filters.colours}
-          onToggle={(v) => toggleArr('colours', v)}
-        />
 
-        {/* Search */}
-        <div className="relative flex items-center">
-          <svg className="absolute left-2.5 w-3.5 h-3.5 text-stone-400 pointer-events-none"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+        {/* Filters toggle */}
+        <button
+          onClick={() => setOpen(o => !o)}
+          className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all
+            ${open || activeCount > 0
+              ? 'bg-stone-800 text-white border-stone-800'
+              : 'text-stone-600 border-stone-200 hover:border-stone-400 bg-white'}`}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h18M7 8h10M11 12h2M13 16h-2" />
           </svg>
-          <input
-            type="search"
-            value={filters.search}
-            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder={t('search')}
-            className="h-9 pl-8 pr-3 text-sm bg-white border border-stone-200 rounded-lg
-                       text-stone-700 w-44 transition-all duration-200
-                       hover:border-stone-300 focus:outline-none focus:ring-2
-                       focus:ring-gold/30 focus:border-gold focus:w-56"
-          />
-        </div>
+          Filters
+          {activeCount > 0 && (
+            <span className="min-w-[18px] h-4.5 px-1 text-[10px] font-bold bg-gold text-white rounded-full flex items-center justify-center">
+              {activeCount}
+            </span>
+          )}
+          <svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
         {/* Build wishlist toggle */}
         <button
           onClick={onToggleBuildWishlist}
-          className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all duration-150
-            ${showWishlist
-              ? 'bg-gold/10 border-gold text-gold font-semibold shadow-sm'
-              : 'text-stone-500 border-stone-200 hover:border-gold/40 hover:text-gold bg-white'}`}
+          className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all
+            ${showWishlist ? 'bg-gold/10 border-gold text-gold font-semibold' : 'text-stone-500 border-stone-200 hover:border-gold/40 hover:text-gold bg-white'}`}
         >
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24"
-            fill={showWishlist ? 'currentColor' : 'none'}
-            stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={showWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
           </svg>
           Wishlist
         </button>
 
-        {/* Filter by wishlist (only when build mode active and has items) */}
         {showWishlist && wishlistCount > 0 && (
           <button
             onClick={() => setFilters((f) => ({ ...f, onlyWishlist: !f.onlyWishlist }))}
-            className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all duration-150
-              ${filters.onlyWishlist
-                ? 'bg-gold text-white border-gold shadow-sm'
-                : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+            className={`h-9 px-3 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all
+              ${filters.onlyWishlist ? 'bg-gold text-white border-gold' : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
           >
             {wishlistCount} selected
           </button>
         )}
 
-        {hasNew && (
-          <button
-            onClick={() => setFilters((f) => ({ ...f, onlyNew: !f.onlyNew }))}
-            className={`h-9 px-3 text-xs font-bold tracking-widest rounded-lg border transition-all duration-150
-              ${filters.onlyNew
-                ? 'bg-gold text-white border-gold shadow-sm'
-                : 'text-gold border-gold/40 hover:border-gold hover:bg-gold/5'}`}
-          >
-            {t('new')}
-          </button>
-        )}
-
         {hasFilters && (
-          <button onClick={onClear}
-            className="h-9 px-3 text-sm text-stone-400 hover:text-stone-700 transition-colors">
+          <button onClick={onClear} className="h-9 px-3 text-xs text-stone-400 hover:text-stone-700 transition-colors">
             {t('all')}
           </button>
         )}
@@ -403,23 +363,42 @@ export default function GalleryFilters({
         </p>
       </div>
 
-      {optWidths.length > 1 && (
-        <PillChips
-          label={t('width')}
-          options={optWidths}
-          selected={filters.widths}
-          onToggle={(v) => toggleArr('widths', v)}
-        />
-      )}
+      {/* Collapsible panel */}
+      {open && (
+        <div className="border border-stone-200 rounded-xl bg-white px-5 py-4 space-y-4"
+          style={{ boxShadow: 'var(--shadow-card)' }}>
 
-      {/* Row 4: size range chips */}
-      {optSizes.length > 1 && (
-        <SizeChips
-          label={t('size')}
-          sizes={optSizes}
-          selected={filters.sizes}
-          onToggleBucket={toggleSizeBucket}
-        />
+          {/* Dropdowns row */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <MultiDropdown placeholder={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} />
+            <MultiDropdown placeholder={t('type')} options={optTypes} selected={filters.types} onToggle={(v) => toggleArr('types', v)} />
+            <MultiDropdown placeholder={t('colour')} options={optColours} selected={filters.colours} onToggle={(v) => toggleArr('colours', v)} />
+            {hasNew && (
+              <button onClick={() => setFilters((f) => ({ ...f, onlyNew: !f.onlyNew }))}
+                className={`h-9 px-3 text-xs font-bold tracking-widest rounded-lg border transition-all
+                  ${filters.onlyNew ? 'bg-gold text-white border-gold' : 'text-gold border-gold/40 hover:border-gold hover:bg-gold/5'}`}>
+                {t('new')}
+              </button>
+            )}
+          </div>
+
+          {/* Construction chips */}
+          {optConstructions.length > 1 && (
+            <SquareChips label={t('construction')} options={optConstructions} selected={filters.constructions} onToggle={(v) => toggleArr('constructions', v)} />
+          )}
+
+          {/* Width pills */}
+          {optWidths.length > 1 && (
+            <PillChips label={t('width')} options={optWidths}
+              selected={filters.widths} onToggle={(v) => toggleArr('widths', v)} />
+          )}
+
+          {/* Size chips + input */}
+          {optSizes.length > 1 && (
+            <SizeChips label={t('size')} sizes={optSizes}
+              selected={filters.sizes} onToggleBucket={toggleSizeBucket} />
+          )}
+        </div>
       )}
     </div>
   )
