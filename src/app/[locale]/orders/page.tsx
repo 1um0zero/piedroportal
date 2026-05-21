@@ -18,8 +18,11 @@ export default async function OrdersRoute() {
   const isAdmin   = profile?.role === 'piedro_admin'
   const companyId = profile?.company_id
 
+  // Admins go to the back-office orders view
+  if (isAdmin) redirect('/admin/orders')
+
   // Non-admin without company → pending approval page
-  if (!isAdmin && !companyId) {
+  if (!companyId) {
     const t = await getTranslations('auth')
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center space-y-5">
@@ -34,7 +37,7 @@ export default async function OrdersRoute() {
     )
   }
 
-  // Fetch orders (admin: all; user: own company)
+  // Fetch this company's orders
   const service = createServiceClient()
   const SELECT = `
     id, status, unit, patient_name, reference_customer, quantity,
@@ -43,18 +46,16 @@ export default async function OrdersRoute() {
     companies(id, name, erp_code)
   `
 
-  // Paginate server-side (Supabase PostgREST max = 1000/request)
   let allOrders: any[] = []
   let offset = 0
   const PAGE = 1000
   while (true) {
-    let q = service
+    const { data, error } = await service
       .from('orders')
       .select(SELECT)
+      .eq('company_id', companyId)
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
-    if (!isAdmin && companyId) q = q.eq('company_id', companyId)
-    const { data, error } = await q
     if (error || !data?.length) break
     allOrders = allOrders.concat(data)
     if (data.length < PAGE) break
@@ -78,7 +79,7 @@ export default async function OrdersRoute() {
     <OrdersPage
       orders={all}
       metrics={metrics}
-      isAdmin={isAdmin}
+      isAdmin={false}
     />
   )
 }

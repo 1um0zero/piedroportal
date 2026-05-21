@@ -12,6 +12,13 @@ export default async function Navbar({ locale }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  let isAdmin = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', user.id).single()
+    isAdmin = profile?.role === 'piedro_admin'
+  }
+
   return (
     <header className="bg-white border-b border-stone-100" style={{ boxShadow: 'var(--shadow-nav)' }}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
@@ -32,10 +39,20 @@ export default async function Navbar({ locale }: Props) {
           <Link href="/gallery" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
             {t('gallery')}
           </Link>
-          {user && (
+          {user && !isAdmin && (
             <Link href="/orders" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
               {t('orders')}
             </Link>
+          )}
+          {user && isAdmin && (
+            <>
+              <Link href="/admin/orders" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+                Orders
+              </Link>
+              <Link href="/admin/users" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+                Users
+              </Link>
+            </>
           )}
           {/* Wishlist — needs client for count */}
           <NavbarClient locale={locale} />
