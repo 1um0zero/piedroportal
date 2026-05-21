@@ -197,9 +197,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
       if (status === 'submitted') {
         const msg = result.pdf_url
-          ? `Encomenda submetida. Email com PDF enviado para ${process.env.NEXT_PUBLIC_ORDER_NOTIFY_EMAIL ?? 'suporte@umzero.pt'}.`
+          ? 'Encomenda submetida. PDF gerado e anexado.'
           : result.pdfError
-            ? `Encomenda submetida. Erro ao gerar PDF/email: ${result.pdfError}`
+            ? `Encomenda submetida. Erro no PDF: ${result.pdfError}`
             : 'Encomenda submetida.'
         setSuccessMsg(msg)
         await new Promise(r => setTimeout(r, 3000))

@@ -3,12 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { renderToBuffer } from '@react-pdf/renderer'
-import { Resend } from 'resend'
 import React from 'react'
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const TO_EMAIL = process.env.ORDER_NOTIFY_EMAIL ?? 'suporte@umzero.pt'
 
 export type OrderRow = {
   user_id:            string
@@ -58,7 +55,7 @@ export async function insertOrderAction(
   if (error) return { error: `${error.message} [${error.code}]` }
   const orderId: string = data.id
 
-  // For submitted orders: generate PDF → upload to Storage → send email
+  // For submitted orders: generate PDF → upload to Storage (email disabled for now — diagnosing)
   if (row.status === 'submitted' && pdfMeta) {
     try {
       const pdfProps: OrderPdfProps = {
@@ -84,62 +81,26 @@ export async function insertOrderAction(
       }
 
       const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
-      const ref = row.reference_customer ?? orderId.slice(0, 8)
-      const emailHtml = `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
-          <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
-          <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 20px">Nova encomenda submetida</h2>
-          <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
-            <tr><td style="padding:8px 0;color:#78716C;width:120px">Refer&ecirc;ncia</td><td style="padding:8px 0;font-weight:500">${ref}</td></tr>
-            <tr><td style="padding:8px 0;color:#78716C">Empresa</td><td style="padding:8px 0;font-weight:500">${pdfMeta.companyName}</td></tr>
-            <tr><td style="padding:8px 0;color:#78716C">Paciente</td><td style="padding:8px 0">${row.patient_name ?? '&mdash;'}</td></tr>
-            <tr><td style="padding:8px 0;color:#78716C">Modelo</td><td style="padding:8px 0">${pdfMeta.productColourId}</td></tr>
-          </table>
-        </div>
-      `
+      const pdfBuffer = await renderToBuffer(element)
+      const pdfBytes = Buffer.from(pdfBuffer)
 
-      // Try PDF generation separately — if it fails, still send email without attachment
-      let pdfBytes: Buffer | undefined
-      let pdfUrl: string | undefined
-      try {
-        const pdfBuffer = await renderToBuffer(element)
-        pdfBytes = Buffer.from(pdfBuffer)
-      } catch (pdfErr) {
-        console.error('PDF generation error:', pdfErr)
+      const pdfPath = `${orderId}.pdf`
+      const { error: uploadErr } = await service.storage
+        .from('order-pdfs')
+        .upload(pdfPath, pdfBytes, { contentType: 'application/pdf', upsert: true })
+
+      if (uploadErr) {
+        console.error('Storage upload error:', uploadErr)
+        return { id: orderId, pdfError: `Storage: ${uploadErr.message}` }
       }
 
-      // Upload to storage if PDF was generated
-      if (pdfBytes) {
-        const pdfPath = `${orderId}.pdf`
-        const { error: uploadErr } = await service.storage
-          .from('order-pdfs')
-          .upload(pdfPath, pdfBytes, { contentType: 'application/pdf', upsert: true })
-        if (!uploadErr) {
-          const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(pdfPath)
-          pdfUrl = publicUrl
-          await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
-        } else {
-          console.error('Storage upload error:', uploadErr)
-        }
-      }
+      const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(pdfPath)
+      await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
 
-      // Send email — with PDF attachment if available, without if not
-      const { error: emailErr } = await resend.emails.send({
-        from:    'Piedro Portal <onboarding@resend.dev>',
-        to:      [TO_EMAIL],
-        subject: `Nova Encomenda Piedro ${pdfBytes ? '' : '(sem PDF) '}— ${ref}`,
-        html:    emailHtml,
-        ...(pdfBytes ? {
-          attachments: [{ filename: `encomenda-${ref}.pdf`, content: pdfBytes.toString('base64') }],
-        } : {}),
-      })
-      if (emailErr) console.error('Email error:', emailErr)
-
-      return { id: orderId, pdf_url: pdfUrl }
+      return { id: orderId, pdf_url: publicUrl }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
-      console.error('PDF/email error:', msg)
-      // Order already saved — return id + error detail so the form can show it
+      console.error('PDF error:', msg)
       return { id: orderId, pdfError: msg }
     }
   }
