@@ -68,14 +68,18 @@ function availableSizes(products: Product[]): number[] {
   return out
 }
 
-// ── Width sort (letter widths in order, then numerics) ────────────────────────
-const WIDTH_ORDER = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R']
+// ── Width sort: numerics first → L,M,N,R → rest (S,W…) ─────────────────────
+const LMNR = ['L', 'M', 'N', 'R']
+function parseWidthNum(s: string) {
+  return parseFloat(s.replace('½', '.5').replace(/(\d)1\/2/, '$1.5'))
+}
 function sortWidths(a: string, b: string): number {
-  const ia = WIDTH_ORDER.indexOf(a)
-  const ib = WIDTH_ORDER.indexOf(b)
-  if (ia >= 0 && ib >= 0) return ia - ib
-  if (ia >= 0) return -1
-  if (ib >= 0) return 1
+  const numA = /^\d/.test(a), numB = /^\d/.test(b)
+  const lmnrA = LMNR.includes(a), lmnrB = LMNR.includes(b)
+  if (numA !== numB) return numA ? -1 : 1
+  if (numA && numB) return parseWidthNum(a) - parseWidthNum(b)
+  if (lmnrA !== lmnrB) return lmnrA ? -1 : 1
+  if (lmnrA && lmnrB) return LMNR.indexOf(a) - LMNR.indexOf(b)
   return a.localeCompare(b)
 }
 
@@ -121,7 +125,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
   const forType         = useMemo(() => applyFilters(sectionProducts, filters, 'types'),         [sectionProducts, filters])
   const forColour       = useMemo(() => applyFilters(sectionProducts, filters, 'colours'),       [sectionProducts, filters])
-  const forConstructions= useMemo(() => applyFilters(sectionProducts, filters, 'constructions'), [sectionProducts, filters])
+  // Constructions shown independently of size filter — selecting a size shouldn't hide the construction row
+  const forConstructions= useMemo(() => applyFilters(sectionProducts, { ...filters, sizes: [] }, 'constructions'), [sectionProducts, filters])
   const forWidths       = useMemo(() => applyFilters(sectionProducts, filters, 'widths'),        [sectionProducts, filters])
   const forSizes        = useMemo(() => applyFilters(sectionProducts, filters, 'sizes'),         [sectionProducts, filters])
 

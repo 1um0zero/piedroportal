@@ -148,6 +148,23 @@ function SizeChips({
         {label}
       </span>
       <div className="space-y-1.5">
+        {/* Input first — between label and chips */}
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number" step="0.5" placeholder="EU …"
+            value={custom}
+            onChange={e => setCustom(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submitCustom()}
+            className="h-7 w-20 px-2 text-xs bg-white border border-stone-200 rounded-lg
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
+          />
+          <button onClick={submitCustom}
+            className="h-7 px-2 text-xs font-semibold bg-stone-100 hover:bg-gold/10
+                       hover:text-gold text-stone-500 rounded-lg border border-stone-200 transition-colors">
+            +
+          </button>
+        </div>
+        {/* Range chips below */}
         <div className="flex flex-wrap gap-1.5">
           {buckets.map((b) => {
             const anySelected = b.values.some((v) => selected.includes(v))
@@ -170,21 +187,6 @@ function SizeChips({
               {s} ×
             </button>
           ))}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <input
-            type="number" step="0.5" placeholder="EU …"
-            value={custom}
-            onChange={e => setCustom(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && submitCustom()}
-            className="h-7 w-20 px-2 text-xs bg-white border border-stone-200 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
-          />
-          <button onClick={submitCustom}
-            className="h-7 px-2 text-xs font-semibold bg-stone-100 hover:bg-gold/10
-                       hover:text-gold text-stone-500 rounded-lg border border-stone-200 transition-colors">
-            +
-          </button>
         </div>
       </div>
     </div>
