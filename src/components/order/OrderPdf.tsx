@@ -62,6 +62,7 @@ export type OrderPdfProps = {
   productColorName: string
   productClosure: string
   productImageUrl?: string
+  diff_sizes_pairs?: Array<{ qty: number; size: number }> | null
 }
 
 const UNIT_LABELS: Record<string, string> = {
@@ -80,6 +81,7 @@ export function OrderPdf({
   construction_left, construction_right, width_left, width_right,
   size_left, size_right, additions, comments, created_at,
   companyName, productColourId, productColorName, productClosure, productImageUrl,
+  diff_sizes_pairs,
 }: OrderPdfProps) {
   const isDouble = unit === 'LEFT_RIGHT'
   const date = new Date(created_at).toLocaleDateString('pt-PT', {
@@ -153,15 +155,30 @@ export function OrderPdf({
         {/* Specifications */}
         <Text style={s.sectionTitle}>Especificações</Text>
         <View style={s.fieldRow}><Text style={s.fieldLabel}>Unidade</Text><Text style={s.fieldVal}>{UNIT_LABELS[unit] ?? unit}</Text></View>
-        <View style={s.fieldRow}><Text style={s.fieldLabel}>Quantidade</Text><Text style={s.fieldVal}>{quantity}</Text></View>
-        {(construction_left || construction_right) && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Construção</Text><Text style={s.fieldVal}>{formatSide(construction_left, construction_right, unit)}</Text></View>
-        )}
-        {(width_left || width_right) && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Largura</Text><Text style={s.fieldVal}>{formatSide(width_left, width_right, unit)}</Text></View>
-        )}
-        {(size_left || size_right) && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Tamanho</Text><Text style={s.fieldVal}>{formatSide(size_left, size_right, unit)}</Text></View>
+
+        {unit === 'DIFF_SIZES' && diff_sizes_pairs && diff_sizes_pairs.length > 0 ? (
+          <>
+            <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>Pares/Tamanhos</Text>
+            {diff_sizes_pairs.map((pair, idx) => (
+              <View key={idx} style={s.fieldRow}>
+                <Text style={s.fieldLabel}>{pair.qty} {pair.qty === 1 ? 'par' : 'pares'}</Text>
+                <Text style={s.fieldVal}>Tam. {pair.size}</Text>
+              </View>
+            ))}
+          </>
+        ) : (
+          <>
+            <View style={s.fieldRow}><Text style={s.fieldLabel}>Quantidade</Text><Text style={s.fieldVal}>{quantity}</Text></View>
+            {(construction_left || construction_right) && (
+              <View style={s.fieldRow}><Text style={s.fieldLabel}>Construção</Text><Text style={s.fieldVal}>{formatSide(construction_left, construction_right, unit)}</Text></View>
+            )}
+            {(width_left || width_right) && (
+              <View style={s.fieldRow}><Text style={s.fieldLabel}>Largura</Text><Text style={s.fieldVal}>{formatSide(width_left, width_right, unit)}</Text></View>
+            )}
+            {(size_left || size_right) && (
+              <View style={s.fieldRow}><Text style={s.fieldLabel}>Tamanho</Text><Text style={s.fieldVal}>{formatSide(size_left, size_right, unit)}</Text></View>
+            )}
+          </>
         )}
 
         {/* Additions */}

@@ -62,6 +62,8 @@
     "unit_right": "Right only",
     "unit_lr": "Left ≠ Right",
     "unit_sizes": "Different sizes",
+    "pairs_sizes": "Pairs/Sizes",
+    "add_pair": "Add pair",
     "style": "Style",
     "model": "Model",
     "closure_label": "Closure"

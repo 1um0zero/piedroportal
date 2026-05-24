@@ -29,6 +29,7 @@ export type OrderRow = {
   size_right:         number | null
   additions:          Record<string, unknown>
   comments:           string | null
+  diff_sizes_pairs:   Array<{ qty: number; size: number }> | null
 }
 
 export type PdfMeta = {
@@ -81,6 +82,7 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
       companyName: pdfMeta.companyName, productColourId: pdfMeta.productColourId,
       productColorName: pdfMeta.productColorName, productClosure: pdfMeta.productClosure,
       productImageUrl: pdfMeta.productImageUrl,
+      diff_sizes_pairs: row.diff_sizes_pairs,
     }
     const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
     const pdfBytes = Buffer.from(await renderToBuffer(element))
@@ -160,7 +162,7 @@ export async function duplicateOrderAction(
   const service = createServiceClient()
   const { data: src, error: fetchErr } = await service
     .from('orders')
-    .select('company_id,product_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments')
+    .select('company_id,product_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,diff_sizes_pairs')
     .eq('id', orderId)
     .single()
   if (fetchErr || !src) return { error: 'Order not found' }

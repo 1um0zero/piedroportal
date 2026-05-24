@@ -62,6 +62,8 @@
     "unit_right": "Alleen rechts",
     "unit_lr": "Links ≠ Rechts",
     "unit_sizes": "Verschillende maten",
+    "pairs_sizes": "Paren/Maten",
+    "add_pair": "Paar toevoegen",
     "style": "Stijl",
     "model": "Model",
     "closure_label": "Sluiting"

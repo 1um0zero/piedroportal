@@ -62,6 +62,8 @@
     "unit_right": "Droite seulement",
     "unit_lr": "Gauche ≠ Droite",
     "unit_sizes": "Tailles différentes",
+    "pairs_sizes": "Paires/Pointures",
+    "add_pair": "Ajouter une paire",
     "style": "Style",
     "model": "Modèle",
     "closure_label": "Fermeture"

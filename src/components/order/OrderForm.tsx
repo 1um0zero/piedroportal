@@ -113,6 +113,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [sizeLeft,    setSizeL]     = useState(d?.size_left != null ? String(d.size_left) : '')
   const [sizeRight,   setSizeR]     = useState(d?.size_right != null ? String(d.size_right) : '')
   const [additions,   setAdditions] = useState<Record<string, unknown>>(d?.additions ?? emptyAdditions())
+  const [diffSizesPairs, setDiffSizesPairs] = useState<Array<{ qty: number; size: string }>>(
+    d?.diff_sizes_pairs ?? [{ qty: 1, size: '' }]
+  )
   const [step,        setStep]      = useState<1 | 2 | 3>(1)
   const [submitting,  setSubmitting] = useState(false)
   const [discarding,  setDiscarding] = useState(false)
@@ -122,12 +125,35 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const showAdditions = unit !== 'DIFF_SIZES'
   const steps = showAdditions ? [1, 2, 3] : [1, 3]
 
+  console.log('OrderForm render:', { unit, showAdditions, diffSizesPairsLength: diffSizesPairs.length })
+
   const isDouble    = unit === 'LEFT_RIGHT'
   const mirror      = unit === 'PAIR'
   const displaySide: 'l' | 'r' = unit === 'RIGHT' ? 'r' : 'l'
   const sideLabel   = unit === 'LEFT'  ? t('left')
                     : unit === 'RIGHT' ? t('right')
                     : ''
+
+  // ── Different Sizes helpers ──
+  const addDiffSizesPair = () => {
+    if (diffSizesPairs.length < 10) {
+      setDiffSizesPairs([...diffSizesPairs, { qty: 1, size: '' }])
+    }
+  }
+  const removeDiffSizesPair = (idx: number) => {
+    if (diffSizesPairs.length > 1) {
+      setDiffSizesPairs(diffSizesPairs.filter((_, i) => i !== idx))
+    }
+  }
+  const updateDiffSizesPair = (idx: number, field: 'qty' | 'size', value: string | number) => {
+    const updated = [...diffSizesPairs]
+    if (field === 'qty') {
+      updated[idx].qty = typeof value === 'number' ? value : parseInt(String(value)) || 1
+    } else {
+      updated[idx].size = String(value)
+    }
+    setDiffSizesPairs(updated)
+  }
 
   // ── Product data ──
   const constructions = product.constructions ?? []
@@ -189,6 +215,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         size_right:         (mirror ? sizeLeft : sizeRight) ? parseFloat(mirror ? sizeLeft : sizeRight) : null,
         additions:          additionFields,
         comments:           String(addComments ?? '') || null,
+        diff_sizes_pairs:   unit === 'DIFF_SIZES'
+          ? diffSizesPairs.map(p => ({ qty: p.qty, size: parseFloat(p.size) }))
+          : null,
       }
 
       const pdfMeta: PdfMeta | undefined = status === 'submitted' ? {
@@ -391,26 +420,47 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Produto</h3>
               <p className="font-bold text-stone-900">{product.colour_id}</p>
               <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
-              {(constrLeft || constrRight) && (
-                <p className="text-xs text-stone-400">{t('construction')}: {
-                  isDouble && constrRight && constrRight !== constrLeft
-                    ? `L: ${constrLeft || '—'}  R: ${constrRight || '—'}`
-                    : unit === 'RIGHT' ? constrRight : constrLeft
-                }</p>
-              )}
-              {(widthLeft || widthRight) && (
-                <p className="text-xs text-stone-400">{t('width')}: {
-                  isDouble && widthRight && widthRight !== widthLeft
-                    ? `L: ${widthLeft || '—'}  R: ${widthRight || '—'}`
-                    : unit === 'RIGHT' ? widthRight : widthLeft
-                }</p>
-              )}
-              {(sizeLeft || sizeRight) && (
-                <p className="text-xs text-stone-400">{t('size')}: {
-                  isDouble && sizeRight && sizeRight !== sizeLeft
-                    ? `L: ${sizeLeft || '—'}  R: ${sizeRight || '—'}`
-                    : unit === 'RIGHT' ? sizeRight : sizeLeft
-                }</p>
+
+              {unit === 'DIFF_SIZES' ? (
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs font-semibold text-stone-600">{t('pairs_sizes')}:</p>
+                  <div className="divide-y divide-stone-100">
+                    {diffSizesPairs.filter(p => p.size).map((pair, i) => (
+                      <div key={i} className="flex items-center justify-between py-1.5">
+                        <span className="text-xs text-stone-500">
+                          {pair.qty} {pair.qty === 1 ? 'par' : 'pares'}
+                        </span>
+                        <span className="text-xs font-semibold text-stone-700">
+                          Tam. {pair.size}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {(constrLeft || constrRight) && (
+                    <p className="text-xs text-stone-400">{t('construction')}: {
+                      isDouble && constrRight && constrRight !== constrLeft
+                        ? `L: ${constrLeft || '—'}  R: ${constrRight || '—'}`
+                        : unit === 'RIGHT' ? constrRight : constrLeft
+                    }</p>
+                  )}
+                  {(widthLeft || widthRight) && (
+                    <p className="text-xs text-stone-400">{t('width')}: {
+                      isDouble && widthRight && widthRight !== widthLeft
+                        ? `L: ${widthLeft || '—'}  R: ${widthRight || '—'}`
+                        : unit === 'RIGHT' ? widthRight : widthLeft
+                    }</p>
+                  )}
+                  {(sizeLeft || sizeRight) && (
+                    <p className="text-xs text-stone-400">{t('size')}: {
+                      isDouble && sizeRight && sizeRight !== sizeLeft
+                        ? `L: ${sizeLeft || '—'}  R: ${sizeRight || '—'}`
+                        : unit === 'RIGHT' ? sizeRight : sizeLeft
+                    }</p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -539,15 +589,98 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               </div>
             </div>
 
-            {/* Quantity */}
-            <div className="space-y-1.5 max-w-[120px]">
-              <label className={labelCls}>{t('quantity')} <span className="text-red-400">*</span></label>
-              <input type="number" min={1} className={inputCls} value={quantity}
-                onChange={e => setQuantity(parseInt(e.target.value) || 1)} />
-            </div>
+            {/* Quantity — hide for DIFF_SIZES */}
+            {unit !== 'DIFF_SIZES' && (
+              <div className="space-y-1.5 max-w-[120px]">
+                <label className={labelCls}>{t('quantity')} <span className="text-red-400">*</span></label>
+                <input type="number" min={1} className={inputCls} value={quantity}
+                  onChange={e => setQuantity(parseInt(e.target.value) || 1)} />
+              </div>
+            )}
+
+            {/* Different Sizes pairs table */}
+            {unit === 'DIFF_SIZES' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-stone-700">
+                    {t('pairs_sizes')} <span className="text-red-400">*</span>
+                  </h3>
+                  <span className="text-xs text-stone-400">{diffSizesPairs.length}/10</span>
+                </div>
+                <div className="space-y-2">
+                  {diffSizesPairs.map((pair, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="flex-1 grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-stone-400 uppercase tracking-wide">
+                            {t('quantity')}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            className={inputCls}
+                            value={pair.qty}
+                            onChange={e => updateDiffSizesPair(idx, 'qty', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-stone-400 uppercase tracking-wide">
+                            {t('size')}
+                          </label>
+                          <input
+                            list={`diff-size-list-${idx}`}
+                            className={inputCls}
+                            value={pair.size}
+                            onChange={e => updateDiffSizesPair(idx, 'size', e.target.value)}
+                            onBlur={e => {
+                              const v = parseFloat(e.target.value)
+                              if (isNaN(v)) { updateDiffSizesPair(idx, 'size', ''); return }
+                              const nearest = sizes.reduce((p, c) =>
+                                Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
+                              )
+                              updateDiffSizesPair(idx, 'size', nearest)
+                            }}
+                            placeholder="—"
+                          />
+                          <datalist id={`diff-size-list-${idx}`}>
+                            {sizes.map(s => <option key={s} value={s} />)}
+                          </datalist>
+                        </div>
+                      </div>
+                      {diffSizesPairs.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeDiffSizesPair(idx)}
+                          className="mt-5 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Remove pair"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {diffSizesPairs.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={addDiffSizesPair}
+                    className="w-full py-2 border border-dashed border-stone-300 text-stone-500
+                               text-xs font-medium rounded-lg hover:border-gold hover:text-gold
+                               transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    {t('add_pair')}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Construction */}
-            {constructionOpts.length > 0 && (
+            {unit !== 'DIFF_SIZES' && constructionOpts.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                   {t('construction')}
@@ -579,6 +712,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             )}
 
             {/* Width — shows placeholder if no construction selected */}
+            {unit !== 'DIFF_SIZES' && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                 {t('width')}
@@ -607,8 +741,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 </div>
               )}
             </div>
+            )}
 
             {/* Size */}
+            {unit !== 'DIFF_SIZES' && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                 {t('size')}
@@ -631,6 +767,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 </div>
               )}
             </div>
+            )}
 
             {/* Error */}
             {error && (
@@ -640,7 +777,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {/* Tab 1 actions → next step */}
             <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
               <button type="button"
-                disabled={!reference}
+                disabled={!reference || (unit === 'DIFF_SIZES' && !diffSizesPairs.some(p => p.size))}
                 onClick={() => setStep(showAdditions ? 2 : 3)}
                 className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                            hover:bg-gold-dark transition-colors disabled:opacity-50">
