@@ -156,6 +156,20 @@ export function OrderPdf({
         <Text style={s.sectionTitle}>Especificações</Text>
         <View style={s.fieldRow}><Text style={s.fieldLabel}>Unidade</Text><Text style={s.fieldVal}>{UNIT_LABELS[unit] ?? unit}</Text></View>
 
+        {/* Quantity — hide for DIFF_SIZES */}
+        {unit !== 'DIFF_SIZES' && (
+          <View style={s.fieldRow}><Text style={s.fieldLabel}>Quantidade</Text><Text style={s.fieldVal}>{quantity}</Text></View>
+        )}
+
+        {/* Construction & Width — always shown */}
+        {(construction_left || construction_right) && (
+          <View style={s.fieldRow}><Text style={s.fieldLabel}>Construção</Text><Text style={s.fieldVal}>{formatSide(construction_left, construction_right, unit)}</Text></View>
+        )}
+        {(width_left || width_right) && (
+          <View style={s.fieldRow}><Text style={s.fieldLabel}>Largura</Text><Text style={s.fieldVal}>{formatSide(width_left, width_right, unit)}</Text></View>
+        )}
+
+        {/* Size — different display for DIFF_SIZES */}
         {unit === 'DIFF_SIZES' && diff_sizes_pairs && diff_sizes_pairs.length > 0 ? (
           <>
             <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>Pares/Tamanhos</Text>
@@ -166,19 +180,8 @@ export function OrderPdf({
               </View>
             ))}
           </>
-        ) : (
-          <>
-            <View style={s.fieldRow}><Text style={s.fieldLabel}>Quantidade</Text><Text style={s.fieldVal}>{quantity}</Text></View>
-            {(construction_left || construction_right) && (
-              <View style={s.fieldRow}><Text style={s.fieldLabel}>Construção</Text><Text style={s.fieldVal}>{formatSide(construction_left, construction_right, unit)}</Text></View>
-            )}
-            {(width_left || width_right) && (
-              <View style={s.fieldRow}><Text style={s.fieldLabel}>Largura</Text><Text style={s.fieldVal}>{formatSide(width_left, width_right, unit)}</Text></View>
-            )}
-            {(size_left || size_right) && (
-              <View style={s.fieldRow}><Text style={s.fieldLabel}>Tamanho</Text><Text style={s.fieldVal}>{formatSide(size_left, size_right, unit)}</Text></View>
-            )}
-          </>
+        ) : (size_left || size_right) && (
+          <View style={s.fieldRow}><Text style={s.fieldLabel}>Tamanho</Text><Text style={s.fieldVal}>{formatSide(size_left, size_right, unit)}</Text></View>
         )}
 
         {/* Additions */}

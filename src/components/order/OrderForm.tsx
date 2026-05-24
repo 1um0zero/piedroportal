@@ -165,13 +165,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     }
   }, [constructionOpts.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Clear construction/width/size when switching to DIFF_SIZES
+  // Clear only size fields when switching to DIFF_SIZES
   useEffect(() => {
     if (unit === 'DIFF_SIZES') {
-      setConstrL('')
-      setConstrR('')
-      setWidthL('')
-      setWidthR('')
       setSizeL('')
       setSizeR('')
     }
@@ -431,6 +427,23 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <p className="font-bold text-stone-900">{product.colour_id}</p>
               <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
 
+              {/* Construction & Width — always shown */}
+              {(constrLeft || constrRight) && (
+                <p className="text-xs text-stone-400">{t('construction')}: {
+                  isDouble && constrRight && constrRight !== constrLeft
+                    ? `L: ${constrLeft || '—'}  R: ${constrRight || '—'}`
+                    : unit === 'RIGHT' ? constrRight : constrLeft
+                }</p>
+              )}
+              {(widthLeft || widthRight) && (
+                <p className="text-xs text-stone-400">{t('width')}: {
+                  isDouble && widthRight && widthRight !== widthLeft
+                    ? `L: ${widthLeft || '—'}  R: ${widthRight || '—'}`
+                    : unit === 'RIGHT' ? widthRight : widthLeft
+                }</p>
+              )}
+
+              {/* Size — different display for DIFF_SIZES */}
               {unit === 'DIFF_SIZES' ? (
                 <div className="space-y-2 pt-2">
                   <p className="text-xs font-semibold text-stone-600">{t('pairs_sizes')}:</p>
@@ -447,30 +460,12 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     ))}
                   </div>
                 </div>
-              ) : (
-                <>
-                  {(constrLeft || constrRight) && (
-                    <p className="text-xs text-stone-400">{t('construction')}: {
-                      isDouble && constrRight && constrRight !== constrLeft
-                        ? `L: ${constrLeft || '—'}  R: ${constrRight || '—'}`
-                        : unit === 'RIGHT' ? constrRight : constrLeft
-                    }</p>
-                  )}
-                  {(widthLeft || widthRight) && (
-                    <p className="text-xs text-stone-400">{t('width')}: {
-                      isDouble && widthRight && widthRight !== widthLeft
-                        ? `L: ${widthLeft || '—'}  R: ${widthRight || '—'}`
-                        : unit === 'RIGHT' ? widthRight : widthLeft
-                    }</p>
-                  )}
-                  {(sizeLeft || sizeRight) && (
-                    <p className="text-xs text-stone-400">{t('size')}: {
-                      isDouble && sizeRight && sizeRight !== sizeLeft
-                        ? `L: ${sizeLeft || '—'}  R: ${sizeRight || '—'}`
-                        : unit === 'RIGHT' ? sizeRight : sizeLeft
-                    }</p>
-                  )}
-                </>
+              ) : (sizeLeft || sizeRight) && (
+                <p className="text-xs text-stone-400">{t('size')}: {
+                  isDouble && sizeRight && sizeRight !== sizeLeft
+                    ? `L: ${sizeLeft || '—'}  R: ${sizeRight || '—'}`
+                    : unit === 'RIGHT' ? sizeRight : sizeLeft
+                }</p>
               )}
             </div>
           </div>
@@ -698,7 +693,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             )}
 
             {/* Construction */}
-            {unit !== 'DIFF_SIZES' && constructionOpts.length > 0 && (
+            {constructionOpts.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                   {t('construction')}
@@ -730,7 +725,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             )}
 
             {/* Width — shows placeholder if no construction selected */}
-            {unit !== 'DIFF_SIZES' && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                 {t('width')}
@@ -759,7 +753,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 </div>
               )}
             </div>
-            )}
 
             {/* Size */}
             {unit !== 'DIFF_SIZES' && (
