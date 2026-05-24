@@ -125,8 +125,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const showAdditions = unit !== 'DIFF_SIZES'
   const steps = showAdditions ? [1, 2, 3] : [1, 3]
 
-  console.log('OrderForm render:', { unit, showAdditions, diffSizesPairsLength: diffSizesPairs.length })
-
   const isDouble    = unit === 'LEFT_RIGHT'
   const mirror      = unit === 'PAIR'
   const displaySide: 'l' | 'r' = unit === 'RIGHT' ? 'r' : 'l'
@@ -166,6 +164,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       setConstrR(constructionOpts[0])
     }
   }, [constructionOpts.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear construction/width/size when switching to DIFF_SIZES
+  useEffect(() => {
+    if (unit === 'DIFF_SIZES') {
+      setConstrL('')
+      setConstrR('')
+      setWidthL('')
+      setWidthR('')
+      setSizeL('')
+      setSizeR('')
+    }
+  }, [unit])
 
   const widthsForConstrution = (constr: string) => {
     if (!constr) return [...new Set(constructions.flatMap(c => c.widths))]
@@ -608,7 +618,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   <span className="text-xs text-stone-400">{diffSizesPairs.length}/10</span>
                 </div>
                 <div className="space-y-2">
-                  {diffSizesPairs.map((pair, idx) => (
+                  {diffSizesPairs.map((pair, idx) => {
+                    // Filter out already selected sizes (exclude current pair's size)
+                    const selectedSizes = diffSizesPairs
+                      .map((p, i) => i !== idx ? p.size : null)
+                      .filter(s => s && s !== '')
+                    const availableSizes = sizes.filter(s => !selectedSizes.includes(s))
+
+                    return (
                     <div key={idx} className="flex items-center gap-2">
                       <div className="flex-1 grid grid-cols-2 gap-2">
                         <div className="space-y-1">
@@ -635,7 +652,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                             onBlur={e => {
                               const v = parseFloat(e.target.value)
                               if (isNaN(v)) { updateDiffSizesPair(idx, 'size', ''); return }
-                              const nearest = sizes.reduce((p, c) =>
+                              const nearest = availableSizes.reduce((p, c) =>
                                 Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
                               )
                               updateDiffSizesPair(idx, 'size', nearest)
@@ -643,7 +660,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                             placeholder="—"
                           />
                           <datalist id={`diff-size-list-${idx}`}>
-                            {sizes.map(s => <option key={s} value={s} />)}
+                            {availableSizes.map(s => <option key={s} value={s} />)}
                           </datalist>
                         </div>
                       </div>
@@ -660,7 +677,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         </button>
                       )}
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 {diffSizesPairs.length < 10 && (
                   <button
