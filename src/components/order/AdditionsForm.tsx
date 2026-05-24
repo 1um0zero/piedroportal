@@ -274,9 +274,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       return <div className="opacity-40 pointer-events-none">{renderControl(field, 'l')}</div>
     }
 
-    if (field.type === 'mm' || field.type === 'image')
+    if (field.type === 'mm')
       return <MmInput values={field.values ?? []} value={val} onChange={setVal} />
-    if (field.type === 'option')
+    if (field.type === 'image' || field.type === 'option')
       return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
     if (field.type === 'toggle')
       return <YesNoToggle value={val === true} onChange={setVal} />

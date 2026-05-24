@@ -436,16 +436,17 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
           {/* Customer + Product */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Customer */}
             <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
               <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('customer')}</h3>
               <p className="font-semibold text-stone-900">{companyName}</p>
               {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
               {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
               {reference   && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
-              <p className="text-xs text-stone-400">{t('unit')}: {UNIT_LABELS[unit]} · {t('quantity')}: {quantity}</p>
             </div>
-            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Produto</h3>
+
+            {/* Product */}
+            <div className="bg-white rounded-[14px] p-5 space-y-3" style={{ boxShadow: 'var(--shadow-card)' }}>
               <div className="flex gap-3">
                 {product.picture_name && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -461,26 +462,82 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 </div>
               </div>
 
-              {/* Construction & Width — always shown */}
-              {(constrLeft || constrRight) && (
-                <p className="text-xs text-stone-400">{t('construction')}: {
-                  isDouble && constrRight && constrRight !== constrLeft
-                    ? `L: ${constrLeft || '—'}  R: ${constrRight || '—'}`
-                    : unit === 'RIGHT' ? constrRight : constrLeft
-                }</p>
-              )}
-              {(widthLeft || widthRight) && (
-                <p className="text-xs text-stone-400">{t('width')}: {
-                  isDouble && widthRight && widthRight !== widthLeft
-                    ? `L: ${widthLeft || '—'}  R: ${widthRight || '—'}`
-                    : unit === 'RIGHT' ? widthRight : widthLeft
-                }</p>
+              {/* Qty + Unit badge */}
+              <div className="flex items-center gap-2 pt-1 border-t border-stone-100">
+                <div className="w-12 h-12 bg-gold/10 border-2 border-gold rounded-lg flex items-center justify-center">
+                  <span className="text-2xl font-bold text-gold">{unit === 'DIFF_SIZES' ? diffSizesPairs.filter(p => p.size).reduce((sum, p) => sum + p.qty, 0) : quantity}</span>
+                </div>
+                <div className="flex-1 bg-stone-100 rounded-lg px-3 py-2">
+                  <span className="text-sm font-bold text-stone-700 uppercase">
+                    {unit === 'PAIR' ? 'PAIR' :
+                     unit === 'LEFT' ? 'LEFT FOOT' :
+                     unit === 'RIGHT' ? 'RIGHT FOOT' :
+                     unit === 'LEFT_RIGHT' ? '(L ≠ R)' :
+                     ''}
+                  </span>
+                </div>
+              </div>
+
+              {/* Construction & Width — grid format */}
+              {(constrLeft || constrRight || widthLeft || widthRight) && (
+                <div className="pt-2 border-t border-stone-100">
+                  {isDouble ? (
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-[10px] font-semibold text-stone-500 uppercase pb-1">
+                        <div></div>
+                        <div className="text-center">Left</div>
+                        <div className="text-center">Right</div>
+                      </div>
+                      {(constrLeft || constrRight) && (
+                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
+                          <span className="font-semibold text-stone-600">{t('construction')}</span>
+                          <span className="text-stone-800 font-semibold text-center">{constrLeft || '—'}</span>
+                          <span className="text-stone-800 font-semibold text-center">{constrRight || '—'}</span>
+                        </div>
+                      )}
+                      {(widthLeft || widthRight) && (
+                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
+                          <span className="font-semibold text-stone-600">{t('width')}</span>
+                          <span className="text-stone-800 font-semibold text-center">{widthLeft || '—'}</span>
+                          <span className="text-stone-800 font-semibold text-center">{widthRight || '—'}</span>
+                        </div>
+                      )}
+                      {(sizeLeft || sizeRight) && (
+                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
+                          <span className="font-semibold text-stone-600">{t('size')}</span>
+                          <span className="text-stone-800 font-semibold text-center">{sizeLeft || '—'}</span>
+                          <span className="text-stone-800 font-semibold text-center">{sizeRight || '—'}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {(constrLeft || constrRight) && (
+                        <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs">
+                          <span className="font-semibold text-stone-600">{t('construction')}</span>
+                          <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? constrRight : constrLeft}</span>
+                        </div>
+                      )}
+                      {(widthLeft || widthRight) && (
+                        <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs">
+                          <span className="font-semibold text-stone-600">{t('width')}</span>
+                          <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? widthRight : widthLeft}</span>
+                        </div>
+                      )}
+                      {unit !== 'DIFF_SIZES' && (sizeLeft || sizeRight) && (
+                        <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs">
+                          <span className="font-semibold text-stone-600">{t('size')}</span>
+                          <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? sizeRight : sizeLeft}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
 
-              {/* Size — different display for DIFF_SIZES */}
-              {unit === 'DIFF_SIZES' ? (
-                <div className="space-y-1.5 pt-1">
-                  <p className="text-xs font-semibold text-stone-600">{t('pairs_sizes')}:</p>
+              {/* Different Sizes grid */}
+              {unit === 'DIFF_SIZES' && (
+                <div className="pt-2 border-t border-stone-100">
                   <div className="bg-stone-50 rounded-lg p-2">
                     <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-xs">
                       <div className="font-semibold text-stone-500">Pares</div>
@@ -494,12 +551,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     </div>
                   </div>
                 </div>
-              ) : (sizeLeft || sizeRight) && (
-                <p className="text-xs text-stone-400">{t('size')}: {
-                  isDouble && sizeRight && sizeRight !== sizeLeft
-                    ? `L: ${sizeLeft || '—'}  R: ${sizeRight || '—'}`
-                    : unit === 'RIGHT' ? sizeRight : sizeLeft
-                }</p>
               )}
             </div>
           </div>
@@ -520,7 +571,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                       <div className="space-y-1">
                         {/* Header */}
                         <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                          <div>Campo</div>
+                          <div></div>
                           <div className="text-center">Left</div>
                           <div className="text-center">Right</div>
                         </div>
@@ -528,7 +579,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         {sec.filled.map((f, i) => {
                           const isChild = f.label.includes('·')
                           return (
-                            <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-4' : ''}`}>
+                            <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                               <span className="text-stone-600">{f.label}</span>
                               <span className="text-stone-800 font-semibold text-center">{f.l ?? '—'}</span>
                               <span className="text-stone-800 font-semibold text-center">{f.r ?? '—'}</span>
@@ -540,14 +591,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                       <div className="space-y-1">
                         {/* Header */}
                         <div className="grid grid-cols-[2fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                          <div>Campo</div>
+                          <div></div>
                           <div className="text-right">{unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'LEFT' : 'RIGHT'}</div>
                         </div>
                         {/* Rows */}
                         {sec.filled.map((f, i) => {
                           const isChild = f.label.includes('·')
                           return (
-                            <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-4' : ''}`}>
+                            <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                               <span className="text-stone-600">{f.label}</span>
                               <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r}</span>
                             </div>
