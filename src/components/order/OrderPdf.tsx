@@ -9,7 +9,8 @@ const BORDER = '#E7E5E4'
 
 const s = StyleSheet.create({
   page:          { padding: 40, fontSize: 9, fontFamily: 'Helvetica', color: DARK, backgroundColor: '#fff' },
-  header:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${GOLD}` },
+  header:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${GOLD}` },
+  logo:          { width: 80, height: 40, objectFit: 'contain' },
   brand:         { fontSize: 14, fontFamily: 'Helvetica-Bold', color: GOLD, letterSpacing: 1 },
   brandSub:      { fontSize: 8, color: MUTED, marginTop: 2 },
   refBlock:      { alignItems: 'flex-end' },
@@ -17,6 +18,10 @@ const s = StyleSheet.create({
   refDate:       { fontSize: 8, color: MUTED, marginTop: 2 },
   badge:         { marginTop: 4, backgroundColor: LIGHT, paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4 },
   badgeText:     { fontSize: 7, color: MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },
+  qtyBox:        { width: 32, height: 32, border: `2px solid ${GOLD}`, borderRadius: 4, backgroundColor: `${GOLD}15`, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+  qtyText:       { fontSize: 18, fontFamily: 'Helvetica-Bold', color: GOLD },
+  unitBadge:     { flex: 1, backgroundColor: LIGHT, borderRadius: 4, paddingVertical: 6, paddingHorizontal: 10 },
+  unitText:      { fontSize: 9, fontFamily: 'Helvetica-Bold', color: DARK, textTransform: 'uppercase' },
   row2:          { flexDirection: 'row', gap: 12, marginBottom: 12 },
   card:          { flex: 1, backgroundColor: LIGHT, borderRadius: 6, padding: 12 },
   cardTitle:     { fontSize: 7, fontFamily: 'Helvetica-Bold', color: GOLD, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
@@ -99,14 +104,25 @@ export function OrderPdf({
             : []
         }
         const sv = additions?.[field.key] as SidedVal | null
-        const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
-        const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
+        const hasL = sv?.l != null && sv.l !== '' && sv.l !== false && sv.l !== true
+        const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
         if (!hasL && !hasR) return []
         return [{ label: field.label.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '), l: hasL ? String(sv!.l) : null, r: hasR ? String(sv!.r) : null, global: false }]
       })
       return { label: sec.label, filled }
     })
     .filter(s => s.filled.length > 0)
+
+  const totalQty = unit === 'DIFF_SIZES' && diff_sizes_pairs
+    ? diff_sizes_pairs.reduce((sum, p) => sum + p.qty, 0)
+    : quantity
+
+  const unitLabel = unit === 'PAIR' ? 'PAIR'
+    : unit === 'LEFT' ? 'LEFT FOOT'
+    : unit === 'RIGHT' ? 'RIGHT FOOT'
+    : unit === 'LEFT_RIGHT' ? 'LEFT+RIGHT'
+    : unit === 'DIFF_SIZES' ? 'PAIRS'
+    : unit
 
   const globalFields = SECTIONS
     .find(s => s.key === 'others')
@@ -118,7 +134,7 @@ export function OrderPdf({
         {/* Header */}
         <View style={s.header}>
           <View>
-            <Text style={s.brand}>PIEDRO</Text>
+            <Image src="/piedro-logo.png" style={s.logo} />
             <Text style={s.brandSub}>Piedro International</Text>
           </View>
           <View style={s.refBlock}>
@@ -133,55 +149,112 @@ export function OrderPdf({
           <View style={s.card}>
             <Text style={s.cardTitle}>Cliente</Text>
             <View style={s.kv}><Text style={s.kLabel}>Empresa</Text><Text style={s.kValue}>{companyName}</Text></View>
-            {clinician   && <View style={s.kv}><Text style={s.kLabel}>Clínico</Text><Text style={s.kValue}>{clinician}</Text></View>}
+            {clinician && <View style={s.kv}><Text style={s.kLabel}>Clínico</Text><Text style={s.kValue}>{clinician}</Text></View>}
             {patient_name && <View style={s.kv}><Text style={s.kLabel}>Paciente</Text><Text style={s.kValue}>{patient_name}</Text></View>}
+            {reference && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: MUTED }}>Ref: {reference}</Text>
+                <View style={{ backgroundColor: LIGHT, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>
+                  <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK }}>{productClosure}</Text>
+                </View>
+              </View>
+            )}
           </View>
           <View style={s.card}>
-            <Text style={s.cardTitle}>Produto</Text>
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
               {productImageUrl && (
                 <Image src={productImageUrl}
-                  style={{ width: 64, height: 64, objectFit: 'contain', backgroundColor: LIGHT, borderRadius: 4 }} />
+                  style={{ width: 48, height: 48, objectFit: 'contain', backgroundColor: '#fff', borderRadius: 4 }} />
               )}
               <View style={{ flex: 1 }}>
-                <View style={s.kv}><Text style={s.kLabel}>Modelo</Text><Text style={s.kValue}>{productColourId}</Text></View>
-                <View style={s.kv}><Text style={s.kLabel}>Cor</Text><Text style={s.kValue}>{productColorName}</Text></View>
-                <View style={s.kv}><Text style={s.kLabel}>Fecho</Text><Text style={s.kValue}>{productClosure}</Text></View>
+                <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: DARK }}>{productColourId}</Text>
+                <Text style={{ fontSize: 8, color: MUTED, marginTop: 2 }}>{productColorName}</Text>
+              </View>
+            </View>
+            {/* Qty + Unit */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}` }}>
+              <View style={s.qtyBox}>
+                <Text style={s.qtyText}>{totalQty}</Text>
+              </View>
+              <View style={s.unitBadge}>
+                <Text style={s.unitText}>{unitLabel}</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Specifications */}
-        <Text style={s.sectionTitle}>Especificações</Text>
-        <View style={s.fieldRow}><Text style={s.fieldLabel}>Unidade</Text><Text style={s.fieldVal}>{UNIT_LABELS[unit] ?? unit}</Text></View>
-
-        {/* Quantity — hide for DIFF_SIZES */}
-        {unit !== 'DIFF_SIZES' && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Quantidade</Text><Text style={s.fieldVal}>{quantity}</Text></View>
-        )}
-
-        {/* Construction & Width — always shown */}
-        {(construction_left || construction_right) && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Construção</Text><Text style={s.fieldVal}>{formatSide(construction_left, construction_right, unit)}</Text></View>
-        )}
-        {(width_left || width_right) && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Largura</Text><Text style={s.fieldVal}>{formatSide(width_left, width_right, unit)}</Text></View>
-        )}
-
-        {/* Size — different display for DIFF_SIZES */}
-        {unit === 'DIFF_SIZES' && diff_sizes_pairs && diff_sizes_pairs.length > 0 ? (
+        {/* Construction, Width, Size */}
+        {(construction_left || construction_right || width_left || width_right || size_left || size_right) && (
           <>
-            <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>Pares/Tamanhos</Text>
+            <Text style={s.sectionTitle}>Especificações</Text>
+            {isDouble ? (
+              <>
+                <View style={{ flexDirection: 'row', paddingBottom: 4, borderBottom: `1px solid ${BORDER}` }}>
+                  <Text style={{ flex: 2, fontSize: 7, color: MUTED }}></Text>
+                  <Text style={{ flex: 1, fontSize: 7, color: MUTED, textAlign: 'center', textTransform: 'uppercase' }}>Left</Text>
+                  <Text style={{ flex: 1, fontSize: 7, color: MUTED, textAlign: 'center', textTransform: 'uppercase' }}>Right</Text>
+                </View>
+                {(construction_left || construction_right) && (
+                  <View style={s.fieldRow}>
+                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Construção</Text>
+                    <Text style={s.fieldValL}>{construction_left ?? '—'}</Text>
+                    <Text style={s.fieldValR}>{construction_right ?? '—'}</Text>
+                  </View>
+                )}
+                {(width_left || width_right) && (
+                  <View style={s.fieldRow}>
+                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Largura</Text>
+                    <Text style={s.fieldValL}>{width_left ?? '—'}</Text>
+                    <Text style={s.fieldValR}>{width_right ?? '—'}</Text>
+                  </View>
+                )}
+                {unit !== 'DIFF_SIZES' && (size_left || size_right) && (
+                  <View style={s.fieldRow}>
+                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Tamanho</Text>
+                    <Text style={s.fieldValL}>{size_left ?? '—'}</Text>
+                    <Text style={s.fieldValR}>{size_right ?? '—'}</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <>
+                {(construction_left || construction_right) && (
+                  <View style={s.fieldRow}>
+                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Construção</Text>
+                    <Text style={s.fieldVal}>{unit === 'RIGHT' ? construction_right : construction_left}</Text>
+                  </View>
+                )}
+                {(width_left || width_right) && (
+                  <View style={s.fieldRow}>
+                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Largura</Text>
+                    <Text style={s.fieldVal}>{unit === 'RIGHT' ? width_right : width_left}</Text>
+                  </View>
+                )}
+                {unit !== 'DIFF_SIZES' && (size_left || size_right) && (
+                  <View style={s.fieldRow}>
+                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Tamanho</Text>
+                    <Text style={s.fieldVal}>{unit === 'RIGHT' ? size_right : size_left}</Text>
+                  </View>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* Different Sizes grid */}
+        {unit === 'DIFF_SIZES' && diff_sizes_pairs && diff_sizes_pairs.length > 0 && (
+          <>
+            <View style={{ flexDirection: 'row', marginTop: 8, paddingBottom: 2, borderBottom: `1px solid ${BORDER}` }}>
+              <Text style={{ flex: 1, fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase' }}>Pares</Text>
+              <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase', textAlign: 'right' }}>Size</Text>
+            </View>
             {diff_sizes_pairs.map((pair, idx) => (
-              <View key={idx} style={s.fieldRow}>
-                <Text style={s.fieldLabel}>{pair.qty} {pair.qty === 1 ? 'par' : 'pares'}</Text>
-                <Text style={s.fieldVal}>Tam. {pair.size}</Text>
+              <View key={idx} style={{ flexDirection: 'row', paddingVertical: 3, borderBottom: `1px solid ${LIGHT}` }}>
+                <Text style={{ flex: 1, fontSize: 8, color: DARK }}>{pair.qty}</Text>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' }}>{pair.size}</Text>
               </View>
             ))}
           </>
-        ) : (size_left || size_right) && (
-          <View style={s.fieldRow}><Text style={s.fieldLabel}>Tamanho</Text><Text style={s.fieldVal}>{formatSide(size_left, size_right, unit)}</Text></View>
         )}
 
         {/* Additions */}
@@ -190,7 +263,7 @@ export function OrderPdf({
             <Text style={s.sectionTitle}>Adições</Text>
             {isDouble && (
               <View style={s.lrHeader}>
-                <Text style={s.lrHeaderLabel}>Campo</Text>
+                <Text style={s.lrHeaderLabel}></Text>
                 <Text style={s.lrHeaderSide}>Left</Text>
                 <Text style={s.lrHeaderSide}>Right</Text>
               </View>

@@ -358,8 +358,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 : []
             }
             const sv = additions[field.key] as SidedVal | null
-            const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
-            const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
+            const hasL = sv?.l != null && sv.l !== '' && sv.l !== false && sv.l !== true
+            const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
             if (!hasL && !hasR) return []
             return [{
               label: field.label.replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
@@ -369,6 +369,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           })
           return { key: sec.key, label: sec.label, filled }
         }).filter(s => s.filled.length > 0)
+
+        const comments = additions['comments'] as string | null
 
         return (
         <div className="space-y-4">
@@ -442,7 +444,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <p className="font-semibold text-stone-900">{companyName}</p>
               {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
               {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
-              {reference   && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
+              {reference && (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>
+                  <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
+                    {product.closure}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Product */}
@@ -472,7 +481,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     {unit === 'PAIR' ? 'PAIR' :
                      unit === 'LEFT' ? 'LEFT FOOT' :
                      unit === 'RIGHT' ? 'RIGHT FOOT' :
-                     unit === 'LEFT_RIGHT' ? '(L ≠ R)' :
+                     unit === 'LEFT_RIGHT' ? 'LEFT+RIGHT' :
+                     unit === 'DIFF_SIZES' ? 'PAIRS' :
                      ''}
                   </span>
                 </div>
@@ -616,6 +626,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               {t('tab2')}: nenhuma adição registada.{' '}
               <button type="button" onClick={() => setStep(2)} className="text-gold hover:underline">Adicionar</button>
             </p>
+          )}
+
+          {/* Comments */}
+          {comments && (
+            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Comments</h3>
+              <p className="text-sm text-stone-700 whitespace-pre-wrap">{comments}</p>
+            </div>
           )}
         </div>
         )
