@@ -208,7 +208,7 @@ export function OrderPdf({
                     <Text style={s.fieldValR}>{width_right ?? '—'}</Text>
                   </View>
                 )}
-                {unit !== 'DIFF_SIZES' && (size_left || size_right) && (
+                {(size_left || size_right) && (
                   <View style={s.fieldRow}>
                     <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Tamanho</Text>
                     <Text style={s.fieldValL}>{size_left ?? '—'}</Text>
