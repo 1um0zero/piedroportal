@@ -14,6 +14,14 @@ type Unit    = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT' | 'DIFF_SIZES'
 type Company = { id: string; name: string; erp_code: string }
 type Profile = { company_id: string | null; full_name: string | null; role: string }
 
+const UNIT_LABELS: Record<Unit, string> = {
+  PAIR: 'Par (L = R)',
+  LEFT: 'Esquerdo',
+  RIGHT: 'Direito',
+  LEFT_RIGHT: 'L ≠ R',
+  DIFF_SIZES: 'Tamanhos diferentes',
+}
+
 type Props = {
   product:     Product
   userId:      string
@@ -434,12 +442,24 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
               {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
               {reference   && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
-              <p className="text-xs text-stone-400">{t('unit')}: {unit} · {t('quantity')}: {quantity}</p>
+              <p className="text-xs text-stone-400">{t('unit')}: {UNIT_LABELS[unit]} · {t('quantity')}: {quantity}</p>
             </div>
             <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
               <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Produto</h3>
-              <p className="font-bold text-stone-900">{product.colour_id}</p>
-              <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
+              <div className="flex gap-3">
+                {product.picture_name && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`${BUCKET}/${product.picture_name}`}
+                    alt={product.style_name}
+                    className="w-20 h-20 object-contain rounded-lg bg-stone-50 border border-stone-200 shrink-0"
+                  />
+                )}
+                <div className="flex-1 space-y-1">
+                  <p className="font-bold text-stone-900">{product.colour_id}</p>
+                  <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
+                </div>
+              </div>
 
               {/* Construction & Width — always shown */}
               {(constrLeft || constrRight) && (
@@ -459,19 +479,19 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
               {/* Size — different display for DIFF_SIZES */}
               {unit === 'DIFF_SIZES' ? (
-                <div className="space-y-2 pt-2">
+                <div className="space-y-1.5 pt-1">
                   <p className="text-xs font-semibold text-stone-600">{t('pairs_sizes')}:</p>
-                  <div className="divide-y divide-stone-100">
-                    {diffSizesPairs.filter(p => p.size).map((pair, i) => (
-                      <div key={i} className="flex items-center justify-between py-1.5">
-                        <span className="text-xs text-stone-500">
-                          {pair.qty} {pair.qty === 1 ? 'par' : 'pares'}
-                        </span>
-                        <span className="text-xs font-semibold text-stone-700">
-                          Tam. {pair.size}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="bg-stone-50 rounded-lg p-2">
+                    <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-xs">
+                      <div className="font-semibold text-stone-500">Pares</div>
+                      <div className="font-semibold text-stone-500 text-right">Size</div>
+                      {diffSizesPairs.filter(p => p.size).map((pair, i) => (
+                        <>
+                          <div key={`${i}-qty`} className="text-stone-700">{pair.qty}</div>
+                          <div key={`${i}-size`} className="text-stone-700 font-semibold text-right">{pair.size}</div>
+                        </>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (sizeLeft || sizeRight) && (
@@ -487,29 +507,54 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           {/* Additions detail */}
           {showAdditions && addDetail.length > 0 && (
             <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('tab2')}</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold text-stone-700 uppercase tracking-wide">{t('tab2')}</h2>
                 <button type="button" onClick={() => setStep(2)}
                   className="text-xs text-gold hover:underline">editar</button>
               </div>
               <div className="space-y-4">
                 {addDetail.map(sec => (
                   <div key={sec.key}>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">{sec.label}</p>
-                    <div className="divide-y divide-stone-50">
-                      {sec.filled.map((f, i) => (
-                        <div key={i} className="flex items-baseline justify-between py-1.5 gap-4">
-                          <span className="text-xs text-stone-500 min-w-0">{f.label}</span>
-                          {isDouble && f.r !== null ? (
-                            <span className="text-xs font-semibold text-stone-700 shrink-0">
-                              L: {f.l ?? '—'} · R: {f.r}
-                            </span>
-                          ) : (
-                            <span className="text-xs font-semibold text-stone-700 shrink-0">{f.l ?? f.r}</span>
-                          )}
+                    <p className="text-[11px] font-bold text-gold uppercase tracking-wide mb-2">{sec.label}</p>
+                    {isDouble ? (
+                      <div className="space-y-1">
+                        {/* Header */}
+                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
+                          <div>Campo</div>
+                          <div className="text-center">Left</div>
+                          <div className="text-center">Right</div>
                         </div>
-                      ))}
-                    </div>
+                        {/* Rows */}
+                        {sec.filled.map((f, i) => {
+                          const isChild = f.label.includes('·')
+                          return (
+                            <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-4' : ''}`}>
+                              <span className="text-stone-600">{f.label}</span>
+                              <span className="text-stone-800 font-semibold text-center">{f.l ?? '—'}</span>
+                              <span className="text-stone-800 font-semibold text-center">{f.r ?? '—'}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {/* Header */}
+                        <div className="grid grid-cols-[2fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
+                          <div>Campo</div>
+                          <div className="text-right">{unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'LEFT' : 'RIGHT'}</div>
+                        </div>
+                        {/* Rows */}
+                        {sec.filled.map((f, i) => {
+                          const isChild = f.label.includes('·')
+                          return (
+                            <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-4' : ''}`}>
+                              <span className="text-stone-600">{f.label}</span>
+                              <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

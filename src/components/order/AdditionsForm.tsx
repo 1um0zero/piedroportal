@@ -428,7 +428,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               if (!isDouble) {
                 if (field.conditionalOn && !isParentActive(field, displaySide)) return null
                 const checked = addExpanded.has(`${field.key}:${displaySide}`)
-                const glbFile = field.glb ? (displaySide === 'r' ? field.glb.r : field.glb.l) : null
+                const hasGlb = !!field.glb
                 return (
                   <div key={field.key} className="py-2.5">
                     <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
@@ -438,10 +438,18 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
                     </label>
                     {checked && (
-                      <>
-                        <div className="mt-2.5 pl-1">{renderControl(field, displaySide)}</div>
-                        {glbFile && <GlbViewer file={glbFile} />}
-                      </>
+                      <div className="mt-2.5 pl-1 flex items-start gap-2">
+                        <div className="flex-1">{renderControl(field, displaySide)}</div>
+                        {hasGlb && unit === 'PAIR' && (
+                          <div className="flex gap-2 shrink-0">
+                            <GlbViewer file={field.glb!.l} inline />
+                            <GlbViewer file={field.glb!.r} inline />
+                          </div>
+                        )}
+                        {hasGlb && unit !== 'PAIR' && (
+                          <GlbViewer file={displaySide === 'r' ? field.glb!.r : field.glb!.l} inline />
+                        )}
+                      </div>
                     )}
                   </div>
                 )
@@ -449,6 +457,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const checkedL = addExpanded.has(`${field.key}:l`)
                 const checkedR = addExpanded.has(`${field.key}:r`)
                 const sv = additions[field.key] as SidedVal | null
+                const hasGlb = !!field.glb
                 return (
                   <div key={field.key} className="py-2.5">
                     <div className="flex items-center gap-3">
@@ -464,22 +473,26 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                     </div>
                     {(checkedL || checkedR) && (
                       <div className="mt-2.5 grid grid-cols-2 gap-4">
-                        <div>
-                          {checkedL && field.type === 'mm' ? (
-                            <MmInput values={field.values ?? []} value={sv?.l}
-                              onChange={v => updateField(field.key, 'l', v)}
-                              onBlurDone={v => {
-                                if (checkedR && v != null) {
-                                  const rVal = (additions[field.key] as SidedVal | null)?.r
-                                  if (rVal == null || rVal === '') updateField(field.key, 'r', v)
-                                }
-                              }} />
-                          ) : checkedL ? renderControl(field, 'l') : null}
-                          {checkedL && field.glb && <GlbViewer file={field.glb.l} />}
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            {checkedL && field.type === 'mm' ? (
+                              <MmInput values={field.values ?? []} value={sv?.l}
+                                onChange={v => updateField(field.key, 'l', v)}
+                                onBlurDone={v => {
+                                  if (checkedR && v != null) {
+                                    const rVal = (additions[field.key] as SidedVal | null)?.r
+                                    if (rVal == null || rVal === '') updateField(field.key, 'r', v)
+                                  }
+                                }} />
+                            ) : checkedL ? renderControl(field, 'l') : null}
+                          </div>
+                          {checkedL && hasGlb && <GlbViewer file={field.glb!.l} inline />}
                         </div>
-                        <div>
-                          {checkedR ? renderControl(field, 'r') : null}
-                          {checkedR && field.glb && <GlbViewer file={field.glb.r} />}
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            {checkedR ? renderControl(field, 'r') : null}
+                          </div>
+                          {checkedR && hasGlb && <GlbViewer file={field.glb!.r} inline />}
                         </div>
                       </div>
                     )}
