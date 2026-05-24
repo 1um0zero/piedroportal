@@ -14,6 +14,23 @@ npm run lint     # eslint
 
 No test suite exists yet.
 
+## Development Workflow
+
+**IMPORTANT**: This project does NOT run locally. All development work follows this workflow:
+
+1. **Make code changes** in the local repository
+2. **Commit** changes with descriptive messages
+3. **Push** to GitHub (`master` branch)
+4. **Vercel** automatically deploys (1-2 min)
+5. **Test** on the live deployment URL
+
+When implementing features:
+- After code changes are complete, always commit and push immediately
+- User must hard-refresh browser (Ctrl+Shift+R) after Vercel deploys
+- Database migrations must be run manually in Supabase SQL Editor before pushing code that depends on new schema
+
+The live app is accessed via Vercel deployment, not `localhost`.
+
 ## Architecture
 
 **Piedro Portal** is a B2B ordering portal for Piedro International (Dutch orthopedic footwear), replacing a Power Pages / Dataverse portal. Users are orthopedic clinics that browse the product catalogue, configure orthopaedic additions (insoles, heel lifts, etc.) per foot, and submit orders.
