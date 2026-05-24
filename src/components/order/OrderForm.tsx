@@ -180,6 +180,20 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const widthsL = widthsForConstrution(constrLeft)
   const widthsR = widthsForConstrution(mirror ? constrLeft : constrRight)
 
+  // Auto-select width if only one option
+  useEffect(() => {
+    if (widthsL.length === 1 && !widthLeft) {
+      setWidthL(widthsL[0])
+      if (mirror) setWidthR(widthsL[0])
+    }
+  }, [widthsL.length, widthLeft, mirror]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!mirror && !isDouble && widthsR.length === 1 && !widthRight && unit === 'RIGHT') {
+      setWidthR(widthsR[0])
+    }
+  }, [widthsR.length, widthRight, mirror, isDouble, unit]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Size list
   const sizes: string[] = []
   for (let s = product.size_first; s <= product.size_last; s += 0.5)
@@ -788,7 +802,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {/* Tab 1 actions → next step */}
             <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
               <button type="button"
-                disabled={!reference || (unit === 'DIFF_SIZES' && !diffSizesPairs.some(p => p.size))}
+                disabled={
+                  !reference ||
+                  (constructionOpts.length > 0 && !constrLeft && unit !== 'RIGHT') ||
+                  (constructionOpts.length > 0 && !constrRight && (unit === 'RIGHT' || isDouble)) ||
+                  (widthsL.length > 0 && !widthLeft && unit !== 'RIGHT') ||
+                  (widthsR.length > 0 && !widthRight && (unit === 'RIGHT' || isDouble)) ||
+                  (unit === 'DIFF_SIZES' && !diffSizesPairs.some(p => p.size))
+                }
                 onClick={() => setStep(showAdditions ? 2 : 3)}
                 className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                            hover:bg-gold-dark transition-colors disabled:opacity-50">
