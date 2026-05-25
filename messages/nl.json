@@ -100,7 +100,9 @@
     "specifications": "Specificaties",
     "pairs_short": "Paren",
     "not_confirmed": "Niet Bevestigd",
-    "preview_pdf": "Voorbeeld PDF"
+    "preview_pdf": "Voorbeeld PDF",
+    "generating": "Genereren…",
+    "processing": "Verwerken…"
   },
   "additions": {
     "yes": "Ja",

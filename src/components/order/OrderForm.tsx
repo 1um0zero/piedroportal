@@ -382,16 +382,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         throw new Error(error.error || 'Failed to generate PDF')
       }
 
-      // Download the PDF
+      // Open PDF in new tab
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `preview-${reference || 'draft'}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      window.open(url, '_blank')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -556,7 +550,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
               )}
-              {submitting ? 'A processar…' : t('submit')}
+              {submitting ? t('processing') : t('submit')}
             </button>
             <button onClick={() => handleSubmit('draft')} disabled={submitting || discarding || !!successMsg}
               className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
@@ -572,7 +566,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
               )}
-              {downloadingPdf ? 'A gerar…' : t('preview_pdf')}
+              {downloadingPdf ? t('generating') : t('preview_pdf')}
             </button>
             {draftId && (
               <button onClick={handleDiscard} disabled={submitting || discarding || !!successMsg}
@@ -602,32 +596,20 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
               {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
               {reference && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
-            </div>
 
-            {/* Product */}
-            <div className="bg-white rounded-[14px] p-5 space-y-3" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <div className="flex gap-3">
-                {product.picture_name && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={`${BUCKET}/${product.picture_name}`}
-                    alt={product.style_name}
-                    className="w-20 h-20 object-contain rounded-lg bg-stone-50 border border-stone-200 shrink-0"
-                  />
-                )}
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-bold text-stone-900">{product.colour_id}</p>
-                    <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
-                      {product.closure}
-                    </span>
-                  </div>
-                  <p className="text-sm text-stone-500">{product.color_name}</p>
+              {/* Product info */}
+              <div className="pt-3 border-t border-stone-100 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-bold text-stone-900">{product.colour_id}</p>
+                  <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
+                    {product.closure}
+                  </span>
                 </div>
+                <p className="text-sm text-stone-500">{product.color_name}</p>
               </div>
 
               {/* Qty + Unit badge */}
-              <div className="flex items-center gap-2 pt-1 border-t border-stone-100">
+              <div className="flex items-center gap-2 pt-2">
                 <div className="w-12 h-12 bg-gold/10 border-2 border-gold rounded-lg flex items-center justify-center">
                   <span className="text-2xl font-bold text-gold">{unit === 'DIFF_SIZES' ? diffSizesPairs.filter(p => p.size).reduce((sum, p) => sum + p.qty, 0) : quantity}</span>
                 </div>
@@ -642,80 +624,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   </span>
                 </div>
               </div>
+            </div>
 
-              {/* Construction & Width — grid format */}
-              {(constrLeft || constrRight || widthLeft || widthRight) && (
-                <div className="pt-2 border-t border-stone-100">
-                  {isDouble ? (
-                    <div className="space-y-1">
-                      <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-[10px] font-semibold text-stone-500 uppercase pb-1">
-                        <div></div>
-                        <div className="text-center">{t('left')}</div>
-                        <div className="text-center">{t('right')}</div>
-                      </div>
-                      {(constrLeft || constrRight) && (
-                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
-                          <span className="font-semibold text-stone-600">{t('construction')}</span>
-                          <span className="text-stone-800 font-semibold text-center">{constrLeft || '—'}</span>
-                          <span className="text-stone-800 font-semibold text-center">{constrRight || '—'}</span>
-                        </div>
-                      )}
-                      {(widthLeft || widthRight) && (
-                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
-                          <span className="font-semibold text-stone-600">{t('width')}</span>
-                          <span className="text-stone-800 font-semibold text-center">{widthLeft || '—'}</span>
-                          <span className="text-stone-800 font-semibold text-center">{widthRight || '—'}</span>
-                        </div>
-                      )}
-                      {(sizeLeft || sizeRight) && (
-                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
-                          <span className="font-semibold text-stone-600">{t('size')}</span>
-                          <span className="text-stone-800 font-semibold text-center">{sizeLeft || '—'}</span>
-                          <span className="text-stone-800 font-semibold text-center">{sizeRight || '—'}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {(constrLeft || constrRight) && (
-                        <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs">
-                          <span className="font-semibold text-stone-600">{t('construction')}</span>
-                          <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? constrRight : constrLeft}</span>
-                        </div>
-                      )}
-                      {(widthLeft || widthRight) && (
-                        <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs">
-                          <span className="font-semibold text-stone-600">{t('width')}</span>
-                          <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? widthRight : widthLeft}</span>
-                        </div>
-                      )}
-                      {unit !== 'DIFF_SIZES' && (sizeLeft || sizeRight) && (
-                        <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs">
-                          <span className="font-semibold text-stone-600">{t('size')}</span>
-                          <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? sizeRight : sizeLeft}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Different Sizes grid */}
-              {unit === 'DIFF_SIZES' && (
-                <div className="pt-2 border-t border-stone-100">
-                  <div className="bg-stone-50 rounded-lg p-2">
-                    <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-xs">
-                      <div className="font-semibold text-stone-500">{t('pairs_1').replace(' 1', 's')}</div>
-                      <div className="font-semibold text-stone-500 text-right">{t('size')}</div>
-                      {diffSizesPairs.filter(p => p.size).map((pair, i) => (
-                        <>
-                          <div key={`${i}-qty`} className="text-stone-700">{pair.qty}</div>
-                          <div key={`${i}-size`} className="text-stone-700 font-semibold text-right">{pair.size}</div>
-                        </>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+            {/* Product Image */}
+            <div className="flex items-center justify-center p-6">
+              {product.picture_name && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`${BUCKET}/${product.picture_name}`}
+                  alt={product.style_name}
+                  className="w-full max-w-[280px] object-contain"
+                  style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
+                />
               )}
             </div>
           </div>

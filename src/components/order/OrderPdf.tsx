@@ -131,11 +131,11 @@ export function OrderPdf({
             }]
           }
 
-          // Standalone toggle: show with checkmark
+          // Standalone toggle: show with no value (just the label)
           return [{
             label: fieldLabel,
-            l: isCheckedL ? '✓' : null,
-            r: isCheckedR ? '✓' : null,
+            l: isCheckedL ? '' : null,
+            r: isCheckedR ? '' : null,
             global: false
           }]
         }
@@ -162,28 +162,6 @@ export function OrderPdf({
 
   const unitLabel = getUnitLabel(locale, unit)
 
-  const othersSection = SECTIONS.find(s => s.key === 'others')
-  const othersFields = othersSection?.fields.flatMap(f => {
-    const fieldLabel = t(`additions.field_labels.${f.key}`)
-    if (f.side === 'global') {
-      return additions?.[f.key] === true
-        ? [{ key: f.key, label: fieldLabel, l: null, r: null, global: true }]
-        : []
-    }
-    // Sided toggle fields
-    const sv = additions?.[f.key] as SidedVal | null
-    const isCheckedL = sv?.l === true
-    const isCheckedR = sv?.r === true
-    if (!isCheckedL && !isCheckedR) return []
-    return [{
-      key: f.key,
-      label: fieldLabel,
-      l: isCheckedL ? '✓' : null,
-      r: isCheckedR ? '✓' : null,
-      global: false
-    }]
-  }) ?? []
-
   return (
     <Document>
       <Page size="A4" style={s.page}>
@@ -207,28 +185,21 @@ export function OrderPdf({
             <View style={s.kv}><Text style={s.kLabel}>{t('order.company')}</Text><Text style={s.kValue}>{companyName}</Text></View>
             {clinician && <View style={s.kv}><Text style={s.kLabel}>{t('order.clinician')}</Text><Text style={s.kValue}>{clinician}</Text></View>}
             {patient_name && <View style={s.kv}><Text style={s.kLabel}>{t('order.patient_short')}</Text><Text style={s.kValue}>{patient_name}</Text></View>}
-            {reference && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                <Text style={{ fontSize: 8, color: MUTED }}>{t('order.ref_short')} {reference}</Text>
+            {reference && <View style={s.kv}><Text style={s.kLabel}>{t('order.ref_short')}</Text><Text style={s.kValue}>{reference}</Text></View>}
+
+            {/* Product info */}
+            <View style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}` }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: DARK }}>{productColourId}</Text>
                 <View style={{ backgroundColor: LIGHT, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>
                   <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK }}>{productClosure}</Text>
                 </View>
               </View>
-            )}
-          </View>
-          <View style={s.card}>
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
-              {productImageUrl && (
-                <Image src={productImageUrl}
-                  style={{ width: 48, height: 48, objectFit: 'contain', backgroundColor: '#fff', borderRadius: 4 }} />
-              )}
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: DARK }}>{productColourId}</Text>
-                <Text style={{ fontSize: 8, color: MUTED, marginTop: 2 }}>{productColorName}</Text>
-              </View>
+              <Text style={{ fontSize: 8, color: MUTED }}>{productColorName}</Text>
             </View>
+
             {/* Qty + Unit */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}` }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 }}>
               <View style={s.qtyBox}>
                 <Text style={s.qtyText}>{totalQty}</Text>
               </View>
@@ -236,6 +207,14 @@ export function OrderPdf({
                 <Text style={s.unitText}>{unitLabel}</Text>
               </View>
             </View>
+          </View>
+
+          {/* Product Image */}
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            {productImageUrl && (
+              <Image src={productImageUrl}
+                style={{ width: 140, height: 140, objectFit: 'contain' }} />
+            )}
           </View>
         </View>
 
@@ -357,33 +336,6 @@ export function OrderPdf({
           </>
         )}
 
-        {/* Others */}
-        {othersFields.length > 0 && (
-          <>
-            <Text style={s.sectionTitle}>{t('additions.sections.others')}</Text>
-            {isDouble && (
-              <View style={s.lrHeader}>
-                <Text style={s.lrHeaderLabel}></Text>
-                <Text style={s.lrHeaderSide}>{t('additions.left')}</Text>
-                <Text style={s.lrHeaderSide}>{t('additions.right')}</Text>
-              </View>
-            )}
-            {othersFields.map(f => (
-              <View key={f.key} style={s.fieldRow}>
-                <Text style={s.fieldLabel}>{f.label}</Text>
-                {isDouble && !f.global ? (
-                  <>
-                    <Text style={s.fieldValL}>{f.l ?? ''}</Text>
-                    <Text style={s.fieldValR}>{f.r ?? ''}</Text>
-                  </>
-                ) : (
-                  <Text style={s.fieldVal}>{f.l ?? f.r ?? ''}</Text>
-                )}
-              </View>
-            ))}
-          </>
-        )}
-
         {/* Comments */}
         {comments && (
           <View style={s.comments}>
@@ -410,9 +362,10 @@ export function OrderPdf({
               fontFamily: 'Helvetica-Bold',
               color: '#DC2626',
               textTransform: 'uppercase',
-              letterSpacing: 4
+              letterSpacing: 4,
+              textAlign: 'center'
             }}>
-              {t('order.not_confirmed')}
+              NOT{'\n'}CONFIRMED
             </Text>
           </View>
         )}

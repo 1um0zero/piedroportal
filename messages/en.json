@@ -100,7 +100,9 @@
     "specifications": "Specifications",
     "pairs_short": "Pairs",
     "not_confirmed": "Not Confirmed",
-    "preview_pdf": "Preview PDF"
+    "preview_pdf": "Preview PDF",
+    "generating": "Generating…",
+    "processing": "Processing…"
   },
   "additions": {
     "yes": "Yes",
