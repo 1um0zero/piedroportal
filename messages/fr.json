@@ -102,7 +102,8 @@
     "not_confirmed": "Non Confirmé",
     "preview_pdf": "Aperçu PDF",
     "generating": "Génération…",
-    "processing": "Traitement…"
+    "processing": "Traitement…",
+    "comments": "Commentaires"
   },
   "additions": {
     "yes": "Oui",

@@ -747,8 +747,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         {/* Header */}
                         <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
                           <div></div>
-                          <div className="text-center">{t('left')}</div>
-                          <div className="text-center">{t('right')}</div>
+                          <div className="text-right">{t('left')}</div>
+                          <div className="text-right">{t('right')}</div>
                         </div>
                         {/* Rows */}
                         {sec.filled.map((f, i) => {
@@ -766,8 +766,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                           return (
                             <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                               <span className="text-stone-600">{f.label}</span>
-                              <span className="text-stone-800 font-semibold text-center">{f.l ?? (f.l === null && f.r === null ? '' : '—')}</span>
-                              <span className="text-stone-800 font-semibold text-center">{f.r ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                              <span className="text-stone-800 font-semibold text-right">{f.l ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                              <span className="text-stone-800 font-semibold text-right">{f.r ?? (f.l === null && f.r === null ? '' : '—')}</span>
                             </div>
                           )
                         })}

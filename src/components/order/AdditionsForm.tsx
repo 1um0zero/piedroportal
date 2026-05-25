@@ -277,16 +277,16 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   function renderGlobal(field: AdditionField) {
     const val = additions[field.key] === true
     return (
-      <div key={field.key} className="flex items-center justify-between py-2
+      <div key={field.key} className="flex items-center gap-3 py-2
            border-b border-stone-50 last:border-0">
+        <input type="checkbox" checked={val}
+          onChange={(e) => update(field.key, 'global', e.target.checked)}
+          className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
         <span
           onClick={() => update(field.key, 'global', !val)}
           className="text-sm text-stone-700 cursor-pointer flex-1">
           {getFieldLabel(field, t).replace(/\s*\(mm\)/gi, '')}
         </span>
-        <input type="checkbox" checked={val}
-          onChange={(e) => update(field.key, 'global', e.target.checked)}
-          className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
       </div>
     )
   }
