@@ -640,6 +640,82 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             </div>
           </div>
 
+          {/* Specifications */}
+          {(constrLeft || constrRight || widthLeft || widthRight || sizeLeft || sizeRight || (unit === 'DIFF_SIZES' && diffSizesPairs.some(p => p.size))) && (
+            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-3">{t('specifications')}</h3>
+              {isDouble ? (
+                <div className="space-y-1">
+                  <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
+                    <div></div>
+                    <div className="text-center">{t('left')}</div>
+                    <div className="text-center">{t('right')}</div>
+                  </div>
+                  {(constrLeft || constrRight) && (
+                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
+                      <span className="font-semibold text-stone-600">{t('construction')}</span>
+                      <span className="text-stone-800 font-semibold text-center">{constrLeft || '—'}</span>
+                      <span className="text-stone-800 font-semibold text-center">{constrRight || '—'}</span>
+                    </div>
+                  )}
+                  {(widthLeft || widthRight) && (
+                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
+                      <span className="font-semibold text-stone-600">{t('width')}</span>
+                      <span className="text-stone-800 font-semibold text-center">{widthLeft || '—'}</span>
+                      <span className="text-stone-800 font-semibold text-center">{widthRight || '—'}</span>
+                    </div>
+                  )}
+                  {(sizeLeft || sizeRight) && (
+                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
+                      <span className="font-semibold text-stone-600">{t('size')}</span>
+                      <span className="text-stone-800 font-semibold text-center">{sizeLeft || '—'}</span>
+                      <span className="text-stone-800 font-semibold text-center">{sizeRight || '—'}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {(constrLeft || constrRight) && (
+                    <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
+                      <span className="font-semibold text-stone-600">{t('construction')}</span>
+                      <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? constrRight : constrLeft}</span>
+                    </div>
+                  )}
+                  {(widthLeft || widthRight) && (
+                    <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
+                      <span className="font-semibold text-stone-600">{t('width')}</span>
+                      <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? widthRight : widthLeft}</span>
+                    </div>
+                  )}
+                  {unit !== 'DIFF_SIZES' && (sizeLeft || sizeRight) && (
+                    <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
+                      <span className="font-semibold text-stone-600">{t('size')}</span>
+                      <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? sizeRight : sizeLeft}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Different Sizes grid */}
+              {unit === 'DIFF_SIZES' && diffSizesPairs.some(p => p.size) && (
+                <div className="mt-3 pt-3 border-t border-stone-100">
+                  <div className="bg-stone-50 rounded-lg p-3">
+                    <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-xs">
+                      <div className="font-semibold text-stone-500 uppercase">{t('pairs_1').replace(' 1', 's')}</div>
+                      <div className="font-semibold text-stone-500 text-right uppercase">{t('size')}</div>
+                      {diffSizesPairs.filter(p => p.size).map((pair, i) => (
+                        <>
+                          <div key={`${i}-qty`} className="text-stone-700">{pair.qty}</div>
+                          <div key={`${i}-size`} className="text-stone-700 font-semibold text-right">{pair.size}</div>
+                        </>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Additions detail */}
           {showAdditions && addDetail.length > 0 && (
             <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
