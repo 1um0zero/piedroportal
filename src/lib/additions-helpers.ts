@@ -1,24 +1,17 @@
-import type { Locale } from '@/types'
 import type { AdditionField, AdditionSection } from '@/components/order/additions-config'
 
 /**
- * Gets the translated label for an addition field based on locale
+ * Gets the translated label for an addition field using next-intl
  */
-export function getFieldLabel(field: AdditionField, locale: Locale): string {
-  if (locale === 'nl' && field.labelNl) return field.labelNl
-  if (locale === 'fr' && field.labelFr) return field.labelFr
-  if (locale === 'de' && field.labelDe) return field.labelDe
-  return field.label
+export function getFieldLabel(field: AdditionField, t: (key: string) => string): string {
+  return t(`additions.field_labels.${field.key}`)
 }
 
 /**
- * Gets the translated label for an addition section based on locale
+ * Gets the translated label for an addition section using next-intl
  */
-export function getSectionLabel(section: AdditionSection, locale: Locale): string {
-  if (locale === 'nl' && section.labelNl) return section.labelNl
-  if (locale === 'fr' && section.labelFr) return section.labelFr
-  if (locale === 'de' && section.labelDe) return section.labelDe
-  return section.label
+export function getSectionLabel(section: AdditionSection, t: (key: string) => string): string {
+  return t(`additions.sections.${section.key}`)
 }
 
 /**

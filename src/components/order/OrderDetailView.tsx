@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { SECTIONS } from './additions-config'
+import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
 import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
 
@@ -32,6 +34,7 @@ function fmtSide(l: unknown, r: unknown, unit: string) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmin: boolean }) {
   const router = useRouter()
+  const ta = useTranslations('additions')
   const [, start] = useTransition()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const product = (Array.isArray(order.products) ? order.products[0] : order.products) as any
@@ -57,18 +60,18 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
   // Additions for display
   const addSections = SECTIONS.map(sec => {
     const filled = sec.fields.flatMap(f => {
-      if (f.side === 'global') return adds?.[f.key] === true ? [{ label: f.label.replace(/\s*\(mm\)/gi,''), value: 'Yes' }] : []
+      if (f.side === 'global') return adds?.[f.key] === true ? [{ label: getFieldLabel(f, ta).replace(/\s*\(mm\)/gi,''), value: 'Yes' }] : []
       const sv = adds?.[f.key] as SidedVal | null
       const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
       const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
       if (!hasL && !hasR) return []
-      const label = f.label.replace(/↳\s*/g,'  · ').replace(/\s*\(mm\)/gi,'')
+      const label = getFieldLabel(f, ta).replace(/↳\s*/g,'  · ').replace(/\s*\(mm\)/gi,'')
       const value = unit === 'LEFT_RIGHT'
         ? `L: ${hasL ? sv!.l : '—'}  R: ${hasR ? sv!.r : '—'}`
         : String(hasL ? sv!.l : sv!.r)
       return [{ label, value }]
     })
-    return { section: sec.label, filled }
+    return { section: getSectionLabel(sec, ta), filled }
   }).filter(s => s.filled.length > 0)
 
   async function handleSave(overrides?: Partial<Parameters<typeof updateOrderAdminAction>[1]>) {

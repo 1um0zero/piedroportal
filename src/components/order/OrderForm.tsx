@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, SECTIONS } from './additions-config'
+import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -99,22 +100,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const ta = useTranslations('additions')
   const locale = useLocale()
   const router = useRouter()
-
-  // Helpers to get translated labels from additions-config
-  const getFieldLabel = (field: { label: string; labelNl?: string; labelFr?: string; labelDe?: string }): string => {
-    if (locale === 'nl' && field.labelNl) return field.labelNl
-    if (locale === 'fr' && field.labelFr) return field.labelFr
-    if (locale === 'de' && field.labelDe) return field.labelDe
-    return field.label
-  }
-
-  const getSectionLabel = (section: typeof SECTIONS[0]): string => {
-    if (locale === 'nl' && section.labelNl) return section.labelNl
-    if (locale === 'fr' && section.labelFr) return section.labelFr
-    if (locale === 'de' && section.labelDe) return section.labelDe
-    return section.label
-  }
-
   const d = draftData  // shorthand for pre-fill
 
   // ── Restore state from sessionStorage (for locale changes) ──
@@ -409,7 +394,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           const filled = sec.fields.flatMap(field => {
             if (field.side === 'global') {
               return additions[field.key] === true
-                ? [{ label: getFieldLabel(field).replace(/\s*\(mm\)/gi, ''), l: ta('yes'), r: null }]
+                ? [{ label: getFieldLabel(field, ta).replace(/\s*\(mm\)/gi, ''), l: ta('yes'), r: null }]
                 : []
             }
             const sv = additions[field.key] as SidedVal | null
@@ -417,12 +402,12 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
             if (!hasL && !hasR) return []
             return [{
-              label: getFieldLabel(field).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
+              label: getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
               l: hasL ? String(sv!.l) : null,
               r: hasR ? String(sv!.r) : null,
             }]
           })
-          return { key: sec.key, label: getSectionLabel(sec), filled }
+          return { key: sec.key, label: getSectionLabel(sec, ta), filled }
         }).filter(s => s.filled.length > 0)
 
         const comments = additions['comments'] as string | null

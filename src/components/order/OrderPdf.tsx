@@ -91,18 +91,19 @@ export function OrderPdf({
     .filter(sec => sec.key !== 'others')
     .map(sec => {
       const filled = sec.fields.flatMap(field => {
+        const fieldLabel = t(`additions.field_labels.${field.key}`)
         if (field.side === 'global') {
           return additions?.[field.key] === true
-            ? [{ label: field.label.replace(/\s*\(mm\)/gi, ''), l: t('additions.yes'), r: null, global: true }]
+            ? [{ label: fieldLabel.replace(/\s*\(mm\)/gi, ''), l: t('additions.yes'), r: null, global: true }]
             : []
         }
         const sv = additions?.[field.key] as SidedVal | null
         const hasL = sv?.l != null && sv.l !== '' && sv.l !== false && sv.l !== true
         const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
         if (!hasL && !hasR) return []
-        return [{ label: field.label.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '), l: hasL ? String(sv!.l) : null, r: hasR ? String(sv!.r) : null, global: false }]
+        return [{ label: fieldLabel.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '), l: hasL ? String(sv!.l) : null, r: hasR ? String(sv!.r) : null, global: false }]
       })
-      return { label: sec.label, filled }
+      return { label: t(`additions.sections.${sec.key}`), filled }
     })
     .filter(s => s.filled.length > 0)
 
@@ -283,7 +284,7 @@ export function OrderPdf({
             <Text style={s.sectionTitle}>{t('additions.sections.others')}</Text>
             {globalFields.map(f => (
               <View key={f.key} style={s.fieldRow}>
-                <Text style={s.fieldLabel}>{f.label}</Text>
+                <Text style={s.fieldLabel}>{t(`additions.field_labels.${f.key}`)}</Text>
                 <Text style={s.fieldVal}>{t('additions.yes')}</Text>
               </View>
             ))}
