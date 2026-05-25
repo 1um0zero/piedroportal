@@ -670,7 +670,16 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       return (
                         <div key={field.key} className="py-2 border-b border-stone-50 last:border-0">
                           <div className="flex items-center gap-3">
-                            <span className="flex-1 text-sm text-stone-700">{fieldLabel}</span>
+                            <span
+                              onClick={() => {
+                                // If both unchecked, check both; otherwise uncheck both
+                                const newValue = !isCheckedL && !isCheckedR
+                                updateField(field.key, 'l', newValue)
+                                updateField(field.key, 'r', newValue)
+                              }}
+                              className="flex-1 text-sm text-stone-700 cursor-pointer">
+                              {fieldLabel}
+                            </span>
                             <div className="flex gap-5 shrink-0">
                               <input type="checkbox" checked={isCheckedL}
                                 onChange={e => updateField(field.key, 'l', e.target.checked)}
