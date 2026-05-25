@@ -117,24 +117,41 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
   const d = draftData  // shorthand for pre-fill
 
-  // ── Form state — pre-filled from draftData when duplicating ──
-  const [selectedCompanyId, setCompanyId] = useState(d?.company_id ?? userProfile.company_id ?? '')
-  const [unit,        setUnit]      = useState<Unit>((d?.unit as Unit) ?? 'PAIR')
-  const [clinician,   setClinician] = useState(d?.clinician ?? '')
-  const [patientName, setPatient]   = useState(d?.patient_name ?? '')
-  const [reference,   setReference] = useState(d?.reference_customer ?? '')
-  const [quantity,    setQuantity]  = useState(d?.quantity ?? 1)
-  const [constrLeft,  setConstrL]   = useState(d?.construction_left ?? '')
-  const [constrRight, setConstrR]   = useState(d?.construction_right ?? '')
-  const [widthLeft,   setWidthL]    = useState(d?.width_left ?? '')
-  const [widthRight,  setWidthR]    = useState(d?.width_right ?? '')
-  const [sizeLeft,    setSizeL]     = useState(d?.size_left != null ? String(d.size_left) : '')
-  const [sizeRight,   setSizeR]     = useState(d?.size_right != null ? String(d.size_right) : '')
-  const [additions,   setAdditions] = useState<Record<string, unknown>>(d?.additions ?? emptyAdditions())
+  // ── Restore state from sessionStorage (for locale changes) ──
+  const STORAGE_KEY = `order-form-state-${product.id}`
+
+  function getInitialState<T>(key: string, defaultValue: T): T {
+    if (typeof window === 'undefined') return defaultValue
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        return parsed[key] !== undefined ? parsed[key] : defaultValue
+      }
+    } catch (err) {
+      console.warn('Failed to restore form state:', err)
+    }
+    return defaultValue
+  }
+
+  // ── Form state — pre-filled from draftData or sessionStorage ──
+  const [selectedCompanyId, setCompanyId] = useState(getInitialState('selectedCompanyId', d?.company_id ?? userProfile.company_id ?? ''))
+  const [unit,        setUnit]      = useState<Unit>(getInitialState('unit', (d?.unit as Unit) ?? 'PAIR'))
+  const [clinician,   setClinician] = useState(getInitialState('clinician', d?.clinician ?? ''))
+  const [patientName, setPatient]   = useState(getInitialState('patientName', d?.patient_name ?? ''))
+  const [reference,   setReference] = useState(getInitialState('reference', d?.reference_customer ?? ''))
+  const [quantity,    setQuantity]  = useState(getInitialState('quantity', d?.quantity ?? 1))
+  const [constrLeft,  setConstrL]   = useState(getInitialState('constrLeft', d?.construction_left ?? ''))
+  const [constrRight, setConstrR]   = useState(getInitialState('constrRight', d?.construction_right ?? ''))
+  const [widthLeft,   setWidthL]    = useState(getInitialState('widthLeft', d?.width_left ?? ''))
+  const [widthRight,  setWidthR]    = useState(getInitialState('widthRight', d?.width_right ?? ''))
+  const [sizeLeft,    setSizeL]     = useState(getInitialState('sizeLeft', d?.size_left != null ? String(d.size_left) : ''))
+  const [sizeRight,   setSizeR]     = useState(getInitialState('sizeRight', d?.size_right != null ? String(d.size_right) : ''))
+  const [additions,   setAdditions] = useState<Record<string, unknown>>(getInitialState('additions', d?.additions ?? emptyAdditions()))
   const [diffSizesPairs, setDiffSizesPairs] = useState<Array<{ qty: number; size: string }>>(
-    d?.diff_sizes_pairs ?? [{ qty: 1, size: '' }]
+    getInitialState('diffSizesPairs', d?.diff_sizes_pairs ?? [{ qty: 1, size: '' }])
   )
-  const [step,        setStep]      = useState<1 | 2 | 3>(1)
+  const [step,        setStep]      = useState<1 | 2 | 3>(getInitialState('step', 1))
   const [submitting,  setSubmitting] = useState(false)
   const [discarding,  setDiscarding] = useState(false)
   const [error,       setError]     = useState('')
@@ -174,6 +191,25 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   // ── Product data ──
   const constructions = product.constructions ?? []
   const constructionOpts = constructions.map(c => c.construction)
+
+  // Save form state to sessionStorage on every change (for locale switching)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const state = {
+      selectedCompanyId, unit, clinician, patientName, reference, quantity,
+      constrLeft, constrRight, widthLeft, widthRight, sizeLeft, sizeRight,
+      additions, diffSizesPairs, step
+    }
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    } catch (err) {
+      console.warn('Failed to save form state:', err)
+    }
+  }, [
+    selectedCompanyId, unit, clinician, patientName, reference, quantity,
+    constrLeft, constrRight, widthLeft, widthRight, sizeLeft, sizeRight,
+    additions, diffSizesPairs, step, STORAGE_KEY
+  ])
 
   // Auto-select if only one construction
   useEffect(() => {
@@ -285,6 +321,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         setSuccessMsg(msg)
         await new Promise(r => setTimeout(r, 3000))
       }
+      // Clear saved state on successful submit
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(STORAGE_KEY)
+      }
       router.push('/orders')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -299,6 +339,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     try {
       const result = await deleteOrderAction(draftId)
       if (result.error) throw new Error(result.error)
+      // Clear saved state on discard
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(STORAGE_KEY)
+      }
       router.push('/orders')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
