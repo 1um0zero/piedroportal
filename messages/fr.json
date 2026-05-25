@@ -85,9 +85,26 @@
     "pairs_3": "Paire 3",
     "pairs_4": "Paire 4",
     "pairs_5": "Paire 5",
-    "pairs_6": "Paire 6"
+    "pairs_6": "Paire 6",
+    "no_additions": "aucun supplément enregistré.",
+    "add_additions": "Ajouter",
+    "patient_short": "Patient",
+    "ref_short": "Réf:",
+    "company": "Entreprise",
+    "construction_short": "Construction",
+    "specifications": "Spécifications",
+    "pairs_short": "Paires"
   },
   "additions": {
+    "yes": "Oui",
+    "no": "Non",
+    "selected": "Sélectionné",
+    "left": "Gauche",
+    "right": "Droite",
+    "left_short": "G",
+    "right_short": "D",
+    "empty_value": "—",
+    "comments_placeholder": "Notes supplémentaires...",
     "sections": {
       "additions": "Suppléments",
       "upper": "Principaux ajustements",

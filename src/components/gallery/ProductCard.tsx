@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
+import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import type { Product } from '@/types'
+import type { Product, Locale } from '@/types'
 import { isNew } from './GalleryPage'
 import { useWishlist } from '@/contexts/WishlistContext'
 
@@ -19,7 +20,13 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
   const [imgError, setImgError] = useState(false)
   const [hovered, setHovered]   = useState(false)
   const { ids, toggle }         = useWishlist()
+  const locale = useLocale() as Locale
   const wishlisted = ids.has(product.id)
+
+  // Get translated color name
+  const colorName = locale !== 'en' && product.color_name_i18n?.[locale]
+    ? product.color_name_i18n[locale]
+    : product.color_name
 
   // Constructions summary for tooltip
   const constructions = product.constructions ?? []
@@ -78,8 +85,8 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
       {/* Ref + colour */}
       <div className="px-2.5 py-2 flex flex-col gap-0.5">
         <p className="font-semibold text-stone-800 text-xs tracking-wide leading-tight">{product.colour_id}</p>
-        {product.color_name && (
-          <p className="text-[11px] text-stone-400 truncate">{product.color_name}</p>
+        {colorName && (
+          <p className="text-[11px] text-stone-400 truncate">{colorName}</p>
         )}
       </div>
 

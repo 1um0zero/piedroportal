@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import ProductDetail from '@/components/product/ProductDetail'
 import type { Product } from '@/types'
 
-const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,size_first,size_last,diabetics,new_until,constructions,info,sibling'
+const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,color_name_i18n,size_first,size_last,diabetics,new_until,constructions,info,sibling'
 
 async function getProduct(id: string): Promise<Product | null> {
   const sb = createClient(
@@ -19,7 +19,7 @@ async function getSiblings(product: Product): Promise<Product[]> {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
-  const SELECT = 'id,style_name,colour_id,picture_name,color_basic,color_name,closure,size_first,size_last,new_until,diabetics'
+  const SELECT = 'id,style_name,colour_id,picture_name,color_basic,color_name,color_name_i18n,closure,size_first,size_last,new_until,diabetics'
 
   // Fetch same style_name
   const { data: same } = await sb

@@ -14,6 +14,7 @@ import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 export type OrderRow = {
   user_id:            string
   company_id:         string | null
+  locale:             string
   product_id:         string
   status:             string
   unit:               string
@@ -83,6 +84,7 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
       productColorName: pdfMeta.productColorName, productClosure: pdfMeta.productClosure,
       productImageUrl: pdfMeta.productImageUrl,
       diff_sizes_pairs: row.diff_sizes_pairs,
+      locale: row.locale as 'en' | 'nl' | 'fr' | 'de',
     }
     const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
     const pdfBytes = Buffer.from(await renderToBuffer(element))

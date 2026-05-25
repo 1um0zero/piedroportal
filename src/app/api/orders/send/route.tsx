@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         id, status, unit, clinician, patient_name, reference_customer,
         quantity, construction_left, construction_right,
         width_left, width_right, size_left, size_right,
-        additions, comments, created_at,
+        additions, comments, created_at, locale,
         products ( colour_id, color_name, closure ),
         companies ( name )
       `)
@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
       productColourId:    product?.colour_id ?? '—',
       productColorName:   product?.color_name ?? '—',
       productClosure:     product?.closure ?? '—',
+      locale:             (order.locale as 'en' | 'nl' | 'fr' | 'de') ?? 'en',
     }
 
     // renderToBuffer expects a ReactElement<DocumentProps>; cast via unknown to satisfy TS

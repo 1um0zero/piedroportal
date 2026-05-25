@@ -14,13 +14,7 @@ type Unit    = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT' | 'DIFF_SIZES'
 type Company = { id: string; name: string; erp_code: string }
 type Profile = { company_id: string | null; full_name: string | null; role: string }
 
-const UNIT_LABELS: Record<Unit, string> = {
-  PAIR: 'Par (L = R)',
-  LEFT: 'Esquerdo',
-  RIGHT: 'Direito',
-  LEFT_RIGHT: 'L ≠ R',
-  DIFF_SIZES: 'Tamanhos diferentes',
-}
+// UNIT_LABELS moved to translations - will be accessed via t('unit_pair'), etc.
 
 type Props = {
   product:     Product
@@ -232,6 +226,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       const row = {
         user_id:            userId,
         company_id:         selectedCompanyId || userProfile.company_id,
+        locale:             locale as Locale,
         product_id:         product.id,
         status, unit, clinician, patient_name: patientName,
         reference_customer: reference, quantity,
@@ -478,11 +473,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 </div>
                 <div className="flex-1 bg-stone-100 rounded-lg px-3 py-2">
                   <span className="text-sm font-bold text-stone-700 uppercase">
-                    {unit === 'PAIR' ? 'PAIR' :
-                     unit === 'LEFT' ? 'LEFT FOOT' :
-                     unit === 'RIGHT' ? 'RIGHT FOOT' :
-                     unit === 'LEFT_RIGHT' ? 'LEFT+RIGHT' :
-                     unit === 'DIFF_SIZES' ? 'PAIRS' :
+                    {unit === 'PAIR' ? t('unit_pair').toUpperCase() :
+                     unit === 'LEFT' ? t('unit_left').toUpperCase() :
+                     unit === 'RIGHT' ? t('unit_right').toUpperCase() :
+                     unit === 'LEFT_RIGHT' ? t('unit_lr').toUpperCase() :
+                     unit === 'DIFF_SIZES' ? t('unit_sizes').split(' ')[0].toUpperCase() :
                      ''}
                   </span>
                 </div>
@@ -550,8 +545,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 <div className="pt-2 border-t border-stone-100">
                   <div className="bg-stone-50 rounded-lg p-2">
                     <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-xs">
-                      <div className="font-semibold text-stone-500">Pares</div>
-                      <div className="font-semibold text-stone-500 text-right">Size</div>
+                      <div className="font-semibold text-stone-500">{t('pairs_1').replace(' 1', 's')}</div>
+                      <div className="font-semibold text-stone-500 text-right">{t('size')}</div>
                       {diffSizesPairs.filter(p => p.size).map((pair, i) => (
                         <>
                           <div key={`${i}-qty`} className="text-stone-700">{pair.qty}</div>
@@ -623,15 +618,15 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           )}
           {showAdditions && addDetail.length === 0 && (
             <p className="text-xs text-stone-400 italic px-1">
-              {t('tab2')}: nenhuma adição registada.{' '}
-              <button type="button" onClick={() => setStep(2)} className="text-gold hover:underline">Adicionar</button>
+              {t('tab2')}: {t('no_additions')}{' '}
+              <button type="button" onClick={() => setStep(2)} className="text-gold hover:underline">{t('add_additions')}</button>
             </p>
           )}
 
           {/* Comments */}
           {comments && (
             <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Comments</h3>
+              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">{t('comments')}</h3>
               <p className="text-sm text-stone-700 whitespace-pre-wrap">{comments}</p>
             </div>
           )}

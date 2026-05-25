@@ -1,5 +1,7 @@
 import { Document, Page, View, Text, StyleSheet, Image } from '@react-pdf/renderer'
 import { SECTIONS } from './additions-config'
+import type { Locale } from '@/types'
+import { getPdfTranslation, getUnitLabel, getDateLocale } from '@/lib/pdf-translations'
 
 const GOLD = '#C9A96E'
 const DARK = '#1C1917'
@@ -68,17 +70,7 @@ export type OrderPdfProps = {
   productClosure: string
   productImageUrl?: string
   diff_sizes_pairs?: Array<{ qty: number; size: number }> | null
-}
-
-const UNIT_LABELS: Record<string, string> = {
-  PAIR: 'Par (L = R)', LEFT: 'Esquerdo', RIGHT: 'Direito',
-  LEFT_RIGHT: 'L ≠ R', DIFF_SIZES: 'Tamanhos diferentes',
-}
-
-function formatSide(left: unknown, right: unknown, unit: string): string {
-  if (unit === 'LEFT_RIGHT') return `L: ${left ?? '—'}  R: ${right ?? '—'}`
-  if (unit === 'RIGHT') return String(right ?? '—')
-  return String(left ?? '—')
+  locale: Locale
 }
 
 export function OrderPdf({
@@ -86,10 +78,11 @@ export function OrderPdf({
   construction_left, construction_right, width_left, width_right,
   size_left, size_right, additions, comments, created_at,
   companyName, productColourId, productColorName, productClosure, productImageUrl,
-  diff_sizes_pairs,
+  diff_sizes_pairs, locale,
 }: OrderPdfProps) {
+  const t = (key: string) => getPdfTranslation(locale, key)
   const isDouble = unit === 'LEFT_RIGHT'
-  const date = new Date(created_at).toLocaleDateString('pt-PT', {
+  const date = new Date(created_at).toLocaleDateString(getDateLocale(locale), {
     day: '2-digit', month: '2-digit', year: 'numeric',
   })
 
@@ -100,7 +93,7 @@ export function OrderPdf({
       const filled = sec.fields.flatMap(field => {
         if (field.side === 'global') {
           return additions?.[field.key] === true
-            ? [{ label: field.label.replace(/\s*\(mm\)/gi, ''), l: 'Yes', r: null, global: true }]
+            ? [{ label: field.label.replace(/\s*\(mm\)/gi, ''), l: t('additions.yes'), r: null, global: true }]
             : []
         }
         const sv = additions?.[field.key] as SidedVal | null
@@ -117,12 +110,7 @@ export function OrderPdf({
     ? diff_sizes_pairs.reduce((sum, p) => sum + p.qty, 0)
     : quantity
 
-  const unitLabel = unit === 'PAIR' ? 'PAIR'
-    : unit === 'LEFT' ? 'LEFT FOOT'
-    : unit === 'RIGHT' ? 'RIGHT FOOT'
-    : unit === 'LEFT_RIGHT' ? 'LEFT+RIGHT'
-    : unit === 'DIFF_SIZES' ? 'PAIRS'
-    : unit
+  const unitLabel = getUnitLabel(locale, unit)
 
   const globalFields = SECTIONS
     .find(s => s.key === 'others')
@@ -138,7 +126,7 @@ export function OrderPdf({
             <Text style={s.brandSub}>Piedro International</Text>
           </View>
           <View style={s.refBlock}>
-            <Text style={s.refNum}>{reference ?? '—'}</Text>
+            <Text style={s.refNum}>{reference ?? t('additions.empty_value')}</Text>
             <Text style={s.refDate}>{date}</Text>
             <View style={s.badge}><Text style={s.badgeText}>{status}</Text></View>
           </View>
@@ -147,13 +135,13 @@ export function OrderPdf({
         {/* Customer + Product cards */}
         <View style={s.row2}>
           <View style={s.card}>
-            <Text style={s.cardTitle}>Cliente</Text>
-            <View style={s.kv}><Text style={s.kLabel}>Empresa</Text><Text style={s.kValue}>{companyName}</Text></View>
-            {clinician && <View style={s.kv}><Text style={s.kLabel}>Clínico</Text><Text style={s.kValue}>{clinician}</Text></View>}
-            {patient_name && <View style={s.kv}><Text style={s.kLabel}>Paciente</Text><Text style={s.kValue}>{patient_name}</Text></View>}
+            <Text style={s.cardTitle}>{t('order.customer')}</Text>
+            <View style={s.kv}><Text style={s.kLabel}>{t('order.company')}</Text><Text style={s.kValue}>{companyName}</Text></View>
+            {clinician && <View style={s.kv}><Text style={s.kLabel}>{t('order.clinician')}</Text><Text style={s.kValue}>{clinician}</Text></View>}
+            {patient_name && <View style={s.kv}><Text style={s.kLabel}>{t('order.patient_short')}</Text><Text style={s.kValue}>{patient_name}</Text></View>}
             {reference && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                <Text style={{ fontSize: 8, color: MUTED }}>Ref: {reference}</Text>
+                <Text style={{ fontSize: 8, color: MUTED }}>{t('order.ref_short')} {reference}</Text>
                 <View style={{ backgroundColor: LIGHT, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>
                   <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK }}>{productClosure}</Text>
                 </View>
@@ -186,33 +174,33 @@ export function OrderPdf({
         {/* Construction, Width, Size */}
         {(construction_left || construction_right || width_left || width_right || size_left || size_right) && (
           <>
-            <Text style={s.sectionTitle}>Especificações</Text>
+            <Text style={s.sectionTitle}>{t('order.specifications')}</Text>
             {isDouble ? (
               <>
                 <View style={{ flexDirection: 'row', paddingBottom: 4, borderBottom: `1px solid ${BORDER}` }}>
                   <Text style={{ flex: 2, fontSize: 7, color: MUTED }}></Text>
-                  <Text style={{ flex: 1, fontSize: 7, color: MUTED, textAlign: 'center', textTransform: 'uppercase' }}>Left</Text>
-                  <Text style={{ flex: 1, fontSize: 7, color: MUTED, textAlign: 'center', textTransform: 'uppercase' }}>Right</Text>
+                  <Text style={{ flex: 1, fontSize: 7, color: MUTED, textAlign: 'center', textTransform: 'uppercase' }}>{t('additions.left')}</Text>
+                  <Text style={{ flex: 1, fontSize: 7, color: MUTED, textAlign: 'center', textTransform: 'uppercase' }}>{t('additions.right')}</Text>
                 </View>
                 {(construction_left || construction_right) && (
                   <View style={s.fieldRow}>
-                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Construção</Text>
-                    <Text style={s.fieldValL}>{construction_left ?? '—'}</Text>
-                    <Text style={s.fieldValR}>{construction_right ?? '—'}</Text>
+                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>{t('order.construction_short')}</Text>
+                    <Text style={s.fieldValL}>{construction_left ?? t('additions.empty_value')}</Text>
+                    <Text style={s.fieldValR}>{construction_right ?? t('additions.empty_value')}</Text>
                   </View>
                 )}
                 {(width_left || width_right) && (
                   <View style={s.fieldRow}>
-                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Largura</Text>
-                    <Text style={s.fieldValL}>{width_left ?? '—'}</Text>
-                    <Text style={s.fieldValR}>{width_right ?? '—'}</Text>
+                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>{t('order.width')}</Text>
+                    <Text style={s.fieldValL}>{width_left ?? t('additions.empty_value')}</Text>
+                    <Text style={s.fieldValR}>{width_right ?? t('additions.empty_value')}</Text>
                   </View>
                 )}
                 {(size_left || size_right) && (
                   <View style={s.fieldRow}>
-                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Tamanho</Text>
-                    <Text style={s.fieldValL}>{size_left ?? '—'}</Text>
-                    <Text style={s.fieldValR}>{size_right ?? '—'}</Text>
+                    <Text style={{ flex: 2, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>{t('order.size')}</Text>
+                    <Text style={s.fieldValL}>{size_left ?? t('additions.empty_value')}</Text>
+                    <Text style={s.fieldValR}>{size_right ?? t('additions.empty_value')}</Text>
                   </View>
                 )}
               </>
@@ -220,19 +208,19 @@ export function OrderPdf({
               <>
                 {(construction_left || construction_right) && (
                   <View style={s.fieldRow}>
-                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Construção</Text>
+                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>{t('order.construction_short')}</Text>
                     <Text style={s.fieldVal}>{unit === 'RIGHT' ? construction_right : construction_left}</Text>
                   </View>
                 )}
                 {(width_left || width_right) && (
                   <View style={s.fieldRow}>
-                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Largura</Text>
+                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>{t('order.width')}</Text>
                     <Text style={s.fieldVal}>{unit === 'RIGHT' ? width_right : width_left}</Text>
                   </View>
                 )}
                 {unit !== 'DIFF_SIZES' && (size_left || size_right) && (
                   <View style={s.fieldRow}>
-                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>Tamanho</Text>
+                    <Text style={{ flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: MUTED }}>{t('order.size')}</Text>
                     <Text style={s.fieldVal}>{unit === 'RIGHT' ? size_right : size_left}</Text>
                   </View>
                 )}
@@ -245,8 +233,8 @@ export function OrderPdf({
         {unit === 'DIFF_SIZES' && diff_sizes_pairs && diff_sizes_pairs.length > 0 && (
           <>
             <View style={{ flexDirection: 'row', marginTop: 8, paddingBottom: 2, borderBottom: `1px solid ${BORDER}` }}>
-              <Text style={{ flex: 1, fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase' }}>Pares</Text>
-              <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase', textAlign: 'right' }}>Size</Text>
+              <Text style={{ flex: 1, fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase' }}>{t('order.pairs_short')}</Text>
+              <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase', textAlign: 'right' }}>{t('order.size')}</Text>
             </View>
             {diff_sizes_pairs.map((pair, idx) => (
               <View key={idx} style={{ flexDirection: 'row', paddingVertical: 3, borderBottom: `1px solid ${LIGHT}` }}>
@@ -260,12 +248,12 @@ export function OrderPdf({
         {/* Additions */}
         {addSections.length > 0 && (
           <>
-            <Text style={s.sectionTitle}>Adições</Text>
+            <Text style={s.sectionTitle}>{t('additions.sections.additions')}</Text>
             {isDouble && (
               <View style={s.lrHeader}>
                 <Text style={s.lrHeaderLabel}></Text>
-                <Text style={s.lrHeaderSide}>Left</Text>
-                <Text style={s.lrHeaderSide}>Right</Text>
+                <Text style={s.lrHeaderSide}>{t('additions.left')}</Text>
+                <Text style={s.lrHeaderSide}>{t('additions.right')}</Text>
               </View>
             )}
             {addSections.map(sec => (
@@ -276,11 +264,11 @@ export function OrderPdf({
                     <Text style={s.fieldLabel}>{f.label}</Text>
                     {isDouble && !f.global ? (
                       <>
-                        <Text style={s.fieldValL}>{f.l ?? '—'}</Text>
-                        <Text style={s.fieldValR}>{f.r ?? '—'}</Text>
+                        <Text style={s.fieldValL}>{f.l ?? t('additions.empty_value')}</Text>
+                        <Text style={s.fieldValR}>{f.r ?? t('additions.empty_value')}</Text>
                       </>
                     ) : (
-                      <Text style={s.fieldVal}>{f.l ?? f.r ?? '—'}</Text>
+                      <Text style={s.fieldVal}>{f.l ?? f.r ?? t('additions.empty_value')}</Text>
                     )}
                   </View>
                 ))}
@@ -292,11 +280,11 @@ export function OrderPdf({
         {/* Others / global toggles */}
         {globalFields.length > 0 && (
           <>
-            <Text style={s.sectionTitle}>Outros</Text>
+            <Text style={s.sectionTitle}>{t('additions.sections.others')}</Text>
             {globalFields.map(f => (
               <View key={f.key} style={s.fieldRow}>
                 <Text style={s.fieldLabel}>{f.label}</Text>
-                <Text style={s.fieldVal}>Sim</Text>
+                <Text style={s.fieldVal}>{t('additions.yes')}</Text>
               </View>
             ))}
           </>
@@ -305,7 +293,7 @@ export function OrderPdf({
         {/* Comments */}
         {comments && (
           <View style={s.comments}>
-            <Text style={s.commentsLabel}>Comentários</Text>
+            <Text style={s.commentsLabel}>{t('additions.fields.comments')}</Text>
             <Text style={s.commentsText}>{comments}</Text>
           </View>
         )}

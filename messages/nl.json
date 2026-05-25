@@ -85,9 +85,26 @@
     "pairs_3": "paren 3",
     "pairs_4": "paren 4",
     "pairs_5": "paren 5",
-    "pairs_6": "paren 6"
+    "pairs_6": "paren 6",
+    "no_additions": "geen aanpassingen geregistreerd.",
+    "add_additions": "Toevoegen",
+    "patient_short": "Patiënt",
+    "ref_short": "Ref:",
+    "company": "Bedrijf",
+    "construction_short": "Constructie",
+    "specifications": "Specificaties",
+    "pairs_short": "Paren"
   },
   "additions": {
+    "yes": "Ja",
+    "no": "Nee",
+    "selected": "Geselecteerd",
+    "left": "Links",
+    "right": "Rechts",
+    "left_short": "L",
+    "right_short": "R",
+    "empty_value": "—",
+    "comments_placeholder": "Aanvullende opmerkingen...",
     "sections": {
       "additions": "Leest Aanpassingen",
       "upper": "Schacht aanpassingen",

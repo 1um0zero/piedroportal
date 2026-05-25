@@ -7,7 +7,7 @@ export const revalidate = 300
 
 const FIELDS = [
   'id','style_name','colour_id','picture_name','section',
-  'closure','type','color_basic','color_name',
+  'closure','type','color_basic','color_name','color_name_i18n',
   'size_first','size_last','diabetics','new_until','constructions',
 ].join(',')
 

@@ -2,12 +2,12 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { isNew } from '@/components/gallery/GalleryPage'
-import type { Product } from '@/types'
+import type { Product, Locale } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 const src = (name: string) => `${BUCKET}/${name}`
@@ -112,6 +112,7 @@ type Props = { product: Product; siblings: Product[] }
 export default function ProductDetail({ product, siblings }: Props) {
   const t  = useTranslations('product')
   const tn = useTranslations('nav')
+  const locale = useLocale() as Locale
   const { hasCompany, isLoggedIn } = useAuth()
   const user = isLoggedIn
   const { ids, toggle }     = useWishlist()
@@ -141,6 +142,13 @@ export default function ProductDetail({ product, siblings }: Props) {
   const [failed, setFailed]               = useState<Set<number>>(new Set())
   const [playing, setPlaying]             = useState(false)
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Helper to get translated color name
+  const getColorName = useCallback((p: Product) => {
+    return locale !== 'en' && p.color_name_i18n?.[locale]
+      ? p.color_name_i18n[locale]
+      : p.color_name
+  }, [locale])
 
   const colourGrid = useMemo(
     () => allVariants.filter((p) => p.closure === activeClosure),
@@ -237,7 +245,7 @@ export default function ProductDetail({ product, siblings }: Props) {
             <h1 className="text-3xl font-bold text-stone-900 tracking-wide leading-tight">
               {selected.colour_id}
             </h1>
-            <p className="text-stone-500 mt-1">{selected.color_name}</p>
+            <p className="text-stone-500 mt-1">{getColorName(selected)}</p>
           </div>
 
           {/* Badges + wishlist */}
@@ -270,7 +278,7 @@ export default function ProductDetail({ product, siblings }: Props) {
           <div className="relative aspect-square"
             style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
             {currentUrl ? (
-              <ZoomImage url={currentUrl} alt={`${product.style_name} ${selected.color_name}`} />
+              <ZoomImage url={currentUrl} alt={`${product.style_name} ${getColorName(selected)}`} />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
@@ -394,13 +402,17 @@ export default function ProductDetail({ product, siblings }: Props) {
 // ── ColourCard ────────────────────────────────────────────────────────────────
 function ColourCard({ product, isSelected }: { product: Product; isSelected: boolean }) {
   const [failed, setFailed] = useState(false)
+  const locale = useLocale() as Locale
+  const colorName = locale !== 'en' && product.color_name_i18n?.[locale]
+    ? product.color_name_i18n[locale]
+    : product.color_name
   return (
     <div className={`rounded-xl overflow-hidden border-2 transition-all bg-stone-50
                      ${isSelected ? 'border-gold shadow-sm' : 'border-transparent hover:border-stone-200'}`}>
       <div className="relative aspect-square">
         {product.picture_name && !failed ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`${BUCKET}/${product.picture_name}`} alt={product.color_name ?? ''}
+          <img src={`${BUCKET}/${product.picture_name}`} alt={colorName ?? ''}
             className="w-full h-full object-contain p-2"
             onError={() => setFailed(true)} />
         ) : (
@@ -412,7 +424,7 @@ function ColourCard({ product, isSelected }: { product: Product; isSelected: boo
       </div>
       <div className="px-2 pb-2 pt-1">
         <p className="text-[10px] font-semibold text-stone-600 truncate">{product.colour_id}</p>
-        <p className="text-[10px] text-stone-400 truncate">{product.color_name}</p>
+        <p className="text-[10px] text-stone-400 truncate">{colorName}</p>
       </div>
     </div>
   )

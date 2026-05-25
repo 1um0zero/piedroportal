@@ -70,11 +70,12 @@ function MmInput({ values, value, onChange, onBlurDone }: {
 }
 
 // ── Shared option picker (one strip, click fills active foot) ─────────────────
-function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR }: {
+function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t }: {
   options: string[]
   valueL: string; valueR: string
   onChangeL: (v: string | null) => void
   onChangeR: (v: string | null) => void
+  t: (key: string) => string
 }) {
   const [active, setActive] = useState<'l'|'r'>('l')
   const current = active === 'l' ? valueL : valueR
@@ -92,8 +93,8 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR }: {
         <button type="button" onClick={() => setActive('l')}
           className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg border text-xs transition-all
             ${active === 'l' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
-          <span className="text-stone-500 font-bold">Left</span>
-          <span className={`mx-1 truncate ${valueL ? 'text-stone-800' : 'text-stone-300'}`}>{valueL || '—'}</span>
+          <span className="text-stone-500 font-bold">{t('left')}</span>
+          <span className={`mx-1 truncate ${valueL ? 'text-stone-800' : 'text-stone-300'}`}>{valueL || t('empty_value')}</span>
           {valueL && (
             <span className="shrink-0 text-stone-300 hover:text-red-400 cursor-pointer"
               onClick={e => { e.stopPropagation(); onChangeL(null) }}>×</span>
@@ -103,8 +104,8 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR }: {
         <button type="button" onClick={() => setActive('r')}
           className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg border text-xs transition-all
             ${active === 'r' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
-          <span className="text-stone-500 font-bold">Right</span>
-          <span className={`mx-1 truncate ${valueR ? 'text-stone-800' : 'text-stone-300'}`}>{valueR || '—'}</span>
+          <span className="text-stone-500 font-bold">{t('right')}</span>
+          <span className={`mx-1 truncate ${valueR ? 'text-stone-800' : 'text-stone-300'}`}>{valueR || t('empty_value')}</span>
           {valueR && (
             <span className="shrink-0 text-stone-300 hover:text-red-400 cursor-pointer"
               onClick={e => { e.stopPropagation(); onChangeR(null) }}>×</span>
@@ -152,10 +153,11 @@ function OptionChips({ values, value, onChange, collapse = false }: {
 }
 
 // Classic select dropdown — used for closure fields in LEFT_RIGHT mode
-function SelectCombo({ values, value, onChange }: {
+function SelectCombo({ values, value, onChange, t }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: string | null) => void
+  t: (key: string) => string
 }) {
   return (
     <div className="relative">
@@ -165,7 +167,7 @@ function SelectCombo({ values, value, onChange }: {
         className="w-full h-9 pl-3 pr-8 text-sm bg-stone-50 border border-stone-200 rounded-lg
                    appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
                    transition-colors text-stone-700">
-        <option value="">—</option>
+        <option value="">{t('empty_value')}</option>
         {values.map(v => <option key={String(v)} value={String(v)}>{v}</option>)}
       </select>
       <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
@@ -176,17 +178,18 @@ function SelectCombo({ values, value, onChange }: {
   )
 }
 
-function YesNoToggle({ value, onChange }: {
+function YesNoToggle({ value, onChange, t }: {
   value: boolean
   onChange: (v: boolean) => void
+  t: (key: string) => string
 }) {
   return (
     <div className="flex gap-1.5">
-      {(['No', 'Yes'] as const).map((lbl) => {
-        const isYes = lbl === 'Yes'
+      {([false, true] as const).map((isYes) => {
+        const lbl = isYes ? t('yes') : t('no')
         const active = isYes ? value === true : value === false
         return (
-          <button key={lbl} type="button"
+          <button key={String(isYes)} type="button"
             onClick={() => onChange(isYes)}
             className={`px-4 py-1.5 text-xs font-semibold rounded border transition-all
               ${active
@@ -205,7 +208,7 @@ function YesNoToggle({ value, onChange }: {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange }: Props) {
-  const t = useTranslations('gallery.filters')
+  const t = useTranslations('additions')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
 
   // Per-section filter state (replaces single showOnlyActive)
@@ -279,7 +282,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     if (field.type === 'image' || field.type === 'option')
       return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
     if (field.type === 'toggle')
-      return <YesNoToggle value={val === true} onChange={setVal} />
+      return <YesNoToggle value={val === true} onChange={setVal} t={t} />
     if (field.type === 'text')
       return (
         <input type="text" value={String(val ?? '')}
@@ -296,7 +299,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       <div key={field.key} className="flex items-center justify-between py-2
            border-b border-stone-50 last:border-0">
         <span className="text-sm text-stone-700">{field.label.replace(/\s*\(mm\)/gi, '')}</span>
-        <YesNoToggle value={val} onChange={(v) => update(field.key, 'global', v)} />
+        <YesNoToggle value={val} onChange={(v) => update(field.key, 'global', v)} t={t} />
       </div>
     )
   }
@@ -371,13 +374,13 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd"/>
                 </svg>
-                Selected
+                {t('selected')}
               </button>
               <div className="flex gap-5 pr-0.5">
                 {isDouble ? (
                   <>
-                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">L</span>
-                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">R</span>
+                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{t('left_short')}</span>
+                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{t('right_short')}</span>
                   </>
                 ) : (
                   <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{unitColLabel}</span>
@@ -590,6 +593,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             valueR={String((additions[field.key] as SidedVal)?.r ?? '')}
                             onChangeL={v => updateField(field.key, 'l', v)}
                             onChangeR={v => updateField(field.key, 'r', v)}
+                            t={t}
                           />
                         )
                       ) : field.closureOnly && field.type === 'option' ? (
@@ -607,21 +611,23 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           <div className="grid grid-cols-2 gap-4">
                             {leftActive && (
                               <div className="space-y-1">
-                                <p className="text-[10px] text-stone-400 uppercase tracking-wide">Left</p>
+                                <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')}</p>
                                 <SelectCombo
                                   values={field.values ?? []}
                                   value={(additions[field.key] as SidedVal)?.l}
                                   onChange={v => updateField(field.key, 'l', v)}
+                                  t={t}
                                 />
                               </div>
                             )}
                             {rightActive && (
                               <div className="space-y-1">
-                                <p className="text-[10px] text-stone-400 uppercase tracking-wide">Right</p>
+                                <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')}</p>
                                 <SelectCombo
                                   values={field.values ?? []}
                                   value={(additions[field.key] as SidedVal)?.r}
                                   onChange={v => updateField(field.key, 'r', v)}
+                                  t={t}
                                 />
                               </div>
                             )}
@@ -638,13 +644,13 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         <div className="grid grid-cols-2 gap-4">
                           {leftActive && (
                             <div className="space-y-1">
-                              <p className="text-[10px] text-stone-400 uppercase tracking-wide">Left</p>
+                              <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')}</p>
                               {renderControl(field, 'l')}
                             </div>
                           )}
                           {rightActive && (
                             <div className="space-y-1">
-                              <p className="text-[10px] text-stone-400 uppercase tracking-wide">Right</p>
+                              <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')}</p>
                               {renderControl(field, 'r')}
                             </div>
                           )}
@@ -661,12 +667,12 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
 
       {/* Comments */}
       <div className="space-y-2 pt-2">
-        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Comments</p>
+        <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{t('fields.comments')}</p>
         <textarea
           rows={3}
           value={String(additions['comments'] ?? '')}
           onChange={(e) => onChange({ ...additions, comments: e.target.value || null })}
-          placeholder="Additional notes..."
+          placeholder={t('comments_placeholder')}
           className="w-full px-3 py-2 text-sm bg-stone-50 border border-stone-200 rounded-lg
                      focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
                      resize-none transition-colors"
