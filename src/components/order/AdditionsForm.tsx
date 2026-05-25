@@ -511,7 +511,13 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             onChange={e => updateField(field.key, 'r', e.target.checked)}
                             className="w-4 h-4 cursor-pointer custom-gold" />
                         </div>
-                        <span className="flex-1 text-sm text-stone-700 min-w-0">
+                        <span
+                          onClick={() => {
+                            const newValue = !(isCheckedL || isCheckedR)
+                            const current = additions[field.key] as SidedVal || { l: false, r: false }
+                            onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
+                          }}
+                          className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
                           {cleanLabel}
                         </span>
                       </div>

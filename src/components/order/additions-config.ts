@@ -81,7 +81,7 @@ export const SECTIONS: AdditionSection[] = [
     key: 'sole',
     fields: [
       // Rocker + sub-options
-      { key: 'rocker',       type: 'image',  side: 'both', values: ['Normal Rocker','Advancing Rocker','Polyphase Rocker','Delaying Rocker','2-Phase Rocker'], dataverseKey: 'cr56f_2rockersoletypes' },
+      { key: 'rocker',       type: 'image',  side: 'both', collapse: true, values: ['Normal Rocker','Advancing Rocker','Polyphase Rocker','Delaying Rocker','2-Phase Rocker'], dataverseKey: 'cr56f_2rockersoletypes' },
       { key: 'rocker_toes',  type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2toes' },
       { key: 'rocker_joint', type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2joint' },
       { key: 'rocker_heel',  type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2heel' },
