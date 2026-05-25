@@ -284,7 +284,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         </span>
         <input type="checkbox" checked={val}
           onChange={(e) => update(field.key, 'global', e.target.checked)}
-          className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+          className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
       </div>
     )
   }
@@ -435,7 +435,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         </span>
                         <input type="checkbox" checked={isChecked}
                           onChange={e => updateField(field.key, displaySide, e.target.checked)}
-                          className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                          className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
                       </div>
                       {/* Children are rendered separately as sub-fields when parent is active */}
                     </div>
@@ -469,7 +469,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       </span>
                       <input type="checkbox" checked={checked}
                         onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
-                        className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                        className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
                     </div>
                     {checked && (
                       <div className="mt-2.5 pl-1 flex items-start gap-2">
@@ -499,17 +499,17 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   return (
                     <div key={field.key} className="py-2.5">
                       <div className="flex items-center gap-3">
-                        <span className="flex-1 text-sm text-stone-700 min-w-0">
-                          {cleanLabel}
-                        </span>
                         <div className="flex gap-5 shrink-0">
                           <input type="checkbox" checked={isCheckedL}
                             onChange={e => updateField(field.key, 'l', e.target.checked)}
-                            className="w-4 h-4 cursor-pointer accent-stone-700" />
+                            className="w-4 h-4 cursor-pointer accent-gold" />
                           <input type="checkbox" checked={isCheckedR}
                             onChange={e => updateField(field.key, 'r', e.target.checked)}
-                            className="w-4 h-4 cursor-pointer accent-stone-700" />
+                            className="w-4 h-4 cursor-pointer accent-gold" />
                         </div>
+                        <span className="flex-1 text-sm text-stone-700 min-w-0">
+                          {cleanLabel}
+                        </span>
                       </div>
                       {/* Children are rendered separately as sub-fields when parent is active */}
                     </div>
@@ -523,6 +523,14 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 return (
                   <div key={field.key} className="py-2.5">
                     <div className="flex items-center gap-3">
+                      <div className="flex gap-5 shrink-0">
+                        <input type="checkbox" checked={checkedL}
+                          onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
+                          className="w-4 h-4 cursor-pointer accent-gold" />
+                        <input type="checkbox" checked={checkedR}
+                          onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
+                          className="w-4 h-4 cursor-pointer accent-gold" />
+                      </div>
                       <span
                         onClick={() => {
                           // If both unchecked, check both and expand
@@ -550,14 +558,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
                         {cleanLabel}
                       </span>
-                      <div className="flex gap-5 shrink-0">
-                        <input type="checkbox" checked={checkedL}
-                          onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
-                          className="w-4 h-4 cursor-pointer accent-stone-700" />
-                        <input type="checkbox" checked={checkedR}
-                          onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
-                          className="w-4 h-4 cursor-pointer accent-stone-700" />
-                      </div>
                     </div>
                     {(checkedL || checkedR) && (
                       <div className="mt-2.5 grid grid-cols-2 gap-4">
@@ -660,7 +660,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           </span>
                           <input type="checkbox" checked={isChecked}
                             onChange={e => updateField(field.key, displaySide, e.target.checked)}
-                            className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                            className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
                         </div>
                       )
                     } else {
@@ -670,6 +670,14 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       return (
                         <div key={field.key} className="py-2 border-b border-stone-50 last:border-0">
                           <div className="flex items-center gap-3">
+                            <div className="flex gap-5 shrink-0">
+                              <input type="checkbox" checked={isCheckedL}
+                                onChange={e => updateField(field.key, 'l', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer accent-gold" />
+                              <input type="checkbox" checked={isCheckedR}
+                                onChange={e => updateField(field.key, 'r', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer accent-gold" />
+                            </div>
                             <span
                               onClick={() => {
                                 // If both unchecked, check both; otherwise uncheck both
@@ -680,14 +688,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                               className="flex-1 text-sm text-stone-700 cursor-pointer">
                               {fieldLabel}
                             </span>
-                            <div className="flex gap-5 shrink-0">
-                              <input type="checkbox" checked={isCheckedL}
-                                onChange={e => updateField(field.key, 'l', e.target.checked)}
-                                className="w-4 h-4 cursor-pointer accent-stone-700" />
-                              <input type="checkbox" checked={isCheckedR}
-                                onChange={e => updateField(field.key, 'r', e.target.checked)}
-                                className="w-4 h-4 cursor-pointer accent-stone-700" />
-                            </div>
                           </div>
                         </div>
                       )
