@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Return PDF as download
     const ref = body.reference ?? 'preview'
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
