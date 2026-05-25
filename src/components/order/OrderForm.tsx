@@ -95,9 +95,25 @@ function SizeInput({ sizes, value, onChange, label, onBlurAfterSnap }: {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData }: Props) {
-  const t      = useTranslations('order')
+  const t  = useTranslations('order')
+  const ta = useTranslations('additions')
   const locale = useLocale()
   const router = useRouter()
+
+  // Helpers to get translated labels from additions-config
+  const getFieldLabel = (field: { label: string; labelNl?: string; labelFr?: string; labelDe?: string }): string => {
+    if (locale === 'nl' && field.labelNl) return field.labelNl
+    if (locale === 'fr' && field.labelFr) return field.labelFr
+    if (locale === 'de' && field.labelDe) return field.labelDe
+    return field.label
+  }
+
+  const getSectionLabel = (section: typeof SECTIONS[0]): string => {
+    if (locale === 'nl' && section.labelNl) return section.labelNl
+    if (locale === 'fr' && section.labelFr) return section.labelFr
+    if (locale === 'de' && section.labelDe) return section.labelDe
+    return section.label
+  }
 
   const d = draftData  // shorthand for pre-fill
 
@@ -349,7 +365,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           const filled = sec.fields.flatMap(field => {
             if (field.side === 'global') {
               return additions[field.key] === true
-                ? [{ label: field.label.replace(/\s*\(mm\)/gi, ''), l: 'Yes', r: null }]
+                ? [{ label: getFieldLabel(field).replace(/\s*\(mm\)/gi, ''), l: ta('yes'), r: null }]
                 : []
             }
             const sv = additions[field.key] as SidedVal | null
@@ -357,12 +373,12 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
             if (!hasL && !hasR) return []
             return [{
-              label: field.label.replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
+              label: getFieldLabel(field).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
               l: hasL ? String(sv!.l) : null,
               r: hasR ? String(sv!.r) : null,
             }]
           })
-          return { key: sec.key, label: sec.label, filled }
+          return { key: sec.key, label: getSectionLabel(sec), filled }
         }).filter(s => s.filled.length > 0)
 
         const comments = additions['comments'] as string | null
@@ -439,14 +455,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <p className="font-semibold text-stone-900">{companyName}</p>
               {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
               {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
-              {reference && (
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>
-                  <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
-                    {product.closure}
-                  </span>
-                </div>
-              )}
+              {reference && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
             </div>
 
             {/* Product */}
@@ -461,8 +470,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   />
                 )}
                 <div className="flex-1 space-y-1">
-                  <p className="font-bold text-stone-900">{product.colour_id}</p>
-                  <p className="text-sm text-stone-500">{product.color_name} · {product.closure}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold text-stone-900">{product.colour_id}</p>
+                    <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
+                      {product.closure}
+                    </span>
+                  </div>
+                  <p className="text-sm text-stone-500">{product.color_name}</p>
                 </div>
               </div>
 
@@ -490,8 +504,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     <div className="space-y-1">
                       <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-[10px] font-semibold text-stone-500 uppercase pb-1">
                         <div></div>
-                        <div className="text-center">Left</div>
-                        <div className="text-center">Right</div>
+                        <div className="text-center">{t('left')}</div>
+                        <div className="text-center">{t('right')}</div>
                       </div>
                       {(constrLeft || constrRight) && (
                         <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 text-xs">
@@ -577,8 +591,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         {/* Header */}
                         <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
                           <div></div>
-                          <div className="text-center">Left</div>
-                          <div className="text-center">Right</div>
+                          <div className="text-center">{t('left')}</div>
+                          <div className="text-center">{t('right')}</div>
                         </div>
                         {/* Rows */}
                         {sec.filled.map((f, i) => {
@@ -597,7 +611,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         {/* Header */}
                         <div className="grid grid-cols-[2fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
                           <div></div>
-                          <div className="text-right">{unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'LEFT' : 'RIGHT'}</div>
+                          <div className="text-right">{unit === 'PAIR' ? t('unit_pair').split(' ')[0].toUpperCase() : unit === 'LEFT' ? t('left').toUpperCase() : t('right').toUpperCase()}</div>
                         </div>
                         {/* Rows */}
                         {sec.filled.map((f, i) => {

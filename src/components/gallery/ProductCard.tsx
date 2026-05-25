@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import { isNew } from './GalleryPage'
 import { useWishlist } from '@/contexts/WishlistContext'
+import { translateFilterValueSync } from '@/lib/filter-translations'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}`
@@ -31,6 +32,10 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
   // Constructions summary for tooltip
   const constructions = product.constructions ?? []
   const allWidths = [...new Set(constructions.flatMap(c => c.widths))].filter(Boolean)
+
+  // Translate filter values for tooltip
+  const translatedType = translateFilterValueSync(product.type, locale)
+  const translatedClosure = translateFilterValueSync(product.closure, locale)
 
   return (
     <Link
@@ -103,11 +108,11 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
                         shadow-xl shadow-stone-900/10 p-3 space-y-2">
           {/* Type · Closure */}
           <div className="flex items-center gap-2 flex-wrap">
-            {product.type && (
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-stone-100 text-stone-600 rounded">{product.type}</span>
+            {translatedType && (
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-stone-100 text-stone-600 rounded">{translatedType}</span>
             )}
-            {product.closure && (
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-stone-100 text-stone-600 rounded">{product.closure}</span>
+            {translatedClosure && (
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-stone-100 text-stone-600 rounded">{translatedClosure}</span>
             )}
           </div>
 

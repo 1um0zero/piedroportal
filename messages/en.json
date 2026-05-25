@@ -11,6 +11,8 @@
     "men": "Men",
     "women": "Women",
     "filters": {
+      "filters_button": "Filters",
+      "wishlist_button": "Wishlist",
       "closure": "Closure",
       "type": "Type",
       "colour": "Colour",
@@ -27,12 +29,15 @@
     "results": "{count} models"
   },
   "product": {
+    "info": "Info",
     "sizes": "Sizes",
+    "widths": "Widths",
     "constructions": "Constructions & Widths",
     "colours": "Available Colours",
     "also_available": "Also available in {closure}",
     "order": "Order this model",
-    "diabetic": "Suitable for diabetics"
+    "diabetic": "Suitable for diabetics",
+    "pending_approval": "Account pending approval"
   },
   "order": {
     "title": "New Order",

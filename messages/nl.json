@@ -11,6 +11,8 @@
     "men": "Heren",
     "women": "Dames",
     "filters": {
+      "filters_button": "Filters",
+      "wishlist_button": "Verlanglijst",
       "closure": "Sluiting",
       "type": "Type",
       "colour": "Kleur",
@@ -27,12 +29,15 @@
     "results": "{count} modellen"
   },
   "product": {
+    "info": "Info",
     "sizes": "Maten",
+    "widths": "Breedtes",
     "constructions": "Constructies & Breedtes",
     "colours": "Beschikbare Kleuren",
     "also_available": "Ook beschikbaar in {closure}",
     "order": "Dit model bestellen",
-    "diabetic": "Geschikt voor diabetici"
+    "diabetic": "Geschikt voor diabetici",
+    "pending_approval": "Account in afwachting van goedkeuring"
   },
   "order": {
     "title": "Nieuwe Bestelling",

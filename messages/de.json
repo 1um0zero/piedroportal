@@ -11,6 +11,8 @@
     "men": "Herren",
     "women": "Damen",
     "filters": {
+      "filters_button": "Filter",
+      "wishlist_button": "Wunschliste",
       "closure": "Verschluss",
       "type": "Typ",
       "colour": "Farbe",
@@ -27,12 +29,15 @@
     "results": "{count} Modelle"
   },
   "product": {
+    "info": "Info",
     "sizes": "Größen",
+    "widths": "Breiten",
     "constructions": "Konstruktionen & Breiten",
     "colours": "Verfügbare Farben",
     "also_available": "Auch erhältlich in {closure}",
     "order": "Dieses Modell bestellen",
-    "diabetic": "Geeignet für Diabetiker"
+    "diabetic": "Geeignet für Diabetiker",
+    "pending_approval": "Konto wartet auf Genehmigung"
   },
   "order": {
     "title": "Neue Bestellung",

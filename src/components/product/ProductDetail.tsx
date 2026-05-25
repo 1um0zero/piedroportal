@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { isNew } from '@/components/gallery/GalleryPage'
+import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import type { Product, Locale } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -191,6 +192,11 @@ export default function ProductDetail({ product, siblings }: Props) {
   // Stop when images change (new variant selected)
   useEffect(() => { stopPlay() }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Preload filter translations on mount
+  useEffect(() => {
+    preloadFilterTranslations()
+  }, [])
+
   function selectClosure(cl: string) {
     setActiveClosure(cl)
     const first = allVariants.find((p) => p.closure === cl)
@@ -218,7 +224,7 @@ export default function ProductDetail({ product, siblings }: Props) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
       </svg>
-      Conta pendente de aprovação
+      {t('pending_approval')}
     </div>
   ) : (
     <Link href={`/gallery/${selected.id}/order`}
@@ -331,7 +337,7 @@ export default function ProductDetail({ product, siblings }: Props) {
           <div className="border border-stone-100 rounded-xl overflow-hidden text-sm">
             <div className="grid grid-cols-2 bg-stone-50 px-4 py-2 text-xs font-semibold
                             text-stone-500 uppercase tracking-wider">
-              <span>Info</span><span>Sizes</span>
+              <span>{t('info')}</span><span>{t('sizes')}</span>
             </div>
             <div className="grid grid-cols-2 px-4 py-3 text-stone-800">
               <span className="text-stone-500">{product.info ?? '—'}</span>
@@ -345,7 +351,7 @@ export default function ProductDetail({ product, siblings }: Props) {
               <div className="grid grid-cols-2 bg-stone-50 px-4 py-2 text-xs font-semibold
                               text-stone-500 uppercase tracking-wider">
                 <span>{t('constructions').split('&')[0].trim()}</span>
-                <span>Widths</span>
+                <span>{t('widths')}</span>
               </div>
               {groupedConstructions.map((g, i) => (
                 <div key={i}
@@ -376,7 +382,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                                 ${cl === activeClosure
                                   ? 'bg-gold text-white border-gold shadow-sm'
                                   : 'border-stone-200 text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
-                    {cl}
+                    {translateFilterValueSync(cl, locale)}
                   </button>
                 ))}
               </div>

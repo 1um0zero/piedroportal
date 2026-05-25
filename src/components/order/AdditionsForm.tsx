@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { SECTIONS, filterExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
 import { GlbViewer } from './GlbViewer'
+import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
+import type { Locale } from '@/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -209,6 +211,7 @@ function YesNoToggle({ value, onChange, t }: {
 
 export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange }: Props) {
   const t = useTranslations('additions')
+  const locale = useLocale() as Locale
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
 
   // Per-section filter state (replaces single showOnlyActive)
@@ -298,7 +301,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return (
       <div key={field.key} className="flex items-center justify-between py-2
            border-b border-stone-50 last:border-0">
-        <span className="text-sm text-stone-700">{field.label.replace(/\s*\(mm\)/gi, '')}</span>
+        <span className="text-sm text-stone-700">{getFieldLabel(field, locale).replace(/\s*\(mm\)/gi, '')}</span>
         <YesNoToggle value={val} onChange={(v) => update(field.key, 'global', v)} t={t} />
       </div>
     )
@@ -343,7 +346,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         <button type="button" onClick={() => toggleSection(section.key)}
           className="w-full flex items-center justify-between px-5 py-3.5
                      hover:bg-stone-50 transition-colors text-left">
-          <span className="font-semibold text-sm text-stone-800">{section.label}</span>
+          <span className="font-semibold text-sm text-stone-800">{getSectionLabel(section, locale)}</span>
           <div className="flex items-center gap-2.5">
             {filled > 0 && (
               <span className="min-w-[20px] h-5 px-1.5 text-[10px] font-bold bg-gold/10
@@ -390,8 +393,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
 
             {fields.map(field => {
               if (field.side === 'global') return renderGlobal(field)
-              const isSubField = field.label.startsWith('↳')
-              const cleanLabel = field.label.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
+              const fieldLabel = getFieldLabel(field, locale)
+              const isSubField = fieldLabel.startsWith('↳')
+              const cleanLabel = fieldLabel.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
 
               // Active filter — top-level only (sub-fields follow parent)
               if (effectiveFilter && !isSubField) {
@@ -536,7 +540,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               onClick={() => toggleSection(section.key)}
               className="w-full flex items-center justify-between px-5 py-3.5
                          hover:bg-stone-50 transition-colors text-left">
-              <span className="font-semibold text-sm text-stone-800">{section.label}</span>
+              <span className="font-semibold text-sm text-stone-800">{getSectionLabel(section, locale)}</span>
               <div className="flex items-center gap-2.5">
                 {filled > 0 && (
                   <span className="min-w-[20px] h-5 px-1.5 text-[10px] font-bold bg-gold/10
@@ -564,14 +568,15 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   if (!leftActive && !rightActive) return null
 
                   const isConditional = !!field.conditionalOn
-                  const isSubField    = field.label.startsWith('↳')
+                  const fieldLabel = getFieldLabel(field, locale)
+                  const isSubField = fieldLabel.startsWith('↳')
 
                   return (
                     <div key={field.key}
                       className={`space-y-2 ${isSubField ? 'ml-4 pl-3 border-l-2 border-gold/20' : ''}`}>
                       <p className={`text-xs font-semibold uppercase tracking-wide
                                      ${isSubField ? 'text-gold/70' : 'text-slate-500'}`}>
-                        {field.label.replace(/\s*\(mm\)/gi, '')}
+                        {fieldLabel.replace(/\s*\(mm\)/gi, '')}
                       </p>
 
                       {/* Lining experiment: SharedOptionPicker */}

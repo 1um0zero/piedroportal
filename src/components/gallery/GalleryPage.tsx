@@ -7,6 +7,7 @@ import type { Product, Section } from '@/types'
 import { useWishlist } from '@/contexts/WishlistContext'
 import ProductCard from './ProductCard'
 import GalleryFilters from './GalleryFilters'
+import { preloadFilterTranslations } from '@/lib/filter-translations'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -199,6 +200,11 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   const hasNew = useMemo(() => sectionProducts.some(isNew), [sectionProducts])
 
+  // Preload filter translations on mount
+  useEffect(() => {
+    preloadFilterTranslations()
+  }, [])
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       {/* Section tabs + search aligned right */}
@@ -229,7 +235,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
             type="search"
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Search models…"
+            placeholder={t('filters.search')}
             className="h-8 pl-8 pr-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                        text-stone-700 w-40 transition-all duration-200
                        hover:border-stone-300 focus:outline-none focus:ring-2
