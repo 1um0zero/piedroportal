@@ -422,6 +422,15 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       {/* ── TAB 2: Additions ─────────────────────────────────────────── */}
       {step === 2 && showAdditions && (
         <div className="space-y-4">
+          {/* Top actions bar */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-stone-700 uppercase tracking-wide">{t('tab2')}</h2>
+            <button onClick={() => handleSubmit('draft')} disabled={submitting}
+              className="px-4 py-2 border border-stone-200 text-stone-600 font-medium text-xs rounded-lg
+                         hover:border-stone-300 transition-colors disabled:opacity-50">
+              {submitting ? t('processing') : t('save_draft')}
+            </button>
+          </div>
           <AdditionsForm
             unit={unit}
             closure={product.closure}
@@ -434,6 +443,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                          hover:bg-gold-dark transition-colors">
               {t('tab3')} →
+            </button>
+            <button onClick={() => handleSubmit('draft')} disabled={submitting}
+              className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
+                         text-sm rounded-xl hover:border-stone-300 transition-colors disabled:opacity-50">
+              {submitting ? t('processing') : t('save_draft')}
             </button>
             <button onClick={() => setStep(1)}
               className="text-sm text-stone-400 hover:text-stone-600 transition-colors ml-auto">

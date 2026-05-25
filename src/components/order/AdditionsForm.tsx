@@ -60,6 +60,7 @@ function MmInput({ values, value, onChange, onBlurDone }: {
           )
           const n = parseFloat(nearest); onChange(n); onBlurDone?.(n)
         }}
+        onFocus={e => e.target.select()}
         className="w-24 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
                    focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
       />
@@ -266,6 +267,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       return (
         <input type="text" value={String(val ?? '')}
           onChange={(e) => setVal(e.target.value || null)}
+          onFocus={(e) => e.target.select()}
           className="w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                      focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
       )
@@ -416,6 +418,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               // Top-level: single checkbox or two checkboxes
               if (!isDouble) {
                 if (field.conditionalOn && !isParentActive(field, displaySide)) return null
+                const isChild = !!field.conditionalOn
 
                 // Special handling for toggle fields
                 if (field.type === 'toggle') {
@@ -424,7 +427,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const hasChildren = hasConditionalChildren(field.key, section)
 
                   return (
-                    <div key={field.key} className="py-2.5">
+                    <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                       <div className="flex items-center justify-between gap-3">
                         <span
                           onClick={() => {
@@ -446,7 +449,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const checked = addExpanded.has(`${field.key}:${displaySide}`)
                 const hasGlb = !!field.glb
                 return (
-                  <div key={field.key} className="py-2.5">
+                  <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
                       <span
                         onClick={() => {
@@ -490,6 +493,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               } else {
                 // LEFT_RIGHT mode: two checkboxes
                 const sv = additions[field.key] as SidedVal | null
+                const isChild = !!field.conditionalOn
 
                 // Special handling for toggle fields
                 if (field.type === 'toggle') {
@@ -497,7 +501,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const isCheckedR = sv?.r === true
 
                   return (
-                    <div key={field.key} className="py-2.5">
+                    <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                       <div className="flex items-center gap-3">
                         <div className="flex gap-5 shrink-0">
                           <input type="checkbox" checked={isCheckedL}
@@ -521,7 +525,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const checkedR = addExpanded.has(`${field.key}:r`)
                 const hasGlb = !!field.glb
                 return (
-                  <div key={field.key} className="py-2.5">
+                  <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                     <div className="flex items-center gap-3">
                       <div className="flex gap-5 shrink-0">
                         <input type="checkbox" checked={checkedL}
