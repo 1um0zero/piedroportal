@@ -2,16 +2,18 @@ import type { AdditionField, AdditionSection } from '@/components/order/addition
 
 /**
  * Gets the translated label for an addition field using next-intl
+ * @param t - Translation function already scoped to 'additions' namespace
  */
 export function getFieldLabel(field: AdditionField, t: (key: string) => string): string {
-  return t(`additions.field_labels.${field.key}`)
+  return t(`field_labels.${field.key}`)
 }
 
 /**
  * Gets the translated label for an addition section using next-intl
+ * @param t - Translation function already scoped to 'additions' namespace
  */
 export function getSectionLabel(section: AdditionSection, t: (key: string) => string): string {
-  return t(`additions.sections.${section.key}`)
+  return t(`sections.${section.key}`)
 }
 
 /**

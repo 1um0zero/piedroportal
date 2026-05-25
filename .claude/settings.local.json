@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git push origin master)",
+      "PowerShell(git add src/components/order/OrderPdf.tsx)",
+      "PowerShell(git commit -m \"OrderPdf: remove redundant unit check in isDouble branch - TS build fix\")",
+      "PowerShell(npm run build)"
+    ]
+  }
+}
