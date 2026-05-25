@@ -98,7 +98,9 @@
     "company": "Bedrijf",
     "construction_short": "Constructie",
     "specifications": "Specificaties",
-    "pairs_short": "Paren"
+    "pairs_short": "Paren",
+    "not_confirmed": "Niet Bevestigd",
+    "preview_pdf": "Voorbeeld PDF"
   },
   "additions": {
     "yes": "Ja",

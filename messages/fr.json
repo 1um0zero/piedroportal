@@ -98,7 +98,9 @@
     "company": "Entreprise",
     "construction_short": "Construction",
     "specifications": "Spécifications",
-    "pairs_short": "Paires"
+    "pairs_short": "Paires",
+    "not_confirmed": "Non Confirmé",
+    "preview_pdf": "Aperçu PDF"
   },
   "additions": {
     "yes": "Oui",

@@ -71,6 +71,7 @@ export type OrderPdfProps = {
   productImageUrl?: string
   diff_sizes_pairs?: Array<{ qty: number; size: number }> | null
   locale: Locale
+  showWatermark?: boolean
 }
 
 export function OrderPdf({
@@ -78,7 +79,7 @@ export function OrderPdf({
   construction_left, construction_right, width_left, width_right,
   size_left, size_right, additions, comments, created_at,
   companyName, productColourId, productColorName, productClosure, productImageUrl,
-  diff_sizes_pairs, locale,
+  diff_sizes_pairs, locale, showWatermark = false,
 }: OrderPdfProps) {
   const t = (key: string) => getPdfTranslation(locale, key)
   const isDouble = unit === 'LEFT_RIGHT'
@@ -86,22 +87,70 @@ export function OrderPdf({
     day: '2-digit', month: '2-digit', year: 'numeric',
   })
 
+  // Helper: check if this field has children (is a parent toggle)
+  const hasChildren = (fieldKey: string, section: typeof SECTIONS[0]) =>
+    section.fields.some(f => f.conditionalOn === fieldKey)
+
   // Collect filled additions fields
   const addSections = SECTIONS
-    .filter(sec => sec.key !== 'others')
     .map(sec => {
       const filled = sec.fields.flatMap(field => {
+        // Skip if this is a conditional child whose parent is not set
+        if (field.conditionalOn) {
+          const parent = additions?.[field.conditionalOn]
+          const isParentActive = typeof parent === 'boolean'
+            ? parent
+            : (parent as SidedVal)?.l || (parent as SidedVal)?.r
+          if (!isParentActive) return []
+        }
+
         const fieldLabel = t(`additions.field_labels.${field.key}`)
+
         if (field.side === 'global') {
           return additions?.[field.key] === true
-            ? [{ label: fieldLabel.replace(/\s*\(mm\)/gi, ''), l: t('additions.yes'), r: null, global: true }]
+            ? [{ label: fieldLabel.replace(/\s*\(mm\)/gi, ''), l: null, r: null, global: true }]
             : []
         }
+
         const sv = additions?.[field.key] as SidedVal | null
-        const hasL = sv?.l != null && sv.l !== '' && sv.l !== false && sv.l !== true
-        const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
+
+        // For toggle fields
+        if (field.type === 'toggle') {
+          const isCheckedL = sv?.l === true
+          const isCheckedR = sv?.r === true
+          if (!isCheckedL && !isCheckedR) return []
+
+          // If this toggle has children, show it as a parent label
+          if (hasChildren(field.key, sec)) {
+            return [{
+              label: fieldLabel,
+              l: null,
+              r: null,
+              global: false,
+              isParent: true
+            }]
+          }
+
+          // Standalone toggle: show with checkmark
+          return [{
+            label: fieldLabel,
+            l: isCheckedL ? '✓' : null,
+            r: isCheckedR ? '✓' : null,
+            global: false
+          }]
+        }
+
+        // For non-toggle fields
+        const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
+        const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
         if (!hasL && !hasR) return []
-        return [{ label: fieldLabel.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '), l: hasL ? String(sv!.l) : null, r: hasR ? String(sv!.r) : null, global: false }]
+
+        return [{
+          label: fieldLabel.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '),
+          l: hasL ? String(sv!.l) : null,
+          r: hasR ? String(sv!.r) : null,
+          global: false
+        }]
       })
       return { label: t(`additions.sections.${sec.key}`), filled }
     })
@@ -113,9 +162,27 @@ export function OrderPdf({
 
   const unitLabel = getUnitLabel(locale, unit)
 
-  const globalFields = SECTIONS
-    .find(s => s.key === 'others')
-    ?.fields.filter(f => f.side === 'global' && additions?.[f.key] === true) ?? []
+  const othersSection = SECTIONS.find(s => s.key === 'others')
+  const othersFields = othersSection?.fields.flatMap(f => {
+    const fieldLabel = t(`additions.field_labels.${f.key}`)
+    if (f.side === 'global') {
+      return additions?.[f.key] === true
+        ? [{ key: f.key, label: fieldLabel, l: null, r: null, global: true }]
+        : []
+    }
+    // Sided toggle fields
+    const sv = additions?.[f.key] as SidedVal | null
+    const isCheckedL = sv?.l === true
+    const isCheckedR = sv?.r === true
+    if (!isCheckedL && !isCheckedR) return []
+    return [{
+      key: f.key,
+      label: fieldLabel,
+      l: isCheckedL ? '✓' : null,
+      r: isCheckedR ? '✓' : null,
+      global: false
+    }]
+  }) ?? []
 
   return (
     <Document>
@@ -260,32 +327,58 @@ export function OrderPdf({
             {addSections.map(sec => (
               <View key={sec.label}>
                 <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>{sec.label}</Text>
-                {sec.filled.map((f, i) => (
-                  <View key={i} style={s.fieldRow}>
-                    <Text style={s.fieldLabel}>{f.label}</Text>
-                    {isDouble && !f.global ? (
-                      <>
-                        <Text style={s.fieldValL}>{f.l ?? t('additions.empty_value')}</Text>
-                        <Text style={s.fieldValR}>{f.r ?? t('additions.empty_value')}</Text>
-                      </>
-                    ) : (
-                      <Text style={s.fieldVal}>{f.l ?? f.r ?? t('additions.empty_value')}</Text>
-                    )}
-                  </View>
-                ))}
+                {sec.filled.map((f, i) => {
+                  const isParent = (f as any).isParent === true
+
+                  if (isParent) {
+                    return (
+                      <Text key={i} style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: MUTED, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 6, marginBottom: 2 }}>
+                        {f.label}
+                      </Text>
+                    )
+                  }
+
+                  return (
+                    <View key={i} style={s.fieldRow}>
+                      <Text style={s.fieldLabel}>{f.label}</Text>
+                      {isDouble && !f.global ? (
+                        <>
+                          <Text style={s.fieldValL}>{f.l ?? (f.l === null && f.r === null ? '' : t('additions.empty_value'))}</Text>
+                          <Text style={s.fieldValR}>{f.r ?? (f.l === null && f.r === null ? '' : t('additions.empty_value'))}</Text>
+                        </>
+                      ) : (
+                        <Text style={s.fieldVal}>{f.l ?? f.r ?? ''}</Text>
+                      )}
+                    </View>
+                  )
+                })}
               </View>
             ))}
           </>
         )}
 
-        {/* Others / global toggles */}
-        {globalFields.length > 0 && (
+        {/* Others */}
+        {othersFields.length > 0 && (
           <>
             <Text style={s.sectionTitle}>{t('additions.sections.others')}</Text>
-            {globalFields.map(f => (
+            {isDouble && (
+              <View style={s.lrHeader}>
+                <Text style={s.lrHeaderLabel}></Text>
+                <Text style={s.lrHeaderSide}>{t('additions.left')}</Text>
+                <Text style={s.lrHeaderSide}>{t('additions.right')}</Text>
+              </View>
+            )}
+            {othersFields.map(f => (
               <View key={f.key} style={s.fieldRow}>
-                <Text style={s.fieldLabel}>{t(`additions.field_labels.${f.key}`)}</Text>
-                <Text style={s.fieldVal}>{t('additions.yes')}</Text>
+                <Text style={s.fieldLabel}>{f.label}</Text>
+                {isDouble && !f.global ? (
+                  <>
+                    <Text style={s.fieldValL}>{f.l ?? ''}</Text>
+                    <Text style={s.fieldValR}>{f.r ?? ''}</Text>
+                  </>
+                ) : (
+                  <Text style={s.fieldVal}>{f.l ?? f.r ?? ''}</Text>
+                )}
               </View>
             ))}
           </>
@@ -296,6 +389,31 @@ export function OrderPdf({
           <View style={s.comments}>
             <Text style={s.commentsLabel}>{t('additions.fields.comments')}</Text>
             <Text style={s.commentsText}>{comments}</Text>
+          </View>
+        )}
+
+        {/* Watermark */}
+        {showWatermark && (
+          <View fixed style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+            opacity: 0.15,
+            transform: 'rotate(-45deg)'
+          }}>
+            <Text style={{
+              fontSize: 72,
+              fontFamily: 'Helvetica-Bold',
+              color: '#DC2626',
+              textTransform: 'uppercase',
+              letterSpacing: 4
+            }}>
+              {t('order.not_confirmed')}
+            </Text>
           </View>
         )}
 

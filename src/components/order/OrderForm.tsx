@@ -139,6 +139,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [step,        setStep]      = useState<1 | 2 | 3>(getInitialState('step', 1))
   const [submitting,  setSubmitting] = useState(false)
   const [discarding,  setDiscarding] = useState(false)
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
   const [error,       setError]     = useState('')
   const [successMsg,  setSuccessMsg] = useState('')
 
@@ -336,6 +337,68 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     }
   }
 
+  async function handlePreviewPdf() {
+    setDownloadingPdf(true)
+    try {
+      const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
+
+      const pdfData = {
+        reference: reference || null,
+        status: 'draft',
+        unit,
+        clinician: clinician || null,
+        patient_name: patientName || null,
+        quantity,
+        construction_left: constrLeft || null,
+        construction_right: mirror ? constrLeft || null : constrRight || null,
+        width_left: widthLeft || null,
+        width_right: mirror ? widthLeft || null : widthRight || null,
+        size_left: sizeLeft ? parseFloat(sizeLeft) : null,
+        size_right: (mirror ? sizeLeft : sizeRight) ? parseFloat(mirror ? sizeLeft : sizeRight) : null,
+        additions: additionFields,
+        comments: String(addComments ?? '') || null,
+        created_at: new Date().toISOString(),
+        companyName,
+        productColourId: product.colour_id,
+        productColorName: product.color_name,
+        productClosure: product.closure,
+        productImageUrl: product.picture_name
+          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${product.picture_name}`
+          : undefined,
+        diff_sizes_pairs: unit === 'DIFF_SIZES'
+          ? diffSizesPairs.map(p => ({ qty: p.qty, size: parseFloat(p.size) }))
+          : null,
+        locale: locale as Locale,
+      }
+
+      const response = await fetch('/api/orders/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pdfData),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to generate PDF')
+      }
+
+      // Download the PDF
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `preview-${reference || 'draft'}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDownloadingPdf(false)
+    }
+  }
+
   const inputCls = 'w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors'
   const labelCls = 'text-xs font-bold text-stone-700 uppercase tracking-wide'
 
@@ -390,19 +453,62 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       {step === 3 && (() => {
         // Build detailed additions list for display
         type SidedVal = { l: unknown; r: unknown }
+
+        // Helper: check if this field has children (is a parent toggle)
+        const hasChildren = (fieldKey: string, section: typeof SECTIONS[0]) =>
+          section.fields.some(f => f.conditionalOn === fieldKey)
+
         const addDetail = SECTIONS.map(sec => {
           const filled = sec.fields.flatMap(field => {
+            // Skip if this is a conditional child whose parent is not set
+            if (field.conditionalOn) {
+              const parent = additions[field.conditionalOn]
+              const isParentActive = typeof parent === 'boolean'
+                ? parent
+                : (parent as SidedVal)?.l || (parent as SidedVal)?.r
+              if (!isParentActive) return []
+            }
+
             if (field.side === 'global') {
               return additions[field.key] === true
-                ? [{ label: getFieldLabel(field, ta).replace(/\s*\(mm\)/gi, ''), l: ta('yes'), r: null }]
+                ? [{ label: getFieldLabel(field, ta).replace(/\s*\(mm\)/gi, ''), l: null, r: null }]
                 : []
             }
+
             const sv = additions[field.key] as SidedVal | null
-            const hasL = sv?.l != null && sv.l !== '' && sv.l !== false && sv.l !== true
-            const hasR = sv?.r != null && sv.r !== '' && sv.r !== false && sv.r !== true
+
+            // For toggle fields
+            if (field.type === 'toggle') {
+              const isCheckedL = sv?.l === true
+              const isCheckedR = sv?.r === true
+              if (!isCheckedL && !isCheckedR) return []
+
+              // If this toggle has children, show it as a parent label
+              if (hasChildren(field.key, sec)) {
+                return [{
+                  label: getFieldLabel(field, ta),
+                  l: null,
+                  r: null,
+                  isParent: true
+                }]
+              }
+
+              // Standalone toggle: show with no value
+              return [{
+                label: getFieldLabel(field, ta),
+                l: isCheckedL ? '✓' : null,
+                r: isCheckedR ? '✓' : null,
+              }]
+            }
+
+            // For non-toggle fields
+            const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
+            const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
             if (!hasL && !hasR) return []
+
+            const baseLabel = getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, '')
             return [{
-              label: getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, ''),
+              label: baseLabel,
               l: hasL ? String(sv!.l) : null,
               r: hasR ? String(sv!.r) : null,
             }]
@@ -456,6 +562,17 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium
                          text-sm rounded-xl hover:border-stone-300 transition-colors">
               {t('save_draft')}
+            </button>
+            <button onClick={handlePreviewPdf} disabled={downloadingPdf || submitting || discarding || !!successMsg}
+              className="px-6 py-2.5 border border-gold text-gold font-medium
+                         text-sm rounded-xl hover:bg-gold/5 transition-colors disabled:opacity-50 inline-flex items-center gap-2">
+              {downloadingPdf && (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              )}
+              {downloadingPdf ? 'A gerar…' : t('preview_pdf')}
             </button>
             {draftId && (
               <button onClick={handleDiscard} disabled={submitting || discarding || !!successMsg}
@@ -626,11 +743,21 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         {/* Rows */}
                         {sec.filled.map((f, i) => {
                           const isChild = f.label.includes('·')
+                          const isParent = (f as any).isParent === true
+
+                          if (isParent) {
+                            return (
+                              <div key={i} className="pt-2 pb-1 mt-1">
+                                <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
+                              </div>
+                            )
+                          }
+
                           return (
                             <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                               <span className="text-stone-600">{f.label}</span>
-                              <span className="text-stone-800 font-semibold text-center">{f.l ?? '—'}</span>
-                              <span className="text-stone-800 font-semibold text-center">{f.r ?? '—'}</span>
+                              <span className="text-stone-800 font-semibold text-center">{f.l ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                              <span className="text-stone-800 font-semibold text-center">{f.r ?? (f.l === null && f.r === null ? '' : '—')}</span>
                             </div>
                           )
                         })}
@@ -645,10 +772,20 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                         {/* Rows */}
                         {sec.filled.map((f, i) => {
                           const isChild = f.label.includes('·')
+                          const isParent = (f as any).isParent === true
+
+                          if (isParent) {
+                            return (
+                              <div key={i} className="pt-2 pb-1 mt-1">
+                                <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
+                              </div>
+                            )
+                          }
+
                           return (
                             <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                               <span className="text-stone-600">{f.label}</span>
-                              <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r}</span>
+                              <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r ?? ''}</span>
                             </div>
                           )
                         })}
