@@ -155,10 +155,17 @@ export async function getOrderLocale(
 
   if (!order) return 'en'
 
+  // Type assertion for joined relations
+  const orderData = order as unknown as {
+    locale?: string
+    company?: { default_locale?: string }
+    profile?: { preferred_locale?: string }
+  }
+
   // Hierarchy check
-  if (order.locale) return order.locale as Locale
-  if (order.company?.default_locale) return order.company.default_locale as Locale
-  if (order.profile?.preferred_locale) return order.profile.preferred_locale as Locale
+  if (orderData.locale) return orderData.locale as Locale
+  if (orderData.company?.default_locale) return orderData.company.default_locale as Locale
+  if (orderData.profile?.preferred_locale) return orderData.profile.preferred_locale as Locale
 
   return 'en'
 }
