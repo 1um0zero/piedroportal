@@ -103,7 +103,11 @@
     "preview_pdf": "Aperçu PDF",
     "generating": "Génération…",
     "processing": "Traitement…",
-    "comments": "Commentaires"
+    "comments": "Commentaires",
+    "order_submitted": "Commande soumise.",
+    "order_submitted_pdf_error": "Commande soumise. Erreur PDF:",
+    "order_submitted_email_error": "Commande soumise. PDF généré. Erreur d'e-mail:",
+    "order_submitted_complete": "Commande soumise. PDF généré et e-mail envoyé."
   },
   "additions": {
     "yes": "Oui",

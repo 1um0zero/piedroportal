@@ -103,7 +103,11 @@
     "preview_pdf": "PDF-Vorschau",
     "generating": "Generierung…",
     "processing": "Verarbeitung…",
-    "comments": "Kommentare"
+    "comments": "Kommentare",
+    "order_submitted": "Bestellung eingereicht.",
+    "order_submitted_pdf_error": "Bestellung eingereicht. PDF-Fehler:",
+    "order_submitted_email_error": "Bestellung eingereicht. PDF erstellt. E-Mail-Fehler:",
+    "order_submitted_complete": "Bestellung eingereicht. PDF erstellt und E-Mail gesendet."
   },
   "additions": {
     "yes": "Ja",

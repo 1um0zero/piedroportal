@@ -34,8 +34,8 @@ const s = StyleSheet.create({
   fieldRow:      { flexDirection: 'row', paddingVertical: 3, borderBottom: `1px solid ${BORDER}` },
   fieldLabel:    { flex: 2, fontSize: 8, color: MUTED },
   fieldVal:      { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
-  fieldValL:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'center' },
-  fieldValR:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'center' },
+  fieldValL:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
+  fieldValR:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
   lrHeader:      { flexDirection: 'row', paddingBottom: 4, borderBottom: `1px solid ${BORDER}`, marginBottom: 2 },
   lrHeaderLabel: { flex: 2, fontSize: 7, color: MUTED },
   lrHeaderSide:  { flex: 1, fontSize: 7, color: MUTED, textAlign: 'center' },
@@ -170,6 +170,11 @@ export function OrderPdf({
           <View>
             <Image src="https://piedroportal.vercel.app/piedro-logo.png" style={s.logo} />
             <Text style={s.brandSub}>Piedro International</Text>
+          </View>
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Oblique', color: GOLD, letterSpacing: 0.5 }}>
+              always one step ahead
+            </Text>
           </View>
           <View style={s.refBlock}>
             <Text style={s.refNum}>{reference ?? t('additions.empty_value')}</Text>
@@ -308,6 +313,7 @@ export function OrderPdf({
                 <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>{sec.label}</Text>
                 {sec.filled.map((f, i) => {
                   const isParent = (f as any).isParent === true
+                  const isChild = f.label.includes('·')
 
                   if (isParent) {
                     return (
@@ -318,7 +324,7 @@ export function OrderPdf({
                   }
 
                   return (
-                    <View key={i} style={s.fieldRow}>
+                    <View key={i} style={{ ...s.fieldRow, paddingLeft: isChild ? 12 : 0 }}>
                       <Text style={s.fieldLabel}>{f.label}</Text>
                       {isDouble && !f.global ? (
                         <>
