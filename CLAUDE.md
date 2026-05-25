@@ -77,7 +77,27 @@ Defined in `src/app/globals.css` via Tailwind v4 `@theme {}`:
 
 ### i18n
 
-Message files in `messages/*.json`. Server components use `getTranslations()`, client components use `useTranslations()`. Addition field labels have `labelNl/labelFr/labelDe` fields in the config but the `AdditionsForm` currently renders only the English `label`.
+**Fully implemented** across OrderForm, AdditionsForm, Gallery, and ProductDetail. The app supports EN/NL/FR/DE.
+
+#### Translation files
+Message files in `messages/*.json` (en/nl/fr/de). Server components use `getTranslations()`, client components use `useTranslations()`.
+
+#### Addition field translations
+`src/components/order/additions-config.ts` has `labelNl/labelFr/labelDe` fields for each addition field. Use the helpers in `src/lib/additions-helpers.ts`:
+- `getFieldLabel(field, locale)` — returns the translated label for a field
+- `getSectionLabel(section, locale)` — returns the translated label for a section
+- `translateOptionValue(fieldKey, value, t)` — translates option values using next-intl keys
+
+#### Database-driven filter translations
+Closure, type, and construction values are translated via the `translations` table in Supabase:
+- `src/lib/filter-translations.ts` provides `translateFilterValueSync(value, locale)` for client-side translation
+- The helper caches translations on first load via `preloadFilterTranslations()`
+- Used in Gallery tooltips and ProductDetail closure chips
+
+When adding new UI text:
+1. Add keys to all 4 message files (en/nl/fr/de)
+2. If translating additions fields, add `labelNl/labelFr/labelDe` to additions-config.ts
+3. If translating filter values (closure/type/construction), add to the `translations` table in Supabase
 
 ### Server Actions
 
@@ -102,7 +122,9 @@ Register (RegisterForm)
 Galeria
 
 Server component que busca produtos do Supabase
-Tabs KIDS/MEN/WOMEN, filtros (closure/type/colour/search), product cards com hover dourado
+Tabs KIDS/MEN/WOMEN, filtros (closure/type/colour/construction/width/size/search), product cards com hover dourado
+Filtros traduzidos (labels + valores de closure/type via DB translations)
+Tooltips em ProductCard mostram closure e type traduzidos
 Wishlist com badge na navbar
 Detalhe do produto (ProductDetail)
 
@@ -110,14 +132,18 @@ Galeria de imagens com loupe magnifier (zoom 2.5×)
 Suporte a 2 convenções de naming (.png numeradas / .jpg com underscore)
 Auto-play de imagens (slideshow 700ms)
 Variantes por closure e cor, agrupamento de constructions por widths partilhadas
-Botão Order condicional: visitante → login, sem company → mensagem pendente, com company → order form
+Headers de tabelas traduzidos (Info, Sizes, Widths)
+Closure chips traduzidos (LACE→Veters/Lacets/Schnürsenkel)
+Botão Order condicional: visitante → login, sem company → mensagem pendente (traduzida), com company → order form
 Formulário de encomenda (OrderForm + AdditionsForm)
 
-2 steps: Customer/Product → Additions
+3 tabs: Customer/Product → Additions → Confirmation
 5 modos de unidade: PAIR / LEFT / RIGHT / LEFT_RIGHT / DIFF_SIZES
 Construction + width filtrados dinamicamente, size chips EU
 Additions em secções colapsáveis (Additions, Upper, Sole, Others) com contador de campos preenchidos
 Suporte a campos laterais (L/R), campos condicionais, mm inputs com snap ao valor mais próximo, GLB viewer para visualização 3D
+Tab3 (Confirmation) mostra resumo completo antes de submeter
+Todos os labels e valores traduzidos em EN/NL/FR/DE
 Save as draft / Submit
 Lista de encomendas (OrdersPage)
 
@@ -141,10 +167,11 @@ Problemas conhecidos ⚠️
 addsExclude vem como (product as any).adds_exclude — campo não está no tipo Product, sugere que a query no OrderPage não o selecciona
 Sem validação de campos obrigatórios no step 1 antes de avançar — só bloqueia se reference estiver vazio
 Sem feedback de loading na lista de orders (server component, sem skeleton)
-i18n incompleta — o AdditionsForm usa strings hardcoded em inglês; só o esqueleto tem traduções
+additions-config.ts: labelFr/labelDe incompleto em alguns campos (labelNl está completo)
 Próximos passos sugeridos
 /admin/orders — implementar a vista back-office (gestão de status de encomendas)
 Página de detalhe de encomenda — ver/editar uma order existente, mudar status
 PDF de encomenda — o campo pdf_url já existe na tabela mas não está a ser gerado
-i18n das Additions — traduzir labels e secções para NL/FR/DE
+Completar labelFr/labelDe em additions-config.ts (60+ campos) — labelNl já está completo
 Register flow — confirmar que o registo liga correctamente ao profiles + companies
+Preservar filtros da Gallery no URL (search params) para partilhar links filtrados
