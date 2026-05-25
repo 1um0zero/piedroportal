@@ -179,33 +179,6 @@ function SelectCombo({ values, value, onChange, t }: {
   )
 }
 
-function YesNoToggle({ value, onChange, t }: {
-  value: boolean
-  onChange: (v: boolean) => void
-  t: (key: string) => string
-}) {
-  return (
-    <div className="flex gap-1.5">
-      {([false, true] as const).map((isYes) => {
-        const lbl = isYes ? t('yes') : t('no')
-        const active = isYes ? value === true : value === false
-        return (
-          <button key={String(isYes)} type="button"
-            onClick={() => onChange(isYes)}
-            className={`px-4 py-1.5 text-xs font-semibold rounded border transition-all
-              ${active
-                ? isYes
-                  ? 'bg-gold text-white border-gold'
-                  : 'bg-stone-100 text-stone-600 border-stone-300'
-                : 'text-stone-400 border-stone-200 bg-white hover:border-stone-300'}`}>
-            {lbl}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange }: Props) {
@@ -269,6 +242,11 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return !!(side === 'l' ? sv.l : sv.r)
   }
 
+  // Check if a toggle field has conditional children
+  function hasConditionalChildren(fieldKey: string, section: AdditionSection): boolean {
+    return section.fields.some(f => f.conditionalOn === fieldKey)
+  }
+
   function renderControl(field: AdditionField, side: 'l' | 'r', disabled = false) {
     const sv = additions[field.key] as SidedVal | null
     const val = sv?.[side] ?? null
@@ -283,7 +261,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     if (field.type === 'image' || field.type === 'option')
       return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
     if (field.type === 'toggle')
-      return <YesNoToggle value={val === true} onChange={setVal} t={t} />
+      return null  // Toggles are now handled as checkboxes at the field level, not in renderControl
     if (field.type === 'text')
       return (
         <input type="text" value={String(val ?? '')}
@@ -299,8 +277,14 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return (
       <div key={field.key} className="flex items-center justify-between py-2
            border-b border-stone-50 last:border-0">
-        <span className="text-sm text-stone-700">{getFieldLabel(field, t).replace(/\s*\(mm\)/gi, '')}</span>
-        <YesNoToggle value={val} onChange={(v) => update(field.key, 'global', v)} t={t} />
+        <span
+          onClick={() => update(field.key, 'global', !val)}
+          className="text-sm text-stone-700 cursor-pointer flex-1">
+          {getFieldLabel(field, t).replace(/\s*\(mm\)/gi, '')}
+        </span>
+        <input type="checkbox" checked={val}
+          onChange={(e) => update(field.key, 'global', e.target.checked)}
+          className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
       </div>
     )
   }
@@ -432,6 +416,33 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               // Top-level: single checkbox or two checkboxes
               if (!isDouble) {
                 if (field.conditionalOn && !isParentActive(field, displaySide)) return null
+
+                // Special handling for toggle fields
+                if (field.type === 'toggle') {
+                  const sv = additions[field.key] as SidedVal | null
+                  const isChecked = sv?.[displaySide] === true
+                  const hasChildren = hasConditionalChildren(field.key, section)
+
+                  return (
+                    <div key={field.key} className="py-2.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <span
+                          onClick={() => {
+                            updateField(field.key, displaySide, !isChecked)
+                          }}
+                          className="text-sm text-stone-700 cursor-pointer flex-1">
+                          {cleanLabel}
+                        </span>
+                        <input type="checkbox" checked={isChecked}
+                          onChange={e => updateField(field.key, displaySide, e.target.checked)}
+                          className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                      </div>
+                      {/* Children are rendered separately as sub-fields when parent is active */}
+                    </div>
+                  )
+                }
+
+                // Non-toggle fields: use expand/collapse logic
                 const checked = addExpanded.has(`${field.key}:${displaySide}`)
                 const hasGlb = !!field.glb
                 return (
@@ -477,9 +488,37 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   </div>
                 )
               } else {
+                // LEFT_RIGHT mode: two checkboxes
+                const sv = additions[field.key] as SidedVal | null
+
+                // Special handling for toggle fields
+                if (field.type === 'toggle') {
+                  const isCheckedL = sv?.l === true
+                  const isCheckedR = sv?.r === true
+
+                  return (
+                    <div key={field.key} className="py-2.5">
+                      <div className="flex items-center gap-3">
+                        <span className="flex-1 text-sm text-stone-700 min-w-0">
+                          {cleanLabel}
+                        </span>
+                        <div className="flex gap-5 shrink-0">
+                          <input type="checkbox" checked={isCheckedL}
+                            onChange={e => updateField(field.key, 'l', e.target.checked)}
+                            className="w-4 h-4 cursor-pointer accent-stone-700" />
+                          <input type="checkbox" checked={isCheckedR}
+                            onChange={e => updateField(field.key, 'r', e.target.checked)}
+                            className="w-4 h-4 cursor-pointer accent-stone-700" />
+                        </div>
+                      </div>
+                      {/* Children are rendered separately as sub-fields when parent is active */}
+                    </div>
+                  )
+                }
+
+                // Non-toggle fields: use expand/collapse logic
                 const checkedL = addExpanded.has(`${field.key}:l`)
                 const checkedR = addExpanded.has(`${field.key}:r`)
-                const sv = additions[field.key] as SidedVal | null
                 const hasGlb = !!field.glb
                 return (
                   <div key={field.key} className="py-2.5">
