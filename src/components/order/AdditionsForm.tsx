@@ -673,9 +673,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             <span
                               onClick={() => {
                                 // If both unchecked, check both; otherwise uncheck both
-                                const newValue = !isCheckedL && !isCheckedR
-                                updateField(field.key, 'l', newValue)
-                                updateField(field.key, 'r', newValue)
+                                const newValue = !(isCheckedL || isCheckedR)
+                                const current = additions[field.key] as SidedVal || { l: false, r: false }
+                                onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
                               }}
                               className="flex-1 text-sm text-stone-700 cursor-pointer">
                               {fieldLabel}
