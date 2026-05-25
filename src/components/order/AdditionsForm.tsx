@@ -438,12 +438,30 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const hasGlb = !!field.glb
                 return (
                   <div key={field.key} className="py-2.5">
-                    <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
-                      <span className="text-sm text-stone-700">{cleanLabel}</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <span
+                        onClick={() => {
+                          // Toggle expand/collapse without affecting checkbox value
+                          if (checked) {
+                            setAddExpanded(prev => {
+                              const next = new Set(prev)
+                              next.has(`${field.key}:${displaySide}`)
+                                ? next.delete(`${field.key}:${displaySide}`)
+                                : next.add(`${field.key}:${displaySide}`)
+                              return next
+                            })
+                          } else {
+                            // If not checked, check it and expand
+                            toggleAddField(field.key, displaySide, true)
+                          }
+                        }}
+                        className="text-sm text-stone-700 cursor-pointer flex-1">
+                        {cleanLabel}
+                      </span>
                       <input type="checkbox" checked={checked}
                         onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
                         className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
-                    </label>
+                    </div>
                     {checked && (
                       <div className="mt-2.5 pl-1 flex items-start gap-2">
                         <div className="flex-1">{renderControl(field, displaySide)}</div>
@@ -468,7 +486,33 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 return (
                   <div key={field.key} className="py-2.5">
                     <div className="flex items-center gap-3">
-                      <span className="flex-1 text-sm text-stone-700 min-w-0">{cleanLabel}</span>
+                      <span
+                        onClick={() => {
+                          // If both unchecked, check both and expand
+                          if (!checkedL && !checkedR) {
+                            toggleAddField(field.key, 'l', true)
+                            toggleAddField(field.key, 'r', true)
+                          } else {
+                            // If at least one checked, just toggle expand/collapse
+                            setAddExpanded(prev => {
+                              const next = new Set(prev)
+                              const hasL = next.has(`${field.key}:l`)
+                              const hasR = next.has(`${field.key}:r`)
+                              // Toggle based on current state
+                              if (hasL || hasR) {
+                                next.delete(`${field.key}:l`)
+                                next.delete(`${field.key}:r`)
+                              } else {
+                                if (checkedL) next.add(`${field.key}:l`)
+                                if (checkedR) next.add(`${field.key}:r`)
+                              }
+                              return next
+                            })
+                          }
+                        }}
+                        className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
+                        {cleanLabel}
+                      </span>
                       <div className="flex gap-5 shrink-0">
                         <input type="checkbox" checked={checkedL}
                           onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
