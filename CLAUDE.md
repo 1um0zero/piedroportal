@@ -101,7 +101,34 @@ When adding new UI text:
 
 ### Server Actions
 
-Business logic mutations go in `src/app/actions/`. The pattern is plain async functions marked `'use server'`. API routes (`src/app/api/`) are used only for third-party webhooks or endpoints that need raw `Request`/`Response` (e.g., the Anthropic chat route, Resend email notifications).
+Business logic mutations go in `src/app/actions/`. The pattern is plain async functions marked `'use server'`. API routes (`src/app/api/`) are used only for third-party webhooks or endpoints that need raw `Request`/`Response` (e.g., the Anthropic chat route, Resend email notifications, PDF preview generation).
+
+### Important Implementation Patterns
+
+#### AdditionsForm toggle behavior (LEFT_RIGHT mode)
+When clicking a toggle field title to activate both L+R checkboxes simultaneously, use **atomic state updates** to avoid React batching issues:
+
+```typescript
+// ❌ Wrong - separate updates may batch incorrectly
+updateField(field.key, 'l', newValue)
+updateField(field.key, 'r', newValue)
+
+// ✅ Correct - single atomic update
+const current = additions[field.key] as SidedVal || { l: false, r: false }
+onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
+```
+
+#### Child field detection
+Child fields are identified by `field.conditionalOn` property. Apply visual hierarchy via `ml-6` indentation. In Tab3 and PDF, filter out children whose parent toggle is false.
+
+#### MmInput suffix behavior
+Display `value == null ? '' : `${String(value)} mm`` but strip ` mm` before parsing in `onChange` and `onBlur` via `e.target.value.replace(/ mm$/i, '')`. This preserves numeric validation while showing units.
+
+#### PDF generation constraints
+- Images require absolute URLs (e.g., `https://piedroportal.vercel.app/...`)
+- Avoid Unicode symbols (✓) - not all fonts support them
+- Use `showWatermark` prop to distinguish preview from final PDF
+- Preview route: `/api/orders/preview` (POST with OrderPdfProps)
 
 ## Estado Actual do Projecto
 
@@ -137,14 +164,37 @@ Closure chips traduzidos (LACE→Veters/Lacets/Schnürsenkel)
 Botão Order condicional: visitante → login, sem company → mensagem pendente (traduzida), com company → order form
 Formulário de encomenda (OrderForm + AdditionsForm)
 
-3 tabs: Customer/Product → Additions → Confirmation
-5 modos de unidade: PAIR / LEFT / RIGHT / LEFT_RIGHT / DIFF_SIZES
-Construction + width filtrados dinamicamente, size chips EU
-Additions em secções colapsáveis (Additions, Upper, Sole, Others) com contador de campos preenchidos
-Suporte a campos laterais (L/R), campos condicionais, mm inputs com snap ao valor mais próximo, GLB viewer para visualização 3D
-Tab3 (Confirmation) mostra resumo completo antes de submeter
-Todos os labels e valores traduzidos em EN/NL/FR/DE
-Save as draft / Submit
+**Tab1: Customer/Product**
+- 5 modos de unidade: PAIR / LEFT / RIGHT / LEFT_RIGHT / DIFF_SIZES
+- Construction + width filtrados dinamicamente, size chips EU
+- Validação antes de avançar para Tab2
+
+**Tab2: Additions**
+- Secções colapsáveis (Additions, Upper, Sole, Others) com contador de campos preenchidos
+- Suporte a campos laterais (L/R), campos condicionais com indentação visual
+- Campos mm com snap ao valor mais próximo, mostram " mm" suffix durante digitação e após blur
+- Auto-select de conteúdo ao focar campos de texto preenchidos
+- Toggle fields: clicar no título alterna ambos L+R checkboxes simultaneamente
+- Rocker Sole Type com `collapse: true` esconde chips não selecionados
+- GLB viewer para visualização 3D (quando aplicável)
+- SAVE DRAFT disponível no topo e em baixo
+
+**Tab3: Confirmation**
+- Resumo completo: Customer card (com foto do produto ampliada + shadow), Specifications (construction/width/size), Additions agrupadas por secção
+- Parent toggles aparecem como headers dos filhos condicionais
+- Standalone toggles (Others) mostram apenas o nome, sem "Yes"
+- Valores mm incluem " mm" suffix, alinhados à direita
+- Preview PDF com watermark "NOT CONFIRMED" (2 linhas)
+- Todos os labels e valores traduzidos em EN/NL/FR/DE
+- Submit final com confirmação traduzida
+
+**PDF generation**
+- API route `/api/orders/preview` para preview com watermark
+- PDF final via email action (sem watermark)
+- Header com logo Piedro + tagline "always one step ahead"
+- Foto do produto ampliada, product info no customer card
+- Child fields indentados, valores mm com " mm" suffix, colunas alinhadas à direita
+- Checkmarks customizados em toggle fields (não usa Unicode ✓)
 Lista de encomendas (OrdersPage)
 
 Métricas clicáveis (Total, Draft, Submitted, Approved, Production, Urgent)
@@ -163,15 +213,15 @@ Fetch paginado em loop no servidor (orders)	Supabase tem limite de rows por quer
 createServiceClient (service role) nas orders	RLS não bloqueia admins; o cliente anon bloquearia queries cross-company
 Additions guardadas como JSONB	Estrutura variável por produto; evita dezenas de colunas
 Problemas conhecidos ⚠️
-/admin/orders não está implementado — o redirect existe mas a rota/página não foi vista (pode não existir)
-addsExclude vem como (product as any).adds_exclude — campo não está no tipo Product, sugere que a query no OrderPage não o selecciona
-Sem validação de campos obrigatórios no step 1 antes de avançar — só bloqueia se reference estiver vazio
-Sem feedback de loading na lista de orders (server component, sem skeleton)
-additions-config.ts: labelFr/labelDe incompleto em alguns campos (labelNl está completo)
+- `/admin/orders` não está implementado — o redirect existe mas a rota/página não foi vista (pode não existir)
+- `addsExclude` vem como `(product as any).adds_exclude` — campo não está no tipo Product, sugere que a query no OrderForm não o selecciona
+- Sem validação de campos obrigatórios no step 1 antes de avançar — só bloqueia se reference estiver vazio
+- Sem feedback de loading na lista de orders (server component, sem skeleton)
+- `additions-config.ts`: labelFr/labelDe incompleto em alguns campos (labelNl está completo)
 Próximos passos sugeridos
-/admin/orders — implementar a vista back-office (gestão de status de encomendas)
-Página de detalhe de encomenda — ver/editar uma order existente, mudar status
-PDF de encomenda — o campo pdf_url já existe na tabela mas não está a ser gerado
-Completar labelFr/labelDe em additions-config.ts (60+ campos) — labelNl já está completo
-Register flow — confirmar que o registo liga correctamente ao profiles + companies
-Preservar filtros da Gallery no URL (search params) para partilhar links filtrados
+1. `/admin/orders` — implementar vista back-office (gestão de status de encomendas)
+2. Página de detalhe de encomenda — ver/editar uma order existente, mudar status
+3. Completar `labelFr/labelDe` em `additions-config.ts` (60+ campos) — labelNl está completo
+4. Register flow — confirmar que o registo liga correctamente a `profiles` + `companies`
+5. Preservar filtros da Gallery no URL (search params) para partilhar links filtrados
+6. Adicionar type `adds_exclude` ao tipo `Product` em `src/types/index.ts`
