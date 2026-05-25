@@ -517,8 +517,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             const baseLabel = getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, '')
             return [{
               label: baseLabel,
-              l: hasL ? String(sv!.l) : null,
-              r: hasR ? String(sv!.r) : null,
+              l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
+              r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
             }]
           })
           return { key: sec.key, label: getSectionLabel(sec, ta), filled }

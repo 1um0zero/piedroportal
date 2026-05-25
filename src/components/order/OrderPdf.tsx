@@ -147,8 +147,8 @@ export function OrderPdf({
 
         return [{
           label: fieldLabel.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '),
-          l: hasL ? String(sv!.l) : null,
-          r: hasR ? String(sv!.r) : null,
+          l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
+          r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
           global: false
         }]
       })

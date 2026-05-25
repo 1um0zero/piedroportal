@@ -40,16 +40,16 @@ function MmInput({ values, value, onChange, onBlurDone }: {
         list={id}
         type="text"
         inputMode="numeric"
-        value={value == null ? '' : String(value)}
+        value={value == null ? '' : `${String(value)} mm`}
         placeholder="mm"
         onChange={e => {
-          const typed = e.target.value
+          const typed = e.target.value.replace(/ mm$/i, '')
           if (typed === '') { onChange(null); return }
           const allowed = strValues.some(v => v.startsWith(typed) || typed === v)
           if (allowed) onChange(typed)
         }}
         onBlur={e => {
-          const typed = e.target.value
+          const typed = e.target.value.replace(/ mm$/i, '')
           if (!typed) { onChange(null); onBlurDone?.(null); return }
           const exact = strValues.find(v => v === typed)
           if (exact) { const n = parseFloat(exact); onChange(n); onBlurDone?.(n); return }
