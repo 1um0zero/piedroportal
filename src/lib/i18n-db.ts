@@ -7,7 +7,7 @@
  * Future: Admin UI will populate these tables for full backoffice editability.
  */
 
-import { createServerClient } from './supabase/server'
+import { createClient } from './supabase/server'
 import type { Locale, Translation, AdditionOption } from '@/types'
 
 /**
@@ -17,7 +17,7 @@ import type { Locale, Translation, AdditionOption } from '@/types'
  * @returns Translated string, or key if not found
  */
 export async function getTranslation(key: string, locale: Locale): Promise<string> {
-  const supabase = await createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('translations')
@@ -50,7 +50,7 @@ export async function getTranslationsByCategory(
   category: string,
   locale: Locale
 ): Promise<Record<string, string>> {
-  const supabase = await createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('translations')
@@ -87,7 +87,7 @@ export async function getAdditionOptions(
   category: string,
   locale: Locale
 ): Promise<string[]> {
-  const supabase = await createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('addition_options')
@@ -141,7 +141,7 @@ export function getTranslatedColor(
 export async function getOrderLocale(
   orderId: string
 ): Promise<Locale> {
-  const supabase = await createServerClient()
+  const supabase = await createClient()
 
   const { data: order } = await supabase
     .from('orders')
