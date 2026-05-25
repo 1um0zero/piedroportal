@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import type { Product } from '@/types'
+import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, SECTIONS } from './additions-config'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
