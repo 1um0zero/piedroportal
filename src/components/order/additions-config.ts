@@ -56,14 +56,14 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'heel_depth',   label: 'Heel Depth Only (mm)',        labelNl: 'Verdieping Hak',                type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2heeldepthonly',        glb: { l: 'heel_depth_l.glb',      r: 'heel_depth_r.glb' } },
       // Haglund + conditionals
       { key: 'haglund',      label: 'Haglund Heel Exostosis (mm)', labelNl: 'Haglund Exostosis',             type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2haglundheelexostosis', glb: { l: 'heel_exostosis_l.glb',  r: 'heel_exostosis_r.glb' } },
-      { key: 'haglund_h',    label: '↳ Haglund Height (mm)',       labelNl: 'Haglund hoogte',                type: 'mm',  side: 'both',  values: mm4to10,  conditionalOn: 'haglund', dataverseKey: 'cr56f_3haglund_height_conditional' },
-      { key: 'haglund_p',    label: '↳ Haglund Position (mm)',     labelNl: 'Haglund positie',               type: 'mm',  side: 'both',  values: mm4to10,  conditionalOn: 'haglund', dataverseKey: 'cr56f_3haglund_position_conditional' },
+      { key: 'haglund_h',    label: '↳ Haglund Height (mm)',       labelNl: '↳ Haglund hoogte',              type: 'mm',  side: 'both',  values: mm4to10,  conditionalOn: 'haglund', dataverseKey: 'cr56f_3haglund_height_conditional' },
+      { key: 'haglund_p',    label: '↳ Haglund Position (mm)',     labelNl: '↳ Haglund positie',             type: 'mm',  side: 'both',  values: mm4to10,  conditionalOn: 'haglund', dataverseKey: 'cr56f_3haglund_position_conditional' },
       // Medial Ankle + conditional height
       { key: 'xs_med_ank',   label: 'Extra Space Medial Ankle (mm)',labelNl: 'Extra ruimte mediale enkel',   type: 'text', side: 'both', dataverseKey: 'cr56f_3extraspacemedialankle', glb: { l: 'ankle_medial_l.glb',    r: 'ankle_medial_r.glb' } },
-      { key: 'med_ank_h',    label: '↳ Medial Ankle Height (mm)',  labelNl: 'Mediale enkelhoogte',           type: 'text', side: 'both', conditionalOn: 'xs_med_ank', dataverseKey: 'cr56f_3mankle_height_conditional' },
+      { key: 'med_ank_h',    label: '↳ Medial Ankle Height (mm)',  labelNl: '↳ Mediale enkelhoogte',         type: 'text', side: 'both', conditionalOn: 'xs_med_ank', dataverseKey: 'cr56f_3mankle_height_conditional' },
       // Lateral Ankle + conditional height
       { key: 'xs_lat_ank',   label: 'Extra Space Lateral Ankle (mm)',labelNl:'Extra ruimte laterale enkel', type: 'text', side: 'both', dataverseKey: 'cr56f_3extraspacelateralankle', glb: { l: 'ankle_lateral_l.glb',   r: 'ankle_lateral_r.glb' } },
-      { key: 'lat_ank_h',    label: '↳ Ankle Height (mm)',         labelNl: 'Enkelhoogte',                   type: 'text', side: 'both', conditionalOn: 'xs_lat_ank', dataverseKey: 'cr56f_3ankle_height_conditional' },
+      { key: 'lat_ank_h',    label: '↳ Ankle Height (mm)',         labelNl: '↳ Enkelhoogte',                 type: 'text', side: 'both', conditionalOn: 'xs_lat_ank', dataverseKey: 'cr56f_3ankle_height_conditional' },
     ],
   },
 
