@@ -284,7 +284,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         </span>
         <input type="checkbox" checked={val}
           onChange={(e) => update(field.key, 'global', e.target.checked)}
-          className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
+          className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
       </div>
     )
   }
@@ -346,8 +346,18 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         {open && (
           <div className="px-5 pb-3 pt-1 border-t border-stone-100 divide-y divide-stone-50">
 
-            {/* Sub-header: filter toggle + column labels */}
+            {/* Sub-header: column labels + filter toggle */}
             <div className="flex items-center justify-between pb-2 pt-1.5">
+              <div className="flex gap-5">
+                {isDouble ? (
+                  <>
+                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{t('left_short')}</span>
+                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{t('right_short')}</span>
+                  </>
+                ) : (
+                  <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{unitColLabel}</span>
+                )}
+              </div>
               <button type="button" disabled={!hasActive}
                 onClick={() => setSectionFilter(prev => ({ ...prev, [section.key]: !(prev[section.key]) }))}
                 className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md transition-all
@@ -361,16 +371,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 </svg>
                 {t('selected')}
               </button>
-              <div className="flex gap-5 pr-0.5">
-                {isDouble ? (
-                  <>
-                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{t('left_short')}</span>
-                    <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{t('right_short')}</span>
-                  </>
-                ) : (
-                  <span className="w-4 text-center text-[11px] font-semibold text-stone-400">{unitColLabel}</span>
-                )}
-              </div>
             </div>
 
             {fields.map(field => {
@@ -435,7 +435,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         </span>
                         <input type="checkbox" checked={isChecked}
                           onChange={e => updateField(field.key, displaySide, e.target.checked)}
-                          className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
+                          className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
                       </div>
                       {/* Children are rendered separately as sub-fields when parent is active */}
                     </div>
@@ -469,10 +469,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       </span>
                       <input type="checkbox" checked={checked}
                         onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
-                        className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
+                        className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
                     </div>
                     {checked && (
-                      <div className="mt-2.5 pl-1 flex items-start gap-2">
+                      <div className="mt-2.5 pl-7 flex items-start gap-2">
                         <div className="flex-1">{renderControl(field, displaySide)}</div>
                         {hasGlb && unit === 'PAIR' && (
                           <div className="flex gap-2 shrink-0">
@@ -502,10 +502,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         <div className="flex gap-5 shrink-0">
                           <input type="checkbox" checked={isCheckedL}
                             onChange={e => updateField(field.key, 'l', e.target.checked)}
-                            className="w-4 h-4 cursor-pointer accent-gold" />
+                            className="w-4 h-4 cursor-pointer custom-gold" />
                           <input type="checkbox" checked={isCheckedR}
                             onChange={e => updateField(field.key, 'r', e.target.checked)}
-                            className="w-4 h-4 cursor-pointer accent-gold" />
+                            className="w-4 h-4 cursor-pointer custom-gold" />
                         </div>
                         <span className="flex-1 text-sm text-stone-700 min-w-0">
                           {cleanLabel}
@@ -526,10 +526,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       <div className="flex gap-5 shrink-0">
                         <input type="checkbox" checked={checkedL}
                           onChange={e => toggleAddField(field.key, 'l', e.target.checked)}
-                          className="w-4 h-4 cursor-pointer accent-gold" />
+                          className="w-4 h-4 cursor-pointer custom-gold" />
                         <input type="checkbox" checked={checkedR}
                           onChange={e => toggleAddField(field.key, 'r', e.target.checked)}
-                          className="w-4 h-4 cursor-pointer accent-gold" />
+                          className="w-4 h-4 cursor-pointer custom-gold" />
                       </div>
                       <span
                         onClick={() => {
@@ -560,7 +560,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       </span>
                     </div>
                     {(checkedL || checkedR) && (
-                      <div className="mt-2.5 grid grid-cols-2 gap-4">
+                      <div className="mt-2.5 grid grid-cols-2 gap-4 pl-[calc(2rem+1.25rem+0.75rem)]">
                         <div className="flex items-start gap-2">
                           <div className="flex-1">
                             {checkedL && field.type === 'mm' ? (
@@ -596,7 +596,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
 
   return (
     <div className="space-y-3">
-      {SECTIONS.map((section) => {
+        {SECTIONS.map((section) => {
         const fields = filterExcluded(section.fields, addsExclude).filter(f => {
           // Hide closure-specific fields that don't match product closure
           if (f.closureOnly && f.closureOnly !== closure) return false
@@ -660,7 +660,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           </span>
                           <input type="checkbox" checked={isChecked}
                             onChange={e => updateField(field.key, displaySide, e.target.checked)}
-                            className="w-4 h-4 cursor-pointer accent-gold shrink-0" />
+                            className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
                         </div>
                       )
                     } else {
@@ -673,10 +673,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             <div className="flex gap-5 shrink-0">
                               <input type="checkbox" checked={isCheckedL}
                                 onChange={e => updateField(field.key, 'l', e.target.checked)}
-                                className="w-4 h-4 cursor-pointer accent-gold" />
+                                className="w-4 h-4 cursor-pointer custom-gold" />
                               <input type="checkbox" checked={isCheckedR}
                                 onChange={e => updateField(field.key, 'r', e.target.checked)}
-                                className="w-4 h-4 cursor-pointer accent-gold" />
+                                className="w-4 h-4 cursor-pointer custom-gold" />
                             </div>
                             <span
                               onClick={() => {
