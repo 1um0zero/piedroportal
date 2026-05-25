@@ -168,7 +168,7 @@ export function OrderPdf({
         {/* Header */}
         <View style={s.header}>
           <View>
-            <Image src="/piedro-logo.png" style={s.logo} />
+            <Image src="https://piedroportal.vercel.app/piedro-logo.png" style={s.logo} />
             <Text style={s.brandSub}>Piedro International</Text>
           </View>
           <View style={s.refBlock}>
