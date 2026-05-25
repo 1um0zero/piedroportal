@@ -643,7 +643,49 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   // Global fields (Others section)
                   if (field.side === 'global') return renderGlobal(field)
 
-                  // Conditional: check if parent is active on at least one side
+                  // Toggle fields with side: 'both' - show as checkbox for L/R
+                  if (field.type === 'toggle') {
+                    const sv = additions[field.key] as SidedVal | null
+                    const fieldLabel = getFieldLabel(field, t)
+
+                    if (!isDouble) {
+                      // PAIR/LEFT/RIGHT: single checkbox
+                      const isChecked = sv?.[displaySide] === true
+                      return (
+                        <div key={field.key} className="flex items-center justify-between py-2 border-b border-stone-50 last:border-0">
+                          <span
+                            onClick={() => updateField(field.key, displaySide, !isChecked)}
+                            className="text-sm text-stone-700 cursor-pointer flex-1">
+                            {fieldLabel}
+                          </span>
+                          <input type="checkbox" checked={isChecked}
+                            onChange={e => updateField(field.key, displaySide, e.target.checked)}
+                            className="w-4 h-4 cursor-pointer accent-stone-700 shrink-0" />
+                        </div>
+                      )
+                    } else {
+                      // LEFT_RIGHT: two checkboxes
+                      const isCheckedL = sv?.l === true
+                      const isCheckedR = sv?.r === true
+                      return (
+                        <div key={field.key} className="py-2 border-b border-stone-50 last:border-0">
+                          <div className="flex items-center gap-3">
+                            <span className="flex-1 text-sm text-stone-700">{fieldLabel}</span>
+                            <div className="flex gap-5 shrink-0">
+                              <input type="checkbox" checked={isCheckedL}
+                                onChange={e => updateField(field.key, 'l', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer accent-stone-700" />
+                              <input type="checkbox" checked={isCheckedR}
+                                onChange={e => updateField(field.key, 'r', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer accent-stone-700" />
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    }
+                  }
+
+                  // Non-toggle sided fields
                   const leftActive  = isParentActive(field, 'l')
                   const rightActive = isParentActive(field, 'r')
                   if (!leftActive && !rightActive) return null
