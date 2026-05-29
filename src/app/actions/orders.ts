@@ -139,6 +139,22 @@ export async function updateOrderAction(
   if (!user) return { error: 'Not authenticated' }
 
   const service = createServiceClient()
+
+  // Verify order exists and belongs to user
+  const { data: existing, error: fetchErr } = await service
+    .from('orders')
+    .select('status, user_id')
+    .eq('id', draftId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (fetchErr || !existing) return { error: 'Order not found or access denied' }
+
+  // Security: Only draft orders can be updated by users
+  if (existing.status !== 'draft') {
+    return { error: 'Cannot modify orders after submission' }
+  }
+
   const { error } = await service
     .from('orders')
     .update({ ...row, user_id: user.id })
@@ -162,12 +178,15 @@ export async function duplicateOrderAction(
   if (!user) return { error: 'Not authenticated' }
 
   const service = createServiceClient()
+
+  // Security: User can only duplicate their own orders
   const { data: src, error: fetchErr } = await service
     .from('orders')
     .select('company_id,product_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,diff_sizes_pairs')
     .eq('id', orderId)
+    .eq('user_id', user.id)
     .single()
-  if (fetchErr || !src) return { error: 'Order not found' }
+  if (fetchErr || !src) return { error: 'Order not found or access denied' }
 
   const { data: copy, error: insertErr } = await service
     .from('orders')

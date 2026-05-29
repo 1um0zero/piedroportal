@@ -26,16 +26,26 @@ export default async function OrderDetailPage({ params }: Props) {
   if (profile.role === 'piedro_admin') redirect(`/admin/orders/${id}`)
 
   const service = createServiceClient()
+  const isCompanyAdmin = profile.role === 'company_admin'
 
+  // Build query with security filters
   let order = null
-  const { data: full, error: fullErr } = await service
-    .from('orders').select(SELECT_FULL)
-    .eq('id', id).eq('company_id', profile.company_id).single()
+  let query = service.from('orders').select(SELECT_FULL).eq('id', id).eq('company_id', profile.company_id)
+
+  // Regular users can only view their own orders
+  if (!isCompanyAdmin) {
+    query = query.eq('user_id', user.id)
+  }
+
+  const { data: full, error: fullErr } = await query.single()
 
   if (fullErr) {
-    const { data: base } = await service
-      .from('orders').select(SELECT_BASE)
-      .eq('id', id).eq('company_id', profile.company_id).single()
+    // Fallback to base fields (no admin fields)
+    let baseQuery = service.from('orders').select(SELECT_BASE).eq('id', id).eq('company_id', profile.company_id)
+    if (!isCompanyAdmin) {
+      baseQuery = baseQuery.eq('user_id', user.id)
+    }
+    const { data: base } = await baseQuery.single()
     order = base
   } else {
     order = full
