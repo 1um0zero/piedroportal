@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
     withoutLocale.endsWith('/order')  // e.g. /gallery/[id]/order
 
   if (needsAuth) {
-    let response = NextResponse.next({ request })
+    let response = handleI18n(request)
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
