@@ -105,6 +105,20 @@ export default function AdminUsers({ users: initial, companies }: Props) {
   function Row({ u }: { u: UserRow }) {
     const isExpanded = expandedUser === u.id
     const userCompanyIds = new Set(u.companies.map(c => c.company_id))
+    const [searchQuery, setSearchQuery] = useState('')
+    const [showAll, setShowAll] = useState(false)
+
+    // Filter companies based on search and toggle
+    const filteredCompanies = companies.filter(company => {
+      const isMember = userCompanyIds.has(company.id)
+      const matchesSearch = company.name.toLowerCase().includes(searchQuery.toLowerCase())
+
+      if (showAll) {
+        return matchesSearch  // Show all that match search
+      } else {
+        return isMember && matchesSearch  // Show only assigned that match search
+      }
+    })
 
     return (
       <div className="py-3.5 border-b border-stone-50 last:border-0 space-y-2.5">
@@ -157,40 +171,76 @@ export default function AdminUsers({ users: initial, companies }: Props) {
 
         {/* Expanded: Company management */}
         {isExpanded && u.role !== 'piedro_admin' && (
-          <div className="mt-3 p-3 bg-stone-50 rounded-lg space-y-2">
-            <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide mb-2">Companies</p>
-            {companies.map(company => {
-              const isMember = userCompanyIds.has(company.id)
-              const uc = u.companies.find(c => c.company_id === company.id)
-              return (
-                <div key={company.id} className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 flex-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isMember}
-                      onChange={() => isMember ? removeCompany(u.id, company.id) : addCompany(u.id, company.id)}
-                      disabled={saving === u.id}
-                      className="w-4 h-4 rounded border-stone-300 text-gold focus:ring-gold/30 disabled:opacity-50"
-                    />
-                    <span className="text-sm text-stone-700">{company.name}</span>
-                  </label>
+          <div className="mt-3 p-3 bg-stone-50 rounded-lg space-y-3">
+            {/* Header with filters */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide">Companies</p>
 
-                  {/* Company Admin toggle — only if member */}
-                  {isMember && uc && (
-                    <button
-                      onClick={() => toggleCompanyAdmin(u.id, company.id, !uc.is_company_admin)}
-                      disabled={saving === u.id}
-                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all disabled:opacity-50
-                        ${uc.is_company_admin
-                          ? 'bg-blue-50 text-blue-600 border-blue-600'
-                          : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}
-                      title={uc.is_company_admin ? 'Remove company admin' : 'Make company admin'}>
-                      Admin
-                    </button>
-                  )}
-                </div>
-              )
-            })}
+                {/* Toggle: Only assigned / All */}
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all
+                    ${showAll
+                      ? 'bg-gold/10 text-gold border-gold'
+                      : 'bg-white text-stone-500 border-stone-300 hover:border-stone-400'}`}>
+                  {showAll ? `All (${companies.length})` : `Assigned (${u.companies.length})`}
+                </button>
+              </div>
+
+              {/* Search input */}
+              <input
+                type="text"
+                placeholder="Search companies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-1.5 text-sm bg-white border border-stone-200 rounded-lg
+                           text-stone-700 placeholder-stone-400
+                           focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
+              />
+            </div>
+
+            {/* Companies list */}
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {filteredCompanies.length === 0 ? (
+                <p className="text-xs text-stone-400 text-center py-4">
+                  {searchQuery ? 'No companies found' : (showAll ? 'No companies available' : 'No assigned companies')}
+                </p>
+              ) : (
+                filteredCompanies.map(company => {
+                  const isMember = userCompanyIds.has(company.id)
+                  const uc = u.companies.find(c => c.company_id === company.id)
+                  return (
+                    <div key={company.id} className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 flex-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isMember}
+                          onChange={() => isMember ? removeCompany(u.id, company.id) : addCompany(u.id, company.id)}
+                          disabled={saving === u.id}
+                          className="w-4 h-4 rounded border-stone-300 text-gold focus:ring-gold/30 disabled:opacity-50"
+                        />
+                        <span className="text-sm text-stone-700">{company.name}</span>
+                      </label>
+
+                      {/* Company Admin toggle — only if member */}
+                      {isMember && uc && (
+                        <button
+                          onClick={() => toggleCompanyAdmin(u.id, company.id, !uc.is_company_admin)}
+                          disabled={saving === u.id}
+                          className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all disabled:opacity-50
+                            ${uc.is_company_admin
+                              ? 'bg-blue-50 text-blue-600 border-blue-600'
+                              : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}
+                          title={uc.is_company_admin ? 'Remove company admin' : 'Make company admin'}>
+                          Admin
+                        </button>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
         )}
       </div>
