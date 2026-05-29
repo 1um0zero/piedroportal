@@ -25,10 +25,22 @@ export async function middleware(request: NextRequest) {
     withoutLocale.endsWith('/order')  // e.g. /gallery/[id]/order
 
   if (needsAuth) {
+    let response = NextResponse.next({ request })
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => request.cookies.getAll(), setAll: () => {} } },
+      {
+        cookies: {
+          getAll: () => request.cookies.getAll(),
+          setAll: (cookies) => {
+            cookies.forEach((cookie) => {
+              request.cookies.set(cookie)
+              response.cookies.set(cookie)
+            })
+          },
+        },
+      },
     )
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -37,6 +49,8 @@ export async function middleware(request: NextRequest) {
       loginUrl.pathname = pathname.replace(withoutLocale, '/login')
       return NextResponse.redirect(loginUrl)
     }
+
+    return response
   }
 
   return handleI18n(request)
