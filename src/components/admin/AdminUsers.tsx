@@ -108,17 +108,24 @@ export default function AdminUsers({ users: initial, companies }: Props) {
     const [searchQuery, setSearchQuery] = useState('')
     const [showAll, setShowAll] = useState(false)
 
-    // Filter companies based on search and toggle
-    const filteredCompanies = companies.filter(company => {
-      const isMember = userCompanyIds.has(company.id)
-      const matchesSearch = company.name.toLowerCase().includes(searchQuery.toLowerCase())
-
+    // Filter companies: search always searches all, but assigned stay at top
+    let filteredCompanies: Company[]
+    if (searchQuery) {
+      // When searching: assigned first (all of them), then non-assigned that match
+      const assigned = companies.filter(c => userCompanyIds.has(c.id))
+      const nonAssignedMatching = companies.filter(c =>
+        !userCompanyIds.has(c.id) &&
+        c.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      filteredCompanies = [...assigned, ...nonAssignedMatching]
+    } else {
+      // No search: respect toggle
       if (showAll) {
-        return matchesSearch  // Show all that match search
+        filteredCompanies = companies
       } else {
-        return isMember && matchesSearch  // Show only assigned that match search
+        filteredCompanies = companies.filter(c => userCompanyIds.has(c.id))
       }
-    })
+    }
 
     return (
       <div className="py-3.5 border-b border-stone-50 last:border-0 space-y-2.5">
@@ -158,7 +165,11 @@ export default function AdminUsers({ users: initial, companies }: Props) {
           {u.role !== 'piedro_admin' && (
             <>
               <span className="text-xs text-stone-500">
-                {u.companies.length === 0 ? 'No companies' : `${u.companies.length} ${u.companies.length === 1 ? 'company' : 'companies'}`}
+                {u.companies.length === 0 ? 'No companies' : (() => {
+                  const adminCount = u.companies.filter(c => c.is_company_admin).length
+                  const companyText = `${u.companies.length} ${u.companies.length === 1 ? 'company' : 'companies'}`
+                  return adminCount > 0 ? `${companyText} ${adminCount} admin` : companyText
+                })()}
               </span>
               <button
                 onClick={() => setExpandedUser(isExpanded ? null : u.id)}
@@ -177,14 +188,14 @@ export default function AdminUsers({ users: initial, companies }: Props) {
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide">Companies</p>
 
-                {/* Toggle: Only assigned / All */}
+                {/* Toggle: action-based label */}
                 <button
                   onClick={() => setShowAll(!showAll)}
                   className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all
                     ${showAll
                       ? 'bg-gold/10 text-gold border-gold'
                       : 'bg-white text-stone-500 border-stone-300 hover:border-stone-400'}`}>
-                  {showAll ? `All (${companies.length})` : `Assigned (${u.companies.length})`}
+                  {showAll ? 'view only assigned' : 'view all companies'}
                 </button>
               </div>
 
