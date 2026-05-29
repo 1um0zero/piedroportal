@@ -26,3 +26,28 @@ export async function updateUserRoleAction(
   if (error) return { error: error.message }
   return { ok: true }
 }
+
+export async function toggleCompanyAdminAction(
+  userId: string,
+  companyId: string,
+  isAdmin: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+
+  const service = createServiceClient()
+
+  // Update user_companies.is_company_admin
+  const { error } = await service
+    .from('user_companies')
+    .update({ is_company_admin: isAdmin })
+    .eq('user_id', userId)
+    .eq('company_id', companyId)
+
+  if (error) return { error: error.message }
+  return { ok: true }
+}

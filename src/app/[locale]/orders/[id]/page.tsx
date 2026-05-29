@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
@@ -21,19 +22,29 @@ export default async function OrderDetailPage({ params }: Props) {
   if (!user) redirect('/login')
 
   const { data: profile } = await sb
-    .from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile?.company_id) redirect('/orders')
-  if (profile.role === 'piedro_admin') redirect(`/admin/orders/${id}`)
+    .from('profiles').select('role').eq('id', user.id).single()
+
+  if (profile?.role === 'piedro_admin') redirect(`/admin/orders/${id}`)
+
+  // Check if user has any company
+  const userHasCompany = await hasAnyCompany(user.id)
+  if (!userHasCompany) redirect('/orders')
+
+  // Get companies where user is admin
+  const adminCompanyIds = await getAdminCompanyIds(user.id)
+  const isCompanyAdmin = adminCompanyIds.length > 0
 
   const service = createServiceClient()
-  const isCompanyAdmin = profile.role === 'company_admin'
 
   // Build query with security filters
   let order = null
-  let query = service.from('orders').select(SELECT_FULL).eq('id', id).eq('company_id', profile.company_id)
+  let query = service.from('orders').select(SELECT_FULL).eq('id', id)
 
-  // Regular users can only view their own orders
-  if (!isCompanyAdmin) {
+  // Company admins can view orders from companies they admin
+  if (isCompanyAdmin) {
+    query = query.in('company_id', adminCompanyIds)
+  } else {
+    // Regular users can only view their own orders
     query = query.eq('user_id', user.id)
   }
 
@@ -41,8 +52,10 @@ export default async function OrderDetailPage({ params }: Props) {
 
   if (fullErr) {
     // Fallback to base fields (no admin fields)
-    let baseQuery = service.from('orders').select(SELECT_BASE).eq('id', id).eq('company_id', profile.company_id)
-    if (!isCompanyAdmin) {
+    let baseQuery = service.from('orders').select(SELECT_BASE).eq('id', id)
+    if (isCompanyAdmin) {
+      baseQuery = baseQuery.in('company_id', adminCompanyIds)
+    } else {
       baseQuery = baseQuery.eq('user_id', user.id)
     }
     const { data: base } = await baseQuery.single()

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getUserCompanies } from '@/lib/user-companies'
 import OrderForm from '@/components/order/OrderForm'
 import type { Product } from '@/types'
 
@@ -32,7 +33,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profile } = user
-    ? await supabase.from('profiles').select('company_id, full_name, role').eq('id', user.id).single()
+    ? await supabase.from('profiles').select('id, email, full_name, role, company_id, preferred_locale').eq('id', user.id).single()
     : { data: null }
 
   const isAdmin = profile?.role === 'piedro_admin'
@@ -41,12 +42,28 @@ export default async function OrderPage({ params, searchParams }: Props) {
   let userCompany: Company | null = null
 
   if (isAdmin) {
+    // Piedro admins see all companies
     const { data } = await supabase.from('companies').select('id,name,erp_code').order('name')
     companies = (data ?? []) as Company[]
-  } else if (profile?.company_id) {
-    const { data } = await supabase
-      .from('companies').select('id,name,erp_code').eq('id', profile.company_id).single()
-    userCompany = data as Company | null
+  } else if (user) {
+    // Regular users and company_admins see only their companies
+    const userCompanies = await getUserCompanies(user.id)
+
+    if (userCompanies.length === 1) {
+      // Single company → set as userCompany (no dropdown)
+      userCompany = {
+        id: userCompanies[0].id,
+        name: userCompanies[0].name,
+        erp_code: userCompanies[0].erp_code,
+      }
+    } else if (userCompanies.length > 1) {
+      // Multiple companies → show dropdown
+      companies = userCompanies.map(uc => ({
+        id: uc.id,
+        name: uc.name,
+        erp_code: uc.erp_code,
+      }))
+    }
   }
 
   const product = await getProduct(id)
@@ -69,7 +86,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
     <OrderForm
       product={product}
       userId={user?.id ?? ''}
-      userProfile={profile ?? { company_id: null, full_name: null, role: 'user' }}
+      userProfile={profile ?? { id: '', email: '', company_id: null, full_name: null, role: 'user', preferred_locale: 'en' }}
       userCompany={userCompany}
       companies={companies}
       isAdmin={isAdmin}

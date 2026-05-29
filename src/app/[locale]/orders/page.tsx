@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 export default async function OrdersRoute() {
@@ -11,19 +12,18 @@ export default async function OrdersRoute() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, company_id')
+    .select('role')
     .eq('id', user.id)
     .single()
 
   const isPiedroAdmin = profile?.role === 'piedro_admin'
-  const isCompanyAdmin = profile?.role === 'company_admin'
-  const companyId = profile?.company_id
 
   // Piedro admins go to the back-office orders view
   if (isPiedroAdmin) redirect('/admin/orders')
 
-  // Non-admin without company → pending approval page
-  if (!companyId) {
+  // Check if user has any company associated (via user_companies table)
+  const userHasCompany = await hasAnyCompany(user.id)
+  if (!userHasCompany) {
     const t = await getTranslations('auth')
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center space-y-5">
@@ -38,7 +38,11 @@ export default async function OrdersRoute() {
     )
   }
 
-  // Fetch orders: company_admin sees all company orders, regular user sees only their own
+  // Get companies where user is admin (empty array if not admin of any)
+  const adminCompanyIds = await getAdminCompanyIds(user.id)
+  const isCompanyAdmin = adminCompanyIds.length > 0
+
+  // Fetch orders: company_admin sees all orders from their admin companies, regular user sees only their own
   const service = createServiceClient()
   const SELECT = `
     id, status, approval_state, production_state, unit, patient_name, reference_customer, quantity,
@@ -54,10 +58,12 @@ export default async function OrdersRoute() {
     let query = service
       .from('orders')
       .select(SELECT)
-      .eq('company_id', companyId)
 
-    // Regular users only see their own orders
-    if (!isCompanyAdmin) {
+    // Company admins see all orders from companies they admin
+    if (isCompanyAdmin) {
+      query = query.in('company_id', adminCompanyIds)
+    } else {
+      // Regular users only see their own orders
       query = query.eq('user_id', user.id)
     }
 

@@ -42,7 +42,7 @@ export interface Profile {
   email: string
   full_name: string
   role: UserRole
-  company_id: string
+  company_id: string | null  // DEPRECATED: Use user_companies table instead
   preferred_locale: Locale
 }
 

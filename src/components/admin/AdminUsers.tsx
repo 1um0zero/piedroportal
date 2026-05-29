@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { updateUserRoleAction } from '@/app/actions/admin-users'
+import { updateUserRoleAction, toggleCompanyAdminAction } from '@/app/actions/admin-users'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin'
 
@@ -12,6 +12,7 @@ type UserRow = {
   role: UserRole
   company_id: string | null
   company_name: string | null
+  is_company_admin: boolean
   created_at: string
 }
 
@@ -64,6 +65,18 @@ export default function AdminUsers({ users: initial, companies }: Props) {
     }
   }
 
+  async function toggleCompanyAdmin(userId: string, companyId: string, isAdmin: boolean) {
+    setSaving(userId); setMsg(null)
+    const result = await toggleCompanyAdminAction(userId, companyId, isAdmin)
+    setSaving(null)
+    if (result.ok) {
+      setMsg({ id: userId, ok: true })
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_company_admin: isAdmin } : u))
+    } else {
+      setMsg({ id: userId, ok: false, text: result.error })
+    }
+  }
+
   const pending  = users.filter(u => !u.company_id && u.role !== 'piedro_admin')
   const admins   = users.filter(u => u.role === 'piedro_admin')
   const assigned = users.filter(u => u.company_id)
@@ -105,19 +118,35 @@ export default function AdminUsers({ users: initial, companies }: Props) {
 
           {/* Company select — only for non-piedro-admin */}
           {u.role !== 'piedro_admin' && (
-            <select
-              defaultValue={u.company_id ?? ''}
-              onChange={e => assignCompany(u.id, e.target.value || null)}
-              disabled={saving === u.id}
-              className="h-7 px-2 pr-7 text-xs bg-white border border-stone-200 rounded-lg
-                         text-stone-700 appearance-none cursor-pointer
-                         focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
-                         disabled:opacity-50">
-              <option value="">— No company —</option>
-              {companies.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <>
+              <select
+                defaultValue={u.company_id ?? ''}
+                onChange={e => assignCompany(u.id, e.target.value || null)}
+                disabled={saving === u.id}
+                className="h-7 px-2 pr-7 text-xs bg-white border border-stone-200 rounded-lg
+                           text-stone-700 appearance-none cursor-pointer
+                           focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
+                           disabled:opacity-50">
+                <option value="">— No company —</option>
+                {companies.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+
+              {/* Company Admin toggle — only if user has company */}
+              {u.company_id && (
+                <button
+                  onClick={() => toggleCompanyAdmin(u.id, u.company_id!, !u.is_company_admin)}
+                  disabled={saving === u.id}
+                  className={`px-3 py-1 text-[11px] font-semibold rounded-lg border transition-all disabled:opacity-50
+                    ${u.is_company_admin
+                      ? 'bg-blue-50 text-blue-600 border-blue-600'
+                      : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}
+                  title={u.is_company_admin ? 'Remove company admin' : 'Make company admin'}>
+                  Company Admin
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
