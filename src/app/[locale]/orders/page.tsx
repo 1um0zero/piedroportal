@@ -15,11 +15,12 @@ export default async function OrdersRoute() {
     .eq('id', user.id)
     .single()
 
-  const isAdmin   = profile?.role === 'piedro_admin'
+  const isPiedroAdmin = profile?.role === 'piedro_admin'
+  const isCompanyAdmin = profile?.role === 'company_admin'
   const companyId = profile?.company_id
 
-  // Admins go to the back-office orders view
-  if (isAdmin) redirect('/admin/orders')
+  // Piedro admins go to the back-office orders view
+  if (isPiedroAdmin) redirect('/admin/orders')
 
   // Non-admin without company → pending approval page
   if (!companyId) {
@@ -37,7 +38,7 @@ export default async function OrdersRoute() {
     )
   }
 
-  // Fetch this company's orders
+  // Fetch orders: company_admin sees all company orders, regular user sees only their own
   const service = createServiceClient()
   const SELECT = `
     id, status, approval_state, production_state, unit, patient_name, reference_customer, quantity,
@@ -50,12 +51,20 @@ export default async function OrdersRoute() {
   let offset = 0
   const PAGE = 1000
   while (true) {
-    const { data, error } = await service
+    let query = service
       .from('orders')
       .select(SELECT)
       .eq('company_id', companyId)
+
+    // Regular users only see their own orders
+    if (!isCompanyAdmin) {
+      query = query.eq('user_id', user.id)
+    }
+
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
+
     if (error || !data?.length) break
     allOrders = allOrders.concat(data)
     if (data.length < PAGE) break
