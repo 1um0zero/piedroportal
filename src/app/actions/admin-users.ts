@@ -51,3 +51,49 @@ export async function toggleCompanyAdminAction(
   if (error) return { error: error.message }
   return { ok: true }
 }
+
+export async function addUserCompanyAction(
+  userId: string,
+  companyId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+
+  const service = createServiceClient()
+
+  // Insert into user_companies
+  const { error } = await service
+    .from('user_companies')
+    .insert({ user_id: userId, company_id: companyId, is_company_admin: false })
+
+  if (error) return { error: error.message }
+  return { ok: true }
+}
+
+export async function removeUserCompanyAction(
+  userId: string,
+  companyId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+
+  const service = createServiceClient()
+
+  // Delete from user_companies
+  const { error } = await service
+    .from('user_companies')
+    .delete()
+    .eq('user_id', userId)
+    .eq('company_id', companyId)
+
+  if (error) return { error: error.message }
+  return { ok: true }
+}

@@ -1,18 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { updateUserRoleAction, toggleCompanyAdminAction } from '@/app/actions/admin-users'
+import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction } from '@/app/actions/admin-users'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin'
+
+type UserCompany = {
+  company_id: string
+  company_name: string
+  is_company_admin: boolean
+}
 
 type UserRow = {
   id: string
   email: string
   full_name: string
   role: UserRole
-  company_id: string | null
-  company_name: string | null
-  is_company_admin: boolean
+  companies: UserCompany[]
   created_at: string
 }
 
@@ -34,24 +38,7 @@ export default function AdminUsers({ users: initial, companies }: Props) {
   const [users, setUsers]   = useState<UserRow[]>(initial)
   const [saving, setSaving] = useState<string | null>(null)
   const [msg, setMsg]       = useState<{ id: string; ok: boolean; text?: string } | null>(null)
-
-  async function assignCompany(userId: string, companyId: string | null) {
-    setSaving(userId); setMsg(null)
-    const res = await fetch('/api/admin/assign-company', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, companyId }),
-    })
-    setSaving(null)
-    if (res.ok) {
-      setMsg({ id: userId, ok: true })
-      setUsers(prev => prev.map(u => u.id === userId
-        ? { ...u, company_id: companyId, company_name: companies.find(c => c.id === companyId)?.name ?? null }
-        : u))
-    } else {
-      setMsg({ id: userId, ok: false, text: 'Failed' })
-    }
-  }
+  const [expandedUser, setExpandedUser] = useState<string | null>(null)
 
   async function changeRole(userId: string, role: UserRole) {
     setSaving(userId); setMsg(null)
@@ -71,17 +58,54 @@ export default function AdminUsers({ users: initial, companies }: Props) {
     setSaving(null)
     if (result.ok) {
       setMsg({ id: userId, ok: true })
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_company_admin: isAdmin } : u))
+      setUsers(prev => prev.map(u => u.id === userId ? {
+        ...u,
+        companies: u.companies.map(c => c.company_id === companyId ? { ...c, is_company_admin: isAdmin } : c)
+      } : u))
     } else {
       setMsg({ id: userId, ok: false, text: result.error })
     }
   }
 
-  const pending  = users.filter(u => !u.company_id && u.role !== 'piedro_admin')
+  async function addCompany(userId: string, companyId: string) {
+    setSaving(userId); setMsg(null)
+    const result = await addUserCompanyAction(userId, companyId)
+    setSaving(null)
+    if (result.ok) {
+      setMsg({ id: userId, ok: true })
+      const company = companies.find(c => c.id === companyId)
+      setUsers(prev => prev.map(u => u.id === userId ? {
+        ...u,
+        companies: [...u.companies, { company_id: companyId, company_name: company?.name ?? '', is_company_admin: false }]
+      } : u))
+    } else {
+      setMsg({ id: userId, ok: false, text: result.error })
+    }
+  }
+
+  async function removeCompany(userId: string, companyId: string) {
+    setSaving(userId); setMsg(null)
+    const result = await removeUserCompanyAction(userId, companyId)
+    setSaving(null)
+    if (result.ok) {
+      setMsg({ id: userId, ok: true })
+      setUsers(prev => prev.map(u => u.id === userId ? {
+        ...u,
+        companies: u.companies.filter(c => c.company_id !== companyId)
+      } : u))
+    } else {
+      setMsg({ id: userId, ok: false, text: result.error })
+    }
+  }
+
+  const pending  = users.filter(u => u.companies.length === 0 && u.role !== 'piedro_admin')
   const admins   = users.filter(u => u.role === 'piedro_admin')
-  const assigned = users.filter(u => u.company_id)
+  const assigned = users.filter(u => u.companies.length > 0)
 
   function Row({ u }: { u: UserRow }) {
+    const isExpanded = expandedUser === u.id
+    const userCompanyIds = new Set(u.companies.map(c => c.company_id))
+
     return (
       <div className="py-3.5 border-b border-stone-50 last:border-0 space-y-2.5">
         {/* User info */}
@@ -116,39 +140,59 @@ export default function AdminUsers({ users: initial, companies }: Props) {
             ))}
           </div>
 
-          {/* Company select — only for non-piedro-admin */}
+          {/* Companies summary + toggle */}
           {u.role !== 'piedro_admin' && (
             <>
-              <select
-                defaultValue={u.company_id ?? ''}
-                onChange={e => assignCompany(u.id, e.target.value || null)}
-                disabled={saving === u.id}
-                className="h-7 px-2 pr-7 text-xs bg-white border border-stone-200 rounded-lg
-                           text-stone-700 appearance-none cursor-pointer
-                           focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
-                           disabled:opacity-50">
-                <option value="">— No company —</option>
-                {companies.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-
-              {/* Company Admin toggle — only if user has company */}
-              {u.company_id && (
-                <button
-                  onClick={() => toggleCompanyAdmin(u.id, u.company_id!, !u.is_company_admin)}
-                  disabled={saving === u.id}
-                  className={`px-3 py-1 text-[11px] font-semibold rounded-lg border transition-all disabled:opacity-50
-                    ${u.is_company_admin
-                      ? 'bg-blue-50 text-blue-600 border-blue-600'
-                      : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}
-                  title={u.is_company_admin ? 'Remove company admin' : 'Make company admin'}>
-                  Company Admin
-                </button>
-              )}
+              <span className="text-xs text-stone-500">
+                {u.companies.length === 0 ? 'No companies' : `${u.companies.length} ${u.companies.length === 1 ? 'company' : 'companies'}`}
+              </span>
+              <button
+                onClick={() => setExpandedUser(isExpanded ? null : u.id)}
+                className="text-xs text-gold hover:text-gold-dark font-medium">
+                {isExpanded ? '▲ Hide' : '▼ Manage'}
+              </button>
             </>
           )}
         </div>
+
+        {/* Expanded: Company management */}
+        {isExpanded && u.role !== 'piedro_admin' && (
+          <div className="mt-3 p-3 bg-stone-50 rounded-lg space-y-2">
+            <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide mb-2">Companies</p>
+            {companies.map(company => {
+              const isMember = userCompanyIds.has(company.id)
+              const uc = u.companies.find(c => c.company_id === company.id)
+              return (
+                <div key={company.id} className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 flex-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isMember}
+                      onChange={() => isMember ? removeCompany(u.id, company.id) : addCompany(u.id, company.id)}
+                      disabled={saving === u.id}
+                      className="w-4 h-4 rounded border-stone-300 text-gold focus:ring-gold/30 disabled:opacity-50"
+                    />
+                    <span className="text-sm text-stone-700">{company.name}</span>
+                  </label>
+
+                  {/* Company Admin toggle — only if member */}
+                  {isMember && uc && (
+                    <button
+                      onClick={() => toggleCompanyAdmin(u.id, company.id, !uc.is_company_admin)}
+                      disabled={saving === u.id}
+                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all disabled:opacity-50
+                        ${uc.is_company_admin
+                          ? 'bg-blue-50 text-blue-600 border-blue-600'
+                          : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}
+                      title={uc.is_company_admin ? 'Remove company admin' : 'Make company admin'}>
+                      Admin
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     )
   }

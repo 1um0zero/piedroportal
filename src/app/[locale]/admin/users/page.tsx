@@ -27,29 +27,29 @@ export default async function AdminUsersPage() {
       .order('name'),
     service
       .from('user_companies')
-      .select('user_id, company_id, is_company_admin, companies(name)'),
+      .select('user_id, company_id, is_company_admin, companies(id, name)'),
   ])
 
-  // Map user_companies by user_id for quick lookup
-  const ucMap = new Map<string, { company_id: string; company_name: string; is_company_admin: boolean }>()
+  // Map user_companies by user_id (multiple companies per user)
+  const ucMap = new Map<string, Array<{ company_id: string; company_name: string; is_company_admin: boolean }>>()
   for (const uc of userCompanies ?? []) {
-    ucMap.set(uc.user_id, {
+    const existing = ucMap.get(uc.user_id) ?? []
+    existing.push({
       company_id: uc.company_id,
       company_name: (uc as any).companies?.name ?? null,
       is_company_admin: uc.is_company_admin,
     })
+    ucMap.set(uc.user_id, existing)
   }
 
   const users = (profiles ?? []).map((p: any) => {
-    const uc = ucMap.get(p.id)
+    const userCompanies = ucMap.get(p.id) ?? []
     return {
       id:                 p.id,
       email:              p.email,
       full_name:          p.full_name ?? '',
       role:               p.role ?? 'user',
-      company_id:         uc?.company_id ?? p.company_id ?? null,  // Fallback to old company_id for backwards compat
-      company_name:       uc?.company_name ?? null,
-      is_company_admin:   uc?.is_company_admin ?? false,
+      companies:          userCompanies,  // Array of companies
       created_at:         p.created_at,
     }
   })
