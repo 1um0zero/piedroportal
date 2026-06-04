@@ -16,13 +16,21 @@ export async function POST(request: NextRequest) {
   const { userId, companyId } = await request.json()
   if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 })
 
-  // Update with service client (bypasses RLS)
+  // Membership lives in user_companies, not the deprecated profiles.company_id.
+  // "Set the company" semantics: clear existing memberships, then add the new one.
   const service = createServiceClient()
-  const { error } = await service
-    .from('profiles')
-    .update({ company_id: companyId ?? null })
-    .eq('id', userId)
+  const { error: delErr } = await service
+    .from('user_companies')
+    .delete()
+    .eq('user_id', userId)
+  if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (companyId) {
+    const { error: insErr } = await service
+      .from('user_companies')
+      .insert({ user_id: userId, company_id: companyId, is_company_admin: false })
+    if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 })
+  }
+
   return NextResponse.json({ ok: true })
 }

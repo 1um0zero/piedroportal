@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { Link } from '@/i18n/navigation'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -48,17 +49,28 @@ export default async function ClientDashboard() {
   if (!user) redirect('/login')
 
   const { data: profile } = await sb
-    .from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile?.company_id) redirect('/orders')
-  if (profile.role === 'piedro_admin') redirect('/admin')
+    .from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role === 'piedro_admin') redirect('/admin')
+
+  // Membership comes from user_companies, not the deprecated profiles.company_id
+  const userHasCompany = await hasAnyCompany(user.id)
+  if (!userHasCompany) redirect('/orders')
+
+  const adminCompanyIds = await getAdminCompanyIds(user.id)
+  const isCompanyAdmin = adminCompanyIds.length > 0
 
   const service = createServiceClient()
-  const { data: all } = await service
+  let query = service
     .from('orders')
     .select(`id, status, unit, patient_name, reference_customer, created_at, additions, pdf_url,
       products(id, colour_id, color_name, style_name, picture_name)`)
-    .eq('company_id', profile.company_id)
-    .order('created_at', { ascending: false })
+  // Company admins see all orders from companies they admin; regular users see their own
+  if (isCompanyAdmin) {
+    query = query.in('company_id', adminCompanyIds)
+  } else {
+    query = query.eq('user_id', user.id)
+  }
+  const { data: all } = await query.order('created_at', { ascending: false })
 
   const orders = all ?? []
   const total = orders.length

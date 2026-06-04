@@ -22,21 +22,27 @@ interface Props {
   children: ReactNode
   initialProfile: Profile | null
   initialLoggedIn: boolean
+  initialHasCompany: boolean
 }
 
-export function AuthProvider({ children, initialProfile, initialLoggedIn }: Props) {
+export function AuthProvider({ children, initialProfile, initialLoggedIn, initialHasCompany }: Props) {
   // Seed from server — avoids flash of wrong state
   const [profile, setProfile]     = useState<Profile | null>(initialProfile)
   const [isLoggedIn, setIsLoggedIn] = useState(initialLoggedIn)
+  // Company membership comes from the user_companies table (not the deprecated
+  // profiles.company_id) — a user can belong to several companies.
+  const [hasCompany, setHasCompany] = useState(initialHasCompany)
 
   useEffect(() => {
     const sb = createClient()
     // Keep in sync with browser session changes (login/logout in other tabs, token refresh)
     const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user)
-      if (!session?.user) { setProfile(null); return }
+      if (!session?.user) { setProfile(null); setHasCompany(false); return }
       sb.from('profiles').select('*').eq('id', session.user.id).single()
         .then(({ data }) => setProfile(data as Profile | null))
+      sb.from('user_companies').select('company_id', { count: 'exact', head: true }).eq('user_id', session.user.id)
+        .then(({ count }) => setHasCompany((count ?? 0) > 0))
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -46,7 +52,7 @@ export function AuthProvider({ children, initialProfile, initialLoggedIn }: Prop
       profile,
       isLoggedIn,
       isAdmin:    profile?.role === 'piedro_admin',
-      hasCompany: !!profile?.company_id,
+      hasCompany,
     }}>
       {children}
     </Ctx.Provider>

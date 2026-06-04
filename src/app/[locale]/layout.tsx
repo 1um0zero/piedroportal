@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
+import { hasAnyCompany } from '@/lib/user-companies'
 import Navbar from '@/components/ui/Navbar'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -33,6 +34,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let profile: Profile | null = null
+  let hasCompany = false
   if (user) {
     const { data } = await supabase
       .from('profiles')
@@ -40,11 +42,13 @@ export default async function LocaleLayout({ children, params }: Props) {
       .eq('id', user.id)
       .single()
     profile = data as Profile | null
+    // Membership is determined by the user_companies table, not profiles.company_id
+    hasCompany = await hasAnyCompany(user.id)
   }
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <AuthProvider initialProfile={profile} initialLoggedIn={!!user}>
+      <AuthProvider initialProfile={profile} initialLoggedIn={!!user} initialHasCompany={hasCompany}>
         <WishlistProvider>
           <div className="flex flex-col min-h-screen">
             <Navbar locale={locale} />

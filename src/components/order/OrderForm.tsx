@@ -120,7 +120,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   }
 
   // ── Form state — pre-filled from draftData or sessionStorage ──
-  const [selectedCompanyId, setCompanyId] = useState(getInitialState('selectedCompanyId', d?.company_id ?? userProfile.company_id ?? ''))
+  const [selectedCompanyId, setCompanyId] = useState(getInitialState('selectedCompanyId', d?.company_id ?? userCompany?.id ?? userProfile.company_id ?? ''))
   const [unit,        setUnit]      = useState<Unit>(getInitialState('unit', (d?.unit as Unit) ?? 'PAIR'))
   const [clinician,   setClinician] = useState(getInitialState('clinician', d?.clinician ?? ''))
   const [patientName, setPatient]   = useState(getInitialState('patientName', d?.patient_name ?? ''))
@@ -260,10 +260,16 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   async function handleSubmit(status: 'draft' | 'submitted') {
     setError(''); setSubmitting(true)
     try {
+      const companyId = selectedCompanyId || userCompany?.id || null
+      if (!companyId) {
+        setError('Please select a company.')
+        setSubmitting(false)
+        return
+      }
       const { comments: addComments, ...additionFields } = additions as Record<string, unknown>
       const row = {
         user_id:            userId,
-        company_id:         selectedCompanyId || userProfile.company_id,
+        company_id:         companyId,
         locale:             locale as Locale,
         product_id:         product.id,
         status, unit, clinician, patient_name: patientName,
@@ -397,8 +403,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const labelCls = 'text-xs font-bold text-stone-700 uppercase tracking-wide'
 
   // ── Company display ──
-  const companyName = isAdmin
-    ? (companies.find(c => c.id === selectedCompanyId)?.name ?? '')
+  // Show a picker for admins (all companies) and for non-admins who belong to
+  // more than one company; a single-company user just sees the static name.
+  const showCompanyPicker = isAdmin || companies.length > 0
+  const companyName = showCompanyPicker
+    ? (companies.find(c => c.id === selectedCompanyId)?.name ?? userCompany?.name ?? '')
     : (userCompany?.name ?? '')
 
   const stepLabels: Record<number, string> = { 1: t('tab1'), 2: t('tab2'), 3: t('tab3') }
@@ -838,7 +847,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {/* Company — no section title, label = Customer */}
             <div className="space-y-1.5">
               <label className={labelCls}>{t('customer')}</label>
-              {isAdmin ? (
+              {showCompanyPicker ? (
                 <div className="relative">
                   <select className={inputCls + ' appearance-none pr-8'}
                     value={selectedCompanyId}

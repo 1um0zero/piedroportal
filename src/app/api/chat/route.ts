@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getUserCompanyIds } from '@/lib/user-companies'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -124,7 +125,7 @@ const tools: Anthropic.Tool[] = [
 async function executeTool(
   name: string,
   input: Record<string, unknown>,
-  companyId: string,
+  companyIds: string[],
   userId: string,
 ) {
   const service = createServiceClient()
@@ -135,7 +136,7 @@ async function executeTool(
       const { data } = await service
         .from('orders')
         .select('id, status, reference_customer, patient_name, unit, created_at, products(colour_id, color_name, style_name)')
-        .eq('company_id', companyId)
+        .in('company_id', companyIds)
         .order('created_at', { ascending: false })
         .limit(50)
       const orders = (data ?? []).filter((o: Record<string, unknown>) => {
@@ -158,7 +159,7 @@ async function executeTool(
       const { data } = await service
         .from('orders')
         .select('id, status, unit, quantity, reference_customer, patient_name, clinician, construction_left, construction_right, width_left, width_right, size_left, size_right, comments, created_at, products(colour_id, color_name, closure, style_name)')
-        .eq('company_id', companyId)
+        .in('company_id', companyIds)
         .ilike('reference_customer', `%${ref}%`)
         .limit(1)
         .single()
@@ -181,7 +182,7 @@ async function executeTool(
       let q: any = service
         .from('orders')
         .select('id, status, reference_customer, patient_name, unit, created_at, size_left, size_right, products(colour_id, style_name)')
-        .eq('company_id', companyId)
+        .in('company_id', companyIds)
         .order('created_at', { ascending: false })
         .limit(Number(input.limit ?? 10))
       if (input.status) q = q.eq('status', input.status)
@@ -199,7 +200,7 @@ async function executeTool(
         .from('orders')
         .select('*')
         .eq('id', orderId)
-        .eq('company_id', companyId)
+        .in('company_id', companyIds)
         .single()
       if (!src) return { error: 'Order not found or not accessible' }
 
@@ -246,7 +247,7 @@ async function executeTool(
       const { data } = await service
         .from('orders')
         .select('products(colour_id, color_name, style_name)')
-        .eq('company_id', companyId)
+        .in('company_id', companyIds)
         .neq('status', 'draft')
       const counts = new Map<string, { count: number; color: string }>()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -286,12 +287,9 @@ export async function POST(request: Request) {
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('company_id, role')
-    .eq('id', user.id)
-    .single()
-  if (!profile?.company_id) return new Response('No company', { status: 403 })
+  // Company membership comes from user_companies (a user may belong to several)
+  const companyIds = await getUserCompanyIds(user.id)
+  if (companyIds.length === 0) return new Response('No company', { status: 403 })
 
   const { messages } = await request.json() as { messages: Anthropic.MessageParam[] }
 
@@ -324,7 +322,7 @@ export async function POST(request: Request) {
                 const result = await executeTool(
                   block.name,
                   block.input as Record<string, unknown>,
-                  profile.company_id,
+                  companyIds,
                   user.id,
                 )
                 toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) })
