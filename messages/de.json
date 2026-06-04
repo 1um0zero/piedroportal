@@ -9,7 +9,8 @@
     "products": "Produkte",
     "users": "Benutzer",
     "orders_admin": "Bestellungen",
-    "branches": "Niederlassungen"
+    "branches": "Niederlassungen",
+    "companies": "Firmen"
   },
   "gallery": {
     "kids": "Kinder",
@@ -526,6 +527,10 @@
       "f_size_first": "Erste Größe",
       "f_size_last": "Letzte Größe",
       "f_adds_exclude": "adds_exclude (z. B. #cr56f_zipper)",
+      "f_exclusive": "Exklusiv für Firma",
+      "exclusive_none": "— Nicht exklusiv —",
+      "exclusive_unassigned": "{label} (nicht zugewiesenes Kürzel)",
+      "exclusive_hint": "Gilt für das gesamte Modell (alle Farben). Nur Benutzer der gewählten Firma können es sehen und bestellen.",
       "diabetics": "Diabetiker",
       "constructions": "Konstruktionen",
       "add_construction": "+ Konstruktion hinzufügen",
@@ -618,6 +623,31 @@
       "add_staff_placeholder": "Einen Benutzer zu dieser Niederlassung hinzufügen…",
       "reassign": "neu zuweisen",
       "staff_role_hint": "Setzen Sie die Rolle eines Benutzers unter Benutzer auf „Niederlassungsmitarbeiter“, damit die Einschränkung greift."
+    },
+    "companies": {
+      "title": "Firmen",
+      "empty": "Noch keine Firmen.",
+      "col_name": "Name",
+      "col_erp": "ERP-Code",
+      "col_label": "Exklusiv-Kürzel",
+      "col_models": "Exklusive Modelle",
+      "manage": "Verwalten",
+      "reconcile_title": "Exklusive Kürzel im Katalog",
+      "reconcile_hint": "Jedes Kürzel unten stammt aus dem exclusive-Feld eines Produkts. Weisen Sie es einer Firma zu, indem Sie das Exklusiv-Kürzel dieser Firma festlegen.",
+      "no_siglas": "Keine exklusiven Kürzel im Katalog gefunden.",
+      "unassigned": "Nicht zugewiesen",
+      "unassigned_n": "{n} nicht zugewiesen",
+      "models_count": "{n, plural, one {# Modell} other {# Modelle}}",
+      "label_section": "Exklusiv-Kürzel",
+      "label_hint": "Das Kürzel in Großbuchstaben, das ein Modell exklusiv für diese Firma macht. Muss firmenübergreifend eindeutig sein.",
+      "label_field": "Kürzel",
+      "models_section": "Exklusive Modelle",
+      "set_label_first": "Legen Sie zuerst ein Exklusiv-Kürzel fest und weisen Sie dann Modelle zu.",
+      "no_models": "Noch keine Modelle zugewiesen.",
+      "add_model": "Modell hinzufügen",
+      "search_models": "Modelle suchen…",
+      "no_free_models": "Keine verfügbaren Modelle gefunden.",
+      "add_hint": "Es werden nur Modelle angezeigt, die nicht exklusiv für eine andere Firma sind. Durch Hinzufügen wird das Modell exklusiv für diese Firma (alle Farben)."
     }
   }
 }

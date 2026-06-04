@@ -118,6 +118,29 @@ export async function getAdminCompanyIds(userId: string): Promise<string[]> {
 }
 
 /**
+ * Get the exclusive labels (siglas) of every company the user belongs to.
+ * A product is visible to the user when its `exclusive` matches one of these.
+ * Returns uppercased, de-duplicated, non-empty labels.
+ */
+export async function getUserExclusiveLabels(userId: string): Promise<string[]> {
+  const service = createServiceClient()
+
+  const { data, error } = await service
+    .from('user_companies')
+    .select('companies (exclusive_label)')
+    .eq('user_id', userId)
+
+  if (error || !data) return []
+
+  const labels = data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((uc: any) => (uc.companies?.exclusive_label ?? '').trim().toUpperCase())
+    .filter(Boolean)
+
+  return [...new Set(labels)]
+}
+
+/**
  * Check if user has any company associated
  */
 export async function hasAnyCompany(userId: string): Promise<boolean> {

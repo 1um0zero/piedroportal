@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getUserCompanies } from '@/lib/user-companies'
+import { getUserCompanies, getUserExclusiveLabels } from '@/lib/user-companies'
 import OrderForm from '@/components/order/OrderForm'
 import type { Product } from '@/types'
 
@@ -13,7 +13,7 @@ async function getProduct(id: string): Promise<Product | null> {
   )
   const { data } = await sb
     .from('products')
-    .select('id,style_name,colour_id,color_name,closure,picture_name,constructions,size_first,size_last,section,adds_exclude')
+    .select('id,style_name,colour_id,color_name,closure,picture_name,constructions,size_first,size_last,section,adds_exclude,exclusive')
     .eq('id', id)
     .single()
   return (data as unknown as Product) ?? null
@@ -68,6 +68,13 @@ export default async function OrderPage({ params, searchParams }: Props) {
 
   const product = await getProduct(id)
   if (!product) notFound()
+
+  // Customer-exclusive models: only the owning company's users (or piedro_admin) may order.
+  const exclusive = ((product as unknown as { exclusive?: string | null }).exclusive ?? '').trim().toUpperCase()
+  if (exclusive && !isAdmin) {
+    const labels = user ? await getUserExclusiveLabels(user.id) : []
+    if (!labels.includes(exclusive)) notFound()
+  }
 
   // Load draft data if draftId is provided (duplicate/edit flow)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

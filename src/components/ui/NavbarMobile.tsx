@@ -66,8 +66,9 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
                   <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
                   {isAdmin && (
                     <>
-                      <Link href="/admin/branches" onClick={close} className={linkCls}>{t('branches')}</Link>
-                      <Link href="/admin/users"    onClick={close} className={linkCls}>{t('users')}</Link>
+                      <Link href="/admin/companies" onClick={close} className={linkCls}>{t('companies')}</Link>
+                      <Link href="/admin/branches"  onClick={close} className={linkCls}>{t('branches')}</Link>
+                      <Link href="/admin/users"     onClick={close} className={linkCls}>{t('users')}</Link>
                     </>
                   )}
                 </>

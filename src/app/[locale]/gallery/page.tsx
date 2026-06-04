@@ -23,6 +23,9 @@ export default async function GalleryRoute() {
     .select(FIELDS)
     .eq('active', true)
     .eq('section', 'KIDS')
+    // Customer-exclusive models are never part of the public (cached) set — they
+    // are overlaid client-side for the signed-in user (see GalleryPage).
+    .or('exclusive.is.null,exclusive.eq.')
     .order('style_name')
 
   const initialProducts = (data ?? []) as unknown as Product[]

@@ -208,7 +208,8 @@ export function parseProducts(
         active,
         constructions,
         adds_exclude: str(row[COL.addsExclude]) ?? '',
-        exclusive:    str(row[COL.exclusive]) ?? '',
+        // Customer "sigla" — normalise to UPPERCASE so it matches companies.exclusive_label.
+        exclusive:    (str(row[COL.exclusive]) ?? '').toUpperCase(),
         pending: {
           stretch:  str(row[COL.stretch]),
           last:     str(row[COL.last]),

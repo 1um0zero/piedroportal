@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import type { Product, Section } from '@/types'
 import { useWishlist } from '@/contexts/WishlistContext'
+import { getMyExclusiveProducts } from '@/app/actions/catalogue'
 import ProductCard from './ProductCard'
 import GalleryFilters from './GalleryFilters'
 import { preloadFilterTranslations } from '@/lib/filter-translations'
@@ -120,7 +121,21 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const { ids: wishlistIds }  = useWishlist()
 
-  const sectionProducts = cache[section] ?? []
+  // ── Customer-exclusive overlay ──
+  // The cached public set never contains exclusive models. For the signed-in
+  // user we fetch the exclusive products their companies own and overlay them.
+  const [exclusives, setExclusives] = useState<Product[]>([])
+  useEffect(() => {
+    getMyExclusiveProducts().then(setExclusives).catch(() => {})
+  }, [])
+
+  const sectionProducts = useMemo(() => {
+    const base = cache[section] ?? []
+    const extra = exclusives.filter((p) => p.section === section)
+    if (extra.length === 0) return base
+    const seen = new Set(base.map((p) => p.id))
+    return [...base, ...extra.filter((p) => !seen.has(p.id))]
+  }, [cache, section, exclusives])
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
@@ -164,7 +179,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   async function fetchSection(s: Section): Promise<Product[]> {
     const base = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    const url  = `${base}/rest/v1/products?select=${encodeURIComponent(FIELDS)}&active=eq.true&section=eq.${s}&order=style_name`
+    const url  = `${base}/rest/v1/products?select=${encodeURIComponent(FIELDS)}&active=eq.true&section=eq.${s}&or=(exclusive.is.null,exclusive.eq.)&order=style_name`
     const res  = await fetch(url, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
     })

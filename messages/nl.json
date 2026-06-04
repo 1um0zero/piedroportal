@@ -9,7 +9,8 @@
     "products": "Producten",
     "users": "Gebruikers",
     "orders_admin": "Bestellingen",
-    "branches": "Filialen"
+    "branches": "Filialen",
+    "companies": "Bedrijven"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -526,6 +527,10 @@
       "f_size_first": "Eerste maat",
       "f_size_last": "Laatste maat",
       "f_adds_exclude": "adds_exclude (bijv. #cr56f_zipper)",
+      "f_exclusive": "Exclusief voor bedrijf",
+      "exclusive_none": "— Niet exclusief —",
+      "exclusive_unassigned": "{label} (niet-toegewezen code)",
+      "exclusive_hint": "Geldt voor het hele model (alle kleuren). Alleen gebruikers van het gekozen bedrijf zien en bestellen het.",
       "diabetics": "Diabetici",
       "constructions": "Constructies",
       "add_construction": "+ Constructie toevoegen",
@@ -618,6 +623,31 @@
       "add_staff_placeholder": "Een gebruiker aan dit filiaal toevoegen…",
       "reassign": "opnieuw toewijzen",
       "staff_role_hint": "Stel de rol van een gebruiker in op “Filiaalmedewerker” bij Gebruikers om de beperking te activeren."
+    },
+    "companies": {
+      "title": "Bedrijven",
+      "empty": "Nog geen bedrijven.",
+      "col_name": "Naam",
+      "col_erp": "ERP-code",
+      "col_label": "Exclusieve code",
+      "col_models": "Exclusieve modellen",
+      "manage": "Beheren",
+      "reconcile_title": "Exclusieve codes in de catalogus",
+      "reconcile_hint": "Elke code hieronder komt uit het exclusive-veld van een product. Wijs deze toe aan een bedrijf door de exclusieve code van dat bedrijf in te stellen.",
+      "no_siglas": "Geen exclusieve codes gevonden in de catalogus.",
+      "unassigned": "Niet toegewezen",
+      "unassigned_n": "{n} niet toegewezen",
+      "models_count": "{n, plural, one {# model} other {# modellen}}",
+      "label_section": "Exclusieve code",
+      "label_hint": "De code in hoofdletters die een model exclusief maakt voor dit bedrijf. Moet uniek zijn over alle bedrijven.",
+      "label_field": "Code",
+      "models_section": "Exclusieve modellen",
+      "set_label_first": "Stel eerst een exclusieve code in en wijs er dan modellen aan toe.",
+      "no_models": "Nog geen modellen toegewezen.",
+      "add_model": "Een model toevoegen",
+      "search_models": "Modellen zoeken…",
+      "no_free_models": "Geen beschikbare modellen gevonden.",
+      "add_hint": "Alleen modellen die niet exclusief zijn voor een ander bedrijf worden getoond. Toevoegen maakt het model exclusief voor dit bedrijf (alle kleuren)."
     }
   }
 }

@@ -9,7 +9,8 @@
     "products": "Produits",
     "users": "Utilisateurs",
     "orders_admin": "Commandes",
-    "branches": "Filiales"
+    "branches": "Filiales",
+    "companies": "Sociétés"
   },
   "gallery": {
     "kids": "Enfants",
@@ -526,6 +527,10 @@
       "f_size_first": "Taille min",
       "f_size_last": "Taille max",
       "f_adds_exclude": "adds_exclude (ex. #cr56f_zipper)",
+      "f_exclusive": "Exclusif à une société",
+      "exclusive_none": "— Non exclusif —",
+      "exclusive_unassigned": "{label} (sigle non attribué)",
+      "exclusive_hint": "S'applique à tout le modèle (toutes les couleurs). Seuls les utilisateurs de la société choisie peuvent le voir et le commander.",
       "diabetics": "Diabétiques",
       "constructions": "Constructions",
       "add_construction": "+ Ajouter une construction",
@@ -618,6 +623,31 @@
       "add_staff_placeholder": "Ajouter un utilisateur à cette filiale…",
       "reassign": "réaffecter",
       "staff_role_hint": "Définissez le rôle d’un utilisateur sur « Personnel filiale » dans Utilisateurs pour activer la restriction."
+    },
+    "companies": {
+      "title": "Sociétés",
+      "empty": "Aucune société pour l'instant.",
+      "col_name": "Nom",
+      "col_erp": "Code ERP",
+      "col_label": "Sigle exclusif",
+      "col_models": "Modèles exclusifs",
+      "manage": "Gérer",
+      "reconcile_title": "Sigles exclusifs du catalogue",
+      "reconcile_hint": "Chaque sigle ci-dessous provient du champ exclusive d'un produit. Attribuez-le à une société en définissant le sigle exclusif de cette société.",
+      "no_siglas": "Aucun sigle exclusif trouvé dans le catalogue.",
+      "unassigned": "Non attribué",
+      "unassigned_n": "{n} non attribué(s)",
+      "models_count": "{n, plural, one {# modèle} other {# modèles}}",
+      "label_section": "Sigle exclusif",
+      "label_hint": "Le sigle en majuscules qui rend un modèle exclusif à cette société. Doit être unique parmi les sociétés.",
+      "label_field": "Sigle",
+      "models_section": "Modèles exclusifs",
+      "set_label_first": "Définissez d'abord un sigle exclusif, puis attribuez-lui des modèles.",
+      "no_models": "Aucun modèle attribué pour l'instant.",
+      "add_model": "Ajouter un modèle",
+      "search_models": "Rechercher des modèles…",
+      "no_free_models": "Aucun modèle disponible ne correspond.",
+      "add_hint": "Seuls les modèles non exclusifs à une autre société sont listés. L'ajout rend le modèle exclusif à cette société (toutes les couleurs)."
     }
   }
 }

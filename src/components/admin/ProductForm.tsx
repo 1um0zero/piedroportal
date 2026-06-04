@@ -4,8 +4,11 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { createProduct, updateProduct, type ProductInput } from '@/app/actions/admin-products'
+import { setModelExclusiveLabel } from '@/app/actions/admin-companies'
 import { ProductImageSlots } from '@/components/admin/ProductImages'
 import type { Construction, Product, Section } from '@/types'
+
+export type ExclusiveCompany = { id: string; name: string; exclusive_label: string }
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const CLOSURES = ['LACE', 'VELCRO', 'BUCKLE', 'TWIST LOCK SYSTEM', 'LACE, ZIPPER']
@@ -34,7 +37,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls = 'w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none'
 
-export default function ProductForm({ product }: { product?: Product }) {
+export default function ProductForm({ product, companies }: { product?: Product; companies?: ExclusiveCompany[] }) {
   const router = useRouter()
   const t = useTranslations('admin.products')
   const tc = useTranslations('admin.common')
@@ -43,6 +46,12 @@ export default function ProductForm({ product }: { product?: Product }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ok, setOk] = useState(false)
+
+  // Exclusivity is managed by piedro_admins only — `companies` is passed only then.
+  const canManageExclusive = !!companies
+  const exclusiveValue = (f.exclusive ?? '').trim().toUpperCase()
+  // Surface a sigla that isn't mapped to any company yet so the admin can see it.
+  const hasMatch = (companies ?? []).some(c => c.exclusive_label.toUpperCase() === exclusiveValue)
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setF(prev => ({ ...prev, [key]: value }))
@@ -63,8 +72,17 @@ export default function ProductForm({ product }: { product?: Product }) {
     setSaving(true); setError(null); setOk(false)
     try {
       if (isEdit) {
-        const res = await updateProduct(product!.id, f)
+        // Exclusivity is model-wide (all colours of a style) and piedro_admin-only,
+        // so it is applied via setModelExclusiveLabel rather than the per-row update.
+        const payload: Partial<ProductInput> = { ...f }
+        delete payload.exclusive
+        const res = await updateProduct(product!.id, payload)
         if (res.error) { setError(res.error); return }
+
+        if (canManageExclusive && exclusiveValue !== (product!.exclusive ?? '').trim().toUpperCase()) {
+          const exRes = await setModelExclusiveLabel(f.style_name, exclusiveValue || null)
+          if (exRes.error) { setError(exRes.error); return }
+        }
         setOk(true)
         router.refresh()
       } else {
@@ -133,6 +151,23 @@ export default function ProductForm({ product }: { product?: Product }) {
           <Field label={t('f_adds_exclude')}>
             <input className={inputCls} value={f.adds_exclude ?? ''} onChange={e => set('adds_exclude', e.target.value)} />
           </Field>
+          {canManageExclusive && (
+            <Field label={t('f_exclusive')}>
+              <select className={inputCls} value={exclusiveValue}
+                onChange={e => set('exclusive', e.target.value)}>
+                <option value="">{t('exclusive_none')}</option>
+                {(companies ?? []).map(c => (
+                  <option key={c.id} value={c.exclusive_label.toUpperCase()}>
+                    {c.name} ({c.exclusive_label})
+                  </option>
+                ))}
+                {exclusiveValue && !hasMatch && (
+                  <option value={exclusiveValue}>{t('exclusive_unassigned', { label: exclusiveValue })}</option>
+                )}
+              </select>
+              <span className="mt-1 block text-[11px] text-stone-400">{t('exclusive_hint')}</span>
+            </Field>
+          )}
         </div>
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-2 text-sm text-stone-600">

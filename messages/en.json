@@ -9,7 +9,8 @@
     "products": "Products",
     "users": "Users",
     "orders_admin": "Orders",
-    "branches": "Branches"
+    "branches": "Branches",
+    "companies": "Companies"
   },
   "gallery": {
     "kids": "Kids",
@@ -526,6 +527,10 @@
       "f_size_first": "Size first",
       "f_size_last": "Size last",
       "f_adds_exclude": "adds_exclude (e.g. #cr56f_zipper)",
+      "f_exclusive": "Exclusive to company",
+      "exclusive_none": "— Not exclusive —",
+      "exclusive_unassigned": "{label} (unassigned sigla)",
+      "exclusive_hint": "Applies to the whole model (all colours). Only the chosen company's users can see and order it.",
       "diabetics": "Diabetics",
       "constructions": "Constructions",
       "add_construction": "+ Add construction",
@@ -618,6 +623,31 @@
       "add_staff_placeholder": "Add a user to this branch…",
       "reassign": "reassign",
       "staff_role_hint": "Set a user’s role to “Branch staff” in Users for scoping to take effect."
+    },
+    "companies": {
+      "title": "Companies",
+      "empty": "No companies yet.",
+      "col_name": "Name",
+      "col_erp": "ERP code",
+      "col_label": "Exclusive label",
+      "col_models": "Exclusive models",
+      "manage": "Manage",
+      "reconcile_title": "Exclusive siglas in the catalogue",
+      "reconcile_hint": "Each sigla below comes from a product's exclusive field. Assign it to a company by setting that company's exclusive label.",
+      "no_siglas": "No exclusive siglas found in the catalogue.",
+      "unassigned": "Unassigned",
+      "unassigned_n": "{n} unassigned",
+      "models_count": "{n, plural, one {# model} other {# models}}",
+      "label_section": "Exclusive label",
+      "label_hint": "The uppercase sigla that marks a model as exclusive to this company. Must be unique across companies.",
+      "label_field": "Label",
+      "models_section": "Exclusive models",
+      "set_label_first": "Set an exclusive label first, then assign models to it.",
+      "no_models": "No models assigned yet.",
+      "add_model": "Add a model",
+      "search_models": "Search models…",
+      "no_free_models": "No available models match.",
+      "add_hint": "Only models not exclusive to another company are listed. Adding makes the model exclusive to this company (all colours)."
     }
   }
 }

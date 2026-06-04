@@ -67,6 +67,9 @@ export default async function Navbar({ locale }: Props) {
               </Link>
               {isAdmin && (
                 <>
+                  <Link href="/admin/companies" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                    {t('companies')}
+                  </Link>
                   <Link href="/admin/branches" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('branches')}
                   </Link>

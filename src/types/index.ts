@@ -72,6 +72,7 @@ export interface Company {
   name: string
   erp_code: string
   default_locale: Locale
+  exclusive_label: string | null  // UPPERCASE sigla; models with products.exclusive == this are exclusive to this company
 }
 
 export interface OrderLine {
