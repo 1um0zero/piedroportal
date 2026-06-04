@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getUserCompanyIds } from '@/lib/user-companies'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { Resend } from 'resend'
 import React from 'react'
@@ -51,11 +52,29 @@ export async function insertOrderAction(
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  // Use service role for DB operations — avoids PGRST116 after INSERT + RLS SELECT mismatch
+  // Users may only create draft or submitted orders — never set an elevated
+  // status (approved/in_production/…) directly. Those transitions are admin-only.
+  if (row.status !== 'draft' && row.status !== 'submitted') {
+    return { error: 'Invalid order status' }
+  }
+
+  // Validate company ownership: a non-admin can only order for a company they
+  // belong to (user_companies). Piedro admins may order on behalf of any company.
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  const isPiedroAdmin = profile?.role === 'piedro_admin'
+  if (!isPiedroAdmin) {
+    const companyIds = await getUserCompanyIds(user.id)
+    if (!row.company_id || !companyIds.includes(row.company_id)) {
+      return { error: 'You do not have access to this company' }
+    }
+  }
+
+  // Use service role for DB operations — avoids PGRST116 after INSERT + RLS SELECT mismatch.
+  // user_id and status are forced server-side and never trusted from the client.
   const service = createServiceClient()
   const { data, error } = await service
     .from('orders')
-    .insert({ ...row, user_id: user.id })
+    .insert({ ...row, user_id: user.id, status: row.status })
     .select('id')
     .single()
 
@@ -138,6 +157,21 @@ export async function updateOrderAction(
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  // Users may only keep an order as draft or move it to submitted.
+  if (row.status !== 'draft' && row.status !== 'submitted') {
+    return { error: 'Invalid order status' }
+  }
+
+  // Validate company ownership (admins exempt — they may act on any company).
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  const isPiedroAdmin = profile?.role === 'piedro_admin'
+  if (!isPiedroAdmin) {
+    const companyIds = await getUserCompanyIds(user.id)
+    if (!row.company_id || !companyIds.includes(row.company_id)) {
+      return { error: 'You do not have access to this company' }
+    }
+  }
+
   const service = createServiceClient()
 
   // Verify order exists and belongs to user
@@ -157,7 +191,7 @@ export async function updateOrderAction(
 
   const { error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id })
+    .update({ ...row, user_id: user.id, status: row.status })
     .eq('id', draftId)
     .eq('user_id', user.id)
   if (error) return { error: `${error.message} [${error.code}]` }
