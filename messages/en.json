@@ -344,5 +344,58 @@
     "rights": "All rights reserved.",
     "cookie_notice": "We use only essential cookies to keep you signed in.",
     "cookie_ok": "Got it"
+  },
+  "dashboard": {
+    "title_user": "My Dashboard",
+    "title_company": "Company Dashboard",
+    "subtitle": "{count} orders · {date}",
+    "view_all": "View full list",
+    "view_all_short": "View all",
+    "delta": "{sign}{n} vs last month",
+    "empty": "No orders yet",
+    "empty_desc": "Your dashboard fills up as soon as you place your first order.",
+    "cta_new_order": "Browse the catalogue",
+    "kpi": {
+      "total": "Total",
+      "this_month": "This month",
+      "drafts": "Drafts",
+      "pending": "Pending",
+      "in_production": "In production",
+      "delivered": "Delivered",
+      "urgent": "Urgent",
+      "pairs": "Pairs ordered"
+    },
+    "sections": {
+      "monthly_trend": "Monthly trend",
+      "by_status": "By status",
+      "top_models": "Most ordered models",
+      "category_split": "By category",
+      "closure_split": "By closure",
+      "size_distribution": "Size distribution",
+      "top_additions": "Most used additions",
+      "recent_orders": "Latest orders",
+      "by_company": "By company",
+      "by_member": "By team member"
+    },
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "in_production": "In production",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "category": {
+      "KIDS": "Kids",
+      "MEN": "Men",
+      "WOMEN": "Women"
+    },
+    "unit": {
+      "orders": "orders",
+      "fields": "fields"
+    },
+    "no_size_data": "No size data yet",
+    "eu_size": "EU size"
   }
 }

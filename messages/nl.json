@@ -344,5 +344,58 @@
     "rights": "Alle rechten voorbehouden.",
     "cookie_notice": "Wij gebruiken alleen essentiële cookies om u ingelogd te houden.",
     "cookie_ok": "Begrepen"
+  },
+  "dashboard": {
+    "title_user": "Mijn dashboard",
+    "title_company": "Bedrijfsdashboard",
+    "subtitle": "{count} bestellingen · {date}",
+    "view_all": "Volledige lijst bekijken",
+    "view_all_short": "Alles bekijken",
+    "delta": "{sign}{n} t.o.v. vorige maand",
+    "empty": "Nog geen bestellingen",
+    "empty_desc": "Je dashboard vult zich zodra je je eerste bestelling plaatst.",
+    "cta_new_order": "Blader door de catalogus",
+    "kpi": {
+      "total": "Totaal",
+      "this_month": "Deze maand",
+      "drafts": "Concepten",
+      "pending": "In behandeling",
+      "in_production": "In productie",
+      "delivered": "Geleverd",
+      "urgent": "Urgent",
+      "pairs": "Paren besteld"
+    },
+    "sections": {
+      "monthly_trend": "Maandtrend",
+      "by_status": "Per status",
+      "top_models": "Meest bestelde modellen",
+      "category_split": "Per categorie",
+      "closure_split": "Per sluiting",
+      "size_distribution": "Maatverdeling",
+      "top_additions": "Meest gebruikte aanpassingen",
+      "recent_orders": "Laatste bestellingen",
+      "by_company": "Per bedrijf",
+      "by_member": "Per teamlid"
+    },
+    "status": {
+      "draft": "Concept",
+      "submitted": "Ingediend",
+      "approved": "Goedgekeurd",
+      "in_production": "In productie",
+      "shipped": "Verzonden",
+      "delivered": "Geleverd",
+      "cancelled": "Geannuleerd"
+    },
+    "category": {
+      "KIDS": "Kinderen",
+      "MEN": "Heren",
+      "WOMEN": "Dames"
+    },
+    "unit": {
+      "orders": "bestellingen",
+      "fields": "velden"
+    },
+    "no_size_data": "Nog geen maatgegevens",
+    "eu_size": "EU-maat"
   }
 }

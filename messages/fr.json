@@ -344,5 +344,58 @@
     "rights": "Tous droits réservés.",
     "cookie_notice": "Nous utilisons uniquement des cookies essentiels pour vous garder connecté.",
     "cookie_ok": "Compris"
+  },
+  "dashboard": {
+    "title_user": "Mon tableau de bord",
+    "title_company": "Tableau de bord de l'entreprise",
+    "subtitle": "{count} commandes · {date}",
+    "view_all": "Voir la liste complète",
+    "view_all_short": "Tout voir",
+    "delta": "{sign}{n} vs mois dernier",
+    "empty": "Aucune commande pour le moment",
+    "empty_desc": "Votre tableau de bord se remplit dès votre première commande.",
+    "cta_new_order": "Parcourir le catalogue",
+    "kpi": {
+      "total": "Total",
+      "this_month": "Ce mois-ci",
+      "drafts": "Brouillons",
+      "pending": "En attente",
+      "in_production": "En production",
+      "delivered": "Livrées",
+      "urgent": "Urgent",
+      "pairs": "Paires commandées"
+    },
+    "sections": {
+      "monthly_trend": "Tendance mensuelle",
+      "by_status": "Par statut",
+      "top_models": "Modèles les plus commandés",
+      "category_split": "Par catégorie",
+      "closure_split": "Par fermeture",
+      "size_distribution": "Répartition des pointures",
+      "top_additions": "Additions les plus utilisées",
+      "recent_orders": "Dernières commandes",
+      "by_company": "Par entreprise",
+      "by_member": "Par membre de l'équipe"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "submitted": "Soumise",
+      "approved": "Approuvée",
+      "in_production": "En production",
+      "shipped": "Expédiée",
+      "delivered": "Livrée",
+      "cancelled": "Annulée"
+    },
+    "category": {
+      "KIDS": "Enfants",
+      "MEN": "Hommes",
+      "WOMEN": "Femmes"
+    },
+    "unit": {
+      "orders": "commandes",
+      "fields": "champs"
+    },
+    "no_size_data": "Pas encore de données de pointure",
+    "eu_size": "Pointure EU"
   }
 }

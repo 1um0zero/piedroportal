@@ -344,5 +344,58 @@
     "rights": "Alle Rechte vorbehalten.",
     "cookie_notice": "Wir verwenden nur essenzielle Cookies, um Sie angemeldet zu halten.",
     "cookie_ok": "Verstanden"
+  },
+  "dashboard": {
+    "title_user": "Mein Dashboard",
+    "title_company": "Firmen-Dashboard",
+    "subtitle": "{count} Bestellungen · {date}",
+    "view_all": "Vollständige Liste ansehen",
+    "view_all_short": "Alle ansehen",
+    "delta": "{sign}{n} ggü. Vormonat",
+    "empty": "Noch keine Bestellungen",
+    "empty_desc": "Ihr Dashboard füllt sich, sobald Sie Ihre erste Bestellung aufgeben.",
+    "cta_new_order": "Katalog durchsuchen",
+    "kpi": {
+      "total": "Gesamt",
+      "this_month": "Diesen Monat",
+      "drafts": "Entwürfe",
+      "pending": "Ausstehend",
+      "in_production": "In Produktion",
+      "delivered": "Geliefert",
+      "urgent": "Dringend",
+      "pairs": "Bestellte Paare"
+    },
+    "sections": {
+      "monthly_trend": "Monatstrend",
+      "by_status": "Nach Status",
+      "top_models": "Meistbestellte Modelle",
+      "category_split": "Nach Kategorie",
+      "closure_split": "Nach Verschluss",
+      "size_distribution": "Größenverteilung",
+      "top_additions": "Meistgenutzte Zusätze",
+      "recent_orders": "Letzte Bestellungen",
+      "by_company": "Nach Firma",
+      "by_member": "Nach Teammitglied"
+    },
+    "status": {
+      "draft": "Entwurf",
+      "submitted": "Eingereicht",
+      "approved": "Genehmigt",
+      "in_production": "In Produktion",
+      "shipped": "Versandt",
+      "delivered": "Geliefert",
+      "cancelled": "Storniert"
+    },
+    "category": {
+      "KIDS": "Kinder",
+      "MEN": "Herren",
+      "WOMEN": "Damen"
+    },
+    "unit": {
+      "orders": "Bestellungen",
+      "fields": "Felder"
+    },
+    "no_size_data": "Noch keine Größendaten",
+    "eu_size": "EU-Größe"
   }
 }
