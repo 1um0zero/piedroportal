@@ -45,7 +45,7 @@ export default async function Navbar({ locale }: Props) {
           {user && !isAdmin && (
             <>
               <Link href="/orders/dashboard" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                Dashboard
+                {t('dashboard')}
               </Link>
               <Link href="/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('orders')}
@@ -55,16 +55,16 @@ export default async function Navbar({ locale }: Props) {
           {user && isAdmin && (
             <>
               <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                Dashboard
+                {t('dashboard')}
               </Link>
               <Link href="/admin/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                Orders
+                {t('orders_admin')}
               </Link>
               <Link href="/admin/products" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                Products
+                {t('products')}
               </Link>
               <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                Users
+                {t('users')}
               </Link>
             </>
           )}

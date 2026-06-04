@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { createProduct, updateProduct, type ProductInput } from '@/app/actions/admin-products'
 import { ProductImageSlots } from '@/components/admin/ProductImages'
@@ -35,6 +36,8 @@ const inputCls = 'w-full rounded-lg border border-stone-200 px-3 py-2 text-sm fo
 
 export default function ProductForm({ product }: { product?: Product }) {
   const router = useRouter()
+  const t = useTranslations('admin.products')
+  const tc = useTranslations('admin.common')
   const isEdit = !!product
   const [f, setF] = useState<FormState>(() => product ? { ...product } as FormState : emptyProduct())
   const [saving, setSaving] = useState(false)
@@ -80,63 +83,63 @@ export default function ProductForm({ product }: { product?: Product }) {
   return (
     <div className="space-y-6">
       {error && <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
-      {ok && <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">✅ Saved</div>}
+      {ok && <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">✅ {tc('saved')}</div>}
 
       {/* Core fields */}
       <div className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="Colour ID (key, e.g. 9999.0001)">
+          <Field label={t('f_colour_id')}>
             <input className={inputCls} value={f.colour_id} disabled={isEdit}
               onChange={e => set('colour_id', e.target.value.trim())} />
           </Field>
-          <Field label="Style name">
+          <Field label={t('f_style_name')}>
             <input className={inputCls} value={f.style_name} onChange={e => set('style_name', e.target.value)} />
           </Field>
-          <Field label="Section">
+          <Field label={t('f_section')}>
             <select className={inputCls} value={f.section} onChange={e => set('section', e.target.value as Section)}>
               {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
-          <Field label="Closure">
+          <Field label={t('f_closure')}>
             <input className={inputCls} list="closures" value={f.closure}
               onChange={e => set('closure', e.target.value as Product['closure'])} />
             <datalist id="closures">{CLOSURES.map(c => <option key={c} value={c} />)}</datalist>
           </Field>
-          <Field label="Type">
+          <Field label={t('f_type')}>
             <input className={inputCls} list="types" value={f.type}
               onChange={e => set('type', e.target.value as Product['type'])} />
-            <datalist id="types">{TYPES.map(t => <option key={t} value={t} />)}</datalist>
+            <datalist id="types">{TYPES.map(ty => <option key={ty} value={ty} />)}</datalist>
           </Field>
-          <Field label="Sibling style (optional)">
+          <Field label={t('f_sibling')}>
             <input className={inputCls} value={f.sibling ?? ''} onChange={e => set('sibling', e.target.value || null)} />
           </Field>
-          <Field label="Colour (basic)">
+          <Field label={t('f_color_basic')}>
             <input className={inputCls} value={f.color_basic} onChange={e => set('color_basic', e.target.value)} />
           </Field>
-          <Field label="Colour name">
+          <Field label={t('f_color_name')}>
             <input className={inputCls} value={f.color_name} onChange={e => set('color_name', e.target.value)} />
           </Field>
-          <Field label="Info">
+          <Field label={t('f_info')}>
             <input className={inputCls} value={f.info ?? ''} onChange={e => set('info', e.target.value || null)} />
           </Field>
-          <Field label="Size first">
+          <Field label={t('f_size_first')}>
             <input type="number" step="0.5" className={inputCls} value={f.size_first}
               onChange={e => set('size_first', parseFloat(e.target.value) || 0)} />
           </Field>
-          <Field label="Size last">
+          <Field label={t('f_size_last')}>
             <input type="number" step="0.5" className={inputCls} value={f.size_last}
               onChange={e => set('size_last', parseFloat(e.target.value) || 0)} />
           </Field>
-          <Field label="adds_exclude (e.g. #cr56f_zipper)">
+          <Field label={t('f_adds_exclude')}>
             <input className={inputCls} value={f.adds_exclude ?? ''} onChange={e => set('adds_exclude', e.target.value)} />
           </Field>
         </div>
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-2 text-sm text-stone-600">
-            <input type="checkbox" checked={f.diabetics} onChange={e => set('diabetics', e.target.checked)} /> Diabetics
+            <input type="checkbox" checked={f.diabetics} onChange={e => set('diabetics', e.target.checked)} /> {t('diabetics')}
           </label>
           <label className="flex items-center gap-2 text-sm text-stone-600">
-            <input type="checkbox" checked={f.active} onChange={e => set('active', e.target.checked)} /> Active
+            <input type="checkbox" checked={f.active} onChange={e => set('active', e.target.checked)} /> {tc('active')}
           </label>
         </div>
       </div>
@@ -144,22 +147,22 @@ export default function ProductForm({ product }: { product?: Product }) {
       {/* Constructions editor */}
       <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Constructions</h2>
-          <button onClick={addConstruction} className="text-sm font-medium text-gold hover:text-gold-dark">+ Add construction</button>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('constructions')}</h2>
+          <button onClick={addConstruction} className="text-sm font-medium text-gold hover:text-gold-dark">{t('add_construction')}</button>
         </div>
         <div className="space-y-3">
-          {f.constructions.length === 0 && <p className="text-sm text-stone-400">No constructions yet.</p>}
+          {f.constructions.length === 0 && <p className="text-sm text-stone-400">{t('no_constructions')}</p>}
           {f.constructions.map((c, i) => (
             <div key={i} className="flex flex-wrap items-end gap-3">
-              <Field label="Construction">
+              <Field label={t('construction')}>
                 <input className={inputCls + ' w-48'} value={c.construction}
                   onChange={e => updateConstruction(i, { ...c, construction: e.target.value })} />
               </Field>
-              <Field label="Widths (comma-separated)">
+              <Field label={t('widths')}>
                 <input className={inputCls + ' w-64'} value={c.widths.join(', ')}
                   onChange={e => updateConstruction(i, { ...c, widths: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} />
               </Field>
-              <button onClick={() => removeConstruction(i)} className="pb-2 text-sm text-red-400 hover:text-red-600">Remove</button>
+              <button onClick={() => removeConstruction(i)} className="pb-2 text-sm text-red-400 hover:text-red-600">{tc('remove')}</button>
             </div>
           ))}
         </div>
@@ -168,7 +171,7 @@ export default function ProductForm({ product }: { product?: Product }) {
       {/* Images (edit mode only — needs a saved colour_id) */}
       {isEdit && (
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Images</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{t('images')}</h2>
           <ProductImageSlots colourId={product!.colour_id} />
         </div>
       )}
@@ -176,9 +179,9 @@ export default function ProductForm({ product }: { product?: Product }) {
       <div className="flex items-center gap-3">
         <button onClick={save} disabled={saving}
           className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">
-          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create product'}
+          {saving ? tc('saving') : isEdit ? t('save_changes') : t('create_product')}
         </button>
-        {!isEdit && <span className="text-xs text-stone-400">Save first, then add images on the edit screen.</span>}
+        {!isEdit && <span className="text-xs text-stone-400">{t('save_first_hint')}</span>}
       </div>
     </div>
   )

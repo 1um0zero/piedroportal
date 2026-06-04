@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -49,6 +50,7 @@ async function uploadOne(file: File, colourId: string, index: number): Promise<{
 // ── Bulk / folder mode ───────────────────────────────────────────────────────
 
 export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
+  const t = useTranslations('admin.products')
   const colourSet = useMemo(() => new Set(colourIds), [colourIds])
   const [items, setItems] = useState<Item[]>([])
   const [running, setRunning] = useState(false)
@@ -95,11 +97,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <p className="text-sm text-stone-600 mb-4">
-          Pick a folder (the whole tree is scanned) or individual files. Names are normalised to{' '}
-          <code className="text-gold">colour_id.NN.png</code> — indices without a leading zero
-          (<code>.1</code>) become <code>.01</code>, and any format is converted to PNG.
-        </p>
+        <p className="text-sm text-stone-600 mb-4">{t('images_intro')}</p>
         <div className="flex flex-wrap gap-3">
           {/* Folder picker — webkitdirectory walks the tree in the browser */}
           <input
@@ -113,20 +111,21 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
           />
           <button onClick={() => folderRef.current?.click()}
             className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">
-            Pick folder…
+            {t('pick_folder')}
           </button>
           <label className="cursor-pointer rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">
-            Pick files…
+            {t('pick_files')}
             <input type="file" accept="image/*" multiple className="hidden" onChange={e => ingest(e.target.files)} />
           </label>
           <button onClick={run} disabled={running || matched === 0}
             className="rounded-lg bg-gold px-5 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">
-            {running ? `Uploading… (${done}/${matched})` : `Upload ${matched} matched`}
+            {running ? t('uploading_progress', { done, total: matched }) : t('upload_matched', { count: matched })}
           </button>
         </div>
         {items.length > 0 && (
           <p className="mt-3 text-xs text-stone-400">
-            {items.length} images · {matched} matched · {unmatched > 0 && <span className="text-red-500">{unmatched} unmatched (will be skipped)</span>}
+            {t('summary_images', { total: items.length, matched })}
+            {unmatched > 0 && <> · <span className="text-red-500">{t('unmatched_note', { count: unmatched })}</span></>}
           </p>
         )}
       </div>
@@ -137,7 +136,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-stone-50">
                 <tr>
-                  {['file', '→ target', 'product', 'status'].map(c =>
+                  {[t('col_file'), t('col_target'), t('col_product'), t('col_status')].map(c =>
                     <th key={c} className="px-4 py-2 text-left text-[11px] font-semibold text-stone-400 uppercase">{c}</th>)}
                 </tr>
               </thead>
@@ -148,12 +147,12 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
                     <td className="px-4 py-1.5 text-stone-700 font-mono text-xs">{it.storageName}</td>
                     <td className="px-4 py-1.5">{it.matched
                       ? <span className="text-emerald-600">✓ {it.colourId}</span>
-                      : <span className="text-red-500">✗ no match</span>}</td>
+                      : <span className="text-red-500">{t('no_match')}</span>}</td>
                     <td className="px-4 py-1.5">
-                      {it.status === 'queued' && <span className="text-stone-400">queued</span>}
-                      {it.status === 'uploading' && <span className="text-blue-500">uploading…</span>}
-                      {it.status === 'done' && <span className="text-emerald-600">done</span>}
-                      {it.status === 'error' && <span className="text-red-500" title={it.error}>error</span>}
+                      {it.status === 'queued' && <span className="text-stone-400">{t('st_queued')}</span>}
+                      {it.status === 'uploading' && <span className="text-blue-500">{t('st_uploading')}</span>}
+                      {it.status === 'done' && <span className="text-emerald-600">{t('st_done')}</span>}
+                      {it.status === 'error' && <span className="text-red-500" title={it.error}>{t('st_error')}</span>}
                     </td>
                   </tr>
                 ))}
@@ -169,6 +168,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
 // ── Per-product slots ────────────────────────────────────────────────────────
 
 export function ProductImageSlots({ colourId }: { colourId: string }) {
+  const t = useTranslations('admin.products')
   const slots = [1, 2, 3, 4, 5, 6, 7, 8]
   const [status, setStatus] = useState<Record<number, 'idle' | 'uploading' | 'done' | 'error'>>({})
   const [bust, setBust] = useState(0) // cache-buster after upload
@@ -204,7 +204,7 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
                 onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
               />
               <span className="absolute top-1 left-1 rounded bg-black/50 px-1.5 text-[10px] font-bold text-white">
-                {n === 1 ? 'main' : String(n).padStart(2, '0')}
+                {n === 1 ? t('slot_main') : String(n).padStart(2, '0')}
               </span>
               {st === 'uploading' && <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs text-blue-500">uploading…</span>}
               {st === 'done' && <span className="absolute bottom-1 right-1 text-emerald-600 text-xs">✓</span>}
@@ -213,7 +213,7 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
           )
         })}
       </div>
-      <p className="mt-2 text-xs text-stone-400">Slot 1 is the main image (sets picture_name). Any format is converted to PNG and resized.</p>
+      <p className="mt-2 text-xs text-stone-400">{t('slots_hint')}</p>
     </div>
   )
 }

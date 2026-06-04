@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { duplicateOrderAction } from '@/app/actions/orders'
@@ -19,15 +20,7 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled:     'bg-red-50 text-red-400',
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  draft:         'Draft',
-  submitted:     'Submitted',
-  approved:      'Approved',
-  in_production: 'In Production',
-  shipped:       'Shipped',
-  delivered:     'Delivered',
-  cancelled:     'Cancelled',
-}
+const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
 type Metrics = {
   total: number; draft: number; submitted: number
@@ -43,6 +36,12 @@ type Props = {
 export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
   const router = useRouter()
   const pathname = usePathname()
+  const locale = useLocale()
+  const t  = useTranslations('admin.orders')
+  const tc = useTranslations('admin.common')
+  const ts = useTranslations('dashboard.status')
+  const ta = useTranslations('admin.approval')
+  const tp = useTranslations('admin.production')
   const isAdminPath = pathname.startsWith('/admin')
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatus]   = useState('')
@@ -86,12 +85,12 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-stone-900">Orders</h1>
+        <h1 className="text-lg font-semibold text-stone-900">{t('title')}</h1>
         {!isAdmin && (
           <Link href="/gallery"
             className="px-4 py-2 text-sm font-medium bg-gold text-white rounded-lg
                        hover:bg-gold-dark transition-colors">
-            + New Order
+            {t('new_order')}
           </Link>
         )}
       </div>
@@ -99,12 +98,12 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
       {/* Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Total', value: metrics.total, filter: '' },
-          { label: 'Draft', value: metrics.draft, filter: 'draft' },
-          { label: 'Submitted', value: metrics.submitted, filter: 'submitted' },
-          { label: 'Approved', value: metrics.approved, filter: 'approved' },
-          { label: 'Production', value: metrics.production, filter: 'in_production' },
-          { label: '🔴 Urgent', value: metrics.urgent, filter: '', urgent: true },
+          { label: t('metric_total'), value: metrics.total, filter: '' },
+          { label: t('metric_draft'), value: metrics.draft, filter: 'draft' },
+          { label: t('metric_submitted'), value: metrics.submitted, filter: 'submitted' },
+          { label: t('metric_approved'), value: metrics.approved, filter: 'approved' },
+          { label: t('metric_production'), value: metrics.production, filter: 'in_production' },
+          { label: `🔴 ${t('metric_urgent')}`, value: metrics.urgent, filter: '', urgent: true },
         ].map(({ label, value, filter, urgent }) => (
           <button key={label}
             onClick={() => urgent ? setUrgentOnly(u => !u) : setStatus(s => s === filter ? '' : filter)}
@@ -131,7 +130,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
           </svg>
           <input
             type="search" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search style, patient, ref..."
+            placeholder={t('search_placeholder')}
             className="h-9 pl-8 pr-3 text-sm bg-white border border-stone-200 rounded-lg w-56
                        focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
                        transition-all focus:w-72"/>
@@ -141,9 +140,9 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
           <select value={statusFilter} onChange={e => setStatus(e.target.value)}
             className="h-9 px-3 pr-8 text-sm bg-white border border-stone-200 rounded-lg
                        appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30">
-            <option value="">All statuses</option>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+            <option value="">{t('all_statuses')}</option>
+            {STATUS_KEYS.map(k => (
+              <option key={k} value={k}>{ts(k)}</option>
             ))}
           </select>
           <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
@@ -156,13 +155,13 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
           <button onClick={() => setUrgentOnly(false)}
             className="h-9 px-3 text-sm font-medium text-red-500 border border-red-200
                        rounded-lg hover:bg-red-50 transition-colors">
-            🔴 Urgent only ×
+            🔴 {t('urgent_only')} ×
           </button>
         )}
 
         <p className="ml-auto text-sm text-stone-400">
-          {filtered.length} orders
-          {filtered.length > PER_PAGE && ` · page ${page}/${Math.ceil(filtered.length / PER_PAGE)}`}
+          {t('count', { count: filtered.length })}
+          {filtered.length > PER_PAGE && ` · ${t('page_indicator', { page, total: Math.ceil(filtered.length / PER_PAGE) })}`}
         </p>
       </div>
 
@@ -173,13 +172,13 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
-                <th className="px-4 py-3 text-left">Product</th>
-                <th className="px-4 py-3 text-left">Patient / Ref</th>
-                {isAdmin && <th className="px-4 py-3 text-left">Company</th>}
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Unit</th>
-                <th className="px-4 py-3 text-left">PDF</th>
+                <th className="px-4 py-3 text-left">{t('col_product')}</th>
+                <th className="px-4 py-3 text-left">{t('col_patient')}</th>
+                {isAdmin && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
+                <th className="px-4 py-3 text-left">{t('col_status')}</th>
+                <th className="px-4 py-3 text-left">{t('col_date')}</th>
+                <th className="px-4 py-3 text-left">{t('col_unit')}</th>
+                <th className="px-4 py-3 text-left">{t('col_pdf')}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -188,7 +187,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                 <tr>
                   <td colSpan={isAdmin ? 8 : 7}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
-                    No orders found
+                    {t('no_orders')}
                   </td>
                 </tr>
               ) : filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(o => {
@@ -247,14 +246,14 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                     <td className="px-4 py-3 space-y-1">
                       <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full
                                        ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
-                        {STATUS_LABELS[o.status] ?? o.status}
+                        {ts.has(o.status) ? ts(o.status) : o.status}
                       </span>
                       {/* Approval state badge */}
                       {o.approval_state && o.approval_state !== 'registered' && (() => {
                         const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
                         return a ? (
                           <span className={`inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full ${a.color}`}>
-                            {a.label}
+                            {ta(a.value)}
                           </span>
                         ) : null
                       })()}
@@ -263,7 +262,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                         const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
                         return p ? (
                           <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-50 text-amber-700">
-                            {p.label}
+                            {tp(p.value)}
                           </span>
                         ) : null
                       })()}
@@ -271,7 +270,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                     {/* Date */}
                     <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
                       {o.created_at
-                        ? new Date(o.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' })
+                        ? new Date(o.created_at).toLocaleDateString(locale, { day:'2-digit', month:'short', year:'2-digit' })
                         : '—'}
                     </td>
                     {/* Unit */}
@@ -282,7 +281,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                     <td className="px-4 py-3">
                       {o.pdf_url ? (
                         <a href={o.pdf_url} target="_blank" rel="noopener noreferrer"
-                          title="Download PDF"
+                          title={t('download_pdf')}
                           className="inline-flex items-center justify-center w-7 h-7 rounded-lg
                                      text-gold hover:bg-gold/10 transition-colors">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -299,7 +298,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                       <button
                         onClick={() => handleRepeat(o.id, o.products?.id)}
                         disabled={repeating === o.id}
-                        title="Repetir encomenda"
+                        title={t('repeat_order')}
                         className="inline-flex items-center justify-center w-7 h-7 rounded-lg
                                    text-stone-400 hover:text-gold hover:bg-gold/10 transition-colors
                                    disabled:opacity-40">
@@ -332,7 +331,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
             disabled={page === 1}
             className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg
                        disabled:opacity-40 hover:border-stone-300 transition-colors">
-            ← Prev
+            ← {tc('prev')}
           </button>
 
           {Array.from({ length: Math.min(7, Math.ceil(filtered.length / PER_PAGE)) }, (_, i) => {
@@ -358,7 +357,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
             disabled={page >= Math.ceil(filtered.length / PER_PAGE)}
             className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg
                        disabled:opacity-40 hover:border-stone-300 transition-colors">
-            Next →
+            {tc('next')} →
           </button>
         </div>
       )}

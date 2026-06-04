@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { applyProductImport } from '@/app/actions/admin-products'
 
@@ -19,12 +20,6 @@ type Preview = {
   }
 }
 
-const MODE_LABEL: Record<SheetMode, string> = {
-  active: 'Import as active',
-  delisted: 'Deactivate (delist)',
-  skip: 'Skip',
-}
-
 function Stat({ label, value, color = 'text-stone-800' }: { label: string; value: number; color?: string }) {
   return (
     <div className="bg-white rounded-[14px] p-4" style={{ boxShadow: 'var(--shadow-card)' }}>
@@ -36,6 +31,7 @@ function Stat({ label, value, color = 'text-stone-800' }: { label: string; value
 
 export default function ProductImport() {
   const router = useRouter()
+  const t = useTranslations('admin.products')
   const [file, setFile] = useState<File | null>(null)
   const [modes, setModes] = useState<Record<string, SheetMode>>({})
   const [preview, setPreview] = useState<Preview | null>(null)
@@ -76,7 +72,7 @@ export default function ProductImport() {
       fd.append('sheetModes', JSON.stringify(modes))
       const res = await applyProductImport(fd)
       if (res.error) { setError(res.error); return }
-      setDone(`Created ${res.created} · Updated ${res.updated} · Delisted ${res.delisted}`)
+      setDone(t('result', { created: res.created, updated: res.updated, delisted: res.delisted }))
       setPreview(null)
       router.refresh()
     } catch (e) {
@@ -90,7 +86,7 @@ export default function ProductImport() {
     <div className="space-y-6">
       {/* File picker */}
       <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">1. Select workbook</h2>
+        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{t('step1')}</h2>
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="file"
@@ -103,7 +99,7 @@ export default function ProductImport() {
             disabled={!file || loading}
             className="rounded-lg bg-gold px-5 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
           >
-            {loading ? 'Analyzing…' : 'Analyze'}
+            {loading ? t('analyzing') : t('analyze')}
           </button>
         </div>
         {file && <p className="mt-2 text-xs text-stone-400">{file.name}</p>}
@@ -116,12 +112,12 @@ export default function ProductImport() {
         <>
           {/* Sheet selection */}
           <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-            <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">2. Sheets</h2>
+            <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{t('step2_sheets')}</h2>
             <div className="space-y-3">
               {preview.sheets.map(s => (
                 <div key={s.name} className="flex flex-wrap items-center gap-3">
                   <span className="w-28 text-sm font-semibold text-stone-700">{s.name}</span>
-                  <span className="w-20 text-xs text-stone-400">{s.rows} rows</span>
+                  <span className="w-20 text-xs text-stone-400">{t('rows', { count: s.rows })}</span>
                   <div className="flex gap-2">
                     {(['active', 'delisted', 'skip'] as SheetMode[]).map(m => (
                       <label key={m} className={`cursor-pointer rounded-lg px-3 py-1 text-xs font-medium border ${modes[s.name] === m ? 'border-gold bg-gold/10 text-gold' : 'border-stone-200 text-stone-500'}`}>
@@ -132,7 +128,7 @@ export default function ProductImport() {
                           checked={modes[s.name] === m}
                           onChange={() => setSheetMode(s.name, m)}
                         />
-                        {MODE_LABEL[m]}
+                        {t(`mode_${m}`)}
                       </label>
                     ))}
                   </div>
@@ -144,28 +140,28 @@ export default function ProductImport() {
               disabled={loading}
               className="mt-4 rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50 disabled:opacity-40"
             >
-              {loading ? 'Re-analyzing…' : 'Re-analyze with these sheets'}
+              {loading ? t('reanalyzing') : t('reanalyze')}
             </button>
           </div>
 
           {/* Counts */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <Stat label="New" value={preview.counts.create} color="text-emerald-600" />
-            <Stat label="Updated" value={preview.counts.update} color="text-blue-600" />
-            <Stat label="Unchanged" value={preview.counts.unchanged} color="text-stone-400" />
-            <Stat label="Delisted" value={preview.counts.delist} color="text-red-500" />
-            <Stat label="Pending cols" value={preview.counts.pending} color="text-amber-600" />
+            <Stat label={t('stat_new')} value={preview.counts.create} color="text-emerald-600" />
+            <Stat label={t('stat_updated')} value={preview.counts.update} color="text-blue-600" />
+            <Stat label={t('stat_unchanged')} value={preview.counts.unchanged} color="text-stone-400" />
+            <Stat label={t('stat_delisted')} value={preview.counts.delist} color="text-red-500" />
+            <Stat label={t('stat_pending')} value={preview.counts.pending} color="text-amber-600" />
           </div>
 
           {/* Samples */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SampleTable title="New products (sample)" rows={preview.samples.create.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.section])} cols={['colour_id', 'style / colour', 'section']} />
-            <SampleTable title="Updated products (sample)" rows={preview.samples.update.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.changedFields.join(', ')])} cols={['colour_id', 'style / colour', 'changed fields']} />
+            <SampleTable title={t('sample_new')} rows={preview.samples.create.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.section])} cols={['colour_id', t('col_style_colour'), t('col_section')]} />
+            <SampleTable title={t('sample_updated')} rows={preview.samples.update.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.changedFields.join(', ')])} cols={['colour_id', t('col_style_colour'), t('col_changed')]} />
             {preview.samples.delist.length > 0 && (
-              <SampleTable title="To delist (sample)" rows={preview.samples.delist.map(r => [r.colour_id, r.style_name])} cols={['colour_id', 'style']} />
+              <SampleTable title={t('sample_delist')} rows={preview.samples.delist.map(r => [r.colour_id, r.style_name])} cols={['colour_id', t('col_style')]} />
             )}
             {preview.samples.pending.length > 0 && (
-              <SampleTable title="Pending columns — not written (sample)" rows={preview.samples.pending.map(r => [r.colour_id, r.stretch ?? '', r.last ?? '', r.outStock ?? ''])} cols={['colour_id', 'STRETCH', 'LAST', 'OUT/STOCK']} />
+              <SampleTable title={t('sample_pending')} rows={preview.samples.pending.map(r => [r.colour_id, r.stretch ?? '', r.last ?? '', r.outStock ?? ''])} cols={['colour_id', 'STRETCH', 'LAST', 'OUT/STOCK']} />
             )}
           </div>
 
@@ -176,9 +172,9 @@ export default function ProductImport() {
               disabled={applying || (preview.counts.create + preview.counts.update + preview.counts.delist === 0)}
               className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
             >
-              {applying ? 'Importing…' : 'Confirm import'}
+              {applying ? t('importing') : t('confirm_import')}
             </button>
-            <span className="text-xs text-stone-400">Products not in the sheet are left untouched.</span>
+            <span className="text-xs text-stone-400">{t('untouched_hint')}</span>
           </div>
         </>
       )}

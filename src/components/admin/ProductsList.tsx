@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { setProductActive } from '@/app/actions/admin-products'
 
@@ -20,6 +21,8 @@ export type ProductRow = {
 }
 
 export default function ProductsList({ products }: { products: ProductRow[] }) {
+  const t = useTranslations('admin.products')
+  const tc = useTranslations('admin.common')
   const [rows, setRows] = useState(products)
   const [q, setQ] = useState('')
   const [onlyInactive, setOnlyInactive] = useState(false)
@@ -52,21 +55,21 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
         <input
           value={q}
           onChange={e => { setQ(e.target.value); setPage(0) }}
-          placeholder="Search colour_id, style, colour…"
+          placeholder={t('search_placeholder')}
           className="flex-1 min-w-[220px] rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none"
         />
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" checked={onlyInactive} onChange={e => { setOnlyInactive(e.target.checked); setPage(0) }} />
-          Inactive only
+          {t('inactive_only')}
         </label>
-        <span className="text-xs text-stone-400">{filtered.length} of {rows.length}</span>
+        <span className="text-xs text-stone-400">{t('count_of', { shown: filtered.length, total: rows.length })}</span>
       </div>
 
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
         <table className="w-full text-sm">
           <thead className="bg-stone-50">
             <tr>
-              {['', 'colour_id', 'style', 'colour', 'section', 'closure', 'active', ''].map((c, i) =>
+              {['', 'colour_id', t('col_style'), t('col_colour'), t('col_section'), t('col_closure'), t('col_active'), ''].map((c, i) =>
                 <th key={i} className="px-4 py-2 text-left text-[11px] font-semibold text-stone-400 uppercase">{c}</th>)}
             </tr>
           </thead>
@@ -91,11 +94,11 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
                     onClick={() => toggle(p.id, !p.active)}
                     disabled={busy === p.id}
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${p.active ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-100 text-stone-400'}`}>
-                    {p.active ? 'Active' : 'Inactive'}
+                    {p.active ? tc('active') : tc('inactive')}
                   </button>
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <Link href={`/admin/products/${p.id}/edit`} className="text-sm font-medium text-gold hover:text-gold-dark">Edit</Link>
+                  <Link href={`/admin/products/${p.id}/edit`} className="text-sm font-medium text-gold hover:text-gold-dark">{tc('edit')}</Link>
                 </td>
               </tr>
             ))}
@@ -106,10 +109,10 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
       {pages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-            className="rounded-lg border border-stone-200 px-3 py-1 text-sm disabled:opacity-40">Prev</button>
+            className="rounded-lg border border-stone-200 px-3 py-1 text-sm disabled:opacity-40">{tc('prev')}</button>
           <span className="text-sm text-stone-500">{page + 1} / {pages}</span>
           <button onClick={() => setPage(p => Math.min(pages - 1, p + 1))} disabled={page >= pages - 1}
-            className="rounded-lg border border-stone-200 px-3 py-1 text-sm disabled:opacity-40">Next</button>
+            className="rounded-lg border border-stone-200 px-3 py-1 text-sm disabled:opacity-40">{tc('next')}</button>
         </div>
       )}
     </div>

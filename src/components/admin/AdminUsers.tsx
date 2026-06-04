@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction } from '@/app/actions/admin-users'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin'
@@ -23,11 +24,6 @@ type UserRow = {
 type Company = { id: string; name: string }
 type Props   = { users: UserRow[]; companies: Company[] }
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  user:          'User',
-  company_admin: 'Company Admin',
-  piedro_admin:  'Piedro Admin',
-}
 const ROLE_COLORS: Record<UserRole, string> = {
   user:          'bg-stone-100 text-stone-600',
   company_admin: 'bg-blue-50 text-blue-600',
@@ -48,6 +44,7 @@ type RowProps = {
 }
 
 function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeRole, toggleCompanyAdmin, addCompany, removeCompany }: RowProps) {
+  const t = useTranslations('admin.users')
   const isExpanded = expandedUser === u.id
   const userCompanyIds = new Set(u.companies.map(c => c.company_id))
   const [searchQuery, setSearchQuery] = useState('')
@@ -101,7 +98,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
                 ${u.role === role
                   ? `${ROLE_COLORS[role]} border-current`
                   : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}>
-              {ROLE_LABELS[role]}
+              {t(`role_${role}`)}
             </button>
           ))}
         </div>
@@ -110,16 +107,16 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
         {u.role !== 'piedro_admin' && (
           <>
             <span className="text-xs text-stone-500">
-              {u.companies.length === 0 ? 'No companies' : (() => {
+              {u.companies.length === 0 ? t('no_companies') : (() => {
                 const adminCount = u.companies.filter(c => c.is_company_admin).length
-                const companyText = `${u.companies.length} ${u.companies.length === 1 ? 'company' : 'companies'}`
-                return adminCount > 0 ? `${companyText} ${adminCount} admin` : companyText
+                const companyText = t('company_count', { count: u.companies.length })
+                return adminCount > 0 ? `${companyText} · ${t('admin_count', { count: adminCount })}` : companyText
               })()}
             </span>
             <button
               onClick={() => setExpandedUser(isExpanded ? null : u.id)}
               className="text-xs text-gold hover:text-gold-dark font-medium">
-              {isExpanded ? '▲ Hide' : '▼ Manage'}
+              {isExpanded ? `▲ ${t('hide')}` : `▼ ${t('manage')}`}
             </button>
           </>
         )}
@@ -133,7 +130,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
             <div className="absolute inset-0 bg-stone-50/80 rounded-lg flex items-center justify-center z-10">
               <div className="flex items-center gap-2 text-sm text-stone-600">
                 <span className="w-5 h-5 border-2 border-stone-300 border-t-gold rounded-full animate-spin" />
-                <span>Updating...</span>
+                <span>{t('updating')}</span>
               </div>
             </div>
           )}
@@ -141,7 +138,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
           {/* Header with filters */}
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide">Companies</p>
+              <p className="text-xs font-semibold text-stone-600 uppercase tracking-wide">{t('companies')}</p>
 
               {/* Toggle: action-based label */}
               <button
@@ -150,14 +147,14 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
                   ${showAll
                     ? 'bg-gold/10 text-gold border-gold'
                     : 'bg-white text-stone-500 border-stone-300 hover:border-stone-400'}`}>
-                {showAll ? 'view only assigned' : 'view all companies'}
+                {showAll ? t('view_assigned') : t('view_all')}
               </button>
             </div>
 
             {/* Search input */}
             <input
               type="text"
-              placeholder="Search companies..."
+              placeholder={t('search_companies')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3 py-1.5 text-sm bg-white border border-stone-200 rounded-lg
@@ -170,7 +167,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
           <div className="max-h-64 overflow-y-auto space-y-2">
             {filteredCompanies.length === 0 ? (
               <p className="text-xs text-stone-400 text-center py-4">
-                {searchQuery ? 'No companies found' : (showAll ? 'No companies available' : 'No assigned companies')}
+                {searchQuery ? t('no_companies_found') : (showAll ? t('no_companies_available') : t('no_assigned_companies'))}
               </p>
             ) : (
               filteredCompanies.map(company => {
@@ -198,8 +195,8 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
                           ${uc.is_company_admin
                             ? 'bg-blue-50 text-blue-600 border-blue-600'
                             : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}
-                        title={uc.is_company_admin ? 'Remove company admin' : 'Make company admin'}>
-                        Admin
+                        title={uc.is_company_admin ? t('remove_admin') : t('make_admin')}>
+                        {t('admin_btn')}
                       </button>
                     )}
                   </div>
@@ -214,6 +211,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
 }
 
 export default function AdminUsers({ users: initial, companies }: Props) {
+  const t = useTranslations('admin.users')
   const [users, setUsers]   = useState<UserRow[]>(initial)
   const [saving, setSaving] = useState<string | null>(null)
   const [msg, setMsg]       = useState<{ id: string; ok: boolean; text?: string } | null>(null)
@@ -295,14 +293,14 @@ export default function AdminUsers({ users: initial, companies }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
-      <h1 className="text-lg font-semibold text-stone-900">User Management</h1>
+      <h1 className="text-lg font-semibold text-stone-900">{t('title')}</h1>
 
       {/* Piedro admins */}
       {admins.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-gold" />
-            <h2 className="text-sm font-semibold text-stone-700">Piedro Admins ({admins.length})</h2>
+            <h2 className="text-sm font-semibold text-stone-700">{t('section_admins', { count: admins.length })}</h2>
           </div>
           <div className="bg-white rounded-[14px] px-4" style={{ boxShadow: 'var(--shadow-card)' }}>
             {admins.map(u => <Row key={u.id} u={u} {...rowProps} />)}
@@ -315,7 +313,7 @@ export default function AdminUsers({ users: initial, companies }: Props) {
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <h2 className="text-sm font-semibold text-stone-700">Pending approval ({pending.length})</h2>
+            <h2 className="text-sm font-semibold text-stone-700">{t('section_pending', { count: pending.length })}</h2>
           </div>
           <div className="bg-white rounded-[14px] px-4" style={{ boxShadow: 'var(--shadow-card)' }}>
             {pending.map(u => <Row key={u.id} u={u} {...rowProps} />)}
@@ -328,7 +326,7 @@ export default function AdminUsers({ users: initial, companies }: Props) {
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-400" />
-            <h2 className="text-sm font-semibold text-stone-700">Active users ({assigned.length})</h2>
+            <h2 className="text-sm font-semibold text-stone-700">{t('section_active', { count: assigned.length })}</h2>
           </div>
           <div className="bg-white rounded-[14px] px-4" style={{ boxShadow: 'var(--shadow-card)' }}>
             {assigned.map(u => <Row key={u.id} u={u} {...rowProps} />)}
@@ -337,7 +335,7 @@ export default function AdminUsers({ users: initial, companies }: Props) {
       )}
 
       {users.length === 0 && (
-        <p className="text-sm text-stone-400 text-center py-12">No users registered yet.</p>
+        <p className="text-sm text-stone-400 text-center py-12">{t('no_users')}</p>
       )}
     </div>
   )

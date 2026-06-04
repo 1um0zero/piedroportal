@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -20,11 +21,12 @@ export default async function EditProductPage({ params }: Props) {
   const { data } = await service.from('products').select('*').eq('id', id).single()
   if (!data) notFound()
   const product = data as unknown as Product
+  const t = await getTranslations('admin.products')
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/admin/products" className="text-sm text-stone-400 hover:text-stone-700">← Products</Link>
+        <Link href="/admin/products" className="text-sm text-stone-400 hover:text-stone-700">← {t('title')}</Link>
         <h1 className="text-xl font-bold text-stone-900">{product.colour_id}</h1>
       </div>
       <ProductForm product={product} />
