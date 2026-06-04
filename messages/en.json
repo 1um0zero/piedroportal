@@ -335,5 +335,14 @@
     "pending_company": "Account pending approval",
     "pending_company_desc": "Your account is being reviewed by Piedro International. You will receive an email when your access to orders is activated.",
     "contact": "Contact"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "legal_notice": "Legal Notice",
+    "subprocessors": "Sub-processors",
+    "rights": "All rights reserved.",
+    "cookie_notice": "We use only essential cookies to keep you signed in.",
+    "cookie_ok": "Got it"
   }
 }

@@ -6,6 +6,8 @@ import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { hasAnyCompany } from '@/lib/user-companies'
 import Navbar from '@/components/ui/Navbar'
+import Footer from '@/components/ui/Footer'
+import CookieNotice from '@/components/ui/CookieNotice'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ChatWidget } from '@/components/chat/ChatWidget'
@@ -53,7 +55,9 @@ export default async function LocaleLayout({ children, params }: Props) {
           <div className="flex flex-col min-h-screen">
             <Navbar locale={locale} />
             <div className="flex-1">{children}</div>
+            <Footer />
             {user && <ChatWidget />}
+            <CookieNotice />
           </div>
         </WishlistProvider>
       </AuthProvider>

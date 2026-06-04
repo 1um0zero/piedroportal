@@ -335,5 +335,14 @@
     "pending_company": "Compte en attente d'approbation",
     "pending_company_desc": "Votre compte est en cours d'examen par Piedro International. Vous recevrez un e-mail lorsque votre accès aux commandes sera activé.",
     "contact": "Contact"
+  },
+  "footer": {
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d’utilisation",
+    "legal_notice": "Mentions légales",
+    "subprocessors": "Sous-traitants",
+    "rights": "Tous droits réservés.",
+    "cookie_notice": "Nous utilisons uniquement des cookies essentiels pour vous garder connecté.",
+    "cookie_ok": "Compris"
   }
 }

@@ -2,10 +2,16 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import React from 'react'
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
+import { createClient } from '@/lib/supabase/server'
 import type { Locale } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
+    // Preview renders patient data — require an authenticated session.
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = await request.json() as Omit<OrderPdfProps, 'showWatermark'>
 
     // Validate required fields

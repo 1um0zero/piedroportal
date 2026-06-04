@@ -1,8 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { escapeHtml } from '@/lib/escape-html'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  return key ? new Resend(key) : null
+}
 const ADMIN_EMAIL  = process.env.ADMIN_NOTIFY_EMAIL ?? 'tavares@umzero.pt'
+const EMAIL_FROM   = process.env.EMAIL_FROM ?? 'Piedro Portal <onboarding@resend.dev>'
 const WEBHOOK_SECRET = process.env.SUPABASE_WEBHOOK_SECRET
 
 const PORTAL_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
@@ -31,10 +36,13 @@ export async function POST(request: NextRequest) {
     ? new Date(created_at as string).toLocaleString('pt-PT', { timeZone: 'Europe/Lisbon' })
     : new Date().toLocaleString('pt-PT', { timeZone: 'Europe/Lisbon' })
 
+  const resend = getResend()
+  if (!resend) return NextResponse.json({ ok: true, skipped: 'email not configured' })
+
   const { error } = await resend.emails.send({
-    from: 'Piedro Portal <onboarding@resend.dev>',
+    from: EMAIL_FROM,
     to: ADMIN_EMAIL,
-    subject: `Novo utilizador — ${email}`,
+    subject: `Novo utilizador — ${escapeHtml(email as string)}`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#B8975A;margin:0 0 24px">
@@ -46,15 +54,15 @@ export async function POST(request: NextRequest) {
         <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
           <tr>
             <td style="padding:8px 0;color:#78716C;width:100px">Nome</td>
-            <td style="padding:8px 0;font-weight:500">${full_name || '—'}</td>
+            <td style="padding:8px 0;font-weight:500">${escapeHtml(full_name as string) || '—'}</td>
           </tr>
           <tr>
             <td style="padding:8px 0;color:#78716C">Email</td>
-            <td style="padding:8px 0;font-weight:500">${email}</td>
+            <td style="padding:8px 0;font-weight:500">${escapeHtml(email as string)}</td>
           </tr>
           <tr>
             <td style="padding:8px 0;color:#78716C">Data</td>
-            <td style="padding:8px 0">${date}</td>
+            <td style="padding:8px 0">${escapeHtml(date)}</td>
           </tr>
         </table>
         <div style="margin:32px 0">

@@ -335,5 +335,14 @@
     "pending_company": "Konto wartet auf Genehmigung",
     "pending_company_desc": "Ihr Konto wird von Piedro International geprüft. Sie erhalten eine E-Mail, wenn Ihr Zugang zu Bestellungen aktiviert wurde.",
     "contact": "Kontakt"
+  },
+  "footer": {
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen",
+    "legal_notice": "Impressum",
+    "subprocessors": "Auftragsverarbeiter",
+    "rights": "Alle Rechte vorbehalten.",
+    "cookie_notice": "Wir verwenden nur essenzielle Cookies, um Sie angemeldet zu halten.",
+    "cookie_ok": "Verstanden"
   }
 }

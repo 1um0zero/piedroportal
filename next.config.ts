@@ -3,15 +3,63 @@ import type { NextConfig } from 'next'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
+const supabaseHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').host
+  } catch {
+    return 'ynybmsbtcmmxdabvhuny.supabase.co'
+  }
+})()
+
+// Content-Security-Policy.
+// 'unsafe-inline'/'unsafe-eval' are required because Next.js injects inline
+// bootstrap scripts and the <model-viewer> 3D component (loaded from
+// ajax.googleapis.com) uses WebGL/eval. A future hardening is a nonce-based
+// strict CSP and self-hosting model-viewer. Inline styles are used throughout.
+const csp = [
+  `default-src 'self'`,
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ajax.googleapis.com https://www.gstatic.com`,
+  `style-src 'self' 'unsafe-inline'`,
+  `img-src 'self' data: blob: https://${supabaseHost}`,
+  `font-src 'self' data:`,
+  `connect-src 'self' https://${supabaseHost} https://ajax.googleapis.com https://www.gstatic.com`,
+  `media-src 'self' blob: https://${supabaseHost}`,
+  `worker-src 'self' blob:`,
+  `frame-ancestors 'none'`,
+  `base-uri 'self'`,
+  `form-action 'self'`,
+  `object-src 'none'`,
+  `upgrade-insecure-requests`,
+].join('; ')
+
+const securityHeaders = [
+  { key: 'Content-Security-Policy', value: csp },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // Camera is allowed for the avatar capture feature; everything else denied.
+  { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(), browsing-topics=()' },
+  { key: 'X-DNS-Prefetch-Control', value: 'off' },
+]
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'ynybmsbtcmmxdabvhuny.supabase.co',
+        hostname: supabaseHost,
         pathname: '/storage/v1/object/public/**',
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ]
   },
 }
 

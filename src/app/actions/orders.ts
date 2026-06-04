@@ -3,12 +3,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanyIds } from '@/lib/user-companies'
+import { escapeHtml } from '@/lib/escape-html'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { Resend } from 'resend'
 import React from 'react'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazily create the Resend client so a missing key never crashes module load.
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  return key ? new Resend(key) : null
+}
 const TO_EMAIL = process.env.ORDER_NOTIFY_EMAIL ?? 'tavares@umzero.pt'
+// Production must use a Piedro-owned, Resend-verified domain (set EMAIL_FROM).
+// The resend.dev sender is a sandbox address and is not deliverable in production.
+const EMAIL_FROM = process.env.EMAIL_FROM ?? 'Piedro Portal <onboarding@resend.dev>'
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 
 
@@ -114,20 +122,23 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(`${orderId}.pdf`)
     await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
 
-    // Send email with PDF attached
+    // Send email with PDF attached. All patient/clinic-supplied values are
+    // HTML-escaped to prevent injection into the email body.
     const ref = row.reference_customer ?? orderId.slice(0, 8)
+    const resend = getResend()
+    if (!resend) return { pdf_url: publicUrl, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
     const { error: emailErr } = await resend.emails.send({
-      from:    'Piedro Portal <onboarding@resend.dev>',
+      from:    EMAIL_FROM,
       to:      [TO_EMAIL],
-      subject: `Nova Encomenda Piedro — ${ref}`,
+      subject: `Nova Encomenda Piedro — ${escapeHtml(ref)}`,
       html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
         <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 20px">Nova encomenda submetida</h2>
         <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
-          <tr><td style="padding:8px 0;color:#78716C;width:120px">Referência</td><td style="padding:8px 0;font-weight:500">${ref}</td></tr>
-          <tr><td style="padding:8px 0;color:#78716C">Empresa</td><td style="padding:8px 0;font-weight:500">${pdfMeta.companyName}</td></tr>
-          <tr><td style="padding:8px 0;color:#78716C">Paciente</td><td style="padding:8px 0">${row.patient_name ?? '—'}</td></tr>
-          <tr><td style="padding:8px 0;color:#78716C">Modelo</td><td style="padding:8px 0">${pdfMeta.productColourId}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C;width:120px">Referência</td><td style="padding:8px 0;font-weight:500">${escapeHtml(ref)}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C">Empresa</td><td style="padding:8px 0;font-weight:500">${escapeHtml(pdfMeta.companyName)}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C">Paciente</td><td style="padding:8px 0">${escapeHtml(row.patient_name ?? '—')}</td></tr>
+          <tr><td style="padding:8px 0;color:#78716C">Modelo</td><td style="padding:8px 0">${escapeHtml(pdfMeta.productColourId)}</td></tr>
         </table>
         <p style="font-size:12px;color:#A8A29E;margin-top:24px">PDF em anexo.</p>
       </div>`,

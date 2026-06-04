@@ -11,7 +11,15 @@ export async function updateProfileAction(fields: {
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  const { error } = await sb.from('profiles').update(fields).eq('id', user.id)
+  // Whitelist the editable fields so a user can never set privileged columns
+  // (e.g. role) — and use the service client so profiles RLS can forbid all
+  // direct user updates as defence-in-depth.
+  const safe: { full_name?: string; gender?: string } = {}
+  if (fields.full_name !== undefined) safe.full_name = fields.full_name
+  if (fields.gender !== undefined) safe.gender = fields.gender
+
+  const service = createServiceClient()
+  const { error } = await service.from('profiles').update(safe).eq('id', user.id)
   if (error) return { error: error.message }
   return { ok: true }
 }
@@ -40,7 +48,7 @@ export async function uploadAvatarAction(
   if (uploadErr) return { error: `Upload failed: ${uploadErr.message}` }
 
   const { data: { publicUrl } } = service.storage.from('avatars').getPublicUrl(path)
-  await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id)
+  await service.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id)
 
   return { url: publicUrl }
 }

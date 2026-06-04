@@ -335,5 +335,14 @@
     "pending_company": "Account in afwachting van goedkeuring",
     "pending_company_desc": "Uw account wordt beoordeeld door Piedro International. U ontvangt een e-mail wanneer uw toegang tot bestellingen is geactiveerd.",
     "contact": "Contact"
+  },
+  "footer": {
+    "privacy": "Privacybeleid",
+    "terms": "Gebruiksvoorwaarden",
+    "legal_notice": "Juridische kennisgeving",
+    "subprocessors": "Subverwerkers",
+    "rights": "Alle rechten voorbehouden.",
+    "cookie_notice": "Wij gebruiken alleen essentiële cookies om u ingelogd te houden.",
+    "cookie_ok": "Begrepen"
   }
 }
