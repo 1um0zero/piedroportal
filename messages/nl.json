@@ -396,6 +396,18 @@
       "fields": "velden"
     },
     "no_size_data": "Nog geen maatgegevens",
-    "eu_size": "EU-maat"
+    "eu_size": "EU-maat",
+    "admin": {
+      "title": "Dashboard",
+      "best_clients": "Beste klanten",
+      "submitted_count": "{n} ingediend",
+      "by_country": "Per land",
+      "no_country_data": "Geen landgegevens",
+      "no_country_hint": "Vul het veld country in bij de bedrijven",
+      "clients_most_additions": "Klanten met meeste aanpassingen",
+      "fields_filled": "velden ingevuld",
+      "common_additions": "Meest voorkomende aanpassingen",
+      "recent_activity": "Recente activiteit"
+    }
   }
 }

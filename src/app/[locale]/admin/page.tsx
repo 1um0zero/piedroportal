@@ -1,13 +1,10 @@
 import { redirect } from 'next/navigation'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
-const STATUS_LABEL: Record<string, string> = {
-  draft: 'Draft', submitted: 'Submitted', approved: 'Approved',
-  in_production: 'In Production', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
-}
 const STATUS_COLOR: Record<string, string> = {
   draft: 'bg-stone-300', submitted: 'bg-blue-400', approved: 'bg-emerald-400',
   in_production: 'bg-amber-400', shipped: 'bg-violet-400', delivered: 'bg-teal-400', cancelled: 'bg-red-300',
@@ -82,6 +79,10 @@ export default async function AdminDashboard() {
   if (!user) redirect('/login')
   const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
   if (me?.role !== 'piedro_admin') redirect('/gallery')
+
+  const locale = await getLocale()
+  const td = await getTranslations('dashboard')
+  const statusLabel = (st: string) => (td.has(`status.${st}`) ? td(`status.${st}`) : st)
 
   const service = createServiceClient()
   const SELECT = `id, status, unit, patient_name, reference_customer, created_at, additions,
@@ -178,7 +179,7 @@ export default async function AdminDashboard() {
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
     return {
-      label: d.toLocaleString('pt-PT', { month: 'short' }),
+      label: d.toLocaleString(locale, { month: 'short' }),
       count: all.filter(o => { const od = new Date(o.created_at); return od.getFullYear() === d.getFullYear() && od.getMonth() === d.getMonth() }).length,
     }
   })
@@ -189,35 +190,35 @@ export default async function AdminDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-xl font-bold text-stone-900">Dashboard</h1>
-        <p className="text-xs text-stone-400">{total} encomendas · {new Date().toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })}</p>
+        <h1 className="text-xl font-bold text-stone-900">{td('admin.title')}</h1>
+        <p className="text-xs text-stone-400">{td('subtitle', { count: total, date: new Date().toLocaleDateString(locale, { day:'2-digit', month:'long', year:'numeric' }) })}</p>
       </div>
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <StatCard label="Total"       value={total}                   />
-        <StatCard label="Draft"       value={bySt.draft        ?? 0} color="text-stone-500" />
-        <StatCard label="Submitted"   value={bySt.submitted    ?? 0} color="text-blue-600"  />
-        <StatCard label="Approved"    value={bySt.approved     ?? 0} color="text-emerald-600" />
-        <StatCard label="Production"  value={bySt.in_production ?? 0} color="text-amber-600" />
-        <StatCard label="Shipped"     value={bySt.shipped      ?? 0} color="text-violet-600" />
-        <StatCard label="🔴 Urgent"   value={urgent}                  color="text-red-500"  />
+        <StatCard label={td('kpi.total')}          value={total}                   />
+        <StatCard label={statusLabel('draft')}     value={bySt.draft        ?? 0} color="text-stone-500" />
+        <StatCard label={statusLabel('submitted')} value={bySt.submitted    ?? 0} color="text-blue-600"  />
+        <StatCard label={statusLabel('approved')}  value={bySt.approved     ?? 0} color="text-emerald-600" />
+        <StatCard label={statusLabel('in_production')} value={bySt.in_production ?? 0} color="text-amber-600" />
+        <StatCard label={statusLabel('shipped')}   value={bySt.shipped      ?? 0} color="text-violet-600" />
+        <StatCard label={`🔴 ${td('kpi.urgent')}`} value={urgent}                  color="text-red-500"  />
       </div>
 
       {/* Best clients + Countries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Melhores Clientes</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{td('admin.best_clients')}</h2>
           <div className="space-y-0.5">
             {topClients.map(c => (
               <Bar key={c.name} label={c.name} count={c.count} max={topClients[0]?.count ?? 1}
-                sub={`${c.submitted} submetidas`} />
+                sub={td('admin.submitted_count', { n: c.submitted })} />
             ))}
           </div>
         </div>
 
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Por País</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{td('admin.by_country')}</h2>
           {hasCountries ? (
             <div className="space-y-1.5">
               {topCountries.map(c => (
@@ -233,8 +234,8 @@ export default async function AdminDashboard() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 space-y-2">
-              <p className="text-sm text-stone-400">Sem dados de país</p>
-              <p className="text-xs text-stone-300">Preenche o campo <span className="font-mono">country</span> nas companies</p>
+              <p className="text-sm text-stone-400">{td('admin.no_country_data')}</p>
+              <p className="text-xs text-stone-300">{td('admin.no_country_hint')}</p>
             </div>
           )}
         </div>
@@ -242,7 +243,7 @@ export default async function AdminDashboard() {
 
       {/* Models by style_name with color thumbnails */}
       <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-5">Modelos Mais Pedidos</h2>
+        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-5">{td('sections.top_models')}</h2>
         <div className="space-y-5">
           {topStyles.map(s => (
             <div key={s.style}>
@@ -283,11 +284,11 @@ export default async function AdminDashboard() {
       {/* Additions + Monthly trend */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Clientes com Mais Adições</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{td('admin.clients_most_additions')}</h2>
           <div className="space-y-0.5 mb-5">
-            {topAdds.map(a => <Bar key={a.name} label={a.name} count={a.total} max={addsMax} sub="campos preenchidos" />)}
+            {topAdds.map(a => <Bar key={a.name} label={a.name} count={a.total} max={addsMax} sub={td('admin.fields_filled')} />)}
           </div>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">Adições Mais Comuns</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">{td('admin.common_additions')}</h2>
           <div className="grid grid-cols-2 gap-2">
             {topFields.map(f => (
               <div key={f.key} className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2">
@@ -299,11 +300,11 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">Tendência Mensal</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-4">{td('sections.monthly_trend')}</h2>
           <div className="flex items-end gap-2 px-2 mb-6">
             {months.map(m => <VBar key={m.label} label={m.label} count={m.count} max={monthMax} />)}
           </div>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">Distribuição por Estado</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">{td('sections.by_status')}</h2>
           <div className="space-y-2">
             {Object.entries(bySt)
               .sort((a, b) => {
@@ -313,7 +314,7 @@ export default async function AdminDashboard() {
               .map(([st, n]) => (
                 <div key={st} className="flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${STATUS_COLOR[st] ?? 'bg-stone-300'}`} />
-                  <span className="text-xs text-stone-600 flex-1">{STATUS_LABEL[st] ?? st}</span>
+                  <span className="text-xs text-stone-600 flex-1">{statusLabel(st)}</span>
                   <div className="flex-1 bg-stone-100 rounded-full h-1.5">
                     <div className={`h-1.5 rounded-full ${STATUS_COLOR[st] ?? 'bg-stone-300'}`}
                       style={{ width: `${total > 0 ? (n / total) * 100 : 0}%` }} />
@@ -328,7 +329,7 @@ export default async function AdminDashboard() {
       {/* Recent activity */}
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="px-6 py-4 border-b border-stone-100">
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Actividade Recente</h2>
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{td('admin.recent_activity')}</h2>
         </div>
         <div className="divide-y divide-stone-50">
           {recent.map(o => (
@@ -340,10 +341,10 @@ export default async function AdminDashboard() {
                 </p>
               </div>
               <span className={`shrink-0 inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_BADGE[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
-                {STATUS_LABEL[o.status] ?? o.status}
+                {statusLabel(o.status)}
               </span>
               <span className="shrink-0 text-xs text-stone-400 whitespace-nowrap">
-                {new Date(o.created_at).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}
+                {new Date(o.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'short' })}
               </span>
             </div>
           ))}

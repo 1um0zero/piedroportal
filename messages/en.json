@@ -396,6 +396,18 @@
       "fields": "fields"
     },
     "no_size_data": "No size data yet",
-    "eu_size": "EU size"
+    "eu_size": "EU size",
+    "admin": {
+      "title": "Dashboard",
+      "best_clients": "Best clients",
+      "submitted_count": "{n} submitted",
+      "by_country": "By country",
+      "no_country_data": "No country data",
+      "no_country_hint": "Fill in the country field on companies",
+      "clients_most_additions": "Clients with most additions",
+      "fields_filled": "fields filled",
+      "common_additions": "Most common additions",
+      "recent_activity": "Recent activity"
+    }
   }
 }

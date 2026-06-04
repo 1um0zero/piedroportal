@@ -396,6 +396,18 @@
       "fields": "champs"
     },
     "no_size_data": "Pas encore de données de pointure",
-    "eu_size": "Pointure EU"
+    "eu_size": "Pointure EU",
+    "admin": {
+      "title": "Tableau de bord",
+      "best_clients": "Meilleurs clients",
+      "submitted_count": "{n} soumises",
+      "by_country": "Par pays",
+      "no_country_data": "Aucune donnée de pays",
+      "no_country_hint": "Renseignez le champ country sur les entreprises",
+      "clients_most_additions": "Clients avec le plus d'additions",
+      "fields_filled": "champs remplis",
+      "common_additions": "Additions les plus courantes",
+      "recent_activity": "Activité récente"
+    }
   }
 }

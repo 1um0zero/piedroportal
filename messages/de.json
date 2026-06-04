@@ -396,6 +396,18 @@
       "fields": "Felder"
     },
     "no_size_data": "Noch keine Größendaten",
-    "eu_size": "EU-Größe"
+    "eu_size": "EU-Größe",
+    "admin": {
+      "title": "Dashboard",
+      "best_clients": "Beste Kunden",
+      "submitted_count": "{n} eingereicht",
+      "by_country": "Nach Land",
+      "no_country_data": "Keine Länderdaten",
+      "no_country_hint": "Füllen Sie das Feld country bei den Firmen aus",
+      "clients_most_additions": "Kunden mit den meisten Zusätzen",
+      "fields_filled": "Felder ausgefüllt",
+      "common_additions": "Häufigste Zusätze",
+      "recent_activity": "Letzte Aktivität"
+    }
   }
 }
