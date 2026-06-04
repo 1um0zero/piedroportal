@@ -9,6 +9,11 @@ const MUTED = '#78716C'
 const LIGHT = '#F5F5F4'
 const BORDER = '#E7E5E4'
 
+// Absolute URL for assets embedded in the PDF (react-pdf fetches them server-side).
+// Set NEXT_PUBLIC_SITE_URL to the production domain (e.g. https://portal.piedro.com).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+const LOGO_URL = `${SITE_URL}/piedro-logo.png`
+
 const s = StyleSheet.create({
   page:          { padding: 40, fontSize: 9, fontFamily: 'Helvetica', color: DARK, backgroundColor: '#fff' },
   header:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${GOLD}` },
@@ -168,7 +173,7 @@ export function OrderPdf({
         {/* Header */}
         <View style={s.header}>
           <View>
-            <Image src="https://piedroportal.vercel.app/piedro-logo.png" style={s.logo} />
+            <Image src={LOGO_URL} style={s.logo} />
             <Text style={s.brandSub}>Piedro International</Text>
           </View>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
