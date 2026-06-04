@@ -119,14 +119,17 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
       .from('order-pdfs')
       .upload(`${orderId}.pdf`, pdfBytes, { contentType: 'application/pdf', upsert: true })
     if (uploadErr) return { pdfError: `Storage: ${uploadErr.message}` }
-    const { data: { publicUrl } } = service.storage.from('order-pdfs').getPublicUrl(`${orderId}.pdf`)
-    await service.from('orders').update({ pdf_url: publicUrl }).eq('id', orderId)
+    // Store the storage PATH (not a public URL) — the bucket is private and
+    // access is via short-lived signed URLs generated at view time. The column
+    // also serves as the "a PDF exists" flag in the order lists.
+    const pdfPath = `${orderId}.pdf`
+    await service.from('orders').update({ pdf_url: pdfPath }).eq('id', orderId)
 
     // Send email with PDF attached. All patient/clinic-supplied values are
     // HTML-escaped to prevent injection into the email body.
     const ref = row.reference_customer ?? orderId.slice(0, 8)
     const resend = getResend()
-    if (!resend) return { pdf_url: publicUrl, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
+    if (!resend) return { pdf_url: pdfPath, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
     const { error: emailErr } = await resend.emails.send({
       from:    EMAIL_FROM,
       to:      [TO_EMAIL],
@@ -147,10 +150,10 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
 
     if (emailErr) {
       console.error('Email error:', emailErr)
-      return { pdf_url: publicUrl, emailError: emailErr.message }
+      return { pdf_url: pdfPath, emailError: emailErr.message }
     }
 
-    return { pdf_url: publicUrl }
+    return { pdf_url: pdfPath }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.error('PDF error:', msg)

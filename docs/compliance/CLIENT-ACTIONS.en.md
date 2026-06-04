@@ -42,7 +42,7 @@
 | 9 | **P0** | **Fill the placeholders in `src/lib/legal-info.ts`**: legal name, registered address, KvK number, VAT/BTW, phone, contact email, DPO email, ISO 13485 certificate number. | Powers the legal pages & footer. |
 | 10 | **P0** | **Set the production environment variables** in Vercel: `EMAIL_FROM`, `ORDER_NOTIFY_EMAIL`, `ADMIN_NOTIFY_EMAIL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_DPO_EMAIL`, `NEXT_PUBLIC_SITE_URL`, `SUPABASE_WEBHOOK_SECRET`. | Replaces hard-coded test fallbacks. |
 | 11 | **P0** | **Run `migrations/002_rls_policies.sql`** in a staging/branch database, test the full app, then apply to production. | Defence-in-depth (RLS). |
-| 12 | **P1** | **Order PDFs are currently in a public storage bucket** (URLs are unguessable but public). Recommend switching to a **private bucket with signed URLs** — engineering can implement on your approval. | Patient data should not be publicly reachable. |
+| 12 | **P0** | **Set the `order-pdfs` Storage bucket to Private** in Supabase. *(Done in code: the app now serves PDFs only through short-lived signed URLs.)* While the bucket stays public the objects remain reachable by URL. | Patient data must not be publicly reachable. |
 | 13 | **P1** | **Enable MFA** for `piedro_admin` accounts and confirm the Supabase **password policy**. | Privileged-account protection. |
 | 14 | **P2** | **Provision rate limiting** (Vercel/Upstash) for login and the AI assistant. | Brute-force / cost abuse. |
 

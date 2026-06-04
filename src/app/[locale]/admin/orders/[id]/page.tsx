@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { signOrderPdf } from '@/lib/order-pdf'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
@@ -42,6 +43,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   }
 
   if (!order) notFound()
+
+  // Replace the stored path with a short-lived signed URL (private bucket).
+  if (order.pdf_url) order.pdf_url = await signOrderPdf(id)
 
   return (
     <div>

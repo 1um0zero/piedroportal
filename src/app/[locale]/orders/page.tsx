@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
+import { signOrderPdfs } from '@/lib/order-pdf'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 export default async function OrdersRoute() {
@@ -78,6 +79,10 @@ export default async function OrdersRoute() {
   }
 
   const orders = allOrders
+
+  // Replace the stored path with a short-lived signed URL (private bucket).
+  const signed = await signOrderPdfs(orders.filter(o => o.pdf_url).map(o => o.id))
+  orders.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
 
   // Metrics
   const all       = orders ?? []

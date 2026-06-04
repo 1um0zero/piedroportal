@@ -42,7 +42,7 @@
 | 9 | **P0** | **Vul de placeholders in `src/lib/legal-info.ts`**: juridische naam, vestigingsadres, KvK-nummer, btw-nummer, telefoon, contact-e-mail, FG-e-mail, ISO 13485-certificaatnummer. | Voedt de juridische pagina's & footer. |
 | 10 | **P0** | **Stel de productie-omgevingsvariabelen** in Vercel in: `EMAIL_FROM`, `ORDER_NOTIFY_EMAIL`, `ADMIN_NOTIFY_EMAIL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_DPO_EMAIL`, `NEXT_PUBLIC_SITE_URL`, `SUPABASE_WEBHOOK_SECRET`. | Vervangt hard-coded testwaarden. |
 | 11 | **P0** | **Voer `migrations/002_rls_policies.sql`** uit in een staging-/branch-database, test de volledige app en pas het daarna toe op productie. | Defence-in-depth (RLS). |
-| 12 | **P1** | **Bestel-PDF's staan momenteel in een openbare opslag-bucket** (URL's zijn niet te raden maar wel openbaar). Aanbevolen: overstappen naar een **privé-bucket met ondertekende URL's** — ontwikkeling kan dit na uw goedkeuring implementeren. | Patiëntgegevens mogen niet openbaar bereikbaar zijn. |
+| 12 | **P0** | **Zet de `order-pdfs`-opslag-bucket op Privé** in Supabase. *(In code gedaan: de app levert PDF's nu uitsluitend via kortlevende ondertekende URL's.)* Zolang de bucket openbaar blijft, blijven de objecten via URL bereikbaar. | Patiëntgegevens mogen niet openbaar bereikbaar zijn. |
 | 13 | **P1** | **Activeer MFA** voor `piedro_admin`-accounts en bevestig het **wachtwoordbeleid** van Supabase. | Bescherming van bevoorrechte accounts. |
 | 14 | **P2** | **Voorzie rate limiting** (Vercel/Upstash) voor inloggen en de AI-assistent. | Brute force / kostenmisbruik. |
 

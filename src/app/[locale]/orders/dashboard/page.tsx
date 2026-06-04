@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
+import { signOrderPdfs } from '@/lib/order-pdf'
 import { Link } from '@/i18n/navigation'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -76,6 +77,11 @@ export default async function ClientDashboard() {
   const total = orders.length
   const bySt: Record<string, number> = {}
   orders.forEach(o => { bySt[o.status] = (bySt[o.status] ?? 0) + 1 })
+
+  // Only the 6 most recent orders show a PDF link — sign just those (private bucket).
+  const recentForPdf = orders.slice(0, 6)
+  const signed = await signOrderPdfs(recentForPdf.filter(o => o.pdf_url).map(o => o.id))
+  recentForPdf.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
 
   // Top models this company ordered
   type Prod = { id: string; colour_id: string; color_name: string; style_name: string; picture_name: string }

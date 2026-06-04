@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { signOrderPdfs } from '@/lib/order-pdf'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const SELECT = `
@@ -36,6 +37,11 @@ export default async function AdminOrdersPage() {
   }
 
   const all = allOrders
+
+  // Replace the stored path with a short-lived signed URL (private bucket).
+  const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))
+  all.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
+
   const metrics = {
     total:      all.length,
     draft:      all.filter(o => o.status === 'draft').length,
