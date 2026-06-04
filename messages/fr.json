@@ -8,7 +8,8 @@
     "dashboard": "Tableau de bord",
     "products": "Produits",
     "users": "Utilisateurs",
-    "orders_admin": "Commandes"
+    "orders_admin": "Commandes",
+    "branches": "Filiales"
   },
   "gallery": {
     "kids": "Enfants",
@@ -424,7 +425,8 @@
       "edit": "Modifier",
       "active": "Actif",
       "inactive": "Inactif",
-      "saved": "Enregistré"
+      "saved": "Enregistré",
+      "add": "Ajouter"
     },
     "approval": {
       "registered": "Enregistré",
@@ -495,7 +497,9 @@
       "section_admins": "Admins Piedro ({count})",
       "section_pending": "En attente d'approbation ({count})",
       "section_active": "Utilisateurs actifs ({count})",
-      "no_users": "Aucun utilisateur enregistré."
+      "no_users": "Aucun utilisateur enregistré.",
+      "role_branch_staff": "Personnel filiale",
+      "no_branch": "Aucune filiale"
     },
     "products": {
       "title": "Produits",
@@ -576,7 +580,44 @@
       "st_done": "terminé",
       "st_error": "erreur",
       "slot_main": "principal",
-      "slots_hint": "Le slot 1 est l'image principale (définit picture_name). Tout format est converti en PNG et redimensionné."
+      "slots_hint": "Le slot 1 est l'image principale (définit picture_name). Tout format est converti en PNG et redimensionné.",
+      "result_skipped": "{n} ignoré(s) (hors périmètre)"
+    },
+    "branches": {
+      "title": "Filiales",
+      "new_branch": "Nouvelle filiale",
+      "empty": "Aucune filiale pour l’instant.",
+      "col_name": "Nom",
+      "col_code": "Code",
+      "col_catalogue": "Catalogue",
+      "col_models": "Modèles",
+      "col_staff": "Personnel",
+      "manage": "Gérer",
+      "mode_full": "Catalogue complet",
+      "mode_limited": "Catalogue limité",
+      "excludes_n": "{n} exclus",
+      "includes_n": "{n} inclus",
+      "field_name": "Nom",
+      "field_code": "Code",
+      "field_catalogue": "Accès au catalogue",
+      "mode_full_hint": "voit tout le catalogue sauf les modèles sélectionnés",
+      "mode_limited_hint": "voit uniquement les modèles sélectionnés",
+      "saving": "Enregistrement…",
+      "create": "Créer la filiale",
+      "settings": "Paramètres",
+      "delete_branch": "Supprimer la filiale",
+      "confirm_delete": "Supprimer cette filiale ? Le personnel sera détaché.",
+      "models": "Modèles",
+      "models_exclude_hint": "Les modèles sélectionnés sont masqués pour cette filiale",
+      "models_include_hint": "Cette filiale ne voit que les modèles sélectionnés",
+      "selected_n": "{n} sélectionné(s)",
+      "search_models": "Rechercher des modèles…",
+      "no_models": "Aucun modèle trouvé",
+      "staff": "Personnel",
+      "no_staff": "Aucun membre du personnel affecté à cette filiale.",
+      "add_staff_placeholder": "Ajouter un utilisateur à cette filiale…",
+      "reassign": "réaffecter",
+      "staff_role_hint": "Définissez le rôle d’un utilisateur sur « Personnel filiale » dans Utilisateurs pour activer la restriction."
     }
   }
 }

@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction } from '@/app/actions/admin-users'
+import { assignUserBranch } from '@/app/actions/admin-branches'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff'
 
 type UserCompany = {
   company_id: string
@@ -18,32 +19,37 @@ type UserRow = {
   full_name: string
   role: UserRole
   companies: UserCompany[]
+  branch_id: string | null
   created_at: string
 }
 
 type Company = { id: string; name: string }
-type Props   = { users: UserRow[]; companies: Company[] }
+type BranchOpt = { id: string; name: string }
+type Props   = { users: UserRow[]; companies: Company[]; branches: BranchOpt[] }
 
 const ROLE_COLORS: Record<UserRole, string> = {
   user:          'bg-stone-100 text-stone-600',
   company_admin: 'bg-blue-50 text-blue-600',
   piedro_admin:  'bg-gold/10 text-gold',
+  branch_staff:  'bg-emerald-50 text-emerald-600',
 }
 
 type RowProps = {
   u: UserRow
   companies: Company[]
+  branches: BranchOpt[]
   expandedUser: string | null
   setExpandedUser: (id: string | null) => void
   saving: string | null
   msg: { id: string; ok: boolean; text?: string } | null
   changeRole: (userId: string, role: UserRole) => void
+  changeBranch: (userId: string, branchId: string | null) => void
   toggleCompanyAdmin: (userId: string, companyId: string, isAdmin: boolean) => void
   addCompany: (userId: string, companyId: string) => void
   removeCompany: (userId: string, companyId: string) => void
 }
 
-function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeRole, toggleCompanyAdmin, addCompany, removeCompany }: RowProps) {
+function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany }: RowProps) {
   const t = useTranslations('admin.users')
   const isExpanded = expandedUser === u.id
   const userCompanyIds = new Set(u.companies.map(c => c.company_id))
@@ -90,7 +96,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
       <div className="flex flex-wrap items-center gap-2">
         {/* Role chips */}
         <div className="flex gap-1">
-          {(['user', 'piedro_admin'] as UserRole[]).map(role => (
+          {(['user', 'branch_staff', 'piedro_admin'] as UserRole[]).map(role => (
             <button key={role}
               onClick={() => u.role !== role && changeRole(u.id, role)}
               disabled={saving === u.id}
@@ -102,6 +108,18 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
             </button>
           ))}
         </div>
+
+        {/* Branch selector — only relevant for branch_staff */}
+        {u.role === 'branch_staff' && (
+          <select
+            value={u.branch_id ?? ''}
+            onChange={e => changeBranch(u.id, e.target.value || null)}
+            disabled={saving === u.id}
+            className="px-2 py-1 text-[11px] font-medium rounded-lg border border-stone-200 bg-white text-stone-600 focus:border-gold focus:outline-none disabled:opacity-50">
+            <option value="">{t('no_branch')}</option>
+            {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        )}
 
         {/* Companies summary + toggle */}
         {u.role !== 'piedro_admin' && (
@@ -210,7 +228,7 @@ function Row({ u, companies, expandedUser, setExpandedUser, saving, msg, changeR
   )
 }
 
-export default function AdminUsers({ users: initial, companies }: Props) {
+export default function AdminUsers({ users: initial, companies, branches }: Props) {
   const t = useTranslations('admin.users')
   const [users, setUsers]   = useState<UserRow[]>(initial)
   const [saving, setSaving] = useState<string | null>(null)
@@ -224,6 +242,18 @@ export default function AdminUsers({ users: initial, companies }: Props) {
     if (result.ok) {
       setMsg({ id: userId, ok: true })
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
+    } else {
+      setMsg({ id: userId, ok: false, text: result.error })
+    }
+  }
+
+  async function changeBranch(userId: string, branchId: string | null) {
+    setSaving(userId); setMsg(null)
+    const result = await assignUserBranch(userId, branchId)
+    setSaving(null)
+    if (result.ok) {
+      setMsg({ id: userId, ok: true })
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, branch_id: branchId } : u))
     } else {
       setMsg({ id: userId, ok: false, text: result.error })
     }
@@ -281,11 +311,13 @@ export default function AdminUsers({ users: initial, companies }: Props) {
 
   const rowProps = {
     companies,
+    branches,
     expandedUser,
     setExpandedUser,
     saving,
     msg,
     changeRole,
+    changeBranch,
     toggleCompanyAdmin,
     addCompany,
     removeCompany,

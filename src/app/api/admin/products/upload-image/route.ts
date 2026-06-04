@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
-import { requireAdmin } from '@/lib/admin/guard'
+import { requireBackoffice } from '@/lib/admin/guard'
 import { createServiceClient } from '@/lib/supabase/service'
 
 const BUCKET = 'products'
@@ -14,7 +14,7 @@ const MAX_DIM = 1200 // max width/height; images are fit:'inside' without enlarg
  * FormData: file, colourId, index (1..n)
  */
 export async function POST(request: NextRequest) {
-  const auth = await requireAdmin()
+  const auth = await requireBackoffice()
   if ('error' in auth) return auth.error
 
   const form = await request.formData()
@@ -26,6 +26,15 @@ export async function POST(request: NextRequest) {
   if (!colourId) return NextResponse.json({ error: 'colourId required' }, { status: 400 })
   if (!Number.isFinite(index) || index < 1 || index > 99)
     return NextResponse.json({ error: 'index must be 1..99' }, { status: 400 })
+
+  // Enforce model scope: the target product must be within the caller's models.
+  if (!auth.scope.allModels) {
+    const svc = createServiceClient()
+    const { data: prod } = await svc
+      .from('products').select('style_name').eq('colour_id', colourId).maybeSingle()
+    if (!prod || !auth.scope.canModel(prod.style_name as string))
+      return NextResponse.json({ error: 'Forbidden: model out of scope' }, { status: 403 })
+  }
 
   const storageName = `${colourId}.${String(index).padStart(2, '0')}.png`
 

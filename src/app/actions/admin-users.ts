@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff'
 
 export async function updateUserRoleAction(
   userId: string,

@@ -1,22 +1,13 @@
-import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { requireBackofficePage } from '@/lib/admin/scope'
 import ProductsList, { type ProductRow } from '@/components/admin/ProductsList'
-
-async function guard() {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') redirect('/gallery')
-}
 
 const FIELDS = 'id, colour_id, style_name, color_name, section, closure, type, active, picture_name'
 
 export default async function AdminProductsPage() {
-  await guard()
+  const scope = await requireBackofficePage()
   const t = await getTranslations('admin.products')
 
   const service = createServiceClient()
@@ -34,6 +25,9 @@ export default async function AdminProductsPage() {
     offset += PAGE
   }
 
+  // Branch staff only see/manage models within their scope.
+  const visible = scope.allModels ? all : all.filter(p => scope.canModel(p.style_name))
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -44,7 +38,7 @@ export default async function AdminProductsPage() {
           <Link href="/admin/products/images" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('bulk_images')}</Link>
         </div>
       </div>
-      <ProductsList products={all} />
+      <ProductsList products={visible} />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/admin/guard'
+import { requireBackoffice } from '@/lib/admin/guard'
 import { fetchAllExisting } from '@/app/actions/admin-products'
 import {
   listSheets, parseProducts, diffAgainstExisting, suggestSheetMode,
@@ -9,8 +9,9 @@ import {
 const SAMPLE = 50
 
 export async function POST(request: NextRequest) {
-  const auth = await requireAdmin()
+  const auth = await requireBackoffice()
   if ('error' in auth) return auth.error
+  const { scope } = auth
 
   const form = await request.formData()
   const file = form.get('file')
@@ -38,6 +39,13 @@ export async function POST(request: NextRequest) {
   const imported = parseProducts(buffer, modes)
   const existing = await fetchAllExisting()
   const preview = diffAgainstExisting(imported, existing)
+
+  // Restrict the preview to the caller's model scope so it matches what apply does.
+  if (!scope.allModels) {
+    preview.toCreate = preview.toCreate.filter(p => scope.canModel(p.style_name))
+    preview.toUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name))
+    preview.toDelist = preview.toDelist.filter(d => scope.canModel(d.style_name))
+  }
 
   return NextResponse.json({
     sheets,

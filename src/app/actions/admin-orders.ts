@@ -1,7 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getAdminScope } from '@/lib/admin/scope'
 import Anthropic from '@anthropic-ai/sdk'
 import type { ApprovalState, ProductionState } from '@/lib/order-status'
 
@@ -18,16 +18,22 @@ export async function updateOrderAdminAction(
     piedro_notes?:    string
   },
 ): Promise<{ ok?: boolean; error?: string }> {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  const scope = await getAdminScope()
+  if (!scope) return { error: 'Not authenticated' }
+  if (scope.role === 'branch_staff' && !scope.branchId) return { error: 'Not authorized' }
 
-  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'piedro_admin') return { error: 'Not authorized' }
+  const service = createServiceClient()
+
+  // Branch staff can only act on orders whose product model is within their scope.
+  if (!scope.allModels) {
+    const { data: ord } = await service
+      .from('orders').select('products(style_name)').eq('id', orderId).single()
+    const style = (ord as { products?: { style_name?: string } } | null)?.products?.style_name
+    if (!scope.canModel(style)) return { error: 'Not authorized' }
+  }
 
   // Validation: cannot approve without Piedro Order ID
   if (fields.approval_state === 'approved') {
-    const service = createServiceClient()
     const { data: order } = await service
       .from('orders')
       .select('piedro_order_id')
@@ -55,7 +61,6 @@ export async function updateOrderAdminAction(
     update.status = 'in_production'
   }
 
-  const service = createServiceClient()
   const { error } = await service.from('orders').update(update).eq('id', orderId)
   if (error) return { error: error.message }
   return { ok: true }

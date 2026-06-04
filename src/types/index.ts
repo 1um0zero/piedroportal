@@ -2,7 +2,7 @@ export type Section = 'KIDS' | 'MEN' | 'WOMEN'
 export type Closure = 'LACE' | 'VELCRO' | 'BUCKLE' | 'TWIST LOCK SYSTEM' | 'LACE, ZIPPER'
 export type ProductType = 'Boot' | 'Shoes' | 'Sandal'
 export type OrderStatus = 'draft' | 'submitted' | 'approved' | 'in_production' | 'shipped' | 'delivered' | 'cancelled'
-export type UserRole = 'user' | 'company_admin' | 'piedro_admin'
+export type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff'
 export type Locale = 'en' | 'nl' | 'fr' | 'de'
 
 export interface ColorNameI18n {
@@ -45,7 +45,26 @@ export interface Profile {
   full_name: string
   role: UserRole
   company_id: string | null  // DEPRECATED: Use user_companies table instead
+  branch_id: string | null   // Branch office a branch_staff user belongs to
   preferred_locale: Locale
+}
+
+/**
+ * Branch office (regional office: NL, UK, …) with model-scoped back-office access.
+ * `sees_full_catalogue` true → branch_models are exclusions (everything except them);
+ * false → branch_models are inclusions (only them).
+ */
+export interface Branch {
+  id: string
+  name: string
+  code: string | null
+  sees_full_catalogue: boolean
+  created_at?: string
+}
+
+export interface BranchModel {
+  branch_id: string
+  style_name: string
 }
 
 export interface Company {

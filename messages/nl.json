@@ -8,7 +8,8 @@
     "dashboard": "Dashboard",
     "products": "Producten",
     "users": "Gebruikers",
-    "orders_admin": "Bestellingen"
+    "orders_admin": "Bestellingen",
+    "branches": "Filialen"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -424,7 +425,8 @@
       "edit": "Bewerken",
       "active": "Actief",
       "inactive": "Inactief",
-      "saved": "Opgeslagen"
+      "saved": "Opgeslagen",
+      "add": "Toevoegen"
     },
     "approval": {
       "registered": "Geregistreerd",
@@ -495,7 +497,9 @@
       "section_admins": "Piedro-beheerders ({count})",
       "section_pending": "Wacht op goedkeuring ({count})",
       "section_active": "Actieve gebruikers ({count})",
-      "no_users": "Nog geen gebruikers geregistreerd."
+      "no_users": "Nog geen gebruikers geregistreerd.",
+      "role_branch_staff": "Filiaalmedewerker",
+      "no_branch": "Geen filiaal"
     },
     "products": {
       "title": "Producten",
@@ -576,7 +580,44 @@
       "st_done": "klaar",
       "st_error": "fout",
       "slot_main": "hoofd",
-      "slots_hint": "Slot 1 is de hoofdafbeelding (stelt picture_name in). Elk formaat wordt naar PNG omgezet en geschaald."
+      "slots_hint": "Slot 1 is de hoofdafbeelding (stelt picture_name in). Elk formaat wordt naar PNG omgezet en geschaald.",
+      "result_skipped": "{n} overgeslagen (buiten bereik)"
+    },
+    "branches": {
+      "title": "Filialen",
+      "new_branch": "Nieuw filiaal",
+      "empty": "Nog geen filialen.",
+      "col_name": "Naam",
+      "col_code": "Code",
+      "col_catalogue": "Catalogus",
+      "col_models": "Modellen",
+      "col_staff": "Medewerkers",
+      "manage": "Beheren",
+      "mode_full": "Volledige catalogus",
+      "mode_limited": "Beperkte catalogus",
+      "excludes_n": "{n} uitgesloten",
+      "includes_n": "{n} opgenomen",
+      "field_name": "Naam",
+      "field_code": "Code",
+      "field_catalogue": "Catalogustoegang",
+      "mode_full_hint": "ziet de hele catalogus behalve de geselecteerde modellen",
+      "mode_limited_hint": "ziet alleen de geselecteerde modellen",
+      "saving": "Opslaan…",
+      "create": "Filiaal aanmaken",
+      "settings": "Instellingen",
+      "delete_branch": "Filiaal verwijderen",
+      "confirm_delete": "Dit filiaal verwijderen? Medewerkers worden losgekoppeld.",
+      "models": "Modellen",
+      "models_exclude_hint": "Geselecteerde modellen zijn verborgen voor dit filiaal",
+      "models_include_hint": "Dit filiaal ziet alleen de geselecteerde modellen",
+      "selected_n": "{n} geselecteerd",
+      "search_models": "Modellen zoeken…",
+      "no_models": "Geen modellen gevonden",
+      "staff": "Medewerkers",
+      "no_staff": "Nog geen medewerkers toegewezen aan dit filiaal.",
+      "add_staff_placeholder": "Een gebruiker aan dit filiaal toevoegen…",
+      "reassign": "opnieuw toewijzen",
+      "staff_role_hint": "Stel de rol van een gebruiker in op “Filiaalmedewerker” bij Gebruikers om de beperking te activeren."
     }
   }
 }

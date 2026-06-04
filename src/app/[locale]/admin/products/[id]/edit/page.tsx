@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { requireBackofficePage } from '@/lib/admin/scope'
 import ProductForm from '@/components/admin/ProductForm'
 import type { Product } from '@/types'
 
@@ -10,17 +10,15 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params
-
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') redirect('/gallery')
+  const scope = await requireBackofficePage()
 
   const service = createServiceClient()
   const { data } = await service.from('products').select('*').eq('id', id).single()
   if (!data) notFound()
   const product = data as unknown as Product
+
+  // Branch staff cannot open a model outside their scope.
+  if (!scope.canModel(product.style_name)) redirect('/admin/products')
   const t = await getTranslations('admin.products')
 
   return (

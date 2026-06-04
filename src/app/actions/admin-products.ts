@@ -2,8 +2,8 @@
 
 import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getAdminScope, type AdminScope } from '@/lib/admin/scope'
 import {
   parseProducts, diffAgainstExisting,
   type SheetMode, type ExistingProduct, type ImportedProduct,
@@ -12,13 +12,12 @@ import type { Product } from '@/types'
 
 // ── Auth helper (server actions) ─────────────────────────────────────────────
 
-async function assertAdmin(): Promise<string | null> {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) return 'Not authenticated'
-  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'piedro_admin') return 'Not authorized'
-  return null
+/** Returns the caller's back-office scope, or a string error when not authorized. */
+async function assertBackoffice(): Promise<AdminScope | string> {
+  const scope = await getAdminScope()
+  if (!scope) return 'Not authenticated'
+  if (scope.role === 'branch_staff' && !scope.branchId) return 'Not authorized'
+  return scope
 }
 
 // ── Existing catalogue (paginated) ───────────────────────────────────────────
@@ -72,6 +71,7 @@ export interface ImportResult {
   created: number
   updated: number
   delisted: number
+  skipped?: number  // rows ignored because the model is out of the caller's scope
   error?: string
 }
 
@@ -86,8 +86,8 @@ export interface ImportResult {
 export async function applyProductImport(
   formData: FormData,
 ): Promise<ImportResult> {
-  const authErr = await assertAdmin()
-  if (authErr) return { created: 0, updated: 0, delisted: 0, error: authErr }
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { created: 0, updated: 0, delisted: 0, error: scope }
 
   const file = formData.get('file')
   const modesRaw = formData.get('sheetModes')
@@ -105,36 +105,42 @@ export async function applyProductImport(
   const existing = await fetchAllExisting()
   const preview = diffAgainstExisting(imported, existing)
 
+  // Restrict every change to models within the caller's scope.
+  let skipped = 0
+  const inCreate = preview.toCreate.filter(p => scope.canModel(p.style_name) || (skipped++, false))
+  const inUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name) || (skipped++, false))
+  const inDelist = preview.toDelist.filter(d => scope.canModel(d.style_name) || (skipped++, false))
+
   const service = createServiceClient()
   const BATCH = 200
 
   // Inserts (picture_name starts empty — images are uploaded separately)
-  const toInsert = preview.toCreate.map(p => ({ id: randomUUID(), picture_name: '', ...toRow(p) }))
+  const toInsert = inCreate.map(p => ({ id: randomUUID(), picture_name: '', ...toRow(p) }))
   for (let i = 0; i < toInsert.length; i += BATCH) {
     const { error } = await service.from('products').insert(toInsert.slice(i, i + BATCH))
-    if (error) return { created: 0, updated: 0, delisted: 0, error: `Insert failed: ${error.message}` }
+    if (error) return { created: 0, updated: 0, delisted: 0, skipped, error: `Insert failed: ${error.message}` }
   }
 
   // Updates (by id)
   let updated = 0
-  for (const u of preview.toUpdate) {
+  for (const u of inUpdate) {
     const { error } = await service.from('products').update(toRow(u.product)).eq('id', u.existingId)
-    if (error) return { created: toInsert.length, updated, delisted: 0, error: `Update failed: ${error.message}` }
+    if (error) return { created: toInsert.length, updated, delisted: 0, skipped, error: `Update failed: ${error.message}` }
     updated++
   }
 
   // Delist
   let delisted = 0
-  const delistIds = preview.toDelist.map(d => d.existingId)
+  const delistIds = inDelist.map(d => d.existingId)
   for (let i = 0; i < delistIds.length; i += BATCH) {
     const slice = delistIds.slice(i, i + BATCH)
     const { error } = await service.from('products').update({ active: false }).in('id', slice)
-    if (error) return { created: toInsert.length, updated, delisted, error: `Delist failed: ${error.message}` }
+    if (error) return { created: toInsert.length, updated, delisted, skipped, error: `Delist failed: ${error.message}` }
     delisted += slice.length
   }
 
   revalidatePath('/admin/products')
-  return { created: toInsert.length, updated, delisted }
+  return { created: toInsert.length, updated, delisted, skipped }
 }
 
 // ── Standalone product CRUD ──────────────────────────────────────────────────
@@ -144,10 +150,11 @@ export type ProductInput = Omit<Product, 'id'>
 export async function createProduct(
   input: ProductInput,
 ): Promise<{ id?: string; error?: string }> {
-  const authErr = await assertAdmin()
-  if (authErr) return { error: authErr }
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
 
   if (!input.colour_id?.trim()) return { error: 'colour_id is required' }
+  if (!scope.canModel(input.style_name)) return { error: 'This model is out of your scope' }
 
   const service = createServiceClient()
   // Guard against duplicate colour_id (the business key).
@@ -167,10 +174,21 @@ export async function updateProduct(
   id: string,
   input: Partial<ProductInput>,
 ): Promise<{ ok?: boolean; error?: string }> {
-  const authErr = await assertAdmin()
-  if (authErr) return { error: authErr }
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
 
   const service = createServiceClient()
+
+  // Authorize against the product's current model (and the new one, if changed).
+  if (!scope.allModels) {
+    const { data: current } = await service
+      .from('products').select('style_name').eq('id', id).maybeSingle()
+    if (!current || !scope.canModel(current.style_name as string))
+      return { error: 'This model is out of your scope' }
+    if (input.style_name != null && !scope.canModel(input.style_name))
+      return { error: 'This model is out of your scope' }
+  }
+
   const { error } = await service.from('products').update(input).eq('id', id)
   if (error) return { error: error.message }
 
@@ -183,10 +201,18 @@ export async function setProductActive(
   id: string,
   active: boolean,
 ): Promise<{ ok?: boolean; error?: string }> {
-  const authErr = await assertAdmin()
-  if (authErr) return { error: authErr }
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
 
   const service = createServiceClient()
+
+  if (!scope.allModels) {
+    const { data: current } = await service
+      .from('products').select('style_name').eq('id', id).maybeSingle()
+    if (!current || !scope.canModel(current.style_name as string))
+      return { error: 'This model is out of your scope' }
+  }
+
   const { error } = await service.from('products').update({ active }).eq('id', id)
   if (error) return { error: error.message }
 

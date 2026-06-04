@@ -16,10 +16,10 @@ export default async function AdminUsersPage() {
   // Load all data with service client (bypasses RLS)
   const service = createServiceClient()
 
-  const [{ data: profiles }, { data: companies }, { data: userCompanies }] = await Promise.all([
+  const [{ data: profiles }, { data: companies }, { data: userCompanies }, { data: branches }] = await Promise.all([
     service
       .from('profiles')
-      .select('id, email, full_name, role, company_id, created_at')
+      .select('id, email, full_name, role, company_id, branch_id, created_at')
       .order('created_at', { ascending: false }),
     service
       .from('companies')
@@ -28,6 +28,10 @@ export default async function AdminUsersPage() {
     service
       .from('user_companies')
       .select('user_id, company_id, is_company_admin, companies(id, name)'),
+    service
+      .from('branches')
+      .select('id, name')
+      .order('name'),
   ])
 
   // Map user_companies by user_id (multiple companies per user)
@@ -50,9 +54,10 @@ export default async function AdminUsersPage() {
       full_name:          p.full_name ?? '',
       role:               p.role ?? 'user',
       companies:          userCompanies,  // Array of companies
+      branch_id:          p.branch_id ?? null,
       created_at:         p.created_at,
     }
   })
 
-  return <AdminUsers users={users} companies={companies ?? []} />
+  return <AdminUsers users={users} companies={companies ?? []} branches={branches ?? []} />
 }

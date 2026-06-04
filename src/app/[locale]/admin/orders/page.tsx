@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import OrdersPage from '@/components/orders/OrdersPage'
 
@@ -12,13 +11,7 @@ const SELECT = `
 `
 
 export default async function AdminOrdersPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'piedro_admin') redirect('/orders')
+  const scope = await requireBackofficePage()
 
   const service = createServiceClient()
   let allOrders: any[] = []
@@ -36,7 +29,10 @@ export default async function AdminOrdersPage() {
     offset += PAGE
   }
 
-  const all = allOrders
+  // Branch staff only see orders whose product model is within their scope.
+  const all = scope.allModels
+    ? allOrders
+    : allOrders.filter(o => scope.canModel(o.products?.style_name))
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))

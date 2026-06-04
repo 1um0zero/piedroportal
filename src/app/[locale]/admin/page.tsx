@@ -1,7 +1,6 @@
-import { redirect } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { requireBackofficePage } from '@/lib/admin/scope'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -74,12 +73,7 @@ function StatCard({ label, value, color = 'text-stone-800', sub }: { label: stri
 }
 
 export default async function AdminDashboard() {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') redirect('/gallery')
-
+  const scope = await requireBackofficePage()
   const locale = await getLocale()
   const td = await getTranslations('dashboard')
   const statusLabel = (st: string) => (td.has(`status.${st}`) ? td(`status.${st}`) : st)
@@ -102,6 +96,9 @@ export default async function AdminDashboard() {
     if (data.length < 1000) break
     offset += 1000
   }
+
+  // Branch staff dashboards are scoped to the models they manage.
+  if (!scope.allModels) all = all.filter(o => scope.canModel(o.products?.style_name))
 
   const total   = all.length
   const urgent  = all.filter(o => (o.additions as Record<string,unknown>)?.urgent === true).length

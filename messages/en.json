@@ -8,7 +8,8 @@
     "dashboard": "Dashboard",
     "products": "Products",
     "users": "Users",
-    "orders_admin": "Orders"
+    "orders_admin": "Orders",
+    "branches": "Branches"
   },
   "gallery": {
     "kids": "Kids",
@@ -424,7 +425,8 @@
       "edit": "Edit",
       "active": "Active",
       "inactive": "Inactive",
-      "saved": "Saved"
+      "saved": "Saved",
+      "add": "Add"
     },
     "approval": {
       "registered": "Registered",
@@ -495,7 +497,9 @@
       "section_admins": "Piedro Admins ({count})",
       "section_pending": "Pending approval ({count})",
       "section_active": "Active users ({count})",
-      "no_users": "No users registered yet."
+      "no_users": "No users registered yet.",
+      "role_branch_staff": "Branch staff",
+      "no_branch": "No branch"
     },
     "products": {
       "title": "Products",
@@ -576,7 +580,44 @@
       "st_done": "done",
       "st_error": "error",
       "slot_main": "main",
-      "slots_hint": "Slot 1 is the main image (sets picture_name). Any format is converted to PNG and resized."
+      "slots_hint": "Slot 1 is the main image (sets picture_name). Any format is converted to PNG and resized.",
+      "result_skipped": "{n} skipped (out of scope)"
+    },
+    "branches": {
+      "title": "Branch offices",
+      "new_branch": "New branch",
+      "empty": "No branches yet.",
+      "col_name": "Name",
+      "col_code": "Code",
+      "col_catalogue": "Catalogue",
+      "col_models": "Models",
+      "col_staff": "Staff",
+      "manage": "Manage",
+      "mode_full": "Full catalogue",
+      "mode_limited": "Limited catalogue",
+      "excludes_n": "{n} excluded",
+      "includes_n": "{n} included",
+      "field_name": "Name",
+      "field_code": "Code",
+      "field_catalogue": "Catalogue access",
+      "mode_full_hint": "sees the whole catalogue except the selected models",
+      "mode_limited_hint": "sees only the selected models",
+      "saving": "Saving…",
+      "create": "Create branch",
+      "settings": "Settings",
+      "delete_branch": "Delete branch",
+      "confirm_delete": "Delete this branch? Staff will be detached.",
+      "models": "Models",
+      "models_exclude_hint": "Selected models are hidden from this branch",
+      "models_include_hint": "This branch sees only the selected models",
+      "selected_n": "{n} selected",
+      "search_models": "Search models…",
+      "no_models": "No models found",
+      "staff": "Staff",
+      "no_staff": "No staff assigned to this branch yet.",
+      "add_staff_placeholder": "Add a user to this branch…",
+      "reassign": "reassign",
+      "staff_role_hint": "Set a user’s role to “Branch staff” in Users for scoping to take effect."
     }
   }
 }

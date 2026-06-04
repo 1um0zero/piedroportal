@@ -72,7 +72,8 @@ export default function ProductImport() {
       fd.append('sheetModes', JSON.stringify(modes))
       const res = await applyProductImport(fd)
       if (res.error) { setError(res.error); return }
-      setDone(t('result', { created: res.created, updated: res.updated, delisted: res.delisted }))
+      const base = t('result', { created: res.created, updated: res.updated, delisted: res.delisted })
+      setDone(res.skipped ? `${base} · ${t('result_skipped', { n: res.skipped })}` : base)
       setPreview(null)
       router.refresh()
     } catch (e) {

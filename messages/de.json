@@ -8,7 +8,8 @@
     "dashboard": "Dashboard",
     "products": "Produkte",
     "users": "Benutzer",
-    "orders_admin": "Bestellungen"
+    "orders_admin": "Bestellungen",
+    "branches": "Niederlassungen"
   },
   "gallery": {
     "kids": "Kinder",
@@ -424,7 +425,8 @@
       "edit": "Bearbeiten",
       "active": "Aktiv",
       "inactive": "Inaktiv",
-      "saved": "Gespeichert"
+      "saved": "Gespeichert",
+      "add": "Hinzufügen"
     },
     "approval": {
       "registered": "Registriert",
@@ -495,7 +497,9 @@
       "section_admins": "Piedro-Admins ({count})",
       "section_pending": "Genehmigung ausstehend ({count})",
       "section_active": "Aktive Benutzer ({count})",
-      "no_users": "Noch keine Benutzer registriert."
+      "no_users": "Noch keine Benutzer registriert.",
+      "role_branch_staff": "Niederlassungsmitarbeiter",
+      "no_branch": "Keine Niederlassung"
     },
     "products": {
       "title": "Produkte",
@@ -576,7 +580,44 @@
       "st_done": "fertig",
       "st_error": "Fehler",
       "slot_main": "Haupt",
-      "slots_hint": "Slot 1 ist das Hauptbild (setzt picture_name). Jedes Format wird in PNG umgewandelt und skaliert."
+      "slots_hint": "Slot 1 ist das Hauptbild (setzt picture_name). Jedes Format wird in PNG umgewandelt und skaliert.",
+      "result_skipped": "{n} übersprungen (außerhalb des Bereichs)"
+    },
+    "branches": {
+      "title": "Niederlassungen",
+      "new_branch": "Neue Niederlassung",
+      "empty": "Noch keine Niederlassungen.",
+      "col_name": "Name",
+      "col_code": "Code",
+      "col_catalogue": "Katalog",
+      "col_models": "Modelle",
+      "col_staff": "Mitarbeiter",
+      "manage": "Verwalten",
+      "mode_full": "Vollständiger Katalog",
+      "mode_limited": "Eingeschränkter Katalog",
+      "excludes_n": "{n} ausgeschlossen",
+      "includes_n": "{n} enthalten",
+      "field_name": "Name",
+      "field_code": "Code",
+      "field_catalogue": "Katalogzugriff",
+      "mode_full_hint": "sieht den gesamten Katalog außer den ausgewählten Modellen",
+      "mode_limited_hint": "sieht nur die ausgewählten Modelle",
+      "saving": "Speichern…",
+      "create": "Niederlassung erstellen",
+      "settings": "Einstellungen",
+      "delete_branch": "Niederlassung löschen",
+      "confirm_delete": "Diese Niederlassung löschen? Mitarbeiter werden getrennt.",
+      "models": "Modelle",
+      "models_exclude_hint": "Ausgewählte Modelle sind für diese Niederlassung ausgeblendet",
+      "models_include_hint": "Diese Niederlassung sieht nur die ausgewählten Modelle",
+      "selected_n": "{n} ausgewählt",
+      "search_models": "Modelle suchen…",
+      "no_models": "Keine Modelle gefunden",
+      "staff": "Mitarbeiter",
+      "no_staff": "Dieser Niederlassung sind noch keine Mitarbeiter zugewiesen.",
+      "add_staff_placeholder": "Einen Benutzer zu dieser Niederlassung hinzufügen…",
+      "reassign": "neu zuweisen",
+      "staff_role_hint": "Setzen Sie die Rolle eines Benutzers unter Benutzer auf „Niederlassungsmitarbeiter“, damit die Einschränkung greift."
     }
   }
 }

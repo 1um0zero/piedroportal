@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdf } from '@/lib/order-pdf'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
@@ -9,7 +9,7 @@ import { Link } from '@/i18n/navigation'
 const SELECT_BASE = `id, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   additions, comments, created_at, pdf_url,
-  products(id, colour_id, color_name, closure, picture_name),
+  products(id, colour_id, color_name, closure, picture_name, style_name),
   companies(id, name)`
 
 // Extended select — requires SQL migrations to have been run
@@ -19,12 +19,7 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function AdminOrderDetailPage({ params }: Props) {
   const { id } = await params
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'piedro_admin') redirect('/orders')
+  const scope = await requireBackofficePage()
 
   const service = createServiceClient()
 
@@ -43,6 +38,10 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   }
 
   if (!order) notFound()
+
+  // Branch staff cannot open an order whose model is outside their scope.
+  const orderStyle = (order as { products?: { style_name?: string } }).products?.style_name
+  if (!scope.canModel(orderStyle)) redirect('/admin/orders')
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   if (order.pdf_url) order.pdf_url = await signOrderPdf(id)

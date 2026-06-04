@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getAdminScope, type AdminScope } from '@/lib/admin/scope'
 
 /**
  * Verify the caller is a logged-in piedro_admin.
@@ -16,4 +17,17 @@ export async function requireAdmin(): Promise<{ ok: true } | { error: NextRespon
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
   return { ok: true }
+}
+
+/**
+ * Verify the caller has back-office access (piedro_admin or a branch_staff
+ * attached to a branch) and return their model scope.
+ * Returns `{ scope }` or `{ error: NextResponse }` to return early.
+ */
+export async function requireBackoffice(): Promise<{ scope: AdminScope } | { error: NextResponse }> {
+  const scope = await getAdminScope()
+  if (!scope) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  if (scope.role === 'branch_staff' && !scope.branchId)
+    return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
+  return { scope }
 }

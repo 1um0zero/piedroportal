@@ -7,13 +7,14 @@ import { NavbarLocale } from './NavbarLocale'
 import { signOutAction } from '@/app/[locale]/login/actions'
 
 type Props = {
-  isAdmin:    boolean
-  isLoggedIn: boolean
-  locale:     string
-  locales:    string[]
+  isAdmin:      boolean
+  isBackoffice: boolean
+  isLoggedIn:   boolean
+  locale:       string
+  locales:      string[]
 }
 
-export function NavbarMobile({ isAdmin, isLoggedIn, locale, locales }: Props) {
+export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locales }: Props) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('nav')
   const close = () => setOpen(false)
@@ -51,19 +52,24 @@ export function NavbarMobile({ isAdmin, isLoggedIn, locale, locales }: Props) {
 
               <Link href="/gallery" onClick={close} className={linkCls}>{t('gallery')}</Link>
 
-              {isLoggedIn && !isAdmin && (
+              {isLoggedIn && !isBackoffice && (
                 <>
                   <Link href="/orders/dashboard" onClick={close} className={linkCls}>{t('dashboard')}</Link>
                   <Link href="/orders"           onClick={close} className={linkCls}>{t('orders')}</Link>
                 </>
               )}
 
-              {isLoggedIn && isAdmin && (
+              {isLoggedIn && isBackoffice && (
                 <>
                   <Link href="/admin"          onClick={close} className={linkCls}>{t('dashboard')}</Link>
                   <Link href="/admin/orders"   onClick={close} className={linkCls}>{t('orders_admin')}</Link>
                   <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
-                  <Link href="/admin/users"    onClick={close} className={linkCls}>{t('users')}</Link>
+                  {isAdmin && (
+                    <>
+                      <Link href="/admin/branches" onClick={close} className={linkCls}>{t('branches')}</Link>
+                      <Link href="/admin/users"    onClick={close} className={linkCls}>{t('users')}</Link>
+                    </>
+                  )}
                 </>
               )}
 

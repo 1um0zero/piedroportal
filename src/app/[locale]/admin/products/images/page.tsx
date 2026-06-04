@@ -1,27 +1,24 @@
-import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { requireBackofficePage } from '@/lib/admin/scope'
 import { BulkImageUpload } from '@/components/admin/ProductImages'
 
 export default async function BulkImagesPage() {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') redirect('/gallery')
+  const scope = await requireBackofficePage()
   const t = await getTranslations('admin.products')
 
-  // All colour_ids, to validate filename → product matches client-side.
+  // All colour_ids (within scope), to validate filename → product matches client-side.
   const service = createServiceClient()
   const ids: string[] = []
   let offset = 0
   const PAGE = 1000
   while (true) {
-    const { data, error } = await service.from('products').select('colour_id').range(offset, offset + PAGE - 1)
+    const { data, error } = await service.from('products').select('colour_id, style_name').range(offset, offset + PAGE - 1)
     if (error || !data?.length) break
-    ids.push(...data.map(r => r.colour_id as string))
+    for (const r of data) {
+      if (scope.allModels || scope.canModel(r.style_name as string)) ids.push(r.colour_id as string)
+    }
     if (data.length < PAGE) break
     offset += PAGE
   }

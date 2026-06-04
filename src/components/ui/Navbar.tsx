@@ -15,12 +15,14 @@ export default async function Navbar({ locale }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let isAdmin = false
+  let isBackoffice = false
   let profile: { role: string; full_name?: string; avatar_url?: string } | null = null
   if (user) {
     const { data } = await supabase
       .from('profiles').select('role, full_name, avatar_url').eq('id', user.id).single()
     profile = data
     isAdmin = profile?.role === 'piedro_admin'
+    isBackoffice = isAdmin || profile?.role === 'branch_staff'
   }
 
   return (
@@ -42,7 +44,7 @@ export default async function Navbar({ locale }: Props) {
           <Link href="/gallery" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
             {t('gallery')}
           </Link>
-          {user && !isAdmin && (
+          {user && !isBackoffice && (
             <>
               <Link href="/orders/dashboard" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('dashboard')}
@@ -52,7 +54,7 @@ export default async function Navbar({ locale }: Props) {
               </Link>
             </>
           )}
-          {user && isAdmin && (
+          {user && isBackoffice && (
             <>
               <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('dashboard')}
@@ -63,9 +65,16 @@ export default async function Navbar({ locale }: Props) {
               <Link href="/admin/products" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('products')}
               </Link>
-              <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                {t('users')}
-              </Link>
+              {isAdmin && (
+                <>
+                  <Link href="/admin/branches" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                    {t('branches')}
+                  </Link>
+                  <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                    {t('users')}
+                  </Link>
+                </>
+              )}
             </>
           )}
           {/* Wishlist — needs client for count */}
@@ -119,6 +128,7 @@ export default async function Navbar({ locale }: Props) {
         {/* Mobile hamburger — only on mobile */}
         <NavbarMobile
           isAdmin={isAdmin}
+          isBackoffice={isBackoffice}
           isLoggedIn={!!user}
           locale={locale}
           locales={[...routing.locales]}

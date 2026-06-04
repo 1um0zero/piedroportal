@@ -1,15 +1,10 @@
-import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { requireBackofficePage } from '@/lib/admin/scope'
 import ProductImport from '@/components/admin/ProductImport'
 
 export default async function ImportProductsPage() {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) redirect('/login')
-  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') redirect('/gallery')
+  await requireBackofficePage()
   const t = await getTranslations('admin.products')
 
   return (
