@@ -60,6 +60,9 @@ export default async function Navbar({ locale }: Props) {
               <Link href="/admin/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 Orders
               </Link>
+              <Link href="/admin/products" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                Products
+              </Link>
               <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 Users
               </Link>

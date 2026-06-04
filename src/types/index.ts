@@ -35,6 +35,8 @@ export interface Product {
   active: boolean
   constructions: Construction[]
   new_until: string | null  // ISO datetime; null = new without expiry; absent = not new
+  adds_exclude: string | null  // e.g. "#cr56f_zipper" — additions to hide for this product
+  exclusive: string | null
 }
 
 export interface Profile {

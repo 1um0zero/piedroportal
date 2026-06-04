@@ -60,9 +60,10 @@ export function NavbarMobile({ isAdmin, isLoggedIn, locale, locales }: Props) {
 
               {isLoggedIn && isAdmin && (
                 <>
-                  <Link href="/admin"        onClick={close} className={linkCls}>Dashboard</Link>
-                  <Link href="/admin/orders" onClick={close} className={linkCls}>Orders</Link>
-                  <Link href="/admin/users"  onClick={close} className={linkCls}>Users</Link>
+                  <Link href="/admin"          onClick={close} className={linkCls}>Dashboard</Link>
+                  <Link href="/admin/orders"   onClick={close} className={linkCls}>Orders</Link>
+                  <Link href="/admin/products" onClick={close} className={linkCls}>Products</Link>
+                  <Link href="/admin/users"    onClick={close} className={linkCls}>Users</Link>
                 </>
               )}
 
