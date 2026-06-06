@@ -30,6 +30,11 @@ Response: `{ contract_version, count, orders: ErpOrder[] }`.
 Body: `{ "order_ids": ["uuid", ...] }`. Sets `erp_exported_at = now()` so those orders stop appearing
 in the pending feed. Response: `{ acknowledged: n }`.
 
+### `POST /api/erp/orders/status` — write order state back (Q6.4) ✅ built
+Body: `{ order_id, production_state?, approval_state?, piedro_order_id?, piedro_notes? }`. Only the
+provided fields are updated; `orders.status` is kept in sync. Idempotent — replaces the brittle
+Dataverse status-update path (a source of the current update errors, Q6.2). Response: `{ ok, id }`.
+
 ---
 
 ## The flow (kills the classic import flaws)

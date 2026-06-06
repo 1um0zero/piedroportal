@@ -197,6 +197,29 @@ in NL, UK branch copy in EN). Settings resolution order: **Global → Branch →
 - [ ] **15.3** Backlog: generalize per-branch overrides for other admin params (set-password text, etc.)
       as they are added · 🤖 (design as we go)
 
+## 17. Overnight run — results & findings (2026-06-06/07, autonomous)
+- ✅ **Deployed** to master (commits 987a657 incl. all email/auth/admin work, 2a006b2 security fixes).
+- ✅ **Build gate** caught a real bug pre-deploy: `'use server'` file exported a const → moved to
+  `src/lib/texts-config.ts`.
+- ✅ **Security fixes (deployed):** (1) `/gallery/[id]/order` only loads a `?draft=` order if it
+  belongs to the requester or piedro_admin (was a cross-tenant patient-data leak). (2)
+  `/api/admin/notify-new-user` now fail-closed (required webhook secret; was public when unset) +
+  settings-based recipients + i18n.
+- ✅ **All API routes verified guarded** (session / piedro_admin / ERP token / webhook secret).
+- ✅ **Companies refreshed** (200) and **users migrated**: 282 created + 2 reused, 0 failed, all flagged
+  must_set_password. (340 contacts → 55 had no account, 1 dup email → 284 linkable.)
+- ⛔ **Backfill blocker (DECIDE TOGETHER):** the order→contact lookup is `_cr56f_user_value` (→contact)
+  but it is **empty on ALL 4027 orders** — Power Pages never stored the per-order contact. So
+  `orders.user_id` **cannot be backfilled** from order data (0/4027). Options to discuss: accept
+  company-level linkage only (regular users won't see historical orders; company_admins will), or find
+  another mapping source. (Q4.3 wanted user linkage — source data doesn't support it.)
+- ⚠️ **Stray orders:** Supabase already holds **3813** orders (vs 3102 clean step-3) — earlier
+  full import left non-step-3/TESTES rows. **Cleanup decision needed** before/with the refresh
+  (re-import upserts, it does NOT delete these). Ready command: re-run `import-dataverse-orders.mjs`
+  (now filtered) + a DELETE for rows not in the step-3 set.
+- ▶️ **Orders import + backfill NOT run** (deferred to the supervised session, per "amanhã importarmos
+  os dados"). Backfill field confirmed = `_cr56f_user_value` (but empty — see blocker).
+
 ## 16. Feature backlog (post-launch) — 🟡
 
 ### 16.1 AI post-login briefing  ·  🤖 build · 👤 shape  ·  NOT for Monday (registered 2026-06-06)
