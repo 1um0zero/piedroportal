@@ -76,17 +76,19 @@ export default async function OrderPage({ params, searchParams }: Props) {
     if (!labels.includes(exclusive)) notFound()
   }
 
-  // Load draft data if draftId is provided (duplicate/edit flow)
+  // Load draft data if draftId is provided (duplicate/edit flow).
+  // Security: only the order's owner (or a piedro_admin) may load it — never leak
+  // another user's/company's order + patient data via a guessed ?draft= id.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let draftData: Record<string, any> | null = null
-  if (draftId) {
+  if (draftId && user) {
     const service = createServiceClient()
     const { data } = await service
       .from('orders')
-      .select('unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,company_id')
+      .select('user_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,company_id')
       .eq('id', draftId)
       .single()
-    draftData = data
+    if (data && (data.user_id === user.id || isAdmin)) draftData = data
   }
 
   return (
