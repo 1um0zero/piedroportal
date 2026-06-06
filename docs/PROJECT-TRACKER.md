@@ -1,0 +1,222 @@
+# Piedro Portal — Master Project Tracker
+
+> Single source of truth for everything still to do before (and shortly after) launch.
+> Reusable for future projects: copy the structure, keep the legend.
+
+## How to use
+- Check a box `[x]` when done. Topics have a **status** that's done only when all its steps are.
+- **Owner:** 👤 = you (Jorge / Piedro / client side) · 🤖 = me (Claude / dev) · 👥 = both.
+- **Priority:** 🔴 P0 (blocks launch) · 🟠 P1 (around launch) · 🟡 P2 (post-launch).
+- **Built (uncommitted):** code is written + tsc/lint-clean but **not committed/deployed** yet.
+- **Attachments / inputs:** drop files in `docs/attachments/<NN-topic>/` and link them under the task
+  with `📎`. See `docs/attachments/README.md`.
+- Detail lives in: `docs/launch/LAUNCH-ROADMAP.md`, `LAUNCH-QUESTIONNAIRE.md`, `ERP-INTEGRATION.md`,
+  `docs/compliance/*`.
+
+Last updated: 2026-06-06.
+
+---
+
+## 1. Domain, DNS & hosting — 🔴 / 👥
+- [ ] **1.1** Point **portal.piedro.pt** DNS at Vercel · 👤 (you control piedro.pt DNS)
+- [ ] **1.2** Add the custom domain in Vercel + verify · 🤖 config / 👤 confirm
+- [ ] **1.3** Piedro updates the **link on piedro.com** to the new portal · 👤
+- [ ] **1.4** **Redirector on old Power Pages** → new portal (keep PP alive in background) · 👤 (🤖 can help)
+- [ ] **1.5** Remove the **`robots noindex`** at go-live (staging guard) · 🤖
+- [ ] **1.6** TLS cert issued once DNS resolves (Vercel auto) · 👥 verify
+- [ ] **1.7** Later: redirect **piedro.com → portal** once stable · 👤
+- [ ] **1.8** Email-auth DNS (SPF/DKIM/DMARC) for the sending domain · 👤 (see 6.6)
+
+## 2. Environment & secrets (Vercel prod) — 🔴 / 👤
+- [ ] **2.1** Confirm set: Supabase URL/anon/service, `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, Dataverse creds · 👤 *(Q2.1)*
+- [ ] **2.2** Set `NEXT_PUBLIC_SITE_URL` (used by forgot-password + callback redirects) · 👤
+- [ ] **2.3** Set notify-email envs as **fallback** only (now admin-editable, see 6): `ORDER_NOTIFY_EMAIL`, `ADMIN_NOTIFY_EMAIL`, `EMAIL_FROM` · 👤
+- [ ] **2.4** Set `ERP_API_TOKEN` (long random secret) · 👤
+- [ ] **2.5** Confirm **Supabase region = EU** (patient data) · 👤 *(Q2.2)*
+- [ ] **2.6** Take a Supabase **backup/snapshot** before any wipe · 👤
+
+## 3. Data wipe & rebuild — 🔴 / 👥
+- [ ] **3.1** Decide exact **test data** to destroy (orders/users/companies; keep product images?) · 👤 *(Q3.1)*
+- [ ] **3.2** Backup, then wipe test rows · 👤
+- [x] **3.3** ✅ Migrations **001–012 all run in prod** (user confirmed 2026-06-06 via the combined
+      `migrations/ALL_006-012.sql`). · 👤
+- [ ] **3.4** Rebuild from Dataverse in order (each `--dry-run` first) · 👥
+  - [ ] 3.4.a `import-accounts.mjs` → companies · 👤 run
+  - [ ] 3.4.b `dataverse-import.mjs` → products · 👤 run
+  - [ ] 3.4.c `import-dataverse-orders.mjs` → orders (**step-3 only**, **TESTES\*** excluded) ✅ built · 👤 run
+- [ ] **3.5** **Reconciliation**: `count(*) orders` == script's "expected = kept" · 👥
+- [ ] **3.6** Re-create portal-only data not in Dataverse: branches, exclusive labels, company_admins · 👤 *(Q3.3)*
+- [ ] **3.7** ~~Import legacy order PDFs~~ **DEFERRED (Q11.3)**: in SharePoint via a `pdf_link` column,
+      not all filled — "esquecer isto para já". Revisit post-launch. · 🟡
+  - 📎 *(paste where the PDFs live in Dataverse here)*
+
+## 4. User migration & password flows — 🔴 / 👥
+- [x] **4.1** `import-contacts.mjs` (contacts → Auth + profiles + user_companies) ✅ built · 🤖
+- [x] **4.2** company_admin rule (Q4.1): **assigned by a piedro_admin on the company sheet**, not
+      inferred. ✅ import-contacts no longer guesses; company sheet has a Members & admins panel. · 🤖
+- [x] **4.3** Set-password-on-first-login (migration 006 + middleware guard + login redirect) ✅ built · 🤖
+- [x] **4.4** Forgot-password flow (link + page + reset email → /set-password) ✅ built · 🤖
+- [ ] **4.5** Run migration + the contacts import (after companies import) · 👤
+- [ ] **4.6** Decide handling of no-email / duplicate-email contacts · 👤 *(Q4.2)*
+- [ ] **4.7** Create `piedro_admin` / `branch_staff` accounts · 👤 *(Q4.4)*
+
+## 5. Backfill & data integrity — 🟠 / 👥
+- [x] **5.1** `backfill-order-users.mjs` (order→contact→email→user) ✅ built · 🤖
+- [x] **5.2** Dual cross-checks (contact-account == order-company; user ∈ company) ✅ built · 🤖
+- [x] **5.3** `--verify` + reason capture into `orders.import_note` (migration 008) ✅ built · 🤖
+- [x] **5.4** `/admin/orders/unassigned` list + reason + nav link ✅ built · 🤖
+- [ ] **5.5** Run `--discover` → `--contact-field=…` → apply → `--verify` · 👤
+- [ ] **5.6** Final SQL cross-check returns 0 rows (user ∉ company) · 👥
+
+## 6. Email & notifications — 🟠 / 👥
+- [x] **6.1** Notify emails **fail-closed** (no dev hardcodes) ✅ built · 🤖
+- [x] **6.2** Admin-editable notify emails (`app_settings` + `/admin/settings`, migration 009) ✅ built · 🤖
+- [x] **6.3** **Full i18n of all emails** (EN/NL/FR/DE) ✅ built · 🤖
+  - [x] 6.3.a order emails → `emails` namespace ×4
+  - [x] 6.3.b new-user notification email → i18n ×4 (+ values now HTML-escaped)
+  - [x] 6.3.c internal locale = `notify_locale` setting (selector in /admin/settings); client = order locale
+- [x] **6.4** **Client order confirmation by default** ✅ built (confirmation email TO the user, order locale, PDF) · 🤖
+- [ ] **6.5** **Cc/Bcc on user AND customer** (default goes to the user) · 🤖 *(decided, 14.5)*
+  - [x] 6.5.a migration 010: `profiles.notify_cc/bcc` + `companies.notify_cc/bcc` ✅ built
+  - [x] 6.5.b email engine applies user+company Cc/Bcc to the confirmation ✅ built
+  - [x] 6.5.c profile UI to edit user Cc/Bcc ✅ built (Profile page) · 🤖
+  - [x] 6.5.d company UI to edit customer Cc/Bcc ✅ built (Company detail) · 🤖
+  - [x] 6.5.e branch-office copy ✅ built (fan-out + branch notify UI in branch create/detail forms) · 🤖
+- [x] **6.6** **Set-password text editable in admin panel** ✅ built · 🤖 *(14.2)*
+  - [x] 6.6.a set-password page + reset-email texts editable per locale (app_settings override → i18n
+        fallback). Editor at **/admin/settings/texts** (locale tabs, 6 fields), linked from Settings.
+  - [x] 6.6.b "Propose from English" AI translation per locale (`proposeTranslationAction`, Haiku).
+  - [x] 6.6.c **Take over the reset email** ✅ built — own single-use SHA-256-hashed token (migration 012),
+        2h expiry, atomic claim, no user enumeration, multi-lingual Resend email, /set-password token mode
+        + public middleware allowance. Engine uses i18n defaults; admin-editable override = 6.6.a/b.
+- [ ] **6.6** Verified Piedro **Resend domain** + publish SPF/DKIM/DMARC · 👤
+- [ ] **6.7** Inbox-deliverability test (NL recipient, not spam) · 👥
+
+## 7. ERP / a-shell integration — 🟠 / 👥
+- [x] **7.1** Export endpoint `GET /api/erp/orders` + `POST /ack` + contract (migration 007) ✅ built · 🤖
+- [ ] **7.2** Choose architecture A (bridge) vs **B** (a-shell reads portal, recommended) · 👤 *(Q6.1)*
+- [ ] **7.3** Provide the **flaw list** to eliminate · 👤 *(Q6.2)*
+- [ ] **7.4** Tell me how a-shell auths/pulls today + if its code can change by Mon · 👤 *(Q6.3)*
+- [ ] **7.5** Finalize contract to a-shell's minimum fields · 🤖 *(Q6.5)*
+- [ ] **7.6** Status-back from ERP (optional `PATCH`) · 👥 *(Q6.4)*
+- [ ] **7.7** a-shell switches to the new endpoint (or temp bridge for Monday) · 👤 *(Q6.6)*
+
+## 8. Customer communication — 🟠 / 👥
+- [ ] **8.1** Who announces, channel, when · 👤 *(Q7.1)*
+- [ ] **8.2** Draft announcement + first-login instructions (NL/EN/FR/DE) · 🤖 *(Q7.3)*
+- [ ] **8.3** Support channel + on-call during week 1 · 👤 *(Q7.2)*
+
+## 9. Compliance & legal — 🔴 / 👥  ← almost a sub-project
+- [ ] **9.1** **Validate & CERTIFY all AI-drafted legal/compliance docs** (cannot publish uncertified) · 👤 lead, 🤖 support *(Q8.3)*
+  - [ ] 9.1.a DPO/legal review of `docs/compliance/COMPLIANCE-REPORT.en/.nl` (GDPR Art.9, MDR custom-made, ISO 13485 §4.1.6)
+  - [ ] 9.1.b Fill EVERY placeholder in `src/lib/legal-info.ts` (legal name, address, KvK, contacts, DPO) · 👤 provide, 🤖 wire
+  - [ ] 9.1.c Review Privacy Policy / Terms / Impressum page texts · 👤
+  - [ ] 9.1.d Confirm `docs/compliance/CLIENT-ACTIONS.en/.nl` items done + record evidence
+  - [ ] 9.1.e Version + date each doc; store certified copies in the ISO/QMS dossier
+  - 📎 *(attach signed copies / DPO sign-off here)*
+- [ ] **9.2** DPAs signed: Supabase, Vercel, Resend, **Anthropic** (or disable chat) · 👤 *(Q8.2)*
+- [ ] **9.3** ROPA, DPIA, retention schedule (MDR ≥10y) · 👤 lead, 🤖 support
+- [ ] **9.4** Audit logging of patient-data access (ISO/MDR) · 🤖 build, 👤 confirm scope
+
+## 10. Security & operations — 🟠 / 👥
+- [ ] **10.1** RLS (migration 002) enabled **and tested** end-to-end · 👤 run, 👥 test
+- [ ] **10.2** `order-pdfs` bucket = **Private** · 👤
+- [ ] **10.3** Rate limiting on `/api/chat` + PDF routes · 🤖
+- [x] **10.4** Chat Anthropic client made lazy (no module-load crash) ✅ built · 🤖
+- [ ] **10.5** Admin MFA · 👤 (Supabase setting) / 🤖 (UI if needed)
+- [ ] **10.6** Error monitoring (Sentry/Vercel) + Supabase backup schedule · 👥
+- [ ] **10.7** Rollback plan (revert DNS / restore snapshot) · 👥
+
+## 11. QA / smoke test / GO–NO-GO — 🔴 / 👥
+- [ ] **11.1** Register/login + forced password reset · 👥
+- [ ] **11.2** Gallery + filters + exclusive-model visibility · 👥
+- [ ] **11.3** Full order (5 unit modes, additions, draft, submit) · 👥
+- [ ] **11.4** PDF preview + final PDF email (signed URL, private bucket) · 👥
+- [ ] **11.5** Admin: status change, orders, products, companies, branches, unassigned, settings · 👥
+- [ ] **11.6** Roles see correct scope (user / company_admin / branch_staff / piedro_admin) · 👥
+- [ ] **11.7** All 4 locales render (no leftover hardcoded PT) · 👥
+- [ ] **11.8** Migrated orders display correctly · 👥
+- [ ] **11.9** **GO / NO-GO** decision · 👤
+
+## 12. Post-launch backlog — 🟡 / 🤖
+- [ ] **12.1** SQL aggregation for dashboards (currently O(n) in JS)
+- [ ] **12.2** Complete `labelFr/labelDe` in `additions-config.ts`
+- [ ] **12.3** Gallery filters in URL (shareable links)
+- [ ] **12.4** Drop deprecated `profiles.company_id`
+- [ ] **12.5** Internal notification email language polish (decided via 6.3)
+- [ ] **12.6** Set-password page copy customizable from the admin settings panel *(decided — see 6 / 13)*
+
+## 13. Decisions log (from chat)
+- 2026-06-06 User migration = 100% clean, no invites, reset on first login.
+- 2026-06-06 Orders: only **step 3** imported; others counted not imported; **TESTES\*** excluded.
+- 2026-06-06 Notify emails admin-editable (done). Emails fully i18n, max polish.
+- 2026-06-06 Client gets order confirmation **by default**; profile has Cc/Bcc options, default **Cc = self**.
+- 2026-06-06 Set-password text customizable in the admin settings panel.
+- 2026-06-06 Old Power Pages kept alive in background; legacy PDFs must be imported.
+- 2026-06-06 (14.x) Internal email locale = admin setting; set-password text editable multi-lingual +
+  AI-propose; non-step-3 not stored; use bucket images (no image import); Cc/Bcc on user+customer with
+  default to user; From on piedro.com (fallback piedro.pt).
+
+## 13b. Questionnaire answers digest (2026-06-06)
+- **Env (Q2.1)** all set in Vercel; **region (Q2.2)** Ireland (EU ✓).
+- **Migrations (Q3.2)** 001–005 done; 006–012 pending (→ 3.3). GUIDs stable (Q3.4).
+- **Users (Q4.5)** ~340 users, ~200 companies. No users without email expected; report exceptions (Q4.2).
+  Backfill user_id wanted (Q4.3). piedro_admin/branch_staff assignment TBD (Q4.4 = "?????").
+- **Email (Q5.1)** From starts piedro.pt → later piedro.com; user will verify the domain.
+- **ERP (Q6)** Option **B** (A only as emergency if orders pile up). Flaws: additions not always
+  exported (forces 2nd validation), status-back errors. User has **full control of ERP code**; import
+  is **manual + token + HTML calls** → fits our token GET endpoint. **Status-back REQUIRED** (Q6.4).
+  Wants **all registered+approved orders with all data** (Q6.5). Temp bridge OK for Monday (Q6.6).
+  **ERP integration is the LAST priority** (Q10).
+- **Comms (Q7)** decided Monday with Piedro; support = Piedro NL staff + the chat; no draft yet.
+- **Legal (Q8)** user will route docs to Piedro + ensure DPAs + certification.
+- **Ops (Q9)** freeze window yes; everyone fixes Monday; **all-or-nothing** launch.
+- **Import rules (Q11)** step==3 (string or number — handled); TESTES* by name; legacy PDFs deferred.
+
+## 14. Open clarifications (RESOLVED 2026-06-06)
+- [x] **14.1** Internal email language = **admin-set locale** (`notify_locale` setting).
+- [x] **14.2** Set-password panel: **both** welcome text AND reset-email text, **multi-lingual**, with an
+      AI-propose-translation option. → 6.6.
+- [x] **14.3** Non-step-3 orders: **report at import only**, no stored stats.
+- [x] **14.4** Use the **bucket images** (better) — do **not** import from Dataverse unless one is
+      missing (unlikely). → 3.7 narrowed to PDFs only; image import dropped.
+- [x] **14.5** Cc/Bcc on **user AND customer**; if nothing set, the order copy goes to the **user**.
+      (No global archive Bcc.) Branch office can also receive (6.5.e). → 6.5.
+- [x] **14.6** Resend From domain: **piedro.com** preferred (pending the client getting permission);
+      otherwise **piedro.pt** (client-administered) for now. → 1.8 / 6.6 / `email_from` setting.
+
+## 15. Branch = a configuration scope (ARCHITECTURE PRINCIPLE, user 2026-06-06)
+**Principle:** a branch office (NL, UK, …) is a layer that can **override/replicate global admin
+config**. Almost anything configurable at the admin level may need a per-branch version (language,
+notify emails, and likely more later). An order **fans out**: every branch whose scope covers the
+order's model gets its own copy, **in that branch's own language** (e.g. a FR order → NL branch copy
+in NL, UK branch copy in EN). Settings resolution order: **Global → Branch → (Company → User)**.
+- [x] **15.1** Which branch receives an order = the branch whose **model-scope includes the product's
+      `style_name`** (reuses `getAdminScope` logic). ✅ decided + built (fan-out)
+- [x] **15.2** Branch **notify email + notify locale** fields ✅ built (migration 011) — admin UI to edit = 6.5.e/16.x
+- [ ] **15.3** Backlog: generalize per-branch overrides for other admin params (set-password text, etc.)
+      as they are added · 🤖 (design as we go)
+
+## 16. Feature backlog (post-launch) — 🟡
+
+### 16.1 AI post-login briefing  ·  🤖 build · 👤 shape  ·  NOT for Monday (registered 2026-06-06)
+After login, each user gets a **natural-language summary in their own locale** of what mattered
+recently — and what *didn't* happen — plus **suggested actions**. Essentially an NL interpretation of
+the dashboard data. Start with simple models/templates and improve over time. Complements (does not
+replace) the existing chat where the user can already ask specific questions. Users can also tell it
+**what they habitually want to know**.
+- [ ] **16.1.a** **Admin briefing** — e.g. what happened since yesterday, how many orders, best
+      clients, top-selling models; flags like "recently added models aren't selling — maybe email the
+      customers."
+- [ ] **16.1.b** **Customer briefing** — e.g. models they've been ordering a lot, patients who haven't
+      ordered in a while, and some additions-based insights (exact set TBD by user).
+- [ ] **16.1.c** **Personalization** — let the user configure recurring topics they care about; store
+      per-user preferences.
+- [ ] **16.1.d** **Learning loop** — the system should "learn to learn" what's worth surfacing vs.
+      what to avoid; capture feedback signals over time.
+- [ ] **16.1.e** ⚠️ **Privacy/safety rules (canonical):** never expose **patient names** — use patient
+      **IDs**; treat all patient/additions data as GDPR Art.9 special category (see
+      `project_compliance_context`); the briefing sends data to the LLM → same DPA/zero-retention
+      constraints as the chat (Q8.2). Define an allow/deny list of what may be mentioned.
+- [ ] **16.1.f** Phasing: v1 = deterministic dashboard aggregates rendered to NL via a small prompt;
+      later = richer reasoning + suggestions + personalization.

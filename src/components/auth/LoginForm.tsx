@@ -91,6 +91,12 @@ export default function LoginForm({ hasError }: { hasError?: boolean }) {
                 {pending && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {t('sign_in')}
               </button>
+
+              <p className="text-center">
+                <Link href="/forgot-password" className="text-xs text-stone-400 hover:text-[#B8975A] hover:underline">
+                  {t('forgot_password')}
+                </Link>
+              </p>
             </form>
           </div>
 

@@ -69,6 +69,8 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
                       <Link href="/admin/companies" onClick={close} className={linkCls}>{t('companies')}</Link>
                       <Link href="/admin/branches"  onClick={close} className={linkCls}>{t('branches')}</Link>
                       <Link href="/admin/users"     onClick={close} className={linkCls}>{t('users')}</Link>
+                      <Link href="/admin/orders/unassigned" onClick={close} className={linkCls}>{t('unassigned')}</Link>
+                      <Link href="/admin/settings" onClick={close} className={linkCls}>{t('settings')}</Link>
                     </>
                   )}
                 </>

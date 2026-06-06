@@ -47,6 +47,7 @@ export interface Profile {
   company_id: string | null  // DEPRECATED: Use user_companies table instead
   branch_id: string | null   // Branch office a branch_staff user belongs to
   preferred_locale: Locale
+  must_set_password?: boolean // migrated users must set their own password on first login
 }
 
 /**
@@ -59,6 +60,8 @@ export interface Branch {
   name: string
   code: string | null
   sees_full_catalogue: boolean
+  notify_email: string | null   // where this branch's order copies are sent
+  notify_locale: string | null  // language for this branch's copies (en/nl/fr/de)
   created_at?: string
 }
 

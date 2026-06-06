@@ -62,6 +62,28 @@ export async function updateCompanyExclusiveLabel(
   return { ok: true }
 }
 
+// ── Company order-email Cc/Bcc ──────────────────────────────────────────────────
+
+/** Set the customer-level Cc/Bcc applied to order confirmations for this company. */
+export async function updateCompanyNotify(
+  companyId: string,
+  fields: { notify_cc?: string; notify_bcc?: string },
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const patch: Record<string, string | null> = {}
+  if (fields.notify_cc  !== undefined) patch.notify_cc  = fields.notify_cc.trim()  || null
+  if (fields.notify_bcc !== undefined) patch.notify_bcc = fields.notify_bcc.trim() || null
+
+  const service = createServiceClient()
+  const { error } = await service.from('companies').update(patch).eq('id', companyId)
+  if (error) return { error: error.message }
+
+  revalidate(companyId)
+  return { ok: true }
+}
+
 // ── Model ↔ company exclusivity (applies to the whole model = all colours) ──────
 
 /**

@@ -25,6 +25,8 @@ export interface BranchInput {
   name: string
   code: string | null
   sees_full_catalogue: boolean
+  notify_email: string | null
+  notify_locale: string | null
 }
 
 export async function createBranch(input: BranchInput): Promise<{ id?: string; error?: string }> {
@@ -39,6 +41,8 @@ export async function createBranch(input: BranchInput): Promise<{ id?: string; e
     name: input.name.trim(),
     code: input.code?.trim() || null,
     sees_full_catalogue: input.sees_full_catalogue,
+    notify_email: input.notify_email?.trim() || null,
+    notify_locale: input.notify_locale || null,
   })
   if (error) return { error: error.message }
 
@@ -57,6 +61,8 @@ export async function updateBranch(
   if (input.name !== undefined) patch.name = input.name.trim()
   if (input.code !== undefined) patch.code = input.code?.trim() || null
   if (input.sees_full_catalogue !== undefined) patch.sees_full_catalogue = input.sees_full_catalogue
+  if (input.notify_email !== undefined) patch.notify_email = input.notify_email?.trim() || null
+  if (input.notify_locale !== undefined) patch.notify_locale = input.notify_locale || null
 
   const service = createServiceClient()
   const { error } = await service.from('branches').update(patch).eq('id', id)

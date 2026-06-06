@@ -6,6 +6,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 export async function updateProfileAction(fields: {
   full_name?: string
   gender?: string
+  notify_cc?: string
+  notify_bcc?: string
 }): Promise<{ ok?: boolean; error?: string }> {
   const sb = await createClient()
   const { data: { user } } = await sb.auth.getUser()
@@ -14,9 +16,11 @@ export async function updateProfileAction(fields: {
   // Whitelist the editable fields so a user can never set privileged columns
   // (e.g. role) — and use the service client so profiles RLS can forbid all
   // direct user updates as defence-in-depth.
-  const safe: { full_name?: string; gender?: string } = {}
+  const safe: { full_name?: string; gender?: string; notify_cc?: string | null; notify_bcc?: string | null } = {}
   if (fields.full_name !== undefined) safe.full_name = fields.full_name
   if (fields.gender !== undefined) safe.gender = fields.gender
+  if (fields.notify_cc !== undefined) safe.notify_cc = fields.notify_cc.trim() || null
+  if (fields.notify_bcc !== undefined) safe.notify_bcc = fields.notify_bcc.trim() || null
 
   const service = createServiceClient()
   const { error } = await service.from('profiles').update(safe).eq('id', user.id)

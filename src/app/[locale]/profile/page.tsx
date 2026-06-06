@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await sb
     .from('profiles')
-    .select('full_name, gender, avatar_url, role, company_id')
+    .select('full_name, gender, avatar_url, role, company_id, notify_cc, notify_bcc')
     .eq('id', user.id)
     .single()
 
@@ -21,6 +21,8 @@ export default async function ProfilePage() {
         initialName={profile?.full_name ?? ''}
         initialGender={profile?.gender ?? ''}
         initialAvatar={profile?.avatar_url ?? ''}
+        initialCc={profile?.notify_cc ?? ''}
+        initialBcc={profile?.notify_bcc ?? ''}
       />
     </div>
   )

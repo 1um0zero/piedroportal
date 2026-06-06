@@ -193,8 +193,40 @@ while (url && dvOrders.length < LIMIT) {
 }
 console.log(`\n✓ ${dvOrders.length} orders fetched\n`)
 
+// ── Partition: only STEP 3 (confirmed) orders are imported. ───────────────────
+// Earlier-step orders are unfinished drafts that were never completed — they are
+// counted for information only, never imported. Orders for the TESTES* customer
+// are test data and are ignored entirely.
+const isTestCustomer = (o) => {
+  const name = (o['_cr56f_customer_value@OData.Community.Display.V1.FormattedValue'] ?? '')
+    .trim().toUpperCase()
+  return name.startsWith('TESTES')
+}
+const STEP_CONFIRMED = 3
+
+const recon = { total: dvOrders.length, testes: 0, notStep3: 0, kept: 0 }
+const stepHistogram = {}
+const kept = []
+for (const o of dvOrders) {
+  if (isTestCustomer(o)) { recon.testes++; continue }
+  const step = Number(o.cr56f_step)
+  stepHistogram[Number.isFinite(step) ? step : 'none'] =
+    (stepHistogram[Number.isFinite(step) ? step : 'none'] ?? 0) + 1
+  if (step !== STEP_CONFIRMED) { recon.notStep3++; continue }
+  kept.push(o)
+}
+recon.kept = kept.length
+
+console.log('── Reconciliation (Dataverse → Supabase) ──────')
+console.log(`  Total in Dataverse        : ${recon.total}`)
+console.log(`  Excluded — TESTES* client : ${recon.testes}`)
+console.log(`  Counted only — not step 3 : ${recon.notStep3}  (unfinished, NOT imported)`)
+console.log(`  To import — step 3        : ${recon.kept}`)
+console.log(`  Step histogram            : ${JSON.stringify(stepHistogram)}`)
+console.log(`  ✓ Expected Supabase count after import = ${recon.kept}\n`)
+
 // ── Map to Supabase ───────────────────────────────────────────────────────────
-const rows = dvOrders.map(o => ({
+const rows = kept.map(o => ({
   id:                 o.cr56f_wpp_ordersid,
   dataverse_id:       o.cr56f_wpp_ordersid,
   user_id:            null,   // no direct mapping to Supabase auth users

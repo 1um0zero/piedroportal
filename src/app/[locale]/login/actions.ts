@@ -28,12 +28,17 @@ export async function signInAction(_: unknown, formData: FormData) {
   // Redirect to the user's preferred locale
   const { data: profile } = await supabase
     .from('profiles')
-    .select('preferred_locale')
+    .select('preferred_locale, must_set_password')
     .eq('id', data.user.id)
     .single()
 
   const loc = profile?.preferred_locale ?? 'en'
-  redirect(loc === 'en' ? '/gallery' : `/${loc}/gallery`)
+  const prefix = loc === 'en' ? '' : `/${loc}`
+
+  // Migrated users (no invite email) must set their own password first.
+  if (profile?.must_set_password) redirect(`${prefix}/set-password`)
+
+  redirect(`${prefix}/gallery`)
 }
 
 export async function signOutAction() {

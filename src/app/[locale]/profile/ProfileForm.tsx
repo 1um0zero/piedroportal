@@ -10,6 +10,8 @@ type Props = {
   initialName: string
   initialGender: string
   initialAvatar: string
+  initialCc: string
+  initialBcc: string
 }
 
 const GENDERS = [
@@ -19,12 +21,14 @@ const GENDERS = [
   { value: 'other', label: 'Other' },
 ]
 
-export default function ProfileForm({ email, initialName, initialGender, initialAvatar }: Props) {
+export default function ProfileForm({ email, initialName, initialGender, initialAvatar, initialCc, initialBcc }: Props) {
   const router     = useRouter()
   const fileRef      = useRef<HTMLInputElement>(null)
   const [showCamera, setShowCamera] = useState(false)
   const [name, setName]     = useState(initialName)
   const [gender, setGender] = useState(initialGender)
+  const [cc, setCc]   = useState(initialCc)
+  const [bcc, setBcc] = useState(initialBcc)
   const [avatar, setAvatar] = useState(initialAvatar)
   const [preview, setPreview] = useState(initialAvatar)
   const [saving, setSaving] = useState(false)
@@ -39,7 +43,7 @@ export default function ProfileForm({ email, initialName, initialGender, initial
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true); setMsg(''); setErr(false)
-    const result = await updateProfileAction({ full_name: name, gender })
+    const result = await updateProfileAction({ full_name: name, gender, notify_cc: cc, notify_bcc: bcc })
     setSaving(false)
     if (result.ok) { setMsg('Profile saved.'); router.refresh() }
     else { setMsg(result.error ?? 'Error'); setErr(true) }
@@ -164,6 +168,28 @@ export default function ProfileForm({ email, initialName, initialGender, initial
               {g.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Order email copies */}
+      <div className="space-y-3 border-t border-stone-100 pt-6">
+        <div>
+          <p className="text-xs font-bold text-stone-600 uppercase tracking-wide">Order email copies</p>
+          <p className="text-xs text-stone-400 mt-0.5">
+            You always receive a confirmation of your orders. Add extra addresses to copy (comma-separated).
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">Cc</label>
+          <input value={cc} onChange={e => setCc(e.target.value)} placeholder="colleague@clinic.com, ..."
+            className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">Bcc</label>
+          <input value={bcc} onChange={e => setBcc(e.target.value)} placeholder="archive@clinic.com, ..."
+            className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors" />
         </div>
       </div>
 

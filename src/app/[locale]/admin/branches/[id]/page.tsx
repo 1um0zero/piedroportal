@@ -16,7 +16,7 @@ export default async function BranchDetailPage({ params }: Props) {
   const service = createServiceClient()
 
   const { data: branchRow } = await service
-    .from('branches').select('id, name, code, sees_full_catalogue').eq('id', id).single()
+    .from('branches').select('id, name, code, sees_full_catalogue, notify_email, notify_locale').eq('id', id).single()
   if (!branchRow) notFound()
   const branch = branchRow as Branch
 

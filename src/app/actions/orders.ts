@@ -3,7 +3,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanyIds } from '@/lib/user-companies'
+import { getSettings } from '@/lib/settings'
+import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
 import { escapeHtml } from '@/lib/escape-html'
+import { getTranslations } from 'next-intl/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { Resend } from 'resend'
 import React from 'react'
@@ -13,10 +16,11 @@ function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY
   return key ? new Resend(key) : null
 }
-const TO_EMAIL = process.env.ORDER_NOTIFY_EMAIL ?? 'tavares@umzero.pt'
-// Production must use a Piedro-owned, Resend-verified domain (set EMAIL_FROM).
-// The resend.dev sender is a sandbox address and is not deliverable in production.
-const EMAIL_FROM = process.env.EMAIL_FROM ?? 'Piedro Portal <onboarding@resend.dev>'
+// Recipients/sender are configured by the admin in /admin/settings (app_settings),
+// falling back to env vars. No dev fallback: if neither is set we SKIP sending
+// rather than misdeliver order data to a personal/sandbox address.
+//   order_notify_email / ORDER_NOTIFY_EMAIL — Piedro's order desk recipient
+//   email_from / EMAIL_FROM — a Piedro-owned, Resend-verified sender
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 
 
@@ -90,14 +94,35 @@ export async function insertOrderAction(
   const orderId: string = data.id
 
   if (row.status === 'submitted' && pdfMeta) {
-    const pdfResult = await generatePdf(orderId, row, pdfMeta, service)
+    const pdfResult = await generatePdf(orderId, row, pdfMeta, service, user.id, user.email)
     return { id: orderId, ...pdfResult }
   }
   return { id: orderId }
 }
 
+// ── Email helpers ──────────────────────────────────────────────────────────────
+type EmailT = Awaited<ReturnType<typeof getTranslations<'emails'>>>
+const splitEmails = (s?: string | null) =>
+  (s ?? '').split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
+const uniq = (arr: string[]) => [...new Set(arr.map(e => e.toLowerCase()))]
+
+function orderEmailHtml(t: EmailT, heading: string, ref: string, company: string, patient: string, model: string, intro?: string) {
+  return `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
+    <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
+    <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 ${intro ? '12' : '20'}px">${escapeHtml(heading)}</h2>
+    ${intro ? `<p style="font-size:14px;color:#44403C;margin:0 0 20px">${escapeHtml(intro)}</p>` : ''}
+    <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
+      <tr><td style="padding:8px 0;color:#78716C;width:120px">${escapeHtml(t('label_reference'))}</td><td style="padding:8px 0;font-weight:500">${escapeHtml(ref)}</td></tr>
+      <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_company'))}</td><td style="padding:8px 0;font-weight:500">${escapeHtml(company)}</td></tr>
+      <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_patient'))}</td><td style="padding:8px 0">${escapeHtml(patient)}</td></tr>
+      <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_model'))}</td><td style="padding:8px 0">${escapeHtml(model)}</td></tr>
+    </table>
+    <p style="font-size:12px;color:#A8A29E;margin-top:24px">${escapeHtml(t('pdf_attached'))}</p>
+  </div>`
+}
+
 // ── Shared PDF generation helper ──────────────────────────────────────────────
-async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>): Promise<{ pdf_url?: string; pdfError?: string; emailError?: string }> {
+async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>, userId: string, userEmail?: string): Promise<{ pdf_url?: string; pdfError?: string; emailError?: string }> {
   try {
     const pdfProps: OrderPdfProps = {
       reference: row.reference_customer, status: row.status, unit: row.unit,
@@ -125,34 +150,79 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const pdfPath = `${orderId}.pdf`
     await service.from('orders').update({ pdf_url: pdfPath }).eq('id', orderId)
 
-    // Send email with PDF attached. All patient/clinic-supplied values are
-    // HTML-escaped to prevent injection into the email body.
-    const ref = row.reference_customer ?? orderId.slice(0, 8)
+    // ── Emails ──────────────────────────────────────────────────────────────
+    // Two localized emails: (1) internal notification to the Piedro order desk
+    // (in the admin-set locale), (2) confirmation to the ordering user (in the
+    // order's locale) with optional user/company Cc/Bcc. All values HTML-escaped.
+    const ref     = row.reference_customer ?? orderId.slice(0, 8)
+    const patient = row.patient_name ?? '—'
     const resend = getResend()
     if (!resend) return { pdf_url: pdfPath, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
-    const { error: emailErr } = await resend.emails.send({
-      from:    EMAIL_FROM,
-      to:      [TO_EMAIL],
-      subject: `Nova Encomenda Piedro — ${escapeHtml(ref)}`,
-      html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
-        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
-        <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 20px">Nova encomenda submetida</h2>
-        <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
-          <tr><td style="padding:8px 0;color:#78716C;width:120px">Referência</td><td style="padding:8px 0;font-weight:500">${escapeHtml(ref)}</td></tr>
-          <tr><td style="padding:8px 0;color:#78716C">Empresa</td><td style="padding:8px 0;font-weight:500">${escapeHtml(pdfMeta.companyName)}</td></tr>
-          <tr><td style="padding:8px 0;color:#78716C">Paciente</td><td style="padding:8px 0">${escapeHtml(row.patient_name ?? '—')}</td></tr>
-          <tr><td style="padding:8px 0;color:#78716C">Modelo</td><td style="padding:8px 0">${escapeHtml(pdfMeta.productColourId)}</td></tr>
-        </table>
-        <p style="font-size:12px;color:#A8A29E;margin-top:24px">PDF em anexo.</p>
-      </div>`,
-      attachments: [{ filename: `encomenda-${ref}.pdf`, content: pdfBytes.toString('base64') }],
-    })
-
-    if (emailErr) {
-      console.error('Email error:', emailErr)
-      return { pdf_url: pdfPath, emailError: emailErr.message }
+    const cfg = await getSettings(['order_notify_email', 'email_from', 'notify_locale'])
+    const toEmail   = cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL
+    const emailFrom = cfg.email_from         ?? process.env.EMAIL_FROM
+    if (!emailFrom || (!toEmail && !userEmail)) {
+      return { pdf_url: pdfPath, emailError: 'Email not sent: set sender/recipient in Admin → Settings' }
     }
 
+    const attachment = { filename: `order-${ref}.pdf`, content: pdfBytes.toString('base64') }
+    const internalLocale = (cfg.notify_locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'
+    const orderLocale    = (row.locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'
+    const errors: string[] = []
+
+    // (1) Internal notification to the order desk.
+    if (toEmail) {
+      const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
+      const { error } = await resend.emails.send({
+        from: emailFrom, to: [toEmail],
+        subject: t('subject_internal', { ref }),
+        html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
+        attachments: [attachment],
+      })
+      if (error) errors.push(`internal: ${error.message}`)
+    }
+
+    // (2) Confirmation to the ordering user (+ user/company Cc/Bcc).
+    if (userEmail) {
+      const [{ data: prof }, { data: comp }] = await Promise.all([
+        service.from('profiles').select('notify_cc, notify_bcc').eq('id', userId).single(),
+        row.company_id
+          ? service.from('companies').select('notify_cc, notify_bcc').eq('id', row.company_id).single()
+          : Promise.resolve({ data: null as { notify_cc?: string; notify_bcc?: string } | null }),
+      ])
+      const cc  = uniq([...splitEmails(prof?.notify_cc),  ...splitEmails(comp?.notify_cc)]).filter(e => e !== userEmail.toLowerCase())
+      const bcc = uniq([...splitEmails(prof?.notify_bcc), ...splitEmails(comp?.notify_bcc)])
+      const t = await getTranslations({ locale: orderLocale, namespace: 'emails' })
+      const { error } = await resend.emails.send({
+        from: emailFrom, to: [userEmail],
+        cc:  cc.length  ? cc  : undefined,
+        bcc: bcc.length ? bcc : undefined,
+        subject: t('subject_client', { ref }),
+        html: orderEmailHtml(t, t('heading_client'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId, t('client_intro')),
+        attachments: [attachment],
+      })
+      if (error) errors.push(`client: ${error.message}`)
+    }
+
+    // (3) Branch-office copies — each relevant branch in its OWN language.
+    const { data: prod } = await service.from('products').select('style_name').eq('id', row.product_id).single()
+    const branchTargets = (await getBranchNotifyTargets(prod?.style_name))
+      .filter(bt => bt.email.toLowerCase() !== (toEmail ?? '').toLowerCase())
+    for (const bt of branchTargets) {
+      const t = await getTranslations({ locale: bt.locale, namespace: 'emails' })
+      const { error } = await resend.emails.send({
+        from: emailFrom, to: [bt.email],
+        subject: t('subject_internal', { ref }),
+        html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
+        attachments: [attachment],
+      })
+      if (error) errors.push(`branch ${bt.email}: ${error.message}`)
+    }
+
+    if (errors.length) {
+      console.error('Email error:', errors.join(' | '))
+      return { pdf_url: pdfPath, emailError: errors.join(' | ') }
+    }
     return { pdf_url: pdfPath }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
@@ -211,7 +281,7 @@ export async function updateOrderAction(
   if (error) return { error: `${error.message} [${error.code}]` }
 
   if (row.status === 'submitted' && pdfMeta) {
-    const pdfResult = await generatePdf(draftId, row, pdfMeta, service)
+    const pdfResult = await generatePdf(draftId, row, pdfMeta, service, user.id, user.email)
     return { id: draftId, ...pdfResult }
   }
   return { id: draftId }

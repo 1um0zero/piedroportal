@@ -6,7 +6,7 @@ import { routing } from './i18n/routing'
 const handleI18n = createMiddleware(routing)
 
 // Routes requiring authentication (locale-relative)
-const AUTH_REQUIRED = ['/orders', '/orders/dashboard', '/wishlist', '/admin']
+const AUTH_REQUIRED = ['/orders', '/orders/dashboard', '/wishlist', '/admin', '/set-password']
 
 // next.js 16: file should be proxy.ts, but Turbopack 16.2.6 only watches src/
 // eagerly and doesn't invoke proxy.ts at runtime — using src/middleware.ts instead.
@@ -20,12 +20,18 @@ export async function middleware(request: NextRequest) {
     pathname,
   )
 
+  // Token-based password reset is reachable without a session (the user isn't
+  // logged in yet); the token is validated server-side when submitted.
+  const isTokenReset = withoutLocale === '/set-password' && request.nextUrl.searchParams.has('token')
+
   const needsAuth =
-    AUTH_REQUIRED.some((r) => withoutLocale === r || withoutLocale.startsWith(r + '/')) ||
-    withoutLocale.endsWith('/order')  // e.g. /gallery/[id]/order
+    !isTokenReset && (
+      AUTH_REQUIRED.some((r) => withoutLocale === r || withoutLocale.startsWith(r + '/')) ||
+      withoutLocale.endsWith('/order')  // e.g. /gallery/[id]/order
+    )
 
   if (needsAuth) {
-    let response = handleI18n(request)
+    const response = handleI18n(request)
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -48,6 +54,19 @@ export async function middleware(request: NextRequest) {
       const loginUrl = new URL(request.url)
       loginUrl.pathname = pathname.replace(withoutLocale, '/login')
       return NextResponse.redirect(loginUrl)
+    }
+
+    // Migrated users (no invite email) must set their own password before using
+    // any protected area. Don't redirect the set-password page onto itself.
+    if (withoutLocale !== '/set-password') {
+      const { data: prof } = await supabase
+        .from('profiles').select('must_set_password').eq('id', user.id).single()
+      if (prof?.must_set_password) {
+        const setPwUrl = new URL(request.url)
+        setPwUrl.pathname = pathname.replace(withoutLocale, '/set-password')
+        setPwUrl.search = ''
+        return NextResponse.redirect(setPwUrl)
+      }
     }
 
     return response

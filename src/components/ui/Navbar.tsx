@@ -76,6 +76,12 @@ export default async function Navbar({ locale }: Props) {
                   <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('users')}
                   </Link>
+                  <Link href="/admin/orders/unassigned" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                    {t('unassigned')}
+                  </Link>
+                  <Link href="/admin/settings" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                    {t('settings')}
+                  </Link>
                 </>
               )}
             </>

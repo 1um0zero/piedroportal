@@ -3,7 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanyIds } from '@/lib/user-companies'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+// Lazily construct the client — the SDK throws at construction if the key is
+// missing, which would 500 the whole route (incl. the GET health check).
+let _client: Anthropic | null = null
+function getClient(): Anthropic {
+  if (!_client) _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  return _client
+}
 
 // ── System prompt ──────────────────────────────────────────────────────────────
 const SYSTEM = `You are the Piedro Portal assistant — a B2B ordering portal for Piedro International, a Dutch orthopaedic footwear company.
@@ -302,7 +308,7 @@ export async function POST(request: Request) {
         let currentMessages = [...messages]
 
         while (true) {
-          const response = await client.messages.create({
+          const response = await getClient().messages.create({
             model: 'claude-haiku-4-5-20251001',  // falls back gracefully if not available
             max_tokens: 1024,
             system: SYSTEM,

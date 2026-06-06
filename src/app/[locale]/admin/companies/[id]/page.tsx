@@ -4,6 +4,8 @@ import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
 import CompanyExclusiveModels from '@/components/admin/CompanyExclusiveModels'
+import CompanyNotifyForm from '@/components/admin/CompanyNotifyForm'
+import CompanyMembers, { type Member, type UserOption } from '@/components/admin/CompanyMembers'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
@@ -14,8 +16,26 @@ export default async function CompanyDetailPage({ params }: Props) {
 
   const service = createServiceClient()
   const { data: company } = await service
-    .from('companies').select('id, name, erp_code, exclusive_label').eq('id', id).single()
+    .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc').eq('id', id).single()
   if (!company) notFound()
+
+  // Members of this company (+ admin flag) and all users (for the add picker).
+  const { data: memberRows } = await service
+    .from('user_companies')
+    .select('user_id, is_company_admin, profiles(id, email, full_name)')
+    .eq('company_id', id)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const members: Member[] = (memberRows ?? []).map((r: any) => ({
+    id: r.user_id,
+    email: r.profiles?.email ?? '',
+    full_name: r.profiles?.full_name ?? '',
+    is_company_admin: !!r.is_company_admin,
+  }))
+  const { data: allProfiles } = await service
+    .from('profiles').select('id, email, full_name').order('full_name')
+  const allUsers: UserOption[] = (allProfiles ?? []).map(p => ({
+    id: p.id, email: p.email ?? '', full_name: p.full_name ?? '',
+  }))
 
   const label = (company.exclusive_label ?? '').trim().toUpperCase()
 
@@ -56,6 +76,12 @@ export default async function CompanyDetailPage({ params }: Props) {
         <h1 className="text-xl font-bold text-stone-900">{company.name}</h1>
         <span className="text-sm text-stone-400">{company.erp_code}</span>
       </div>
+      <CompanyMembers companyId={company.id} members={members} allUsers={allUsers} />
+      <CompanyNotifyForm
+        companyId={company.id}
+        initialCc={company.notify_cc ?? ''}
+        initialBcc={company.notify_bcc ?? ''}
+      />
       <CompanyExclusiveModels
         company={company}
         assignedModels={assignedModels}
