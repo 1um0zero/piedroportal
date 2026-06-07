@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
+import { nz } from '@/lib/format'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -44,7 +45,7 @@ function Bar({ label, count, max, sub }: { label: string; count: number; max: nu
       <div className="flex-1 bg-stone-100 rounded-full h-2">
         <div className="bg-gold h-2 rounded-full" style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-sm font-bold text-stone-700 w-8 text-right shrink-0">{count}</span>
+      <span className="text-sm font-bold text-stone-700 w-8 text-right shrink-0">{nz(count)}</span>
     </div>
   )
 }
@@ -66,7 +67,7 @@ function StatCard({ label, value, color = 'text-stone-800', sub }: { label: stri
   return (
     <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
       <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <p className={`text-3xl font-bold ${color}`}>{nz(value)}</p>
       {sub && <p className="text-[10px] text-stone-400 mt-0.5">{sub}</p>}
     </div>
   )

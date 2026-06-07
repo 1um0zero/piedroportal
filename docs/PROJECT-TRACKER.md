@@ -145,6 +145,9 @@ Last updated: 2026-06-06.
 - [ ] **12.4** Drop deprecated `profiles.company_id`
 - [ ] **12.5** Internal notification email language polish (decided via 6.3)
 - [ ] **12.6** Set-password page copy customizable from the admin settings panel *(decided — see 6 / 13)*
+- [ ] **12.7** **Canonical: numeric zero shown as "—"** (helper `nz()` in `src/lib/format.ts`).
+      Applied: admin dashboard, companies table, orders list, user dashboard. Sweep remaining
+      number screens as visited (admin/users, branches, products). · 🤖 *(rule set 2026-06-08)*
 
 ## 13. Decisions log (from chat)
 - 2026-06-06 User migration = 100% clean, no invites, reset on first login.

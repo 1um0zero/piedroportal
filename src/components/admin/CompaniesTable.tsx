@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
+import { nz } from '@/lib/format'
 
 export type CompanyRow = {
   id: string
@@ -59,7 +60,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
               <tr key={c.id} className="hover:bg-stone-50/60">
                 <td className="px-4 py-3 font-medium text-stone-800">{c.name}</td>
                 <td className="px-4 py-3 text-stone-500 whitespace-nowrap">{c.erp_code || '—'}</td>
-                <td className="px-4 py-3 text-stone-600 tabular-nums">{c.userCount}</td>
+                <td className="px-4 py-3 text-stone-600 tabular-nums">{nz(c.userCount)}</td>
                 <td className="px-4 py-3">
                   {c.admins.length
                     ? <div className="flex flex-wrap gap-1">
@@ -81,7 +82,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
                     ? <span className="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-mono font-medium text-gold">{c.exclusive_label}</span>
                     : <span className="text-stone-300">—</span>}
                 </td>
-                <td className="px-4 py-3 text-stone-500 tabular-nums">{c.models}</td>
+                <td className="px-4 py-3 text-stone-500 tabular-nums">{nz(c.models)}</td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <Link href={`/admin/companies/${c.id}`} className="text-sm font-medium text-gold hover:text-gold-dark">{t('manage')}</Link>
                 </td>

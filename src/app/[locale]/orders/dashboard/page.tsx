@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import { Link } from '@/i18n/navigation'
+import { nz } from '@/lib/format'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -29,7 +30,7 @@ function StatCard({ label, value, color = 'text-stone-800', sub, subColor = 'tex
   return (
     <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
       <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <p className={`text-3xl font-bold ${color}`}>{nz(value)}</p>
       {sub && <p className={`text-[10px] font-medium mt-0.5 ${subColor}`}>{sub}</p>}
     </div>
   )
@@ -47,7 +48,7 @@ function Bar({ label, count, max, sub }: { label: string; count: number; max: nu
       <div className="flex-1 bg-stone-100 rounded-full h-2">
         <div className="bg-gold h-2 rounded-full" style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-sm font-bold text-stone-700 w-8 text-right shrink-0">{count}</span>
+      <span className="text-sm font-bold text-stone-700 w-8 text-right shrink-0">{nz(count)}</span>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { duplicateOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
+import { nz } from '@/lib/format'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/products`
@@ -114,7 +115,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                   ? 'border-gold bg-gold/5'
                   : 'border-stone-100 bg-white hover:border-stone-200'}`}
             style={{ boxShadow: 'var(--shadow-card)' }}>
-            <p className="text-2xl font-bold text-stone-800">{value}</p>
+            <p className="text-2xl font-bold text-stone-800">{nz(value)}</p>
             <p className="text-xs text-stone-500 mt-0.5">{label}</p>
           </button>
         ))}
