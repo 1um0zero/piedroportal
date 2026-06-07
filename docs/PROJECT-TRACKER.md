@@ -222,6 +222,13 @@ in NL, UK branch copy in EN). Settings resolution order: **Global → Branch →
 
 ## 16. Feature backlog (post-launch) — 🟡
 
+### 16.2 Test orders excluded from statistics  ·  🤖 build · 👤 decide  ·  (registered 2026-06-07)
+Test accounts (e.g. suporte@umzero.pt, albuquerque.tavares@gmail.com) place orders that must NOT
+affect dashboards/stats. Two options to decide: (a) a dedicated **TESTES\*** customer (as before — the
+order import already excludes it), or (b) an `is_test` flag/category on orders (or company) that all
+analytics/dashboards filter out. Option (b) is cleaner (no fake company). Until decided, keep test
+activity on a TESTES* company so it's auto-excluded.
+
 ### 16.1 AI post-login briefing  ·  🤖 build · 👤 shape  ·  NOT for Monday (registered 2026-06-06)
 After login, each user gets a **natural-language summary in their own locale** of what mattered
 recently — and what *didn't* happen — plus **suggested actions**. Essentially an NL interpretation of
