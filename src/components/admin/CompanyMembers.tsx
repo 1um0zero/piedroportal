@@ -36,6 +36,17 @@ export default function CompanyMembers({ companyId, members, allUsers }: Props) 
         <p className="text-xs text-stone-400 mt-1">{t('members_hint')}</p>
       </div>
 
+      <div className="flex items-center gap-2">
+        <select value={addId} onChange={e => setAddId(e.target.value)}
+          className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none">
+          <option value="">{t('add_placeholder')}</option>
+          {assignable.map(u => <option key={u.id} value={u.id}>{u.full_name || u.email}</option>)}
+        </select>
+        <button onClick={() => { if (addId) { run('add', () => addUserCompanyAction(addId, companyId)); setAddId('') } }}
+          disabled={!addId || busy === 'add'}
+          className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">{tc('add')}</button>
+      </div>
+
       {members.length === 0 ? (
         <p className="text-sm text-stone-400">{t('no_members')}</p>
       ) : (
@@ -58,17 +69,6 @@ export default function CompanyMembers({ companyId, members, allUsers }: Props) 
           ))}
         </div>
       )}
-
-      <div className="flex items-center gap-2 pt-2">
-        <select value={addId} onChange={e => setAddId(e.target.value)}
-          className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none">
-          <option value="">{t('add_placeholder')}</option>
-          {assignable.map(u => <option key={u.id} value={u.id}>{u.full_name || u.email}</option>)}
-        </select>
-        <button onClick={() => { if (addId) { run('add', () => addUserCompanyAction(addId, companyId)); setAddId('') } }}
-          disabled={!addId || busy === 'add'}
-          className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">{tc('add')}</button>
-      </div>
     </section>
   )
 }

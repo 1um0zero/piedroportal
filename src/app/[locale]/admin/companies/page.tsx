@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
-import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
+import CompaniesTable, { type CompanyRow } from '@/components/admin/CompaniesTable'
 
 export default async function AdminCompaniesPage() {
   await requirePiedroAdminPage()
@@ -10,9 +10,37 @@ export default async function AdminCompaniesPage() {
   const service = createServiceClient()
 
   const { data: companyRows } = await service
-    .from('companies').select('id, name, erp_code, exclusive_label').order('name')
+    .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc').order('name')
   const companies = (companyRows ?? []) as
-    { id: string; name: string; erp_code: string; exclusive_label: string | null }[]
+    { id: string; name: string; erp_code: string; exclusive_label: string | null; notify_cc: string | null; notify_bcc: string | null }[]
+
+  // Members per company (for user count, admin list and search by user name/email).
+  type MemberAgg = { count: number; admins: string[]; haystack: string[] }
+  const membersByCompany = new Map<string, MemberAgg>()
+  let mOffset = 0
+  const M_PAGE = 1000
+  while (true) {
+    const { data, error } = await service
+      .from('user_companies')
+      .select('company_id, is_company_admin, profiles(full_name, email)')
+      .range(mOffset, mOffset + M_PAGE - 1)
+    if (error || !data?.length) break
+    for (const r of data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prof = (r as any).profiles as { full_name: string | null; email: string | null } | null
+      const cid = (r as { company_id: string }).company_id
+      const agg = membersByCompany.get(cid) ?? { count: 0, admins: [], haystack: [] }
+      agg.count++
+      const name = (prof?.full_name ?? '').trim()
+      const email = (prof?.email ?? '').trim()
+      if (name) agg.haystack.push(name.toLowerCase())
+      if (email) agg.haystack.push(email.toLowerCase())
+      if ((r as { is_company_admin: boolean }).is_company_admin) agg.admins.push(name || email)
+      membersByCompany.set(cid, agg)
+    }
+    if (data.length < M_PAGE) break
+    mOffset += M_PAGE
+  }
 
   // Distinct siglas present in the catalogue → set of models carrying them.
   const siglaModels = new Map<string, Set<string>>()
@@ -49,8 +77,24 @@ export default async function AdminCompaniesPage() {
     .sort((a, b) => a.sigla.localeCompare(b.sigla))
   const unassignedCount = reconciliation.filter(r => !r.company).length
 
+  const rows: CompanyRow[] = companies.map(c => {
+    const agg = membersByCompany.get(c.id)
+    const cc = c.notify_cc ?? ''
+    const bcc = c.notify_bcc ?? ''
+    const label = c.exclusive_label ?? ''
+    const search = [c.name, c.erp_code, label, ...(agg?.haystack ?? [])]
+      .filter(Boolean).join(' ').toLowerCase()
+    return {
+      id: c.id, name: c.name, erp_code: c.erp_code, exclusive_label: c.exclusive_label,
+      models: modelCount(c.exclusive_label),
+      userCount: agg?.count ?? 0,
+      admins: agg?.admins ?? [],
+      cc, bcc, search,
+    }
+  })
+
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
       <h1 className="text-xl font-bold text-stone-900">{t('title')}</h1>
 
       {/* Companies */}
@@ -59,33 +103,7 @@ export default async function AdminCompaniesPage() {
           {t('empty')}
         </div>
       ) : (
-        <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <table className="w-full text-sm">
-            <thead className="bg-stone-50">
-              <tr>
-                {[t('col_name'), t('col_erp'), t('col_label'), t('col_models'), ''].map((c, i) =>
-                  <th key={i} className="px-4 py-2 text-left text-[11px] font-semibold text-stone-400 uppercase">{c}</th>)}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-50">
-              {companies.map(c => (
-                <tr key={c.id}>
-                  <td className="px-4 py-3 font-medium text-stone-800">{c.name}</td>
-                  <td className="px-4 py-3 text-stone-500">{c.erp_code || '—'}</td>
-                  <td className="px-4 py-3">
-                    {c.exclusive_label
-                      ? <span className="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-mono font-medium text-gold">{c.exclusive_label}</span>
-                      : <span className="text-stone-300">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-stone-500">{modelCount(c.exclusive_label)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/admin/companies/${c.id}`} className="text-sm font-medium text-gold hover:text-gold-dark">{t('manage')}</Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <CompaniesTable rows={rows} />
       )}
 
       {/* Reconciliation of existing siglas */}

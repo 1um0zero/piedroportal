@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piedro Portal — Estrutura & Arranque</title>
+<style>
+  :root{
+    --gold:#B8975A; --gold-dark:#9A7A42; --gold-soft:#f3ecdd;
+    --ink:#1c1917; --stone:#57534e; --stone-l:#a8a29e; --line:#e7e5e4;
+    --bg:#faf8f4; --card:#ffffff; --shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px rgba(28,25,23,.06);
+    --green:#16a34a; --amber:#d97706; --blue:#2563eb; --red:#dc2626; --violet:#7c3aed;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .page{max-width:1040px;margin:0 auto;padding:48px 40px 80px}
+
+  /* ── Header ───────────────────────────────── */
+  header{border-bottom:3px solid var(--gold);padding-bottom:28px;margin-bottom:40px}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand h1{font-size:30px;font-weight:800;letter-spacing:-.5px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);display:inline-block}
+  .tagline{color:var(--gold-dark);font-style:italic;font-size:15px}
+  .sub{margin-top:10px;color:var(--stone);font-size:15px;max-width:760px}
+  .meta{margin-top:16px;display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--stone-l)}
+  .meta b{color:var(--stone);font-weight:600}
+
+  h2{font-size:13px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold-dark);
+    margin:54px 0 18px;display:flex;align-items:center;gap:10px}
+  h2 .num{background:var(--gold);color:#fff;width:24px;height:24px;border-radius:7px;font-size:13px;
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  h3{font-size:15px;font-weight:700;margin:0 0 4px;color:var(--ink)}
+
+  p.lead{color:var(--stone);font-size:14px;margin-bottom:20px;max-width:820px}
+
+  /* ── Architecture maps ────────────────────── */
+  .map{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:26px;margin-bottom:18px}
+  .map-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .map-head .ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-size:19px;background:var(--gold-soft)}
+  .map-head .t{font-size:17px;font-weight:800}
+  .map-head .d{font-size:12.5px;color:var(--stone-l)}
+
+  .group{margin-bottom:18px}
+  .group:last-child{margin-bottom:0}
+  .group-label{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--gold-dark);
+    margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .group-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .nodes{display:flex;flex-wrap:wrap;gap:9px}
+  .node{border:1.5px solid var(--line);border-radius:11px;padding:9px 13px;min-width:120px;background:#fff;
+    transition:.15s}
+  .node .nm{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .node .rt{font-size:11px;color:var(--gold-dark);font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:2px}
+  .node .ds{font-size:11.5px;color:var(--stone-l);margin-top:3px;line-height:1.4}
+  .node.key{border-color:var(--gold);background:linear-gradient(180deg,#fff,var(--gold-soft))}
+
+  /* roles legend */
+  .roles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+  .role{display:flex;align-items:center;gap:9px;background:var(--card);border-radius:11px;padding:10px 14px;
+    box-shadow:var(--shadow);flex:1;min-width:210px}
+  .role .pill{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:15px;flex-shrink:0;color:#fff}
+  .role .tx b{font-size:13px;display:block}
+  .role .tx span{font-size:11.5px;color:var(--stone-l)}
+
+  /* ── Progress overview ────────────────────── */
+  .ov{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}
+  .ov .c{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
+  .ov .c .k{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--stone-l)}
+  .ov .c .v{font-size:28px;font-weight:800;margin-top:2px}
+  .ov .c .v.g{color:var(--green)} .ov .c .v.a{color:var(--amber)} .ov .c .v.r{color:var(--red)}
+  .ov .c .b{font-size:11px;color:var(--stone-l);margin-top:2px}
+
+  /* ── Checklist ────────────────────────────── */
+  .block{background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+  .bh{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
+  .bh .ti{font-size:15px;font-weight:800;flex:1}
+  .bh .prio{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.4px}
+  .p0{background:#fde8e8;color:var(--red)} .p1{background:#fef0e0;color:var(--amber)}
+  .p2{background:#fef9e7;color:#a16207}
+  .bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:120px}
+  .bar>i{display:block;height:100%;background:var(--gold);border-radius:6px}
+  .bp{font-size:11.5px;font-weight:700;color:var(--stone);width:42px;text-align:right}
+
+  ul.items{list-style:none}
+  ul.items li{display:flex;gap:11px;padding:9px 20px;border-top:1px solid #f5f3f0;font-size:13.5px;align-items:flex-start}
+  ul.items li:first-child{border-top:none}
+  .chk{flex-shrink:0;width:18px;height:18px;border-radius:5px;border:1.6px solid var(--stone-l);margin-top:1px;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .chk.done{background:var(--green);border-color:var(--green);color:#fff}
+  .chk.todo{border-color:var(--stone-l)}
+  li .txt{flex:1;color:var(--stone)}
+  li .txt b{color:var(--ink);font-weight:600}
+  .owner{flex-shrink:0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;margin-top:1px}
+  .ow-you{background:var(--gold-soft);color:var(--gold-dark)}
+  .ow-dev{background:#eef2ff;color:var(--blue)}
+  .ow-both{background:#ecfdf5;color:var(--green)}
+  .tag-fill{display:inline-block;background:#fff7ed;color:var(--amber);border:1px solid #fed7aa;
+    font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:6px;margin-left:6px}
+
+  /* ── Fill-in highlight box ────────────────── */
+  .fillbox{background:linear-gradient(180deg,#fffdf8,#fff7ea);border:1.5px solid #f0dcb4;border-radius:16px;
+    padding:24px 26px;margin-bottom:18px}
+  .fillbox h3{color:var(--gold-dark);font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .fillgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fillitem{background:#fff;border-radius:11px;padding:12px 14px;border:1px solid #f0e6d0}
+  .fillitem .h{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .fillitem .d{font-size:12px;color:var(--stone);margin-top:3px}
+  .fillitem .badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:#fde8e8;color:var(--red)}
+  .fillitem .badge.soft{background:#fef0e0;color:var(--amber)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--stone);margin:14px 0 4px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .swab{width:14px;height:14px;border-radius:4px;display:inline-block}
+
+  footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--stone-l);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media print{
+    body{background:#fff}
+    .page{padding:0 14px}
+    .map,.block,.role,.ov .c,.fillbox{box-shadow:none;border:1px solid var(--line)}
+    h2{break-after:avoid} .block,.map,.fillbox{break-inside:avoid}
+    a{color:inherit;text-decoration:none}
+  }
+  @media(max-width:720px){
+    .ov,.fillgrid{grid-template-columns:1fr 1fr}
+    .page{padding:28px 18px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════════ HEADER ════════════ -->
+  <header>
+    <div class="brand">
+      <h1>Piedro Portal</h1><span class="dot"></span>
+      <span class="tagline">always one step ahead</span>
+    </div>
+    <p class="sub">Estrutura do portal e do back-office (administração), e a lista de tarefas —
+      o que está <b>feito</b>, o que falta <b>fazer</b> e o que é preciso <b>preencher / decidir</b> —
+      para o arranque oficial.</p>
+    <div class="meta">
+      <span><b>Para:</b> Anabela</span>
+      <span><b>De:</b> Jorge Tavares</span>
+      <span><b>Data:</b> 7 de Junho de 2026</span>
+      <span><b>Stack:</b> Next.js 16 · Supabase · Vercel · next-intl (EN/NL/FR/DE)</span>
+    </div>
+  </header>
+
+  <!-- ════════════ 1. PORTAL (cliente) ════════════ -->
+  <h2><span class="num">1</span> O Portal — área do cliente (clínicas ortopédicas)</h2>
+  <p class="lead">O que cada clínica vê. A galeria é pública; encomendas, favoritos e perfil exigem login.
+    Suporta 4 línguas (EN / NL / FR / DE).</p>
+
+  <div class="map">
+    <div class="map-head">
+      <div class="ic">🛍️</div>
+      <div><div class="t">Portal do cliente</div>
+        <div class="d">portal.piedro.pt · navegação em 4 línguas</div></div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Acesso & conta</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">🔑 Login</div><div class="rt">/login</div></div>
+        <div class="node"><div class="nm">📝 Registo</div><div class="rt">/register</div><div class="ds">Liga a clínica + utilizador</div></div>
+        <div class="node"><div class="nm">🔒 Recuperar password</div><div class="rt">/forgot-password</div></div>
+        <div class="node"><div class="nm">🆕 Definir password</div><div class="rt">/set-password</div><div class="ds">1.º acesso (migração)</div></div>
+        <div class="node"><div class="nm">👤 Perfil</div><div class="rt">/profile</div><div class="ds">Dados + cópias de email (Cc/Bcc)</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Catálogo & encomenda</div>
+      <div class="nodes">
+        <div class="node key"><div class="nm">🖼️ Galeria</div><div class="rt">/gallery</div><div class="ds">Pública · filtros, KIDS/MEN/WOMEN, pesquisa</div></div>
+        <div class="node"><div class="nm">🔎 Detalhe do produto</div><div class="rt">/gallery/[id]</div><div class="ds">Imagens com lupa, variantes, cores</div></div>
+        <div class="node key"><div class="nm">🧾 Formulário de encomenda</div><div class="rt">/gallery/[id]/order</div><div class="ds">3 passos · 5 modos · additions L/R · PDF</div></div>
+        <div class="node"><div class="nm">❤️ Favoritos</div><div class="rt">/wishlist</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">As minhas encomendas</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">📦 Lista de encomendas</div><div class="rt">/orders</div><div class="ds">Métricas, filtros, pesquisa, estado</div></div>
+        <div class="node"><div class="nm">📄 Detalhe da encomenda</div><div class="rt">/orders/[id]</div></div>
+        <div class="node"><div class="nm">📊 Dashboard pessoal</div><div class="rt">/orders/dashboard</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Legal</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">⚖️ Avisos legais</div><div class="rt">/legal</div></div>
+        <div class="node"><div class="nm">🔐 Privacidade</div><div class="rt">/privacy</div></div>
+        <div class="node"><div class="nm">📜 Termos</div><div class="rt">/terms</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 2. BACK-OFFICE ════════════ -->
+  <h2><span class="num">2</span> O Back-office — administração (Piedro)</h2>
+  <p class="lead">A área de gestão interna, em <code>/admin</code>. O acesso e o que cada pessoa vê depende do papel
+    (ver legenda no fim desta secção).</p>
+
+  <div class="map">
+    <div class="map-head">
+      <div class="ic">⚙️</div>
+      <div><div class="t">Back-office /admin</div>
+        <div class="d">gestão de encomendas, clientes, produtos, filiais e configuração</div></div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Visão geral</div>
+      <div class="nodes">
+        <div class="node key"><div class="nm">📊 Dashboard</div><div class="rt">/admin</div>
+          <div class="ds">KPIs por estado · melhores clientes · por país · modelos mais vendidos · additions · tendência mensal · urgentes</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Encomendas</div>
+      <div class="nodes">
+        <div class="node key"><div class="nm">📦 Gestão de encomendas</div><div class="rt">/admin/orders</div><div class="ds">Mudar estado, filtrar, pesquisar</div></div>
+        <div class="node"><div class="nm">📄 Detalhe / editar</div><div class="rt">/admin/orders/[id]</div></div>
+        <div class="node"><div class="nm">⚠️ Sem utilizador</div><div class="rt">/admin/orders/unassigned</div><div class="ds">Encomendas migradas por associar</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Clientes & utilizadores</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">👥 Utilizadores</div><div class="rt">/admin/users</div><div class="ds">Papéis, password, acesso</div></div>
+        <div class="node"><div class="nm">🏥 Empresas / clínicas</div><div class="rt">/admin/companies</div><div class="ds">Admins, Cc/Bcc, modelos exclusivos</div></div>
+        <div class="node"><div class="nm">🏷️ Ficha da empresa</div><div class="rt">/admin/companies/[id]</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Catálogo de produtos</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">👟 Produtos</div><div class="rt">/admin/products</div></div>
+        <div class="node"><div class="nm">⬆️ Importar (Excel)</div><div class="rt">/admin/products/import</div></div>
+        <div class="node"><div class="nm">🖼️ Imagens</div><div class="rt">/admin/products/images</div><div class="ds">Upload + normalização</div></div>
+        <div class="node"><div class="nm">➕ Novo / editar</div><div class="rt">/admin/products/new · [id]/edit</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Filiais (NL, UK, …)</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">🏢 Filiais</div><div class="rt">/admin/branches</div><div class="ds">Cada filial vê só os seus modelos; recebe cópia das encomendas na sua língua</div></div>
+        <div class="node"><div class="nm">➕ Nova / ficha</div><div class="rt">/admin/branches/new · [id]</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Configuração</div>
+      <div class="nodes">
+        <div class="node"><div class="nm">✉️ Definições</div><div class="rt">/admin/settings</div><div class="ds">Emails de notificação, língua interna</div></div>
+        <div class="node"><div class="nm">📝 Textos editáveis</div><div class="rt">/admin/settings/texts</div><div class="ds">Email de boas-vindas/reset, por língua, com tradução assistida por IA</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- roles -->
+  <div class="group-label" style="margin:22px 0 12px">Quem vê o quê — papéis</div>
+  <div class="roles">
+    <div class="role"><div class="pill" style="background:var(--stone-l)">👤</div>
+      <div class="tx"><b>user</b><span>Clínica: encomenda e vê as suas encomendas</span></div></div>
+    <div class="role"><div class="pill" style="background:var(--blue)">🏥</div>
+      <div class="tx"><b>company_admin</b><span>Gere a sua clínica e vê todas as encomendas dela</span></div></div>
+    <div class="role"><div class="pill" style="background:var(--violet)">🏢</div>
+      <div class="tx"><b>branch_staff</b><span>Back-office limitado aos modelos da sua filial</span></div></div>
+    <div class="role"><div class="pill" style="background:var(--gold)">🛡️</div>
+      <div class="tx"><b>piedro_admin</b><span>Back-office completo (Piedro)</span></div></div>
+  </div>
+
+  <!-- ════════════ 3. PROGRESS ════════════ -->
+  <h2><span class="num">3</span> Estado do arranque — visão rápida</h2>
+  <div class="ov">
+    <div class="c"><div class="k">Funcionalidades</div><div class="v g">✅ Prontas</div><div class="b">Portal + back-office construídos</div></div>
+    <div class="c"><div class="k">Bloqueadores P0</div><div class="v r">8</div><div class="b">Têm de fechar antes do go-live</div></div>
+    <div class="c"><div class="k">A preencher (cliente)</div><div class="v a">11</div><div class="b">Dados, decisões e conteúdos</div></div>
+    <div class="c"><div class="k">Línguas</div><div class="v">4</div><div class="b">EN · NL · FR · DE</div></div>
+  </div>
+  <div class="legend">
+    <span><span class="swab" style="background:var(--gold-soft);border:1px solid var(--gold)"></span> 👤 Lado cliente / Piedro</span>
+    <span><span class="swab" style="background:#eef2ff;border:1px solid var(--blue)"></span> 🤖 Desenvolvimento</span>
+    <span><span class="swab" style="background:#ecfdf5;border:1px solid var(--green)"></span> 👥 Ambos</span>
+    <span><span class="chk done" style="width:15px;height:15px;font-size:10px">✓</span> Feito</span>
+    <span><span class="chk todo" style="width:15px;height:15px"></span> Por fazer</span>
+    <span><span class="tag-fill">preencher</span> Precisa de input teu</span>
+  </div>
+
+  <!-- ════════════ 4. O QUE FALTA PREENCHER ════════════ -->
+  <h2><span class="num">4</span> O que falta preencher / decidir — prioridade</h2>
+  <p class="lead">O destaque para a Anabela: estes são os pontos que dependem de informação, decisão ou conteúdo
+    do lado da Piedro. Sem eles não fechamos o arranque.</p>
+
+  <div class="fillbox">
+    <h3>📌 Itens que esperam input</h3>
+    <div class="fillgrid">
+      <div class="fillitem"><div class="h"><span class="badge">P0</span> Domínio &amp; DNS</div>
+        <div class="d">Ajustar <b>piedro.pt</b> e o link em <b>piedro.com</b> para apontar ao novo portal. Mais tarde, redirecionar piedro.com.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge">P0</span> Domínio de email (Resend)</div>
+        <div class="d">Verificar o domínio de envio (começa em piedro.pt → depois piedro.com) e publicar SPF/DKIM/DMARC.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge">P0</span> Admins &amp; filiais</div>
+        <div class="d">Quem é <b>piedro_admin</b> e <b>branch_staff</b>, e por que filial. Quem é admin de cada clínica.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge">P0</span> Conteúdos legais</div>
+        <div class="d">Dados oficiais (nome legal, morada, KvK, DPO, contactos) + revisão/certificação dos textos legais.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge">P0</span> DPAs</div>
+        <div class="d">Acordos de tratamento com Supabase, Vercel, Resend e <b>Anthropic</b> (chat) — ou desligar o chat.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge">P0</span> Backup antes da limpeza</div>
+        <div class="d">Snapshot do Supabase e confirmar que dados de teste destruir (encomendas/users/empresas).</div></div>
+      <div class="fillitem"><div class="h"><span class="badge soft">P1</span> Falhas do ERP a eliminar</div>
+        <div class="d">Lista final de problemas do import a-shell (additions em falta, erros de estado de volta).</div></div>
+      <div class="fillitem"><div class="h"><span class="badge soft">P1</span> Comunicação ao cliente</div>
+        <div class="d">Quem anuncia, por que canal e quando; canal de suporte da 1.ª semana. (Decisão na 2.ª feira.)</div></div>
+      <div class="fillitem"><div class="h"><span class="badge soft">P1</span> Modelos exclusivos</div>
+        <div class="d">Que etiqueta exclusiva mapeia para que clínica.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge soft">P1</span> Encomendas sem utilizador</div>
+        <div class="d">Decidir o destino das encomendas históricas que não têm utilizador associável.</div></div>
+      <div class="fillitem"><div class="h"><span class="badge soft">P2</span> PDFs antigos (SharePoint)</div>
+        <div class="d">Importar PDFs legados (coluna pdf_link) com link seguro — adiado, pós-arranque.</div></div>
+    </div>
+  </div>
+
+  <!-- ════════════ 5. CHECKLIST COMPLETA ════════════ -->
+  <h2><span class="num">5</span> Checklist completa de arranque</h2>
+  <p class="lead">Tudo, por área. ✅ = feito · ☐ = por fazer · <span class="tag-fill">preencher</span> = precisa de input do lado da Piedro.</p>
+
+  <!-- Domínio -->
+  <div class="block">
+    <div class="bh"><span class="ti">🌐 Domínio, DNS &amp; alojamento</span><span class="prio p0">P0</span>
+      <div class="bar"><i style="width:14%"></i></div><span class="bp">1/7</span></div>
+    <ul class="items">
+      <li><span class="chk todo"></span><span class="txt"><b>Apontar portal.piedro.pt</b> ao Vercel<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Adicionar domínio no Vercel + verificar</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Atualizar o <b>link em piedro.com</b> para o novo portal<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Redirecionador no Power Pages antigo → novo portal</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Remover <code>robots noindex</code> no go-live</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">DNS de email (SPF/DKIM/DMARC) do domínio de envio<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Mais tarde: redirecionar piedro.com → portal</span><span class="owner ow-you">👤</span></li>
+    </ul>
+  </div>
+
+  <!-- Env -->
+  <div class="block">
+    <div class="bh"><span class="ti">🔐 Ambiente &amp; segredos (Vercel)</span><span class="prio p0">P0</span>
+      <div class="bar"><i style="width:33%"></i></div><span class="bp">2/6</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Chaves Supabase, Resend, Anthropic, Dataverse confirmadas</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Região Supabase = EU (Irlanda) — dados de pacientes</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Definir <code>NEXT_PUBLIC_SITE_URL</code></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Emails de notificação como fallback</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Definir <code>ERP_API_TOKEN</code> (segredo longo)</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>Backup/snapshot</b> do Supabase antes de qualquer limpeza<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+    </ul>
+  </div>
+
+  <!-- Data -->
+  <div class="block">
+    <div class="bh"><span class="ti">🗄️ Limpeza &amp; reconstrução de dados</span><span class="prio p0">P0</span>
+      <div class="bar"><i style="width:25%"></i></div><span class="bp">2/8</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Migrações 001–012 corridas em produção</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Empresas (200) e utilizadores (282+2) importados</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>Decidir e destruir</b> dados de teste (encomendas/users/empresas)<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Importar produtos do Dataverse</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Importar encomendas (só step 3, TESTES* excluídas)</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Limpar ~711 encomendas "soltas" de imports anteriores</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Reconciliação: contagem == esperado</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Recriar dados só do portal: filiais, etiquetas exclusivas, admins<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+    </ul>
+  </div>
+
+  <!-- Users -->
+  <div class="block">
+    <div class="bh"><span class="ti">👥 Migração de utilizadores &amp; passwords</span><span class="prio p0">P0</span>
+      <div class="bar"><i style="width:57%"></i></div><span class="bp">4/7</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Import de contactos → Auth + perfis + empresas</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">company_admin atribuído na ficha da empresa (não adivinhado)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Definir password no 1.º acesso (migração + guarda)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Fluxo de recuperação de password</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Correr migração + import de contactos (após empresas)</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Tratar contactos sem email / email duplicado (reportar exceções)</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>Criar contas piedro_admin / branch_staff</b><span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+    </ul>
+  </div>
+
+  <!-- Email -->
+  <div class="block">
+    <div class="bh"><span class="ti">✉️ Email &amp; notificações</span><span class="prio p1">P1</span>
+      <div class="bar"><i style="width:78%"></i></div><span class="bp">7/9</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Emails de notificação fail-closed (sem hardcodes)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Emails editáveis no admin (app_settings)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">i18n completo de todos os emails (4 línguas)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Confirmação de encomenda ao cliente por defeito (com PDF)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Cc/Bcc no utilizador e no cliente + cópia para filial</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Textos de password editáveis no admin (multi-língua + IA)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk done">✓</span><span class="txt">Email de reset próprio (token seguro, 2h, sem enumeração)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>Verificar domínio Resend</b> + publicar SPF/DKIM/DMARC<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Teste de entregabilidade (destinatário NL, não spam)</span><span class="owner ow-both">👥</span></li>
+    </ul>
+  </div>
+
+  <!-- ERP -->
+  <div class="block">
+    <div class="bh"><span class="ti">🔗 Integração ERP / a-shell</span><span class="prio p1">P1</span>
+      <div class="bar"><i style="width:14%"></i></div><span class="bp">1/7</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Endpoint de exportação <code>GET /api/erp/orders</code> + ack</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Confirmar arquitetura B (a-shell lê o portal) — decidido</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>Lista final das falhas do import a eliminar</b><span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Finalizar contrato de campos (todas as encomendas aprovadas)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Estado de volta do ERP (produção/expedido) — necessário</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">a-shell muda para o novo endpoint (ou ponte temporária na 2.ª)</span><span class="owner ow-you">👤</span></li>
+    </ul>
+    <ul class="items"><li style="border-top:1px solid #f5f3f0;background:#fafaf9"><span class="chk todo" style="visibility:hidden"></span>
+      <span class="txt" style="font-style:italic;color:var(--stone-l)">Nota: a integração ERP é a <b>última prioridade</b>. Ponte manual aceitável para a 2.ª feira.</span></li></ul>
+  </div>
+
+  <!-- Compliance -->
+  <div class="block">
+    <div class="bh"><span class="ti">⚖️ Conformidade &amp; legal</span><span class="prio p0">P0</span>
+      <div class="bar"><i style="width:0%"></i></div><span class="bp">0/4</span></div>
+    <ul class="items">
+      <li><span class="chk todo"></span><span class="txt"><b>Validar e CERTIFICAR</b> os documentos legais/compliance (GDPR Art.9, MDR, ISO 13485)<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Preencher todos os dados oficiais (nome legal, morada, KvK, DPO)<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>DPAs assinados</b>: Supabase, Vercel, Resend, Anthropic<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">ROPA, DPIA, plano de retenção (MDR ≥10 anos) + log de acessos</span><span class="owner ow-both">👥</span></li>
+    </ul>
+  </div>
+
+  <!-- Security -->
+  <div class="block">
+    <div class="bh"><span class="ti">🛡️ Segurança &amp; operações</span><span class="prio p1">P1</span>
+      <div class="bar"><i style="width:14%"></i></div><span class="bp">1/7</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Cliente de chat Anthropic carregado de forma lazy</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">RLS (migração 002) ativo e testado ponta-a-ponta</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Bucket <code>order-pdfs</code> = Privado<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Rate limiting em /api/chat e rotas de PDF</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">MFA para admins</span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Monitorização de erros (Sentry) + agenda de backups</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Plano de rollback (reverter DNS / restaurar snapshot)</span><span class="owner ow-both">👥</span></li>
+    </ul>
+  </div>
+
+  <!-- Comms -->
+  <div class="block">
+    <div class="bh"><span class="ti">📣 Comunicação ao cliente</span><span class="prio p1">P1</span>
+      <div class="bar"><i style="width:0%"></i></div><span class="bp">0/3</span></div>
+    <ul class="items">
+      <li><span class="chk todo"></span><span class="txt"><b>Quem anuncia, canal e quando</b> (decisão na 2.ª feira com a Piedro)<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+      <li><span class="chk todo"></span><span class="txt">Anúncio + instruções de 1.º acesso (NL/EN/FR/DE)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Canal de suporte da 1.ª semana (staff Piedro NL + chat)<span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+    </ul>
+  </div>
+
+  <!-- QA -->
+  <div class="block">
+    <div class="bh"><span class="ti">✅ QA / smoke test / GO–NO-GO</span><span class="prio p0">P0</span>
+      <div class="bar"><i style="width:0%"></i></div><span class="bp">0/9</span></div>
+    <ul class="items">
+      <li><span class="chk todo"></span><span class="txt">Registo/login + reset de password forçado</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Galeria + filtros + visibilidade de modelos exclusivos</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Encomenda completa (5 modos, additions, rascunho, submeter)</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Preview de PDF + PDF final por email (URL assinado, bucket privado)</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Admin: estados, encomendas, produtos, empresas, filiais, definições</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Cada papel vê o âmbito correto</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">As 4 línguas renderizam (sem PT esquecido)</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Encomendas migradas aparecem corretamente</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt"><b>Decisão GO / NO-GO</b><span class="tag-fill">preencher</span></span><span class="owner ow-you">👤</span></li>
+    </ul>
+  </div>
+
+  <!-- Pós-arranque -->
+  <div class="block">
+    <div class="bh"><span class="ti">🧩 Pós-arranque (backlog)</span><span class="prio p2">P2</span>
+      <div class="bar"><i style="width:0%"></i></div><span class="bp">0/6</span></div>
+    <ul class="items">
+      <li><span class="chk todo"></span><span class="txt">Agregação SQL para os dashboards (agora calculado em JS)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Completar traduções FR/DE das additions</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Filtros da galeria no URL (links partilháveis)</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Importar PDFs antigos do SharePoint com link seguro</span><span class="owner ow-both">👥</span></li>
+      <li><span class="chk todo"></span><span class="txt">Encomendas de teste excluídas das estatísticas</span><span class="owner ow-dev">🤖</span></li>
+      <li><span class="chk todo"></span><span class="txt">Briefing pós-login com IA (resumo na língua do utilizador)</span><span class="owner ow-dev">🤖</span></li>
+    </ul>
+  </div>
+
+  <footer>
+    <span>Piedro Portal — Estrutura &amp; arranque · documento de trabalho</span>
+    <span>Gerado em 7 Jun 2026 · imprimir para PDF: Ctrl/Cmd + P</span>
+  </footer>
+
+</div>
+</body>
+</html>
