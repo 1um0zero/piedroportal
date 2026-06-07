@@ -150,11 +150,18 @@ for (let page = 1; ; page++) {
 }
 console.log(`  ${existingByEmail.size} existing auth users`)
 
-// 6. Create/find users, upsert profiles + user_companies
+// 6. Create/find users. CRITICAL: only NEW accounts get a fresh profile
+// (role 'user' + must_set_password). NEVER clobber an existing user's profile —
+// e.g. a piedro_admin who also exists as a Dataverse contact must keep their role
+// and not be force-reset. Existing users only get the company link (without
+// downgrading an existing is_company_admin flag).
 let created = 0, reused = 0, failed = 0
-const profiles = [], links = []
+const profiles = []          // NEW users only
+const newLinks = []          // links for NEW users (safe to set is_company_admin)
+const reusedLinks = []       // links for EXISTING users (insert-if-absent only)
 for (const u of list) {
   let userId = existingByEmail.get(u.email)
+  let isNew = false
   if (!userId) {
     const { data, error } = await sb.auth.admin.createUser({
       email: u.email,
@@ -165,24 +172,36 @@ for (const u of list) {
     if (error || !data?.user) {
       console.error(`\n  ❌ ${mask(u.email)}: ${error?.message ?? 'no user returned'}`); failed++; continue
     }
-    userId = data.user.id; created++
+    userId = data.user.id; created++; isNew = true
   } else { reused++ }
-  profiles.push({
-    id: userId, email: u.email, full_name: u.fullName,
-    role: 'user', preferred_locale: u.locale, must_set_password: true,
-  })
-  links.push({ user_id: userId, company_id: u.companyId, is_company_admin: u.isAdmin })
+
+  const link = { user_id: userId, company_id: u.companyId, is_company_admin: u.isAdmin }
+  if (isNew) {
+    profiles.push({
+      id: userId, email: u.email, full_name: u.fullName,
+      role: 'user', preferred_locale: u.locale, must_set_password: true,
+    })
+    newLinks.push(link)
+  } else {
+    reusedLinks.push(link)
+  }
   process.stdout.write(`\r  processed ${created + reused}/${list.length}`)
 }
 
-console.log(`\n\nUpserting ${profiles.length} profiles + ${links.length} user_companies...`)
+console.log(`\n\nUpserting ${profiles.length} new profiles + ${newLinks.length + reusedLinks.length} user_companies...`)
 for (let i = 0; i < profiles.length; i += 100) {
   const { error } = await sb.from('profiles').upsert(profiles.slice(i, i + 100), { onConflict: 'id' })
   if (error) { console.error('❌ profiles upsert:', error.message); process.exit(1) }
 }
-for (let i = 0; i < links.length; i += 100) {
+for (let i = 0; i < newLinks.length; i += 100) {
   const { error } = await sb.from('user_companies')
-    .upsert(links.slice(i, i + 100), { onConflict: 'user_id,company_id' })
+    .upsert(newLinks.slice(i, i + 100), { onConflict: 'user_id,company_id' })
+  if (error) { console.error('❌ user_companies upsert:', error.message); process.exit(1) }
+}
+// Existing users: add the membership only if absent — never reset is_company_admin.
+for (let i = 0; i < reusedLinks.length; i += 100) {
+  const { error } = await sb.from('user_companies')
+    .upsert(reusedLinks.slice(i, i + 100), { onConflict: 'user_id,company_id', ignoreDuplicates: true })
   if (error) { console.error('❌ user_companies upsert:', error.message); process.exit(1) }
 }
 
