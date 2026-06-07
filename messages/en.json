@@ -748,6 +748,8 @@
       "search_placeholder": "Search by company, user name or email…",
       "results_count": "{n} of {total}",
       "no_results": "No companies match your search.",
+      "filter_all": "All",
+      "filter_none": "(none)",
       "manage": "Manage",
       "reconcile_title": "Exclusive siglas in the catalogue",
       "reconcile_hint": "Each sigla below comes from a product's exclusive field. Assign it to a company by setting that company's exclusive label.",

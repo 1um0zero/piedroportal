@@ -148,6 +148,11 @@ Last updated: 2026-06-06.
 - [ ] **12.7** **Canonical: numeric zero shown as "—"** (helper `nz()` in `src/lib/format.ts`).
       Applied: admin dashboard, companies table, orders list, user dashboard. Sweep remaining
       number screens as visited (admin/users, branches, products). · 🤖 *(rule set 2026-06-08)*
+- [ ] **12.8** **Canonical: list sorting + categorical filters** (helpers in
+      `src/components/ui/table-controls.tsx`). Sortable columns everywhere reasonable; select
+      filter on categorical-repeat columns (status/country/role/label…), client-side. Reference =
+      `CompaniesTable`. Apply to orders list, admin/users, branches, products as visited.
+      · 🤖 *(rule set 2026-06-08)*
 
 ## 13. Decisions log (from chat)
 - 2026-06-06 User migration = 100% clean, no invites, reset on first login.

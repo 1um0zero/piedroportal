@@ -748,6 +748,8 @@
       "search_placeholder": "Rechercher par société, nom d'utilisateur ou e-mail…",
       "results_count": "{n} sur {total}",
       "no_results": "Aucune société ne correspond à votre recherche.",
+      "filter_all": "Tous",
+      "filter_none": "(aucun)",
       "manage": "Gérer",
       "reconcile_title": "Sigles exclusifs du catalogue",
       "reconcile_hint": "Chaque sigle ci-dessous provient du champ exclusive d'un produit. Attribuez-le à une société en définissant le sigle exclusif de cette société.",

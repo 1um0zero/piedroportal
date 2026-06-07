@@ -748,6 +748,8 @@
       "search_placeholder": "Nach Firma, Benutzername oder E-Mail suchen…",
       "results_count": "{n} von {total}",
       "no_results": "Keine Firmen entsprechen Ihrer Suche.",
+      "filter_all": "Alle",
+      "filter_none": "(keine)",
       "manage": "Verwalten",
       "reconcile_title": "Exklusive Kürzel im Katalog",
       "reconcile_hint": "Jedes Kürzel unten stammt aus dem exclusive-Feld eines Produkts. Weisen Sie es einer Firma zu, indem Sie das Exklusiv-Kürzel dieser Firma festlegen.",

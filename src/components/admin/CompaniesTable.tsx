@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { nz } from '@/lib/format'
+import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
 
 export type CompanyRow = {
   id: string
@@ -19,17 +20,58 @@ export type CompanyRow = {
   search: string
 }
 
+const NONE = '__none__'
+
+// Sort value per column key. Empty labels are pushed to the end on asc.
+function sortVal(r: CompanyRow, key: string): string | number {
+  switch (key) {
+    case 'name': return r.name
+    case 'erp': return r.erp_code
+    case 'users': return r.userCount
+    case 'admins': return r.admins.length
+    case 'copies': return (r.cc ? 1 : 0) + (r.bcc ? 1 : 0)
+    case 'label': return r.exclusive_label || '￿'
+    case 'models': return r.models
+    default: return r.name
+  }
+}
+
 export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
   const t = useTranslations('admin.companies')
   const [q, setQ] = useState('')
+  const [labelFilter, setLabelFilter] = useState('')
+  const [sort, setSort] = useState<Sort>({ key: 'name', dir: 'asc' })
+
+  const labelOptions = useMemo(
+    () => [...new Set(rows.map(r => (r.exclusive_label ?? '').trim()).filter(Boolean))].sort(),
+    [rows],
+  )
+  const hasNone = useMemo(() => rows.some(r => !(r.exclusive_label ?? '').trim()), [rows])
 
   const filtered = useMemo(() => {
     const tokens = q.toLowerCase().split(/\s+/).filter(Boolean)
-    if (tokens.length === 0) return rows
-    // Every token must appear somewhere in the haystack → matches composite names
-    // in any order, e.g. "voet elst" → "voetmax - locaties elst".
-    return rows.filter(r => tokens.every(tok => r.search.includes(tok)))
-  }, [q, rows])
+    let out = rows
+    if (tokens.length) {
+      // Every token must appear somewhere → composite names in any order,
+      // e.g. "voet elst" → "voetmax - locaties elst".
+      out = out.filter(r => tokens.every(tok => r.search.includes(tok)))
+    }
+    if (labelFilter === NONE) out = out.filter(r => !(r.exclusive_label ?? '').trim())
+    else if (labelFilter) out = out.filter(r => (r.exclusive_label ?? '').trim() === labelFilter)
+    return out
+  }, [q, labelFilter, rows])
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered]
+    arr.sort((a, b) => {
+      const c = compareValues(sortVal(a, sort.key), sortVal(b, sort.key), sort.dir)
+      return c !== 0 ? c : a.name.localeCompare(b.name)
+    })
+    return arr
+  }, [filtered, sort])
+
+  const onSort = (key: string) =>
+    setSort(prev => nextSort(prev, key, key === 'name' || key === 'erp' || key === 'label' ? 'asc' : 'desc'))
 
   return (
     <div className="space-y-3">
@@ -41,7 +83,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
           className="flex-1 min-w-[260px] rounded-lg border border-stone-200 px-3.5 py-2 text-sm focus:border-gold focus:outline-none"
         />
         <span className="text-xs text-stone-400 whitespace-nowrap">
-          {t('results_count', { n: filtered.length, total: rows.length })}
+          {t('results_count', { n: sorted.length, total: rows.length })}
         </span>
       </div>
 
@@ -49,14 +91,32 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
         <table className="w-full text-sm">
           <thead className="bg-stone-50">
             <tr>
-              {[t('col_name'), t('col_erp'), t('col_users'), t('col_admins'), t('col_copies'), t('col_label'), t('col_models'), ''].map((c, i) =>
-                <th key={i} className="px-4 py-2 text-left text-[11px] font-semibold text-stone-400 uppercase whitespace-nowrap">{c}</th>)}
+              <SortableTh label={t('col_name')}   sortKey="name"   sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_erp')}    sortKey="erp"    sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_users')}  sortKey="users"  sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_admins')} sortKey="admins" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_copies')} sortKey="copies" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_label')}  sortKey="label"  sort={sort} onSort={onSort}>
+                {(labelOptions.length > 0 || hasNone) && (
+                  <select
+                    value={labelFilter}
+                    onChange={e => setLabelFilter(e.target.value)}
+                    className={`mt-1 block w-full rounded-md border px-1.5 py-0.5 text-[11px] font-normal normal-case focus:border-gold focus:outline-none ${labelFilter ? 'border-gold text-stone-700' : 'border-stone-200 text-stone-400'}`}
+                  >
+                    <option value="">{t('filter_all')}</option>
+                    {hasNone && <option value={NONE}>{t('filter_none')}</option>}
+                    {labelOptions.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                )}
+              </SortableTh>
+              <SortableTh label={t('col_models')} sortKey="models" sort={sort} onSort={onSort} />
+              <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} align="right" />
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-50">
-            {filtered.length === 0 ? (
+            {sorted.length === 0 ? (
               <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-stone-400">{t('no_results')}</td></tr>
-            ) : filtered.map(c => (
+            ) : sorted.map(c => (
               <tr key={c.id} className="hover:bg-stone-50/60">
                 <td className="px-4 py-3 font-medium text-stone-800">{c.name}</td>
                 <td className="px-4 py-3 text-stone-500 whitespace-nowrap">{c.erp_code || '—'}</td>

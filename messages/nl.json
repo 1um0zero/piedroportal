@@ -748,6 +748,8 @@
       "search_placeholder": "Zoek op bedrijf, gebruikersnaam of e-mail…",
       "results_count": "{n} van {total}",
       "no_results": "Geen bedrijven komen overeen met uw zoekopdracht.",
+      "filter_all": "Alle",
+      "filter_none": "(geen)",
       "manage": "Beheren",
       "reconcile_title": "Exclusieve codes in de catalogus",
       "reconcile_hint": "Elke code hieronder komt uit het exclusive-veld van een product. Wijs deze toe aan een bedrijf door de exclusieve code van dat bedrijf in te stellen.",
