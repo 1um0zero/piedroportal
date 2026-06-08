@@ -695,7 +695,11 @@
       "st_error": "Fehler",
       "slot_main": "Haupt",
       "slots_hint": "Slot 1 ist das Hauptbild (setzt picture_name). Jedes Format wird in PNG umgewandelt und skaliert.",
-      "result_skipped": "{n} übersprungen (außerhalb des Bereichs)"
+      "result_skipped": "{n} übersprungen (außerhalb des Bereichs)",
+      "stat_rejected": "Abgelehnt",
+      "sample_rejected": "Abgelehnt — keine Konstruktion",
+      "rejected_warning": "{n} Modell(e) übersprungen — keine Konstruktion. Jedes Modell muss mindestens eine Konstruktion haben; korrigieren Sie die Datei und importieren Sie erneut.",
+      "result_rejected": "{n} abgelehnt (keine Konstruktion)"
     },
     "branches": {
       "title": "Niederlassungen",

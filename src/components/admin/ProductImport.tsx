@@ -11,12 +11,13 @@ type SheetInfo = { name: string; rows: number; suggested: SheetMode }
 type Preview = {
   sheets: SheetInfo[]
   modesUsed: Record<string, SheetMode>
-  counts: { create: number; update: number; unchanged: number; delist: number; pending: number }
+  counts: { create: number; update: number; unchanged: number; delist: number; pending: number; rejected: number }
   samples: {
     create: { colour_id: string; style_name: string; color_name: string; section: string }[]
     update: { colour_id: string; style_name: string; color_name: string; changedFields: string[] }[]
     delist: { colour_id: string; existingId: string; style_name: string }[]
     pending: { colour_id: string; stretch: string | null; last: string | null; outStock: string | null }[]
+    rejected: { colour_id: string; style_name: string }[]
   }
 }
 
@@ -73,7 +74,10 @@ export default function ProductImport() {
       const res = await applyProductImport(fd)
       if (res.error) { setError(res.error); return }
       const base = t('result', { created: res.created, updated: res.updated, delisted: res.delisted })
-      setDone(res.skipped ? `${base} · ${t('result_skipped', { n: res.skipped })}` : base)
+      const parts = [base]
+      if (res.skipped) parts.push(t('result_skipped', { n: res.skipped }))
+      if (res.rejected) parts.push(t('result_rejected', { n: res.rejected }))
+      setDone(parts.join(' · '))
       setPreview(null)
       router.refresh()
     } catch (e) {
@@ -145,13 +149,21 @@ export default function ProductImport() {
             </button>
           </div>
 
+          {/* Rejected warning — construction-less rows are never written */}
+          {preview.counts.rejected > 0 && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              ⚠️ {t('rejected_warning', { n: preview.counts.rejected })}
+            </div>
+          )}
+
           {/* Counts */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
             <Stat label={t('stat_new')} value={preview.counts.create} color="text-emerald-600" />
             <Stat label={t('stat_updated')} value={preview.counts.update} color="text-blue-600" />
             <Stat label={t('stat_unchanged')} value={preview.counts.unchanged} color="text-stone-400" />
             <Stat label={t('stat_delisted')} value={preview.counts.delist} color="text-red-500" />
             <Stat label={t('stat_pending')} value={preview.counts.pending} color="text-amber-600" />
+            <Stat label={t('stat_rejected')} value={preview.counts.rejected} color="text-red-600" />
           </div>
 
           {/* Samples */}
@@ -163,6 +175,9 @@ export default function ProductImport() {
             )}
             {preview.samples.pending.length > 0 && (
               <SampleTable title={t('sample_pending')} rows={preview.samples.pending.map(r => [r.colour_id, r.stretch ?? '', r.last ?? '', r.outStock ?? ''])} cols={['colour_id', 'STRETCH', 'LAST', 'OUT/STOCK']} />
+            )}
+            {preview.samples.rejected.length > 0 && (
+              <SampleTable title={t('sample_rejected')} rows={preview.samples.rejected.map(r => [r.colour_id, r.style_name])} cols={['colour_id', t('col_style')]} />
             )}
           </div>
 

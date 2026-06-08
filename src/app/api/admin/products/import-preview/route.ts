@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
     preview.toCreate = preview.toCreate.filter(p => scope.canModel(p.style_name))
     preview.toUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name))
     preview.toDelist = preview.toDelist.filter(d => scope.canModel(d.style_name))
+    preview.withEmptyConstructions = preview.withEmptyConstructions.filter(e => scope.canModel(e.style_name))
   }
 
   return NextResponse.json({
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
       unchanged: preview.unchanged,
       delist: preview.toDelist.length,
       pending: preview.withPending.length,
+      rejected: preview.withEmptyConstructions.length,
     },
     samples: {
       create: preview.toCreate.slice(0, SAMPLE)
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
         .map(u => ({ colour_id: u.product.colour_id, style_name: u.product.style_name, color_name: u.product.color_name, changedFields: u.changedFields })),
       delist: preview.toDelist.slice(0, SAMPLE),
       pending: preview.withPending.slice(0, SAMPLE),
+      rejected: preview.withEmptyConstructions.slice(0, SAMPLE),
     },
   })
 }

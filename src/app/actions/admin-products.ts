@@ -72,6 +72,8 @@ export interface ImportResult {
   updated: number
   delisted: number
   skipped?: number  // rows ignored because the model is out of the caller's scope
+  rejected?: number // active rows rejected for having no constructions
+  rejectedRefs?: string[]
   error?: string
 }
 
@@ -104,6 +106,11 @@ export async function applyProductImport(
   const imported = parseProducts(buffer, sheetModes)
   const existing = await fetchAllExisting()
   const preview = diffAgainstExisting(imported, existing)
+
+  // Construction-less models are never written (a product with no construction
+  // can't be ordered). Surface them so the sheet gets fixed.
+  const rejected = preview.withEmptyConstructions.length
+  const rejectedRefs = preview.withEmptyConstructions.map(e => e.colour_id)
 
   // Restrict every change to models within the caller's scope.
   let skipped = 0
@@ -140,7 +147,7 @@ export async function applyProductImport(
   }
 
   revalidatePath('/admin/products')
-  return { created: toInsert.length, updated, delisted, skipped }
+  return { created: toInsert.length, updated, delisted, skipped, rejected, rejectedRefs }
 }
 
 // ── Standalone product CRUD ──────────────────────────────────────────────────

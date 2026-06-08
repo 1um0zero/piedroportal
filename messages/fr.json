@@ -695,7 +695,11 @@
       "st_error": "erreur",
       "slot_main": "principal",
       "slots_hint": "Le slot 1 est l'image principale (définit picture_name). Tout format est converti en PNG et redimensionné.",
-      "result_skipped": "{n} ignoré(s) (hors périmètre)"
+      "result_skipped": "{n} ignoré(s) (hors périmètre)",
+      "stat_rejected": "Rejetés",
+      "sample_rejected": "Rejetés — sans construction",
+      "rejected_warning": "{n} modèle(s) ignoré(s) — sans construction. Chaque modèle doit avoir au moins une construction ; corrigez le fichier et réimportez.",
+      "result_rejected": "{n} rejetés (sans construction)"
     },
     "branches": {
       "title": "Filiales",

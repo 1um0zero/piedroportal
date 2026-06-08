@@ -695,7 +695,11 @@
       "st_error": "fout",
       "slot_main": "hoofd",
       "slots_hint": "Slot 1 is de hoofdafbeelding (stelt picture_name in). Elk formaat wordt naar PNG omgezet en geschaald.",
-      "result_skipped": "{n} overgeslagen (buiten bereik)"
+      "result_skipped": "{n} overgeslagen (buiten bereik)",
+      "stat_rejected": "Geweigerd",
+      "sample_rejected": "Geweigerd — geen constructie",
+      "rejected_warning": "{n} model(len) overgeslagen — geen constructie. Elk model moet minstens één constructie hebben; corrigeer het bestand en importeer opnieuw.",
+      "result_rejected": "{n} geweigerd (geen constructie)"
     },
     "branches": {
       "title": "Filialen",

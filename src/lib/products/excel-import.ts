@@ -278,6 +278,8 @@ export interface ImportPreview {
   toDelist: { colour_id: string; existingId: string; style_name: string }[]
   /** Products with PENDING column data, surfaced for inspection. */
   withPending: { colour_id: string; stretch: string | null; last: string | null; outStock: string | null }[]
+  /** Active rows with no constructions — rejected (never created/updated). */
+  withEmptyConstructions: { colour_id: string; style_name: string }[]
 }
 
 export function diffAgainstExisting(
@@ -285,7 +287,7 @@ export function diffAgainstExisting(
   existing: ExistingProduct[],
 ): ImportPreview {
   const byColour = new Map(existing.map(e => [e.colour_id, e]))
-  const preview: ImportPreview = { toCreate: [], toUpdate: [], unchanged: 0, toDelist: [], withPending: [] }
+  const preview: ImportPreview = { toCreate: [], toUpdate: [], unchanged: 0, toDelist: [], withPending: [], withEmptyConstructions: [] }
 
   for (const p of imported) {
     const ex = byColour.get(p.colour_id)
@@ -301,6 +303,13 @@ export function diffAgainstExisting(
       } else if (!ex) {
         // Not in catalogue and delisted — nothing to do.
       }
+      continue
+    }
+
+    // Reject active rows with no constructions — never create/update them so the
+    // catalogue can't end up with construction-less (un-orderable) products.
+    if (!p.constructions || p.constructions.length === 0) {
+      preview.withEmptyConstructions.push({ colour_id: p.colour_id, style_name: p.style_name })
       continue
     }
 
