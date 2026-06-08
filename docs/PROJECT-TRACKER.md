@@ -324,10 +324,13 @@ replace) the existing chat where the user can already ask specific questions. Us
       `OrderSummary.tsx`, used by both `OrderForm` Tab3 and `OrderDetailView`; one source for both.
       Translation tools kept in the panel (under the comments) + **translate to the viewer's locale**
       (translateTextAction generalized to en/pt/nl/fr/de). The summary body is now i18n'd on both sides.
-- [ ] **20.6** **Shortcut to "New orders" in admin nav** (in addition to the in-page metric). · 🤖
-- [ ] **20.7** **Imported option values are raw Dataverse option-set codes** (e.g. zipper = 987…) — not
-      converted to their labels. Fix the import to map option-set codes → string values (needs the
-      Dataverse option-set metadata); re-import. Until then some additions show numeric codes. · 🤖 + 👤
+- [x] **20.6** ✅ **"New orders" shortcut in the back-office nav** (desktop + mobile, gold) →
+      `/admin/orders?new=1`; OrdersPage reads the `new=1` param to open the validation queue. Shown to all
+      back-office (admin + branch_staff), since they validate/approve.
+- [x] **20.7** ✅ **Imported option values were raw option-set codes** (zipper = 987…). The Dataverse
+      fetch already requests FormattedValue annotations; `mapAdditions` now reads the **formatted label**
+      for choice fields (lining, cl_laces, cl_velcro, stiff_hard, toe_puffs, zipper, rocker) instead of the
+      code. ⚠️ **Takes effect on re-import** (upsert overwrites existing rows) — part of the data rebuild.
 
 ## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
 > Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when

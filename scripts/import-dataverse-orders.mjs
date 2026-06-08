@@ -55,6 +55,10 @@ function decodeStatus(statecode, step, hasApproval) {
 function mapAdditions(o) {
   const sided = (lf, rf) => ({ l: lf ?? null, r: rf ?? null })
   const bool  = (lf, rf) => ({ l: lf === true, r: rf === true })
+  // Choice (option-set) fields come back as numeric codes; read the human-readable
+  // label from the OData FormattedValue annotation instead (Prefer header includes it).
+  const fv = (field) => o[`${field}@OData.Community.Display.V1.FormattedValue`] ?? null
+  const optSided = (lf, rf) => ({ l: fv(lf), r: fv(rf) })
   return {
     // Section 1: Additions
     lat_joint_w:  sided(o.cr56f_lateraljointwidthlf, o.cr56f_lateraljointwidthrf),
@@ -74,19 +78,19 @@ function mapAdditions(o) {
     xs_med_ank:   sided(o.cr56f_3extraspacemedialanklelf, o.cr56f_3extraspacemedialanklerf),
     xs_lat_ank:   sided(o.cr56f_3extraspacelateralanklelf, o.cr56f_3extraspacelateralanklerf),
     // Section 2: Upper
-    lining:        sided(o.cr56f_lininglf, o.cr56f_liningrf),
-    cl_laces:      sided(o.cr56f_closurelaceslf, o.cr56f_closurelacesrf),
-    cl_velcro:     sided(o.cr56f_closurevelcrostrapslf, o.cr56f_closurevelcrostrapsrf),
-    stiff_hard:    sided(o.cr56f_stiffenerhardnesslf, o.cr56f_stiffenerhardnessrf),
-    toe_puffs:     sided(o.cr56f_toepuffslf, o.cr56f_toepuffsrf),
+    lining:        optSided('cr56f_lininglf', 'cr56f_liningrf'),
+    cl_laces:      optSided('cr56f_closurelaceslf', 'cr56f_closurelacesrf'),
+    cl_velcro:     optSided('cr56f_closurevelcrostrapslf', 'cr56f_closurevelcrostrapsrf'),
+    stiff_hard:    optSided('cr56f_stiffenerhardnesslf', 'cr56f_stiffenerhardnessrf'),
+    toe_puffs:     optSided('cr56f_toepuffslf', 'cr56f_toepuffsrf'),
     toe_puffs_rim: bool(o.cr56f_toepuffsrimlf, o.cr56f_toepuffsrimrf),
     str_leather:   bool(o.cr56f_stretchleatherlf, o.cr56f_stretchleatherrf),
     instep_front:  sided(o.cr56f_instepmoretothefrontlf, o.cr56f_instepmoretothefrontrf),
     colour_mod:    sided(o.cr56f_colourmodificationslf, o.cr56f_colourmodificationsrf),
     pad_tongue:    sided(o.cr56f_extrapaddingontonguelf, o.cr56f_extrapaddingontonguerf),
-    zipper:        sided(o.cr56f_zipperlf, o.cr56f_zipperrf),
+    zipper:        optSided('cr56f_zipperlf', 'cr56f_zipperrf'),
     // Section 3: Sole & Heel
-    rocker:       sided(o.cr56f_2rockersoletypeslf, o.cr56f_2rockersoletypesrf),
+    rocker:       optSided('cr56f_2rockersoletypeslf', 'cr56f_2rockersoletypesrf'),
     rocker_toes:  sided(o.cr56f_2toeslf, o.cr56f_2toesrf),
     rocker_joint: sided(o.cr56f_2jointlf, o.cr56f_2jointrf),
     rocker_heel:  sided(o.cr56f_2heellf, o.cr56f_2heelrf),

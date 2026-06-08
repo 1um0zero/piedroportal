@@ -59,6 +59,9 @@ export default async function Navbar({ locale }: Props) {
               <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('dashboard')}
               </Link>
+              <Link href="/admin/orders?new=1" className="text-xs font-semibold tracking-wider text-gold hover:text-gold-dark uppercase transition-colors">
+                {t('new_orders')}
+              </Link>
               <Link href="/admin/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('orders_admin')}
               </Link>

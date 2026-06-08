@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
 import { nz } from '@/lib/format'
@@ -64,10 +65,11 @@ export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: 
   const ta = useTranslations('admin.approval')
   const tp = useTranslations('admin.production')
   const isAdminPath = pathname.startsWith('/admin')
+  const searchParams = useSearchParams()
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatus]   = useState('')
   const [urgentOnly, setUrgentOnly] = useState(false)
-  const [newOnly, setNewOnly]       = useState(false)
+  const [newOnly, setNewOnly]       = useState(searchParams.get('new') === '1')
   const [page, setPage]             = useState(1)
   const [repeating, setRepeating]   = useState<string | null>(null)
   const PER_PAGE = 50
