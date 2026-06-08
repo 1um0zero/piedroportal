@@ -370,8 +370,9 @@ replace) the existing chat where the user can already ask specific questions. Us
       `set-state-in-render`, `refs` — ~25). They flag working code that isn't optimal under the
       future React Compiler. Refactor them with runtime testing (or adopt React Compiler) then
       re-enable as errors. · 🤖
-- [ ] **22.4** Mop up the remaining mechanical **warnings** (unused vars/imports, unused
-      expressions, alt-text) so `npm run lint` is fully clean. · 🤖
+- [x] **22.4** ✅ Mechanical warnings cleared (unused vars/imports/functions, unused expressions,
+      stale eslint-disables, alt-text on @react-pdf images). `npm run lint` now = **0 errors**, and the
+      only remaining warnings are the ~25 deferred React-Compiler rules from §22.3.
 
 ## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
 > Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when
