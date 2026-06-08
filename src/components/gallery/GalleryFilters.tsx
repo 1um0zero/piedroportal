@@ -146,9 +146,15 @@ function SizeChips({
   const bucketVals = new Set(buckets.flatMap(b => b.values))
   const customSelected = selected.filter(s => !bucketVals.has(s))
 
+  const min = sizes[0]
+  const max = sizes[sizes.length - 1]
+
   function submitCustom() {
-    const v = parseFloat(custom)
-    if (!isNaN(v) && v > 0) { onToggleBucket([v]); setCustom('') }
+    const v = parseFloat(custom.replace(',', '.'))
+    // Only accept sizes within the scale; snap to the nearest available size.
+    if (isNaN(v) || v < min || v > max) { setCustom(''); return }
+    const nearest = sizes.reduce((p, c) => (Math.abs(c - v) < Math.abs(p - v) ? c : p))
+    onToggleBucket([nearest]); setCustom('')
   }
 
   return (
@@ -157,16 +163,22 @@ function SizeChips({
         {label}
       </span>
       <div className="space-y-1.5">
-        {/* Input first — between label and chips */}
+        {/* Input first — between label and chips. Text + datalist (no spinner):
+            only sizes within the scale are accepted, snapped to the nearest. */}
         <div className="flex items-center gap-1.5">
           <input
-            type="number" step="0.5" placeholder="EU …"
+            type="text" inputMode="decimal" placeholder={`EU ${min}–${max}`}
+            list="gallery-size-options"
             value={custom}
+            onFocus={e => e.currentTarget.select()}
             onChange={e => setCustom(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submitCustom()}
-            className="h-7 w-20 px-2 text-xs bg-white border border-stone-200 rounded-lg
+            className="h-7 w-24 px-2 text-xs bg-white border border-stone-200 rounded-lg
                        focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
           />
+          <datalist id="gallery-size-options">
+            {sizes.map(s => <option key={s} value={s} />)}
+          </datalist>
           <button onClick={submitCustom}
             className="h-7 px-2 text-xs font-semibold bg-stone-100 hover:bg-gold/10
                        hover:text-gold text-stone-500 rounded-lg border border-stone-200 transition-colors">

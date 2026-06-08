@@ -73,6 +73,7 @@ function SizeInput({ sizes, value, onChange, label, onBlurAfterSnap }: {
         <input
           list={id}
           value={value}
+          onFocus={e => e.currentTarget.select()}
           onChange={e => onChange(e.target.value)}
           onBlur={e => {
             const v = parseFloat(e.target.value)
@@ -619,19 +620,19 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {/* Clinician */}
             <div className="space-y-1.5">
               <label className={labelCls}>{t('clinician')}</label>
-              <input className={inputCls} value={clinician} onChange={e => setClinician(e.target.value)} />
+              <input className={inputCls} value={clinician} onFocus={e => e.currentTarget.select()} onChange={e => setClinician(e.target.value)} />
             </div>
 
             {/* Patient name */}
             <div className="space-y-1.5">
               <label className={labelCls}>{t('patient')}</label>
-              <input className={inputCls} value={patientName} onChange={e => setPatient(e.target.value)} />
+              <input className={inputCls} value={patientName} onFocus={e => e.currentTarget.select()} onChange={e => setPatient(e.target.value)} />
             </div>
 
             {/* Reference */}
             <div className="space-y-1.5">
               <label className={labelCls}>{t('reference')} <span className="text-red-400">*</span></label>
-              <input className={inputCls} value={reference} onChange={e => setReference(e.target.value)} required />
+              <input className={inputCls} value={reference} onFocus={e => e.currentTarget.select()} onChange={e => setReference(e.target.value)} required />
             </div>
           </div>
 
@@ -667,6 +668,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <div className="space-y-1.5 max-w-[120px]">
                 <label className={labelCls}>{t('quantity')} <span className="text-red-400">*</span></label>
                 <input type="number" min={1} className={inputCls} value={quantity}
+                  onFocus={e => e.currentTarget.select()}
                   onChange={e => setQuantity(parseInt(e.target.value) || 1)} />
               </div>
             )}
@@ -700,6 +702,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                             min={1}
                             className={inputCls}
                             value={pair.qty}
+                            onFocus={e => e.currentTarget.select()}
                             onChange={e => updateDiffSizesPair(idx, 'qty', e.target.value)}
                           />
                         </div>
@@ -711,6 +714,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                             list={`diff-size-list-${idx}`}
                             className={inputCls}
                             value={pair.size}
+                            onFocus={e => e.currentTarget.select()}
                             onChange={e => updateDiffSizesPair(idx, 'size', e.target.value)}
                             onBlur={e => {
                               const v = parseFloat(e.target.value)

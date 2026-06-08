@@ -257,6 +257,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
           <input
             type="search"
             value={filters.search}
+            onFocus={(e) => e.currentTarget.select()}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
             placeholder={t('filters.search')}
             className="h-8 pl-8 pr-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
