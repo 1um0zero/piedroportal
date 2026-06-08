@@ -404,11 +404,11 @@
         "lateral_next": "Lateral Zipper Next to closure"
       },
       "rocker": {
-        "normal": "Normal Rocker",
-        "advancing": "Advancing Rocker",
-        "polyphase": "Polyphase Rocker",
-        "delaying": "Delaying Rocker",
-        "two_phase": "2-Phase Rocker"
+        "normal_rocker": "Normal Rocker",
+        "advancing_rocker": "Advancing Rocker",
+        "polyphase_rocker": "Polyphase Rocker",
+        "delaying_rocker": "Delaying Rocker",
+        "2_phase_rocker": "2-Phase Rocker"
       },
       "bumper": {
         "pu_black": "PU Black",

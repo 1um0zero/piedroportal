@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
 import { GlbViewer } from './GlbViewer'
-import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
+import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -155,11 +155,12 @@ function OptionChips({ values, value, onChange, collapse = false }: {
 }
 
 // Image picker — selectable diagram cards (used for the Rocker Sole type field)
-function ImageChips({ values, value, onChange, images }: {
+function ImageChips({ values, value, onChange, images, label }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: string | null) => void
   images: Record<string, string>
+  label?: (v: string) => string
 }) {
   return (
     <div className="flex flex-wrap gap-2.5">
@@ -167,10 +168,11 @@ function ImageChips({ values, value, onChange, images }: {
         const key = String(v)
         const src = images[key]
         const selected = value === v
+        const display = label ? label(key) : key
         return (
           <button key={key} type="button"
             onClick={() => onChange(selected ? null : key)}
-            title={key}
+            title={display}
             className={`group relative flex flex-col items-center w-[120px] rounded-lg border p-1.5 transition-all
               ${selected
                 ? 'border-gold ring-2 ring-gold/30 bg-gold/5 shadow-sm'
@@ -184,7 +186,7 @@ function ImageChips({ values, value, onChange, images }: {
             )}
             <span className={`mt-1 text-[10px] leading-tight font-medium text-center
               ${selected ? 'text-gold' : 'text-stone-600'}`}>
-              {key}
+              {display}
             </span>
             {selected && (
               <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-white
@@ -312,7 +314,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     if (field.type === 'mm')
       return <MmInput values={field.values ?? []} value={val} onChange={setVal} />
     if (field.type === 'image' && field.images)
-      return <ImageChips values={field.values ?? []} value={val} onChange={setVal} images={field.images} />
+      return <ImageChips values={field.values ?? []} value={val} onChange={setVal} images={field.images}
+        label={(v) => translateOptionValue(field.key, v, t)} />
     if (field.type === 'image' || field.type === 'option')
       return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
     if (field.type === 'toggle')

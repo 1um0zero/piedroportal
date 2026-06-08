@@ -404,11 +404,11 @@
         "lateral_next": "Lateral Zipper Next to closure"
       },
       "rocker": {
-        "normal": "Mittelfußrolle",
-        "advancing": "Vorgerückte Rolle",
-        "polyphase": "mehrphasige Rolle",
-        "delaying": "Verzögerte Rolle",
-        "two_phase": "2 Phasen Rolle"
+        "normal_rocker": "Mittelfußrolle",
+        "advancing_rocker": "Vorgerückte Rolle",
+        "polyphase_rocker": "Mehrphasige Rolle",
+        "delaying_rocker": "Verzögerte Rolle",
+        "2_phase_rocker": "2-Phasen-Rolle"
       },
       "bumper": {
         "pu_black": "PU Schwarz",

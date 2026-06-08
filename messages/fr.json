@@ -404,11 +404,11 @@
         "lateral_next": "Fermeture éclair latérale à côté de la fermeture"
       },
       "rocker": {
-        "normal": "Normal Rocker",
-        "advancing": "Advancing Rocker",
-        "polyphase": "Polyphase Rocker",
-        "delaying": "Delaying Rocker",
-        "two_phase": "2-Phase Rocker"
+        "normal_rocker": "Déroulé normal",
+        "advancing_rocker": "Déroulé accéléré",
+        "polyphase_rocker": "Déroulé polyphasé",
+        "delaying_rocker": "Déroulé retardé",
+        "2_phase_rocker": "Déroulé 2 phases"
       },
       "bumper": {
         "pu_black": "PU Black",

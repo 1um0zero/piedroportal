@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { SECTIONS } from './additions-config'
-import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
+import { getFieldLabel, getSectionLabel, translateOptionValue, groupImageBlocks } from '@/lib/additions-helpers'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -90,16 +90,78 @@ export default function OrderSummary(props: OrderSummaryProps) {
 
       const baseLabel = getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, '')
       const isImage = field.type === 'image'
+      const showVal = (v: unknown) =>
+        field.type === 'mm' ? `${String(v)} mm`
+        : isImage ? translateOptionValue(field.key, String(v), ta)
+        : String(v)
       return [{
         label: baseLabel,
-        l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
-        r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
+        l: hasL ? showVal(sv!.l) : null,
+        r: hasR ? showVal(sv!.r) : null,
+        // Image lookup uses the canonical English value (sv), not the translated label.
         imgL: isImage && hasL ? (field.images?.[String(sv!.l)] ?? null) : null,
         imgR: isImage && hasR ? (field.images?.[String(sv!.r)] ?? null) : null,
       }]
     })
     return { key: sec.key, label: getSectionLabel(sec, ta), filled }
   }).filter(s => s.filled.length > 0)
+
+  // Diagram + caption (used inside the rocker block)
+  const figure = (src: string, caption: string | null, side?: string) => (
+    <figure className="text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" className="h-20 object-contain mx-auto" />
+      {side && <figcaption className="text-[9px] text-stone-400 uppercase mt-0.5">{side}</figcaption>}
+      {caption && <figcaption className="text-[10px] font-semibold text-stone-700">{caption}</figcaption>}
+    </figure>
+  )
+
+  // Rocker block: diagram(s) on the left, child measurements grouped on the right
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderImageBlock = (item: any, key: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const children = (item.children ?? []) as any[]
+    const imgL: string | null = item.imgL ?? null
+    const imgR: string | null = item.imgR ?? null
+    const twoImgs = isDouble && imgL && imgR && imgL !== imgR
+    return (
+      <div key={key} className="py-2 border-b border-stone-50">
+        <p className="text-xs text-stone-600 mb-2">{item.label}</p>
+        <div className="flex items-start gap-4">
+          <div className="shrink-0 flex gap-3">
+            {twoImgs
+              ? <>{figure(imgL!, item.l, t('left'))}{figure(imgR!, item.r, t('right'))}</>
+              : figure((imgL ?? imgR)!, item.l ?? item.r)}
+          </div>
+          {children.length > 0 && (
+            <div className="flex-1 min-w-0">
+              {isDouble ? (
+                <>
+                  <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-100 text-[10px] font-semibold text-stone-400 uppercase">
+                    <span></span><span className="text-right">{t('left')}</span><span className="text-right">{t('right')}</span>
+                  </div>
+                  {children.map((c, i) => (
+                    <div key={i} className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1 text-xs">
+                      <span className="text-stone-500">{c.label.replace(/·/g, '').trim()}</span>
+                      <span className="text-stone-800 font-semibold text-right">{c.l ?? '—'}</span>
+                      <span className="text-stone-800 font-semibold text-right">{c.r ?? '—'}</span>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                children.map((c, i) => (
+                  <div key={i} className="grid grid-cols-[2fr_1fr] gap-2 py-1 text-xs">
+                    <span className="text-stone-500">{c.label.replace(/·/g, '').trim()}</span>
+                    <span className="text-stone-800 font-semibold text-right">{c.l ?? c.r ?? ''}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -246,78 +308,41 @@ export default function OrderSummary(props: OrderSummaryProps) {
             {addDetail.map(sec => (
               <div key={sec.key}>
                 <p className="text-[11px] font-bold text-gold uppercase tracking-wide mb-2">{sec.label}</p>
-                {isDouble ? (
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                      <div></div>
-                      <div className="text-right">{t('left')}</div>
-                      <div className="text-right">{t('right')}</div>
-                    </div>
-                    {sec.filled.map((f, i) => {
-                      const isChild = f.label.includes('·')
-                      const isParent = (f as { isParent?: boolean }).isParent === true
-                      if (isParent) {
-                        return (
-                          <div key={i} className="pt-2 pb-1 mt-1">
-                            <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
-                          </div>
-                        )
-                      }
-                      const img = (f as { imgL?: string | null; imgR?: string | null })
-                      const cell = (text: string | null, imgSrc: string | null | undefined) =>
-                        imgSrc ? (
-                          <span className="inline-flex flex-col items-end gap-1">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={imgSrc} alt="" className="h-11 object-contain" />
-                            <span className="text-stone-800 font-semibold">{text}</span>
-                          </span>
-                        ) : (
-                          <span className="text-stone-800 font-semibold text-right">{text ?? (f.l === null && f.r === null ? '' : '—')}</span>
-                        )
-                      return (
-                        <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
-                          <span className="text-stone-600">{f.label}</span>
-                          {cell(f.l, img.imgL)}
-                          {cell(f.r, img.imgR)}
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-[2fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                      <div></div>
+                <div className="space-y-1">
+                  <div className={`grid ${isDouble ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'} gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase`}>
+                    <div></div>
+                    {isDouble ? (
+                      <><div className="text-right">{t('left')}</div><div className="text-right">{t('right')}</div></>
+                    ) : (
                       <div className="text-right">{unit === 'PAIR' ? t('unit_pair').split(' ')[0].toUpperCase() : unit === 'LEFT' ? t('left').toUpperCase() : t('right').toUpperCase()}</div>
-                    </div>
-                    {sec.filled.map((f, i) => {
-                      const isChild = f.label.includes('·')
-                      const isParent = (f as { isParent?: boolean }).isParent === true
-                      if (isParent) {
-                        return (
-                          <div key={i} className="pt-2 pb-1 mt-1">
-                            <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
-                          </div>
-                        )
-                      }
-                      const img = (f as { imgL?: string | null; imgR?: string | null })
-                      const imgSrc = img.imgL ?? img.imgR
+                    )}
+                  </div>
+                  {groupImageBlocks(sec.filled).map((f, i) => {
+                    if (f.children) return renderImageBlock(f, i)
+                    const isChild = f.label.includes('·')
+                    const isParent = (f as { isParent?: boolean }).isParent === true
+                    if (isParent) {
                       return (
-                        <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
-                          <span className="text-stone-600">{f.label}</span>
-                          {imgSrc ? (
-                            <span className="inline-flex flex-col items-end gap-1">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={imgSrc} alt="" className="h-11 object-contain" />
-                              <span className="text-stone-800 font-semibold">{f.l ?? f.r ?? ''}</span>
-                            </span>
-                          ) : (
-                            <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r ?? ''}</span>
-                          )}
+                        <div key={i} className="pt-2 pb-1 mt-1">
+                          <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
                         </div>
                       )
-                    })}
-                  </div>
-                )}
+                    }
+                    return (
+                      <div key={i} className={`grid ${isDouble ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'} gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
+                        <span className="text-stone-600">{f.label}</span>
+                        {isDouble ? (
+                          <>
+                            <span className="text-stone-800 font-semibold text-right">{f.l ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                            <span className="text-stone-800 font-semibold text-right">{f.r ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                          </>
+                        ) : (
+                          <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r ?? ''}</span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             ))}
           </div>

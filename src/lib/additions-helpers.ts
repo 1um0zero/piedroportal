@@ -17,6 +17,35 @@ export function getSectionLabel(section: AdditionSection, t: (key: string) => st
 }
 
 /**
+ * Groups an image-type row (e.g. the rocker diagram) with the conditional child
+ * rows that immediately follow it, so the diagram and its measurements can be
+ * rendered together. Used by both the confirmation summary and the PDF.
+ * A row is an image parent when it carries `imgL`/`imgR`; children are the
+ * following rows whose label contains the child marker `·` (and aren't parents).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function groupImageBlocks(filled: any[]): any[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const out: any[] = []
+  for (let i = 0; i < filled.length; i++) {
+    const f = filled[i]
+    if (f.imgL || f.imgR) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const children: any[] = []
+      let j = i + 1
+      while (j < filled.length && filled[j].label.includes('·') && !filled[j].isParent) {
+        children.push(filled[j]); j++
+      }
+      out.push({ ...f, children })
+      i = j - 1
+    } else {
+      out.push(f)
+    }
+  }
+  return out
+}
+
+/**
  * Translates an option value using the translations from next-intl
  * Maps English values to translation keys in additions.options
  */

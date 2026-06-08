@@ -404,11 +404,11 @@
         "lateral_next": "Langs vetersluiting Lateraal"
       },
       "rocker": {
-        "normal": "Normal Afwikkeling",
-        "advancing": "Versnelde Afwikkeling",
-        "polyphase": "Polyfasisch Afwikkeling",
-        "delaying": "Vertraagde Afwikkeling",
-        "two_phase": "2 Fase Afwikkeling"
+        "normal_rocker": "Normale afwikkeling",
+        "advancing_rocker": "Versnelde afwikkeling",
+        "polyphase_rocker": "Polyfasische afwikkeling",
+        "delaying_rocker": "Vertraagde afwikkeling",
+        "2_phase_rocker": "2-fase afwikkeling"
       },
       "bumper": {
         "pu_black": "PU Black",

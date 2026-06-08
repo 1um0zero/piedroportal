@@ -2,6 +2,7 @@ import { Document, Page, View, Text, StyleSheet, Image } from '@react-pdf/render
 import { SECTIONS } from './additions-config'
 import type { Locale } from '@/types'
 import { getPdfTranslation, getUnitLabel, getDateLocale } from '@/lib/pdf-translations'
+import { translateOptionValue, groupImageBlocks } from '@/lib/additions-helpers'
 
 const GOLD = '#C9A96E'
 const DARK = '#1C1917'
@@ -41,7 +42,6 @@ const s = StyleSheet.create({
   fieldVal:      { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
   fieldValL:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
   fieldValR:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
-  fieldValImg:   { flex: 1, alignItems: 'flex-end' },
   rockerImg:     { width: 84, height: 48, objectFit: 'contain' },
   lrHeader:      { flexDirection: 'row', paddingBottom: 4, borderBottom: `1px solid ${BORDER}`, marginBottom: 2 },
   lrHeaderLabel: { flex: 2, fontSize: 7, color: MUTED },
@@ -89,6 +89,7 @@ export function OrderPdf({
   diff_sizes_pairs, locale, showWatermark = false,
 }: OrderPdfProps) {
   const t = (key: string) => getPdfTranslation(locale, key)
+  const ta = (key: string) => getPdfTranslation(locale, `additions.${key}`)
   const isDouble = unit === 'LEFT_RIGHT'
   const date = new Date(created_at).toLocaleDateString(getDateLocale(locale), {
     day: '2-digit', month: '2-digit', year: 'numeric',
@@ -157,11 +158,16 @@ export function OrderPdf({
           const path = field.images?.[String(v)]
           return path ? `${SITE_URL}${path}` : null
         }
+        const showVal = (v: unknown) =>
+          field.type === 'mm' ? `${String(v)} mm`
+          : isImage ? translateOptionValue(field.key, String(v), ta)
+          : String(v)
         return [{
           label: fieldLabel.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '),
-          l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
-          r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
+          l: hasL ? showVal(sv!.l) : null,
+          r: hasR ? showVal(sv!.r) : null,
           global: false,
+          // Image lookup uses the canonical English value, not the translated label.
           imgL: isImage && hasL ? imgUrl(sv!.l) : null,
           imgR: isImage && hasR ? imgUrl(sv!.r) : null,
         }]
@@ -327,9 +333,62 @@ export function OrderPdf({
             {addSections.map(sec => (
               <View key={sec.label}>
                 <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>{sec.label}</Text>
-                {sec.filled.map((f, i) => {
+                {groupImageBlocks(sec.filled).map((f, i) => {
                   const isParent = (f as { isParent?: boolean }).isParent === true
                   const isChild = f.label.includes('·')
+
+                  // Image block (rocker): title, diagram(s), child measurements beside the diagram
+                  if (f.children) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const children = f.children as any[]
+                    const imgL: string | null = f.imgL ?? null
+                    const imgR: string | null = f.imgR ?? null
+                    const twoImgs = isDouble && imgL && imgR && imgL !== imgR
+                    const fig = (src: string, caption: string | null, side?: string) => (
+                      <View style={{ alignItems: 'center' }}>
+                        {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF */}
+                        <Image src={src} style={s.rockerImg} />
+                        {side && <Text style={{ fontSize: 6, color: MUTED, textTransform: 'uppercase' }}>{side}</Text>}
+                        {caption && <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK }}>{caption}</Text>}
+                      </View>
+                    )
+                    return (
+                      <View key={i} wrap={false} style={{ marginTop: 4, marginBottom: 4 }}>
+                        <Text style={s.fieldLabel}>{f.label}</Text>
+                        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', marginTop: 3 }}>
+                          <View style={{ flexDirection: 'row', gap: 6 }}>
+                            {twoImgs
+                              ? <>{fig(imgL!, f.l, t('additions.left'))}{fig(imgR!, f.r, t('additions.right'))}</>
+                              : fig((imgL ?? imgR)!, f.l ?? f.r)}
+                          </View>
+                          {children.length > 0 && (
+                            <View style={{ flex: 1 }}>
+                              {isDouble && (
+                                <View style={{ flexDirection: 'row', borderBottom: `1px solid ${BORDER}`, paddingBottom: 2 }}>
+                                  <Text style={{ flex: 2, fontSize: 6, color: MUTED }}></Text>
+                                  <Text style={{ flex: 1, fontSize: 6, color: MUTED, textAlign: 'right', textTransform: 'uppercase' }}>{t('additions.left')}</Text>
+                                  <Text style={{ flex: 1, fontSize: 6, color: MUTED, textAlign: 'right', textTransform: 'uppercase' }}>{t('additions.right')}</Text>
+                                </View>
+                              )}
+                              {children.map((c, k) => (
+                                <View key={k} style={{ flexDirection: 'row', paddingVertical: 2, borderBottom: `1px solid ${LIGHT}` }}>
+                                  <Text style={{ flex: 2, fontSize: 8, color: MUTED }}>{c.label.replace(/·/g, '').trim()}</Text>
+                                  {isDouble ? (
+                                    <>
+                                      <Text style={s.fieldValL}>{c.l ?? '—'}</Text>
+                                      <Text style={s.fieldValR}>{c.r ?? '—'}</Text>
+                                    </>
+                                  ) : (
+                                    <Text style={s.fieldVal}>{c.l ?? c.r ?? ''}</Text>
+                                  )}
+                                </View>
+                              ))}
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    )
+                  }
 
                   if (isParent) {
                     return (
@@ -339,32 +398,14 @@ export function OrderPdf({
                     )
                   }
 
-                  const img = (f as { imgL?: string | null; imgR?: string | null })
-                  const imgCell = (text: string | null, src: string | null | undefined, emptyOnBoth: boolean) =>
-                    src ? (
-                      <View style={s.fieldValImg}>
-                        {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF */}
-                        <Image src={src} style={s.rockerImg} />
-                        <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' }}>{text}</Text>
-                      </View>
-                    ) : (
-                      <Text style={isDouble ? s.fieldValL : s.fieldVal}>{text ?? (emptyOnBoth ? '' : t('additions.empty_value'))}</Text>
-                    )
-
                   return (
                     <View key={i} style={{ ...s.fieldRow, paddingLeft: isChild ? 12 : 0 }}>
                       <Text style={s.fieldLabel}>{f.label}</Text>
                       {isDouble && !f.global ? (
                         <>
-                          {imgCell(f.l, img.imgL, f.l === null && f.r === null)}
-                          {imgCell(f.r, img.imgR, f.l === null && f.r === null)}
+                          <Text style={s.fieldValL}>{f.l ?? (f.l === null && f.r === null ? '' : t('additions.empty_value'))}</Text>
+                          <Text style={s.fieldValR}>{f.r ?? (f.l === null && f.r === null ? '' : t('additions.empty_value'))}</Text>
                         </>
-                      ) : (img.imgL ?? img.imgR) ? (
-                        <View style={s.fieldValImg}>
-                          {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF */}
-                          <Image src={(img.imgL ?? img.imgR)!} style={s.rockerImg} />
-                          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' }}>{f.l ?? f.r ?? ''}</Text>
-                        </View>
                       ) : (
                         <Text style={s.fieldVal}>{f.l ?? f.r ?? ''}</Text>
                       )}
