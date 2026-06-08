@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import type { Locale } from '@/types'
+import { translateFilterValueSync } from '@/lib/filter-translations'
 import type { Filters } from './GalleryPage'
 
 type Props = {
@@ -52,11 +54,13 @@ function SquareChips({
   options,
   selected,
   onToggle,
+  renderLabel,
 }: {
   label: string
   options: string[]
   selected: string[]
   onToggle: (v: string) => void
+  renderLabel?: (v: string) => string
 }) {
   if (!options.length) return null
   return (
@@ -75,7 +79,7 @@ function SquareChips({
                 ? 'bg-gold text-white border-gold shadow-sm'
                 : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
           >
-            {o}
+            {renderLabel ? renderLabel(o) : o}
           </button>
         ))}
       </div>
@@ -201,14 +205,17 @@ function MultiDropdown({
   options,
   selected,
   onToggle,
+  renderLabel,
 }: {
   placeholder: string
   options: string[]
   selected: string[]
   onToggle: (v: string) => void
+  renderLabel?: (v: string) => string
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const show = (v: string) => (renderLabel ? renderLabel(v) : v)
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -221,8 +228,8 @@ function MultiDropdown({
   const label = selected.length === 0
     ? placeholder
     : selected.length === 1
-      ? selected[0]
-      : `${selected[0]} +${selected.length - 1}`
+      ? show(selected[0])
+      : `${show(selected[0])} +${selected.length - 1}`
 
   return (
     <div ref={ref} className="relative">
@@ -259,7 +266,7 @@ function MultiDropdown({
                   </svg>
                 )}
               </span>
-              <span className="text-sm text-stone-700 truncate">{o}</span>
+              <span className="text-sm text-stone-700 truncate">{show(o)}</span>
             </label>
           ))}
         </div>
@@ -278,6 +285,8 @@ export default function GalleryFilters({
 }: Props) {
   const t = useTranslations('gallery.filters')
   const tg = useTranslations('gallery')
+  const locale = useLocale() as Locale
+  const tr = (v: string) => translateFilterValueSync(v, locale)
   const [open, setOpen] = useState(false)
 
   function toggleArr(key: keyof Filters, val: string) {
@@ -370,17 +379,17 @@ export default function GalleryFilters({
 
           {/* Closure chips */}
           {optClosures.length > 0 && (
-            <SquareChips label={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} />
+            <SquareChips label={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} renderLabel={tr} />
           )}
 
           {/* Type chips */}
           {optTypes.length > 0 && (
-            <SquareChips label={t('type')} options={optTypes} selected={filters.types} onToggle={(v) => toggleArr('types', v)} />
+            <SquareChips label={t('type')} options={optTypes} selected={filters.types} onToggle={(v) => toggleArr('types', v)} renderLabel={tr} />
           )}
 
           {/* Construction chips — above colour */}
           {optConstructions.length > 1 && (
-            <SquareChips label={t('construction')} options={optConstructions} selected={filters.constructions} onToggle={(v) => toggleArr('constructions', v)} />
+            <SquareChips label={t('construction')} options={optConstructions} selected={filters.constructions} onToggle={(v) => toggleArr('constructions', v)} renderLabel={tr} />
           )}
 
           {/* Colour — label left, dropdown right (no placeholder text), NEW inline */}
@@ -390,7 +399,7 @@ export default function GalleryFilters({
                 {t('colour')}
               </span>
               <div className="flex items-center gap-2 flex-wrap">
-                <MultiDropdown placeholder="—" options={optColours} selected={filters.colours} onToggle={(v) => toggleArr('colours', v)} />
+                <MultiDropdown placeholder="—" options={optColours} selected={filters.colours} onToggle={(v) => toggleArr('colours', v)} renderLabel={tr} />
                 {hasNew && (
                   <button onClick={() => setFilters((f) => ({ ...f, onlyNew: !f.onlyNew }))}
                     className={`h-9 px-3 text-xs font-bold tracking-widest rounded-lg border transition-all

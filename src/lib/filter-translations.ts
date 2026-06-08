@@ -20,7 +20,7 @@ async function populateCache() {
   const { data } = await supabase
     .from('translations')
     .select('key, en, nl, fr, de, category')
-    .in('category', ['closure', 'type', 'construction'])
+    .in('category', ['closure', 'type', 'construction', 'colour'])
 
   if (data) {
     for (const row of data) {
