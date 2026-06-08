@@ -76,8 +76,13 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
   const [search, setSearch]       = useState('')
   // Single active chip/filter: '' (all) | new | pending | approved | in_production | refused | <status>
   const [active, setActive]       = useState<string>(searchParams.get('new') === '1' ? 'new' : '')
+  // When true, narrow the active bucket to urgent orders only (set by the red dot).
+  const [urgentFilter, setUrgentFilter] = useState(false)
   const [page, setPage]           = useState(1)
   const [repeating, setRepeating] = useState<string | null>(null)
+
+  const selectChip   = (key: string) => { setUrgentFilter(false); setActive(a => a === key ? '' : key) }
+  const selectUrgent = (key: string) => { setActive(key); setUrgentFilter(true) }
   const PER_PAGE = 50
 
   async function handleRepeat(orderId: string, productId: string) {
@@ -100,6 +105,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
       else if (active === 'pending') { if (!isPending(o)) return false }
       else if (active === 'refused') { if (o.approval_state !== 'refused') return false }
       else if (active)               { if (o.status !== active) return false }
+      if (urgentFilter && !isUrgent(o)) return false
       if (search) {
         const q = search.toLowerCase()
         const style = o.products?.style_name?.toLowerCase() ?? ''
@@ -112,7 +118,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
       }
       return true
     })
-  }, [orders, search, active])
+  }, [orders, search, active, urgentFilter])
 
   const currentYear = new Date().getFullYear()
 
@@ -161,10 +167,10 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {chips.map(c => (
           <div key={c.key} role="button" tabIndex={0}
-            onClick={() => setActive(a => a === c.key ? '' : c.key)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setActive(a => a === c.key ? '' : c.key) }}
+            onClick={() => selectChip(c.key)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') selectChip(c.key) }}
             className={`p-3 rounded-xl border text-left transition-all cursor-pointer
-              ${active === c.key
+              ${active === c.key && !urgentFilter
                 ? 'border-gold bg-gold/5'
                 : c.accent
                   ? 'border-gold/40 bg-gold/[0.03] hover:border-gold/60'
@@ -173,12 +179,17 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
             <p className={`text-2xl font-bold ${c.accent ? 'text-gold-dark' : 'text-stone-800'}`}>{nz(c.count)}</p>
             <p className="text-xs text-stone-500 mt-0.5">{c.label}</p>
             {c.urgent > 0 && (
-              <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-red-500">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />{c.urgent} {t('metric_urgent').toLowerCase()}
-              </p>
+              <button type="button"
+                onClick={e => { e.stopPropagation(); selectUrgent(c.key) }}
+                title={t('urgent_only')}
+                className={`mt-1 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold transition-colors
+                  ${active === c.key && urgentFilter ? 'bg-red-500 text-white' : 'text-red-500 hover:bg-red-50'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full inline-block ${active === c.key && urgentFilter ? 'bg-white' : 'bg-red-500'}`} />
+                {c.urgent} {t('metric_urgent').toLowerCase()}
+              </button>
             )}
             {c.key === 'approved' && counts.refused > 0 && (
-              <span onClick={e => { e.stopPropagation(); setActive('refused') }}
+              <span onClick={e => { e.stopPropagation(); selectChip('refused') }}
                 className="block mt-1 text-[11px] font-medium text-stone-500 hover:text-red-600 hover:underline">
                 {counts.refused} {ta('refused').toLowerCase()}
               </span>
@@ -188,9 +199,9 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
 
         {/* Total — to the right; on admin it carries the age-window selector */}
         <div className={`p-3 rounded-xl border transition-all
-          ${active === '' ? 'border-gold bg-gold/5' : 'border-stone-100 bg-white'}`}
+          ${active === '' && !urgentFilter ? 'border-gold bg-gold/5' : 'border-stone-100 bg-white'}`}
           style={{ boxShadow: 'var(--shadow-card)' }}>
-          <button onClick={() => setActive('')} className="text-left w-full">
+          <button onClick={() => { setActive(''); setUrgentFilter(false) }} className="text-left w-full">
             <p className="text-2xl font-bold text-stone-800">{nz(counts.total)}</p>
             <p className="text-xs text-stone-500 mt-0.5">{t('metric_total')}</p>
           </button>
@@ -222,7 +233,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
         </div>
 
         <div className="relative">
-          <select value={(STATUS_KEYS as readonly string[]).includes(active) ? active : ''} onChange={e => setActive(e.target.value)}
+          <select value={(STATUS_KEYS as readonly string[]).includes(active) ? active : ''} onChange={e => { setUrgentFilter(false); setActive(e.target.value) }}
             className="h-9 px-3 pr-8 text-sm bg-white border border-stone-200 rounded-lg
                        appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30">
             <option value="">{t('all_statuses')}</option>
@@ -295,8 +306,8 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
                         )}
                         <div className="min-w-0">
                           <p className="font-medium text-stone-800 truncate">
+                            {isUrgent && <span title={t('urgent_only')} className="mr-1.5 inline-block w-2 h-2 rounded-full bg-red-500 align-middle" />}
                             {product?.style_name ?? '—'}
-                            {isUrgent && <span className="ml-1.5 text-red-500">🔴</span>}
                           </p>
                           <p className="text-xs text-stone-400 truncate">
                             {product?.colour_id} · {product?.closure}
@@ -320,19 +331,29 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
                         <p className="text-xs text-stone-400">{company?.erp_code ?? ''}</p>
                       </td>
                     )}
-                    {/* Status — single current state: production (VSI) > approval (Piedro) > portal status */}
+                    {/* Status — current state: production (VSI) > approval (Piedro) > portal status.
+                        Anomaly: in production but NOT approved → flag the approval state in red. */}
                     <td className="px-4 py-3">
-                      {(() => {
-                        if (o.production_state) {
-                          const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
-                          return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{p ? tp(p.value) : o.production_state}</span>
-                        }
-                        if (o.approval_state && o.approval_state !== 'registered') {
+                      <div className="flex flex-col items-start gap-1">
+                        {(() => {
+                          if (o.production_state) {
+                            const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
+                            return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{p ? tp(p.value) : o.production_state}</span>
+                          }
+                          if (o.approval_state && o.approval_state !== 'registered') {
+                            const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
+                            return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${a?.color ?? 'bg-stone-100 text-stone-500'}`}>{a ? ta(a.value) : o.approval_state}</span>
+                          }
+                          return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>{ts.has(o.status) ? ts(o.status) : o.status}</span>
+                        })()}
+                        {o.production_state && o.approval_state && o.approval_state !== 'approved' && (() => {
                           const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
-                          return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${a?.color ?? 'bg-stone-100 text-stone-500'}`}>{a ? ta(a.value) : o.approval_state}</span>
-                        }
-                        return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>{ts.has(o.status) ? ts(o.status) : o.status}</span>
-                      })()}
+                          return <span title="In production but not approved"
+                            className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-50 text-red-600 border border-red-200">
+                            ⚠ {a ? ta(a.value) : o.approval_state}
+                          </span>
+                        })()}
+                      </div>
                     </td>
                     {/* Date — year shown only for orders before the current year */}
                     <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
