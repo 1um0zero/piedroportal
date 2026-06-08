@@ -271,10 +271,15 @@ replace) the existing chat where the user can already ask specific questions. Us
 > (Emil van Swaal): pair-by-pair (this portal) · custom (next) · fashion (out). NL head office + UK +
 > factory **VSI** (SHUZ on A-Shell) + **VSI-C** (custom). Anabela Lopes = piedro_admin in NL.
 
-- [ ] **18.1** **Piedro Order = `piedro_order_id`** (Dataverse `cr56f_order_piedro`, staff-filled,
-      gates approval). Import must map it; show it on order lists. ⚠️ confirm exact Dataverse field name.
-- [ ] **18.2** **Missing order fields:** `invoice_number` + `invoice_date` (invoiced state); `tracking_number`
-      + `tracking_url` (clients want a tracking **link**). Add columns + UI + ERP status-back support.
+- [x] **18.1** **Piedro Order = `piedro_order_id`** (Dataverse `cr56f_order_piedro`, staff-filled, gates
+      approval) ✅ confirmed + import maps it + shown on unassigned. Filled on ALL orders except same-day
+      of final import (else step<3 or test). `cr56f_name` = Power Pages API id, never shown to humans.
+- [ ] **18.2** **Missing order fields, fed by VSI via a-shell (status-back):** `invoice_number` +
+      `invoice_date`; `tracking_number` + `tracking_url` (clients want a clickable **link**). Migration +
+      extend `/api/erp/orders/status` + client/staff UI.
+- [ ] **18.8** **State history / audit (timestamp + user per state)** — `order_state_events` table; write
+      an event on every state mutation (client submit, `updateOrderAdminAction`, ERP status-back) with
+      who/when/source; timeline on the order detail. Feeds briefing/dashboards. · 🤖 build + 👤 run migration
 - [ ] **18.3** **"Open work" views** for NL/UK staff — approve flow (registered → approved with Piedro
       Order + date; or awaiting payment/decision). Easy "what's open" surfacing.
 - [ ] **18.4** **Inverted VSI import (production branch):** PT-language branch "produção" listing
