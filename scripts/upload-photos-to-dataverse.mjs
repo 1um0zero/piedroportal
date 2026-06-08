@@ -15,7 +15,6 @@
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { resolve, join, extname } from 'path'
 import { createClient } from '@supabase/supabase-js'
-import sharp from 'sharp'
 
 const env = Object.fromEntries(
   readFileSync(resolve(process.cwd(), '.env.local'), 'utf8')

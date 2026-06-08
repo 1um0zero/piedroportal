@@ -173,6 +173,7 @@ export function OrderPdf({
         {/* Header */}
         <View style={s.header}>
           <View>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF */}
             <Image src={LOGO_URL} style={s.logo} />
             <Text style={s.brandSub}>Piedro International</Text>
           </View>
@@ -222,6 +223,7 @@ export function OrderPdf({
           {/* Product Image */}
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             {productImageUrl && (
+              // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF
               <Image src={productImageUrl}
                 style={{ width: 140, height: 140, objectFit: 'contain' }} />
             )}

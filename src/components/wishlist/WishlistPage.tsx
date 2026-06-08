@@ -35,7 +35,6 @@ export default function WishlistPage() {
       .then(data => { setProducts(Array.isArray(data) ? data as Product[] : []) })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idKey])
 
   if (loading) {

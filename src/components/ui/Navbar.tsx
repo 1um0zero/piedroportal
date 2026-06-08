@@ -111,7 +111,7 @@ export default async function Navbar({ locale }: Props) {
             </>
           )}
           {/* Wishlist — needs client for count */}
-          <NavbarClient locale={locale} />
+          <NavbarClient />
         </nav>
 
         {/* Right: language + auth — hidden on mobile */}

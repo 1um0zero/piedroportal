@@ -36,8 +36,6 @@ export default function CompanySelector({ companies, currentCompanyId }: Props) 
   // Don't show selector if user has only one company
   if (companies.length <= 1) return null
 
-  const currentCompany = companies.find(c => c.id === selected)
-
   return (
     <div className="relative">
       <select

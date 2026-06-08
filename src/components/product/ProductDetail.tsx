@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -165,8 +164,6 @@ export default function ProductDetail({ product, siblings }: Props) {
     const isPng = /\.png$/i.test(p)
     if (isPng) {
       const base = p.replace(/\.\d{2}\.png$/i, '')
-      const ext  = p.match(/\.(\d{2}\.png)$/i)?.[1] ?? '01.png'
-      const num  = parseInt(ext)
       return [p, ...[2,3,4,5,6,7,8].map(n => `${base}.${String(n).padStart(2,'0')}.png`)]
     } else {
       const base = p.replace(/\.jpg$/i, '')
@@ -190,7 +187,7 @@ export default function ProductDetail({ product, siblings }: Props) {
     if (playRef.current) clearInterval(playRef.current)
   }
   // Stop when images change (new variant selected)
-  useEffect(() => { stopPlay() }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { stopPlay() }, [selected])
 
   // Preload filter translations on mount
   useEffect(() => {

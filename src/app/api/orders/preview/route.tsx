@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
       showWatermark: true,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const element = React.createElement(OrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
     const pdfBuffer = await renderToBuffer(element)
 

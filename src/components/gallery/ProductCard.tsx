@@ -31,7 +31,6 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
 
   // Constructions summary for tooltip
   const constructions = product.constructions ?? []
-  const allWidths = [...new Set(constructions.flatMap(c => c.widths))].filter(Boolean)
 
   // Translate filter values for tooltip
   const translatedType = translateFilterValueSync(product.type, locale)

@@ -73,7 +73,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setIds((prev) => {
       const next = new Set(prev)
       const removing = next.has(productId)
-      removing ? next.delete(productId) : next.add(productId)
+      if (removing) next.delete(productId); else next.add(productId)
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]))
 

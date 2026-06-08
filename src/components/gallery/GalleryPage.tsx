@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { createClient } from '@/lib/supabase/client'
 import type { Product, Section } from '@/types'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { getMyExclusiveProducts } from '@/app/actions/catalogue'
@@ -94,10 +93,6 @@ export function isNew(p: Product): boolean {
   return new Date(p.new_until) > new Date()      // future date = still new
 }
 
-// ── Toggle helper for multi-select arrays ─────────────────────────────────────
-function toggle<T>(arr: T[], val: T): T[] {
-  return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -1,11 +1,10 @@
 'use client'
 
-import { Link, usePathname } from '@/i18n/navigation'
+import { Link } from '@/i18n/navigation'
 import { useWishlist } from '@/contexts/WishlistContext'
 
-export default function NavbarClient({ locale }: { locale: string }) {
+export default function NavbarClient() {
   const { count } = useWishlist()
-  const pathname = usePathname()
 
   return (
     <Link href="/wishlist"

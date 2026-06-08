@@ -143,11 +143,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [successMsg,  setSuccessMsg] = useState('')
 
   const showAdditions = unit !== 'DIFF_SIZES'
-  const steps = showAdditions ? [1, 2, 3] : [1, 3]
 
   const isDouble    = unit === 'LEFT_RIGHT'
   const mirror      = unit === 'PAIR'
-  const displaySide: 'l' | 'r' = unit === 'RIGHT' ? 'r' : 'l'
   const sideLabel   = unit === 'LEFT'  ? t('left')
                     : unit === 'RIGHT' ? t('right')
                     : ''

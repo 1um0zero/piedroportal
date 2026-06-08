@@ -15,7 +15,7 @@
  */
 
 import { readFileSync, readdirSync, statSync } from 'fs'
-import { resolve, join, extname, basename } from 'path'
+import { resolve, join, extname } from 'path'
 import { createClient } from '@supabase/supabase-js'
 
 const env = Object.fromEntries(

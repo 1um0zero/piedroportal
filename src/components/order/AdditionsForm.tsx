@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
 import { GlbViewer } from './GlbViewer'
-import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
+import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -243,11 +243,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return !!(side === 'l' ? sv.l : sv.r)
   }
 
-  // Check if a toggle field has conditional children
-  function hasConditionalChildren(fieldKey: string, section: AdditionSection): boolean {
-    return section.fields.some(f => f.conditionalOn === fieldKey)
-  }
-
   function renderControl(field: AdditionField, side: 'l' | 'r', disabled = false) {
     const sv = additions[field.key] as SidedVal | null
     const val = sv?.[side] ?? null
@@ -294,7 +289,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   function toggleSection(key: string) {
     setExpanded((prev) => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) next.delete(key); else next.add(key)
       return next
     })
   }
@@ -424,7 +419,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 if (field.type === 'toggle') {
                   const sv = additions[field.key] as SidedVal | null
                   const isChecked = sv?.[displaySide] === true
-                  const hasChildren = hasConditionalChildren(field.key, section)
 
                   return (
                     <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
@@ -457,9 +451,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           if (checked) {
                             setAddExpanded(prev => {
                               const next = new Set(prev)
-                              next.has(`${field.key}:${displaySide}`)
-                                ? next.delete(`${field.key}:${displaySide}`)
-                                : next.add(`${field.key}:${displaySide}`)
+                              const k = `${field.key}:${displaySide}`
+                              if (next.has(k)) next.delete(k); else next.add(k)
                               return next
                             })
                           } else {
@@ -709,7 +702,6 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const rightActive = isParentActive(field, 'r')
                   if (!leftActive && !rightActive) return null
 
-                  const isConditional = !!field.conditionalOn
                   const fieldLabel = getFieldLabel(field, t)
                   const isSubField = fieldLabel.startsWith('↳')
 
