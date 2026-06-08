@@ -153,6 +153,10 @@ Last updated: 2026-06-06.
       filter on categorical-repeat columns (status/country/role/label…), client-side. Reference =
       `CompaniesTable`. Apply to orders list, admin/users, branches, products as visited.
       · 🤖 *(rule set 2026-06-08)*
+- [ ] **12.9** **Evolution: multi-select per-column filters** — current categorical filters are
+      single-select. Upgrade to multi-select (checkbox dropdown) where useful, e.g. pick several
+      statuses/countries/labels at once. Keep it light; drop on any column where it adds load.
+      · 🤖 *(registered 2026-06-08)*
 
 ## 13. Decisions log (from chat)
 - 2026-06-06 User migration = 100% clean, no invites, reset on first login.
