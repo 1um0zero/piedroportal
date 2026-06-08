@@ -55,6 +55,14 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
   const isApprovedOrBeyond = approvalSt === 'approved'
     || ['approved', 'in_production', 'shipped', 'delivered'].includes(order.status)
 
+  // Only allow confirming when something actually changed AND the Piedro Order is set.
+  const dirty =
+    piedroId     !== (order.piedro_order_id ?? '') ||
+    piedroNotes  !== (order.piedro_notes ?? '') ||
+    approvalSt   !== (order.approval_state ?? 'registered') ||
+    productionSt !== (order.production_state ?? '')
+  const canSave = dirty && piedroId.trim() !== '' && !saving
+
   // Different-sizes pairs (stored JSON) → string sizes for the shared summary.
   const diffSizesPairs = Array.isArray(order.diff_sizes_pairs)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -187,9 +195,6 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
                 </button>
               ))}
             </div>
-            {approvalSt === 'approved' && !piedroId.trim() && (
-              <p className="text-xs text-red-500">⚠ Piedro Order # is required to approve.</p>
-            )}
           </div>
 
           {/* Production state — only once approved & handed to the factory */}
@@ -211,10 +216,15 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
             </div>
           )}
 
-          <button onClick={() => start(() => handleSave())} disabled={saving}
-            className="px-6 py-2.5 bg-stone-800 text-white text-sm font-semibold rounded-xl hover:bg-stone-700 transition-colors disabled:opacity-50">
-            {saving ? 'Saving…' : 'Save All'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => start(() => handleSave())} disabled={!canSave}
+              className="px-6 py-2.5 bg-stone-800 text-white text-sm font-semibold rounded-xl hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? 'Saving…' : 'CONFIRM changes'}
+            </button>
+            {dirty && !piedroId.trim() && (
+              <span className="text-xs text-red-500">⚠ Piedro Order # is required to save.</span>
+            )}
+          </div>
         </div>
       )}
 
