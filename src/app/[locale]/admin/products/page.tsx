@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import ProductsList, { type ProductRow } from '@/components/admin/ProductsList'
 
-const FIELDS = 'id, colour_id, style_name, color_name, section, closure, type, active, picture_name'
+const FIELDS = 'id, colour_id, style_name, color_name, section, closure, type, active, picture_name, exclusive'
 
 export default async function AdminProductsPage() {
   const scope = await requireBackofficePage()
@@ -25,6 +25,15 @@ export default async function AdminProductsPage() {
     offset += PAGE
   }
 
+  // Map exclusive sigla → company name (products.exclusive matches companies.exclusive_label).
+  const { data: companies } = await service
+    .from('companies').select('name, exclusive_label').not('exclusive_label', 'is', null)
+  const companyByLabel: Record<string, string> = {}
+  for (const c of companies ?? []) {
+    const label = (c.exclusive_label ?? '').trim().toUpperCase()
+    if (label) companyByLabel[label] = c.name
+  }
+
   // Branch staff only see/manage models within their scope.
   const visible = scope.allModels ? all : all.filter(p => scope.canModel(p.style_name))
 
@@ -38,7 +47,7 @@ export default async function AdminProductsPage() {
           <Link href="/admin/products/images" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('bulk_images')}</Link>
         </div>
       </div>
-      <ProductsList products={visible} />
+      <ProductsList products={visible} companyByLabel={companyByLabel} />
     </div>
   )
 }

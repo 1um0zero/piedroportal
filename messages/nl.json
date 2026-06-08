@@ -709,7 +709,9 @@
       "all_sections": "Alle secties",
       "all_closures": "Alle sluitingen",
       "all_types": "Alle types",
-      "col_type": "Type"
+      "col_type": "Type",
+      "col_exclusive": "Exclusief",
+      "all_exclusive": "Alle exclusieve"
     },
     "branches": {
       "title": "Filialen",

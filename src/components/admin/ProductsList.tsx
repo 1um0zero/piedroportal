@@ -19,18 +19,19 @@ export type ProductRow = {
   type: string
   active: boolean
   picture_name: string | null
+  exclusive: string | null
 }
 
 // Categorical select filter (matches the /orders pattern).
-function FilterSelect({ value, onChange, allLabel, options }: {
-  value: string; onChange: (v: string) => void; allLabel: string; options: string[]
+function FilterSelect({ value, onChange, allLabel, options, labels }: {
+  value: string; onChange: (v: string) => void; allLabel: string; options: string[]; labels?: Record<string, string>
 }) {
   return (
     <div className="relative">
       <select value={value} onChange={e => onChange(e.target.value)}
         className="h-9 px-3 pr-8 text-sm bg-white border border-stone-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30">
         <option value="">{allLabel}</option>
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
+        {options.map(o => <option key={o} value={o}>{labels?.[o] ?? o}</option>)}
       </select>
       <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -40,7 +41,7 @@ function FilterSelect({ value, onChange, allLabel, options }: {
   )
 }
 
-export default function ProductsList({ products }: { products: ProductRow[] }) {
+export default function ProductsList({ products, companyByLabel = {} }: { products: ProductRow[]; companyByLabel?: Record<string, string> }) {
   const t = useTranslations('admin.products')
   const tc = useTranslations('admin.common')
   const [rows, setRows] = useState(products)
@@ -48,6 +49,7 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
   const [fSection, setFSection] = useState('')
   const [fClosure, setFClosure] = useState('')
   const [fType, setFType] = useState('')
+  const [fExclusive, setFExclusive] = useState('')
   const [onlyInactive, setOnlyInactive] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
   const [page, setPage] = useState(0)
@@ -55,9 +57,12 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
 
   const distinct = (key: keyof ProductRow) =>
     [...new Set(rows.map(p => p[key]).filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b))
-  const sectionOpts = useMemo(() => distinct('section'), [rows]) // eslint-disable-line react-hooks/exhaustive-deps
-  const closureOpts = useMemo(() => distinct('closure'), [rows]) // eslint-disable-line react-hooks/exhaustive-deps
-  const typeOpts    = useMemo(() => distinct('type'),    [rows]) // eslint-disable-line react-hooks/exhaustive-deps
+  const sectionOpts   = useMemo(() => distinct('section'),   [rows]) // eslint-disable-line react-hooks/exhaustive-deps
+  const closureOpts   = useMemo(() => distinct('closure'),   [rows]) // eslint-disable-line react-hooks/exhaustive-deps
+  const typeOpts      = useMemo(() => distinct('type'),      [rows]) // eslint-disable-line react-hooks/exhaustive-deps
+  const exclusiveOpts = useMemo(() => distinct('exclusive'), [rows]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const companyName = (p: ProductRow) => p.exclusive ? (companyByLabel[p.exclusive] ?? p.exclusive) : ''
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
@@ -66,13 +71,14 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
       if (fSection && p.section !== fSection) return false
       if (fClosure && p.closure !== fClosure) return false
       if (fType && p.type !== fType) return false
+      if (fExclusive && p.exclusive !== fExclusive) return false
       if (!needle) return true
-      return [p.colour_id, p.style_name, p.color_name, p.closure, p.type]
+      return [p.colour_id, p.style_name, p.color_name, p.closure, p.type, companyName(p)]
         .some(v => v?.toLowerCase().includes(needle))
     })
     return [...out].sort((a, b) =>
       compareValues((a as Record<string, unknown>)[sort.key], (b as Record<string, unknown>)[sort.key], sort.dir))
-  }, [rows, q, onlyInactive, fSection, fClosure, fType, sort])
+  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSort = (key: string) => setSort(s => nextSort(s, key))
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE)
@@ -97,6 +103,9 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
         <FilterSelect value={fSection} onChange={v => { setFSection(v); setPage(0) }} allLabel={t('all_sections')} options={sectionOpts} />
         <FilterSelect value={fClosure} onChange={v => { setFClosure(v); setPage(0) }} allLabel={t('all_closures')} options={closureOpts} />
         <FilterSelect value={fType}    onChange={v => { setFType(v);    setPage(0) }} allLabel={t('all_types')}    options={typeOpts} />
+        {exclusiveOpts.length > 0 && (
+          <FilterSelect value={fExclusive} onChange={v => { setFExclusive(v); setPage(0) }} allLabel={t('all_exclusive')} options={exclusiveOpts} labels={companyByLabel} />
+        )}
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" checked={onlyInactive} onChange={e => { setOnlyInactive(e.target.checked); setPage(0) }} />
           {t('inactive_only')}
@@ -115,6 +124,7 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
               <SortableTh label={t('col_section')} sortKey="section" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_closure')} sortKey="closure" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_type')} sortKey="type" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_exclusive')} sortKey="exclusive" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_active')} sortKey="active" sort={sort} onSort={onSort} />
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
             </tr>
@@ -136,6 +146,11 @@ export default function ProductsList({ products }: { products: ProductRow[] }) {
                 <td className="px-4 py-2 text-stone-500">{p.section}</td>
                 <td className="px-4 py-2 text-stone-500">{p.closure}</td>
                 <td className="px-4 py-2 text-stone-500">{p.type}</td>
+                <td className="px-4 py-2">
+                  {p.exclusive
+                    ? <span className="rounded-full bg-gold/10 px-2 py-0.5 text-xs font-medium text-gold" title={p.exclusive}>{companyName(p)}</span>
+                    : <span className="text-stone-300">—</span>}
+                </td>
                 <td className="px-4 py-2">
                   <button
                     onClick={() => toggle(p.id, !p.active)}

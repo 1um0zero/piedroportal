@@ -709,7 +709,9 @@
       "all_sections": "Toutes les sections",
       "all_closures": "Toutes les fermetures",
       "all_types": "Tous les types",
-      "col_type": "Type"
+      "col_type": "Type",
+      "col_exclusive": "Exclusif",
+      "all_exclusive": "Tous les exclusifs"
     },
     "branches": {
       "title": "Filiales",

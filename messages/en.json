@@ -709,7 +709,9 @@
       "all_sections": "All sections",
       "all_closures": "All closures",
       "all_types": "All types",
-      "col_type": "Type"
+      "col_type": "Type",
+      "col_exclusive": "Exclusive",
+      "all_exclusive": "All exclusives"
     },
     "branches": {
       "title": "Branch offices",

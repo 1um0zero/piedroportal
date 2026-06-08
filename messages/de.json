@@ -709,7 +709,9 @@
       "all_sections": "Alle Bereiche",
       "all_closures": "Alle Verschlüsse",
       "all_types": "Alle Typen",
-      "col_type": "Typ"
+      "col_type": "Typ",
+      "col_exclusive": "Exklusiv",
+      "all_exclusive": "Alle exklusiven"
     },
     "branches": {
       "title": "Niederlassungen",
