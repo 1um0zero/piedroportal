@@ -241,6 +241,27 @@ order import already excludes it), or (b) an `is_test` flag/category on orders (
 analytics/dashboards filter out. Option (b) is cleaner (no fake company). Until decided, keep test
 activity on a TESTES* company so it's auto-excluded.
 
+### 16.3 Natural-language order intake (AI pre-fill)  ·  🤖 build · 👤 shape  ·  post-launch (registered 2026-06-08)
+After picking the model, the client types a free-text order in **any language**, e.g.
+*"1 pair, rehab, K, 32 with these adds in both foot: 10mm toe puffs, rocker sole and w/o piedro logo"*,
+and an LLM **pre-fills** the order fields. The client then runs the **normal validation steps** on the
+pre-filled form — the AI never submits. Low risk because the human gate stays.
+- [ ] **16.3.a** **Schema-constrained parsing:** feed Claude the closed schema derived from
+      `additions-config.ts` (enumerated options, mm ranges, sided/global, conditional parents) + the
+      chosen product's real constructions/widths/sizes/closure + `adds_exclude`. Use tool use / structured
+      output; values not in the allowed set are left empty, never invented. Fuzzy-match to allowed values.
+- [ ] **16.3.b** **Map → form state** in the existing additions shape (`{l,r}` / scalar) to pre-fill
+      Tab1 + Tab2; reuse the form + validation as-is. Ambiguous items left blank/flagged for the human.
+- [ ] **16.3.c** **Preserve the intake** for audit + improvement: store original text + locale + parsed
+      JSON + model id/version + timestamp (column or `order_intake` table). Capture the user's validation
+      corrections → an eval dataset.
+- [ ] **16.3.d** **Improve over time** via prompt/schema/few-shot tuning measured against the saved
+      `prompt → expected fields` eval set (NOT model fine-tuning). 
+- [ ] **16.3.e** ⚠️ **Compliance:** sends data to Anthropic (US) → same DPA/zero-retention rules as the
+      chat (9.2 / Q8.2); patient/orthopedic data = GDPR Art.9. Gated by the same launch decision as chat.
+- [ ] **16.3.f** Pairs with additions normalization (§19): the explode/config metadata is what the LLM
+      needs; build after/with Phase 1.
+
 ### 16.1 AI post-login briefing  ·  🤖 build · 👤 shape  ·  NOT for Monday (registered 2026-06-06)
 After login, each user gets a **natural-language summary in their own locale** of what mattered
 recently — and what *didn't* happen — plus **suggested actions**. Essentially an NL interpretation of
