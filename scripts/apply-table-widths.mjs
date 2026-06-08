@@ -26,9 +26,19 @@ const env = Object.fromEntries(
 const API = env.DATAVERSE_URL + '/api/data/v9.2'
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 
-// All 17 fashion styles map to F,H,J,K,M in the source table (AGO rows carry the
-// real width list). Constructions default to Rehabilitation + Stability.
-const FASHION_WIDTHS = ['F', 'H', 'J', 'K', 'M']
+// Fashion styles are wrong in every Dataverse source (AGO, no/incorrect widths).
+// Correct mapping supplied by Jorge (attachment): each style → one width list,
+// unfolded into Rehabilitation + Stability. Split by the middle code:
+//   04571/04621/04324 → F,H,J,K,M   ·   03619/03620 → E,G,I,K,M
+const FHJKM = ['F', 'H', 'J', 'K', 'M']
+const EGIKM = ['E', 'G', 'I', 'K', 'M']
+const FASHION_MAP = {
+  '712.04571.74': FHJKM, '712.04571.54': FHJKM, '717.04571.74': FHJKM, '717.04571.54': FHJKM,
+  '711.04621.74': FHJKM, '711.04621.54': FHJKM, '717.04621.74': FHJKM, '717.04621.54': FHJKM,
+  '712.04324.74': FHJKM,
+  '711.03620.74': EGIKM, '711.03620.54': EGIKM, '717.03620.74': EGIKM, '717.03620.54': EGIKM,
+  '712.03619.74': EGIKM, '712.03619.54': EGIKM, '717.03619.74': EGIKM, '717.03619.54': EGIKM,
+}
 // Base notation: N,R,W is the NL display of S,M,L — store the base.
 const BASE = { N: 'S', R: 'M', W: 'L' }
 const splitList = s => [...new Set(String(s ?? '').split(/[,;]/).map(x => x.trim()).filter(Boolean).map(w => BASE[w] ?? w))]
@@ -80,10 +90,11 @@ const main = async () => {
 
   // Build desired constructions per style.
   const desiredFor = (name) => {
-    if (isFashion.has(name)) {
+    const fw = FASHION_MAP[name]
+    if (fw) {
       return [
-        { construction: 'Rehabilitation', widths: [...FASHION_WIDTHS] },
-        { construction: 'Stability', widths: [...FASHION_WIDTHS] },
+        { construction: 'Rehabilitation', widths: [...fw] },
+        { construction: 'Stability', widths: [...fw] },
       ]
     }
     return [...(byStyle.get(name) ?? new Map()).entries()].map(([c, w]) => ({ construction: c, widths: [...w] }))
@@ -104,11 +115,11 @@ const main = async () => {
       want.every(wc => { const cc = cur.find(c => c.construction === wc.construction); return cc && eq(cc.widths, wc.widths) })
     if (same) continue
     const row = { id: p.id, constructions: want }
-    if (isFashion.has(p.style_name)) fashionUpdates.push(row); else updates.push(row)
+    if (FASHION_MAP[p.style_name]) fashionUpdates.push(row); else updates.push(row)
   }
 
   console.log(`\nNon-fashion models to update: ${updates.length}`)
-  console.log(`Fashion models to update:     ${fashionUpdates.length}  (Rehab+Stability = [${FASHION_WIDTHS.join(',')}])`)
+  console.log(`Fashion models to update:     ${fashionUpdates.length}  (Rehab+Stability, per-style F,H,J,K,M or E,G,I,K,M)`)
 
   if (!APPLY) { console.log('\n[dry-run] no writes'); return }
 
