@@ -156,6 +156,10 @@ Last updated: 2026-06-06.
       filter on categorical-repeat columns (status/country/role/label…), client-side. Reference =
       `CompaniesTable`. Apply to orders list, admin/users, branches, products as visited.
       · 🤖 *(rule set 2026-06-08)*
+- [ ] **12.10** **Cleaner URLs / hide raw IDs & read params** (user pref, not a security issue — access is
+      server-enforced). Options: (a) short public order number column to replace the UUID in
+      `/orders/<id>`; (b) move filter params (`?age`,`?new`,`?draft`) out of the URL (loses deep-link +
+      the server-side age window). Cross-cutting; decide scope before doing. · 🤖 design + 👤 decide
 - [ ] **12.9** **Evolution: multi-select per-column filters** — current categorical filters are
       single-select. Upgrade to multi-select (checkbox dropdown) where useful, e.g. pick several
       statuses/countries/labels at once. Keep it light; drop on any column where it adds load.
