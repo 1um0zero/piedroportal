@@ -4,7 +4,10 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import type { ApprovalState, ProductionState } from '@/lib/order-status'
 
-export type { ApprovalState, ProductionState }
+// NOTE: this is a 'use server' module — it may ONLY export async functions.
+// Do NOT re-export types/consts here (Turbopack emits a runtime ref → ReferenceError
+// at module load, which 500s every action in the file). Import types from
+// '@/lib/order-status' directly where needed.
 
 // ── Server actions ─────────────────────────────────────────────────────────────
 
