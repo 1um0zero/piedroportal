@@ -44,11 +44,16 @@ function decodeUnit(raw) {
 }
 
 // ── Status decode ─────────────────────────────────────────────────────────────
-function decodeStatus(statecode, step, hasApproval) {
-  if (statecode === 1) return 'cancelled'
-  if (hasApproval) return 'approved'
-  if (step && step > 1) return 'submitted'
-  return 'submitted'  // all existing orders treated as submitted
+// Migrated orders are historical: the Piedro Order nº (cr56f_order_piedro) is set by
+// staff at acceptance, so its presence means the order was already approved/processed
+// in the old flow. Only orders without it (registered on the very day of the final
+// import, not yet handled) are genuinely "new" / submitted. Cancelled = statecode 1.
+function decodeStates(o) {
+  if (o.statecode === 1) return { status: 'cancelled', approval_state: 'refused' }
+  const piedroOrder = o.cr56f_order_piedro
+  const hasPiedroOrder = piedroOrder != null && String(piedroOrder).trim() !== ''
+  if (hasPiedroOrder || o.cr56f_state_approval) return { status: 'approved', approval_state: 'approved' }
+  return { status: 'submitted', approval_state: 'registered' }
 }
 
 // ── Map additions fields ──────────────────────────────────────────────────────
@@ -239,7 +244,8 @@ const rows = kept.map(o => ({
   user_id:            null,   // no direct mapping to Supabase auth users
   company_id:         o['_cr56f_customer_value'] ?? null,
   product_id:         o['_cr56f_style_color_value'] ?? null,
-  status:             decodeStatus(o.statecode, o.cr56f_step, o.cr56f_state_approval),
+  status:             decodeStates(o).status,
+  approval_state:     decodeStates(o).approval_state,
   unit:               decodeUnit(o.cr56f_shoeunit),
   clinician:          o.cr56f_clinicist ?? null,
   patient_name:       o.cr56f_patient ?? null,
@@ -262,6 +268,9 @@ console.log(`Mapped ${rows.length} orders`)
 console.log(`  With product link : ${withProduct}`)
 console.log(`  With company link : ${withCompany}`)
 console.log(`  Urgent            : ${urgent}`)
+const byStatus = {}
+for (const r of rows) byStatus[r.status] = (byStatus[r.status] ?? 0) + 1
+console.log(`  Status split      : ${JSON.stringify(byStatus)}`)
 
 if (DRY_RUN) {
   console.log('\n[dry-run] Sample:', JSON.stringify(rows[0], null, 2).slice(0, 500))
