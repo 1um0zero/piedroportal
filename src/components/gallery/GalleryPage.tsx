@@ -220,9 +220,12 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   const hasNew = useMemo(() => sectionProducts.some(isNew), [sectionProducts])
 
-  // Preload filter translations on mount
+  // Preload filter translations on mount, then bump state so the filter chips
+  // (which read the synchronous cache during render) re-render with the
+  // translated values — otherwise they keep showing the raw English value.
+  const [, setI18nReady] = useState(0)
   useEffect(() => {
-    preloadFilterTranslations()
+    preloadFilterTranslations().then(() => setI18nReady(n => n + 1))
   }, [])
 
   return (

@@ -189,9 +189,11 @@ export default function ProductDetail({ product, siblings }: Props) {
   // Stop when images change (new variant selected)
   useEffect(() => { stopPlay() }, [selected])
 
-  // Preload filter translations on mount
+  // Preload filter translations on mount, then bump state so chips that read the
+  // synchronous cache during render re-render with the translated values.
+  const [, setI18nReady] = useState(0)
   useEffect(() => {
-    preloadFilterTranslations()
+    preloadFilterTranslations().then(() => setI18nReady(n => n + 1))
   }, [])
 
   function selectClosure(cl: string) {
