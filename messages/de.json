@@ -108,7 +108,8 @@
     "companies": "Firmen",
     "unassigned": "Nicht zugeordnet",
     "settings": "Einstellungen",
-    "docs": "Docs"
+    "docs": "Docs",
+    "translations": "Übersetzungen"
   },
   "gallery": {
     "kids": "Kinder",
@@ -779,5 +780,22 @@
       "no_free_models": "Keine verfügbaren Modelle gefunden.",
       "add_hint": "Es werden nur Modelle angezeigt, die nicht exklusiv für eine andere Firma sind. Durch Hinzufügen wird das Modell exklusiv für diese Firma (alle Farben)."
     }
+  },
+  "adminTranslations": {
+    "title": "Übersetzungen",
+    "description": "Bearbeiten Sie die Übersetzungen für Filterwerte und Farben im Portal.",
+    "construction": "Konstruktion",
+    "closure": "Verschluss",
+    "type": "Typ",
+    "basic_colours": "Grundfarben (Filter)",
+    "shoe_colours": "Schuhfarben",
+    "value": "Wert",
+    "colour_name": "Farbname",
+    "search": "Suchen…",
+    "save": "Speichern",
+    "saving": "Speichern…",
+    "saved": "Gespeichert",
+    "no_results": "Keine Ergebnisse",
+    "hint": "Leere Felder verwenden den englischen Wert. Änderungen gelten sofort nach dem Speichern."
   }
 }

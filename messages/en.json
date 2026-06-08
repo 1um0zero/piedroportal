@@ -108,7 +108,8 @@
     "companies": "Companies",
     "unassigned": "Unassigned",
     "settings": "Settings",
-    "docs": "Docs"
+    "docs": "Docs",
+    "translations": "Translations"
   },
   "gallery": {
     "kids": "Kids",
@@ -779,5 +780,22 @@
       "no_free_models": "No available models match.",
       "add_hint": "Only models not exclusive to another company are listed. Adding makes the model exclusive to this company (all colours)."
     }
+  },
+  "adminTranslations": {
+    "title": "Translations",
+    "description": "Edit the translations for filter values and colours shown across the portal.",
+    "construction": "Construction",
+    "closure": "Closure",
+    "type": "Type",
+    "basic_colours": "Basic colours (filter)",
+    "shoe_colours": "Shoe colours",
+    "value": "Value",
+    "colour_name": "Colour name",
+    "search": "Search…",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "no_results": "No results",
+    "hint": "Empty cells fall back to the English value. Changes apply immediately after saving."
   }
 }

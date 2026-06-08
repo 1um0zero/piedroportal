@@ -108,7 +108,8 @@
     "companies": "Bedrijven",
     "unassigned": "Niet toegewezen",
     "settings": "Instellingen",
-    "docs": "Docs"
+    "docs": "Docs",
+    "translations": "Vertalingen"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -779,5 +780,22 @@
       "no_free_models": "Geen beschikbare modellen gevonden.",
       "add_hint": "Alleen modellen die niet exclusief zijn voor een ander bedrijf worden getoond. Toevoegen maakt het model exclusief voor dit bedrijf (alle kleuren)."
     }
+  },
+  "adminTranslations": {
+    "title": "Vertalingen",
+    "description": "Bewerk de vertalingen voor filterwaarden en kleuren in het portaal.",
+    "construction": "Constructie",
+    "closure": "Sluiting",
+    "type": "Type",
+    "basic_colours": "Basiskleuren (filter)",
+    "shoe_colours": "Schoenkleuren",
+    "value": "Waarde",
+    "colour_name": "Kleurnaam",
+    "search": "Zoeken…",
+    "save": "Opslaan",
+    "saving": "Opslaan…",
+    "saved": "Opgeslagen",
+    "no_results": "Geen resultaten",
+    "hint": "Lege velden vallen terug op de Engelse waarde. Wijzigingen zijn na het opslaan meteen actief."
   }
 }

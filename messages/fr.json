@@ -108,7 +108,8 @@
     "companies": "Sociétés",
     "unassigned": "Non attribuées",
     "settings": "Paramètres",
-    "docs": "Docs"
+    "docs": "Docs",
+    "translations": "Traductions"
   },
   "gallery": {
     "kids": "Enfants",
@@ -779,5 +780,22 @@
       "no_free_models": "Aucun modèle disponible ne correspond.",
       "add_hint": "Seuls les modèles non exclusifs à une autre société sont listés. L'ajout rend le modèle exclusif à cette société (toutes les couleurs)."
     }
+  },
+  "adminTranslations": {
+    "title": "Traductions",
+    "description": "Modifiez les traductions des valeurs de filtre et des couleurs du portail.",
+    "construction": "Construction",
+    "closure": "Fermeture",
+    "type": "Type",
+    "basic_colours": "Couleurs de base (filtre)",
+    "shoe_colours": "Couleurs de chaussures",
+    "value": "Valeur",
+    "colour_name": "Nom de couleur",
+    "search": "Rechercher…",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "no_results": "Aucun résultat",
+    "hint": "Les cellules vides reviennent à la valeur anglaise. Les modifications s’appliquent dès l’enregistrement."
   }
 }
