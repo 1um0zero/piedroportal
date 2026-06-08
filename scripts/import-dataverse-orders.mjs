@@ -126,7 +126,7 @@ console.log('Fetching orders from Dataverse...')
 
 const SELECT = [
   'cr56f_wpp_ordersid','cr56f_name','createdon','modifiedon','statecode',
-  'cr56f_step','cr56f_state_approval','cr56f_clinicist','cr56f_patient',
+  'cr56f_step','cr56f_state_approval','cr56f_order_piedro','cr56f_clinicist','cr56f_patient',
   'cr56f_customerref','cr56f_qty','cr56f_totalpairs','cr56f_shoeunit',
   'cr56f_footsizelf','cr56f_footsizerf','cr56f_comments','cr56f_7urgent',
   '_cr56f_customer_value','_cr56f_style_color_value',
@@ -229,6 +229,9 @@ console.log(`  ✓ Expected Supabase count after import = ${recon.kept}\n`)
 const rows = kept.map(o => ({
   id:                 o.cr56f_wpp_ordersid,
   dataverse_id:       o.cr56f_wpp_ordersid,
+  // Piedro Order = the NL/UK ERP order nº (staff-filled), gates approval + VSI import.
+  // ⚠️ confirm the exact Dataverse field name before relying on this on re-import.
+  piedro_order_id:    o.cr56f_order_piedro ?? null,
   user_id:            null,   // no direct mapping to Supabase auth users
   company_id:         o['_cr56f_customer_value'] ?? null,
   product_id:         o['_cr56f_style_color_value'] ?? null,

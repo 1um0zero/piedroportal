@@ -262,3 +262,27 @@ replace) the existing chat where the user can already ask specific questions. Us
       constraints as the chat (Q8.2). Define an allow/deny list of what may be mentioned.
 - [ ] **16.1.f** Phasing: v1 = deterministic dashboard aggregates rendered to NL via a small prompt;
       later = richer reasoning + suggestions + personalization.
+- [ ] **16.1.g** **Concrete v1 content (from org briefing 2026-06-08):** staff → "x orders to approve,
+      don't forget the y pending decision"; client → "in-progress orders are approved, x in production,
+      y delivered". Order-state reporting is the core of the briefing.
+
+## 18. Organizational model & VSI integration — 🟡 / 👥  (from briefing 2026-06-08)
+> Full context: `docs/PIEDRO-ORG-AND-FLOW.md` · memory `project_piedro_org`. PIEDRO INTERNATIONAL
+> (Emil van Swaal): pair-by-pair (this portal) · custom (next) · fashion (out). NL head office + UK +
+> factory **VSI** (SHUZ on A-Shell) + **VSI-C** (custom). Anabela Lopes = piedro_admin in NL.
+
+- [ ] **18.1** **Piedro Order = `piedro_order_id`** (Dataverse `cr56f_order_piedro`, staff-filled,
+      gates approval). Import must map it; show it on order lists. ⚠️ confirm exact Dataverse field name.
+- [ ] **18.2** **Missing order fields:** `invoice_number` + `invoice_date` (invoiced state); `tracking_number`
+      + `tracking_url` (clients want a tracking **link**). Add columns + UI + ERP status-back support.
+- [ ] **18.3** **"Open work" views** for NL/UK staff — approve flow (registered → approved with Piedro
+      Order + date; or awaiting payment/decision). Easy "what's open" surfacing.
+- [ ] **18.4** **Inverted VSI import (production branch):** PT-language branch "produção" listing
+      approved-not-integrated orders; opened on the Datacenter Windows VM running SHUZ, which generates a
+      file + runs `c:\piedro\platuz\bin\ashw32.exe` (a-shell) with params; a-shell writes state back via
+      http. Align with existing `order-contract.ts` + `/api/erp/orders*`.
+- [ ] **18.5** **VSI-C ↔ portal "custom" area** — when the custom portal area is built, VSIC consumes it
+      (separate A-Shell area, organically linked to VSI).
+- [ ] **18.6** **Livingston / ZSM** — sub-areas of pair-by-pair = a filter over the portal (later).
+- [ ] **18.7** **Branches as PT-language scopes:** VSI (production) and VSI-C are branches; reuse the
+      branch model (notify locale = PT, model scope). See `project_branch_offices`.
