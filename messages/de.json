@@ -705,7 +705,11 @@
       "col_diff": "Abweichende Spalten",
       "result_created": "{n} neu erstellt",
       "result_discrepancies": "{n} Abweichungen (nicht angewendet)",
-      "validate_hint": "Es werden nur neue Modelle erstellt. Bestehende Modelle werden geprüft, nicht geändert — das Portal ist die Quelle."
+      "validate_hint": "Es werden nur neue Modelle erstellt. Bestehende Modelle werden geprüft, nicht geändert — das Portal ist die Quelle.",
+      "all_sections": "Alle Bereiche",
+      "all_closures": "Alle Verschlüsse",
+      "all_types": "Alle Typen",
+      "col_type": "Typ"
     },
     "branches": {
       "title": "Niederlassungen",

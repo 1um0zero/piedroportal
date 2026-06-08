@@ -705,7 +705,11 @@
       "col_diff": "Afwijkende kolommen",
       "result_created": "{n} nieuw aangemaakt",
       "result_discrepancies": "{n} verschillen (niet toegepast)",
-      "validate_hint": "Alleen nieuwe modellen worden aangemaakt. Bestaande modellen worden gevalideerd, niet gewijzigd — het portaal is de bron."
+      "validate_hint": "Alleen nieuwe modellen worden aangemaakt. Bestaande modellen worden gevalideerd, niet gewijzigd — het portaal is de bron.",
+      "all_sections": "Alle secties",
+      "all_closures": "Alle sluitingen",
+      "all_types": "Alle types",
+      "col_type": "Type"
     },
     "branches": {
       "title": "Filialen",

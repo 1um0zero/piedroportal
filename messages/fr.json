@@ -705,7 +705,11 @@
       "col_diff": "Colonnes différentes",
       "result_created": "{n} nouveaux créés",
       "result_discrepancies": "{n} écarts (non appliqués)",
-      "validate_hint": "Seuls les nouveaux modèles sont créés. Les modèles existants sont validés, pas modifiés — le portail est la source."
+      "validate_hint": "Seuls les nouveaux modèles sont créés. Les modèles existants sont validés, pas modifiés — le portail est la source.",
+      "all_sections": "Toutes les sections",
+      "all_closures": "Toutes les fermetures",
+      "all_types": "Tous les types",
+      "col_type": "Type"
     },
     "branches": {
       "title": "Filiales",

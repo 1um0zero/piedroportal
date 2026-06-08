@@ -705,7 +705,11 @@
       "col_diff": "Differing columns",
       "result_created": "{n} new created",
       "result_discrepancies": "{n} discrepancies (not applied)",
-      "validate_hint": "Only new models are created. Existing models are validated, not changed — the portal is the source of truth."
+      "validate_hint": "Only new models are created. Existing models are validated, not changed — the portal is the source of truth.",
+      "all_sections": "All sections",
+      "all_closures": "All closures",
+      "all_types": "All types",
+      "col_type": "Type"
     },
     "branches": {
       "title": "Branch offices",
