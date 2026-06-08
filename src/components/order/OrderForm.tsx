@@ -5,8 +5,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
-import { emptyAdditions, SECTIONS } from './additions-config'
-import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
+import { emptyAdditions } from './additions-config'
+import OrderSummary from './OrderSummary'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -97,7 +97,6 @@ function SizeInput({ sizes, value, onChange, label, onBlurAfterSnap }: {
 
 export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData }: Props) {
   const t  = useTranslations('order')
-  const ta = useTranslations('additions')
   const locale = useLocale()
   const router = useRouter()
   const d = draftData  // shorthand for pre-fill
@@ -467,75 +466,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       )}
 
       {/* ── TAB 3: Confirmation ──────────────────────────────────────── */}
-      {step === 3 && (() => {
-        // Build detailed additions list for display
-        type SidedVal = { l: unknown; r: unknown }
-
-        // Helper: check if this field has children (is a parent toggle)
-        const hasChildren = (fieldKey: string, section: typeof SECTIONS[0]) =>
-          section.fields.some(f => f.conditionalOn === fieldKey)
-
-        const addDetail = SECTIONS.map(sec => {
-          const filled = sec.fields.flatMap(field => {
-            // Skip if this is a conditional child whose parent is not set
-            if (field.conditionalOn) {
-              const parent = additions[field.conditionalOn]
-              const isParentActive = typeof parent === 'boolean'
-                ? parent
-                : (parent as SidedVal)?.l || (parent as SidedVal)?.r
-              if (!isParentActive) return []
-            }
-
-            if (field.side === 'global') {
-              return additions[field.key] === true
-                ? [{ label: getFieldLabel(field, ta).replace(/\s*\(mm\)/gi, ''), l: null, r: null }]
-                : []
-            }
-
-            const sv = additions[field.key] as SidedVal | null
-
-            // For toggle fields
-            if (field.type === 'toggle') {
-              const isCheckedL = sv?.l === true
-              const isCheckedR = sv?.r === true
-              if (!isCheckedL && !isCheckedR) return []
-
-              // If this toggle has children, show it as a parent label
-              if (hasChildren(field.key, sec)) {
-                return [{
-                  label: getFieldLabel(field, ta),
-                  l: null,
-                  r: null,
-                  isParent: true
-                }]
-              }
-
-              // Standalone toggle: show with no value
-              return [{
-                label: getFieldLabel(field, ta),
-                l: isCheckedL ? '✓' : null,
-                r: isCheckedR ? '✓' : null,
-              }]
-            }
-
-            // For non-toggle fields
-            const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
-            const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
-            if (!hasL && !hasR) return []
-
-            const baseLabel = getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, '')
-            return [{
-              label: baseLabel,
-              l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
-              r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
-            }]
-          })
-          return { key: sec.key, label: getSectionLabel(sec, ta), filled }
-        }).filter(s => s.filled.length > 0)
-
-        const comments = additions['comments'] as string | null
-
-        return (
+      {step === 3 && (
         <div className="space-y-4">
 
           {/* Success banner */}
@@ -610,228 +541,28 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             </button>
           </div>
 
-          {/* Customer + Product */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Customer */}
-            <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('customer')}</h3>
-              <p className="font-semibold text-stone-900">{companyName}</p>
-              {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
-              {patientName && <p className="text-xs text-stone-500">{t('patient')}: {patientName}</p>}
-              {reference && <p className="text-xs text-stone-500">{t('reference')}: {reference}</p>}
-
-              {/* Product info */}
-              <div className="pt-3 border-t border-stone-100 space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-bold text-stone-900">{product.colour_id}</p>
-                  <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
-                    {product.closure}
-                  </span>
-                </div>
-                <p className="text-sm text-stone-500">{product.color_name}</p>
-              </div>
-
-              {/* Qty + Unit badge */}
-              <div className="flex items-center gap-2 pt-2">
-                <div className="w-12 h-12 bg-gold/10 border-2 border-gold rounded-lg flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gold">{unit === 'DIFF_SIZES' ? diffSizesPairs.filter(p => p.size).reduce((sum, p) => sum + p.qty, 0) : quantity}</span>
-                </div>
-                <div className="flex-1 bg-stone-100 rounded-lg px-3 py-2">
-                  <span className="text-sm font-bold text-stone-700 uppercase">
-                    {unit === 'PAIR' ? t('unit_pair').toUpperCase() :
-                     unit === 'LEFT' ? t('unit_left').toUpperCase() :
-                     unit === 'RIGHT' ? t('unit_right').toUpperCase() :
-                     unit === 'LEFT_RIGHT' ? t('unit_lr').toUpperCase() :
-                     unit === 'DIFF_SIZES' ? t('unit_sizes').split(' ')[0].toUpperCase() :
-                     ''}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Product Image */}
-            <div className="flex items-center justify-center p-6">
-              {product.picture_name && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`${BUCKET}/${product.picture_name}`}
-                  alt={product.style_name}
-                  className="w-full max-w-[280px] object-contain"
-                  style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Specifications */}
-          {(constrLeft || constrRight || widthLeft || widthRight || sizeLeft || sizeRight || (unit === 'DIFF_SIZES' && diffSizesPairs.some(p => p.size))) && (
-            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-3">{t('specifications')}</h3>
-              {isDouble ? (
-                <div className="space-y-1">
-                  <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                    <div></div>
-                    <div className="text-center">{t('left')}</div>
-                    <div className="text-center">{t('right')}</div>
-                  </div>
-                  {(constrLeft || constrRight) && (
-                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
-                      <span className="font-semibold text-stone-600">{t('construction')}</span>
-                      <span className="text-stone-800 font-semibold text-center">{constrLeft || '—'}</span>
-                      <span className="text-stone-800 font-semibold text-center">{constrRight || '—'}</span>
-                    </div>
-                  )}
-                  {(widthLeft || widthRight) && (
-                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
-                      <span className="font-semibold text-stone-600">{t('width')}</span>
-                      <span className="text-stone-800 font-semibold text-center">{widthLeft || '—'}</span>
-                      <span className="text-stone-800 font-semibold text-center">{widthRight || '—'}</span>
-                    </div>
-                  )}
-                  {(sizeLeft || sizeRight) && (
-                    <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
-                      <span className="font-semibold text-stone-600">{t('size')}</span>
-                      <span className="text-stone-800 font-semibold text-center">{sizeLeft || '—'}</span>
-                      <span className="text-stone-800 font-semibold text-center">{sizeRight || '—'}</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {(constrLeft || constrRight) && (
-                    <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
-                      <span className="font-semibold text-stone-600">{t('construction')}</span>
-                      <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? constrRight : constrLeft}</span>
-                    </div>
-                  )}
-                  {(widthLeft || widthRight) && (
-                    <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
-                      <span className="font-semibold text-stone-600">{t('width')}</span>
-                      <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? widthRight : widthLeft}</span>
-                    </div>
-                  )}
-                  {unit !== 'DIFF_SIZES' && (sizeLeft || sizeRight) && (
-                    <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
-                      <span className="font-semibold text-stone-600">{t('size')}</span>
-                      <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? sizeRight : sizeLeft}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Different Sizes grid */}
-              {unit === 'DIFF_SIZES' && diffSizesPairs.some(p => p.size) && (
-                <div className="mt-3 pt-3 border-t border-stone-100">
-                  <div className="bg-stone-50 rounded-lg p-3">
-                    <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-xs">
-                      <div className="font-semibold text-stone-500 uppercase">{t('pairs_1').replace(' 1', 's')}</div>
-                      <div className="font-semibold text-stone-500 text-right uppercase">{t('size')}</div>
-                      {diffSizesPairs.filter(p => p.size).map((pair, i) => (
-                        <>
-                          <div key={`${i}-qty`} className="text-stone-700">{pair.qty}</div>
-                          <div key={`${i}-size`} className="text-stone-700 font-semibold text-right">{pair.size}</div>
-                        </>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Additions detail */}
-          {showAdditions && addDetail.length > 0 && (
-            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-stone-700 uppercase tracking-wide">{t('tab2')}</h2>
-                <button type="button" onClick={() => setStep(2)}
-                  className="text-xs text-gold hover:underline">editar</button>
-              </div>
-              <div className="space-y-4">
-                {addDetail.map(sec => (
-                  <div key={sec.key}>
-                    <p className="text-[11px] font-bold text-gold uppercase tracking-wide mb-2">{sec.label}</p>
-                    {isDouble ? (
-                      <div className="space-y-1">
-                        {/* Header */}
-                        <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                          <div></div>
-                          <div className="text-right">{t('left')}</div>
-                          <div className="text-right">{t('right')}</div>
-                        </div>
-                        {/* Rows */}
-                        {sec.filled.map((f, i) => {
-                          const isChild = f.label.includes('·')
-                          const isParent = (f as any).isParent === true
-
-                          if (isParent) {
-                            return (
-                              <div key={i} className="pt-2 pb-1 mt-1">
-                                <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
-                              </div>
-                            )
-                          }
-
-                          return (
-                            <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
-                              <span className="text-stone-600">{f.label}</span>
-                              <span className="text-stone-800 font-semibold text-right">{f.l ?? (f.l === null && f.r === null ? '' : '—')}</span>
-                              <span className="text-stone-800 font-semibold text-right">{f.r ?? (f.l === null && f.r === null ? '' : '—')}</span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        {/* Header */}
-                        <div className="grid grid-cols-[2fr_1fr] gap-2 pb-1 border-b border-stone-200 text-[10px] font-semibold text-stone-500 uppercase">
-                          <div></div>
-                          <div className="text-right">{unit === 'PAIR' ? t('unit_pair').split(' ')[0].toUpperCase() : unit === 'LEFT' ? t('left').toUpperCase() : t('right').toUpperCase()}</div>
-                        </div>
-                        {/* Rows */}
-                        {sec.filled.map((f, i) => {
-                          const isChild = f.label.includes('·')
-                          const isParent = (f as any).isParent === true
-
-                          if (isParent) {
-                            return (
-                              <div key={i} className="pt-2 pb-1 mt-1">
-                                <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wide">{f.label}</p>
-                              </div>
-                            )
-                          }
-
-                          return (
-                            <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
-                              <span className="text-stone-600">{f.label}</span>
-                              <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r ?? ''}</span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {showAdditions && addDetail.length === 0 && (
-            <p className="text-xs text-stone-400 italic px-1">
-              {t('tab2')}: {t('no_additions')}{' '}
-              <button type="button" onClick={() => setStep(2)} className="text-gold hover:underline">{t('add_additions')}</button>
-            </p>
-          )}
-
-          {/* Comments */}
-          {comments && (
-            <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">{t('comments')}</h3>
-              <p className="text-sm text-stone-700 whitespace-pre-wrap">{comments}</p>
-            </div>
-          )}
+          <OrderSummary
+            companyName={companyName}
+            clinician={clinician}
+            patientName={patientName}
+            reference={reference}
+            product={product}
+            unit={unit}
+            quantity={quantity}
+            diffSizesPairs={diffSizesPairs}
+            constrLeft={constrLeft}
+            constrRight={constrRight}
+            widthLeft={widthLeft}
+            widthRight={widthRight}
+            sizeLeft={sizeLeft}
+            sizeRight={sizeRight}
+            additions={additions}
+            comments={additions['comments'] as string | null}
+            showAdditions={showAdditions}
+            onEditAdditions={() => setStep(2)}
+          />
         </div>
-        )
-      })()}
+      )}
 
       {/* ── TAB 1: Customer + Product ────────────────────────────────── */}
       {step === 1 && (

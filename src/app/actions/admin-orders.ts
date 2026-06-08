@@ -68,14 +68,17 @@ export async function updateOrderAdminAction(
 
 export async function translateTextAction(
   text: string,
-  targetLang: 'en' | 'pt',
+  targetLang: 'en' | 'pt' | 'nl' | 'fr' | 'de',
 ): Promise<{ translation?: string; error?: string }> {
   if (!text?.trim()) return { translation: '' }
   if (!process.env.ANTHROPIC_API_KEY) return { error: 'Translation not available (ANTHROPIC_API_KEY not set)' }
 
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-    const lang = targetLang === 'en' ? 'English' : 'Portuguese (European)'
+    const LANGS: Record<string, string> = {
+      en: 'English', pt: 'Portuguese (European)', nl: 'Dutch', fr: 'French', de: 'German',
+    }
+    const lang = LANGS[targetLang] ?? 'English'
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 500,

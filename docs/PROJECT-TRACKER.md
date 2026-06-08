@@ -320,11 +320,10 @@ replace) the existing chat where the user can already ask specific questions. Us
 - [x] **20.3** Orders list: **Duplicate hidden unless owner** (server already enforced; UI now matches). ✅
 - [x] **20.4** Order panel: **drop cr56f_ from labels**; **hide Production State for new orders** (shows
       only once approved/handed to factory; same rule will apply to invoice/tracking). ✅
-- [ ] **20.5** **Reuse the Confirmation step (Tab3) in the order panel body** — extract Tab3 from
-      `OrderForm.tsx` into a shared component used by both the order registration and the order detail,
-      so any change applies to both. Keep the **translation buttons** here (not in registration); add an
-      option to **auto-translate to the user's locale** when it differs from the order's. Also fixes the
-      order panel's hardcoded-English i18n gap. · 🤖 (bigger refactor)
+- [x] **20.5** ✅ **Reuse the Confirmation step in the order panel body** — extracted into shared
+      `OrderSummary.tsx`, used by both `OrderForm` Tab3 and `OrderDetailView`; one source for both.
+      Translation tools kept in the panel (under the comments) + **translate to the viewer's locale**
+      (translateTextAction generalized to en/pt/nl/fr/de). The summary body is now i18n'd on both sides.
 - [ ] **20.6** **Shortcut to "New orders" in admin nav** (in addition to the in-page metric). · 🤖
 - [ ] **20.7** **Imported option values are raw Dataverse option-set codes** (e.g. zipper = 987…) — not
       converted to their labels. Fix the import to map option-set codes → string values (needs the

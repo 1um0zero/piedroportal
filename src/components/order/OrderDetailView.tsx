@@ -1,14 +1,11 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import { SECTIONS } from './additions-config'
-import { getFieldLabel, getSectionLabel } from '@/lib/additions-helpers'
+import OrderSummary from './OrderSummary'
 import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
-
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 const PORTAL_STATUS_BADGE: Record<string, string> = {
   draft: 'bg-stone-100 text-stone-500', submitted: 'bg-blue-50 text-blue-600',
@@ -20,21 +17,16 @@ const PORTAL_STATUS_LABEL: Record<string, string> = {
   draft: 'Draft', submitted: 'Submitted', approved: 'Approved',
   in_production: 'In Production', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
 }
-const UNIT_LABEL: Record<string, string> = {
-  PAIR: 'Pair (L=R)', LEFT: 'Left only', RIGHT: 'Right only', LEFT_RIGHT: 'L ≠ R', DIFF_SIZES: 'Different sizes',
-}
 
-type SidedVal = { l: unknown; r: unknown }
-function fmtSide(l: unknown, r: unknown, unit: string) {
-  if (unit === 'LEFT_RIGHT') return `L: ${l ?? '—'}  R: ${r ?? '—'}`
-  if (unit === 'RIGHT') return String(r ?? '—')
-  return String(l ?? '—')
+type TransLang = 'en' | 'pt' | 'nl' | 'fr' | 'de'
+const LANG_LABEL: Record<TransLang, string> = {
+  en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmin: boolean }) {
   const router = useRouter()
-  const ta = useTranslations('additions')
+  const locale = useLocale()
   const [, start] = useTransition()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const product = (Array.isArray(order.products) ? order.products[0] : order.products) as any
@@ -50,33 +42,24 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
   const [msgErr, setMsgErr]   = useState(false)
   const [translation, setTranslation] = useState('')
   const [translating, setTranslating] = useState(false)
-  const [transLang, setTransLang]     = useState<'en' | 'pt'>('en')
+  const [transLang, setTransLang]     = useState<TransLang>('en')
 
   const unit  = order.unit ?? 'PAIR'
-  const adds  = order.additions as Record<string, unknown> | null
-  const approvalMeta  = APPROVAL_STATES.find(s => s.value === approvalSt)
+  const approvalMeta   = APPROVAL_STATES.find(s => s.value === approvalSt)
   const productionMeta = PRODUCTION_STATES.find(s => s.value === productionSt)
   // Production (and later invoice/tracking) only make sense once the order is approved
   // and handed to the factory — hide them for new orders awaiting validation.
   const isApprovedOrBeyond = approvalSt === 'approved'
     || ['approved', 'in_production', 'shipped', 'delivered'].includes(order.status)
 
-  // Additions for display
-  const addSections = SECTIONS.map(sec => {
-    const filled = sec.fields.flatMap(f => {
-      if (f.side === 'global') return adds?.[f.key] === true ? [{ label: getFieldLabel(f, ta).replace(/\s*\(mm\)/gi,''), value: 'Yes' }] : []
-      const sv = adds?.[f.key] as SidedVal | null
-      const hasL = sv?.l != null && sv.l !== '' && sv.l !== false
-      const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
-      if (!hasL && !hasR) return []
-      const label = getFieldLabel(f, ta).replace(/↳\s*/g,'  · ').replace(/\s*\(mm\)/gi,'')
-      const value = unit === 'LEFT_RIGHT'
-        ? `L: ${hasL ? sv!.l : '—'}  R: ${hasR ? sv!.r : '—'}`
-        : String(hasL ? sv!.l : sv!.r)
-      return [{ label, value }]
-    })
-    return { section: getSectionLabel(sec, ta), filled }
-  }).filter(s => s.filled.length > 0)
+  // Different-sizes pairs (stored JSON) → string sizes for the shared summary.
+  const diffSizesPairs = Array.isArray(order.diff_sizes_pairs)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? (order.diff_sizes_pairs as any[]).map(p => ({ qty: p.qty ?? 1, size: p.size != null ? String(p.size) : '' }))
+    : []
+
+  // Translate targets: the viewer's locale first, then EN/PT as quick fallbacks.
+  const transTargets = Array.from(new Set<TransLang>([locale as TransLang, 'en', 'pt']))
 
   async function handleSave(overrides?: Partial<Parameters<typeof updateOrderAdminAction>[1]>) {
     setSaving(true); setMsg(''); setMsgErr(false)
@@ -87,7 +70,7 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
     else { setMsg(result.error ?? 'Error'); setMsgErr(true) }
   }
 
-  async function handleTranslate(lang: 'en' | 'pt') {
+  async function handleTranslate(lang: TransLang) {
     setTransLang(lang); setTranslating(true)
     const text = [order.comments, order.clinician && `Clinician: ${order.clinician}`, order.patient_name && `Patient: ${order.patient_name}`].filter(Boolean).join('\n')
     const result = await translateTextAction(text, lang)
@@ -104,19 +87,17 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
           <p className="text-xs text-stone-400 mb-1">Order</p>
           <h1 className="text-2xl font-bold text-stone-900">{order.reference_customer ?? '—'}</h1>
           <p className="text-sm text-stone-500 mt-0.5">{new Date(order.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })}</p>
+          {order.piedro_order_id && <p className="text-sm font-semibold text-stone-700 mt-1">Piedro Order: {order.piedro_order_id}</p>}
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Portal status */}
           <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${PORTAL_STATUS_BADGE[order.status] ?? 'bg-stone-100 text-stone-500'}`}>
             {PORTAL_STATUS_LABEL[order.status] ?? order.status}
           </span>
-          {/* Approval state */}
           {approvalMeta && (
             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${approvalMeta.color}`}>
               {approvalMeta.label}
             </span>
           )}
-          {/* Production state */}
           {productionMeta && (
             <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700">
               {productionMeta.label}
@@ -140,7 +121,7 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
         </div>
       )}
 
-      {/* ── Admin panel ──────────────────────────────────────────────────── */}
+      {/* ── Admin panel (validation) ─────────────────────────────────────── */}
       {isAdmin && (
         <div className="bg-white rounded-[14px] p-5 space-y-5" style={{ boxShadow: 'var(--shadow-card)' }}>
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Piedro Admin</h2>
@@ -211,84 +192,44 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
         </div>
       )}
 
-      {/* ── Customer + Product ────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Customer</h2>
-          <p className="font-semibold text-stone-900">{company?.name ?? '—'}</p>
-          {order.clinician    && <p className="text-xs text-stone-500">Clinician: {order.clinician}</p>}
-          {order.patient_name && <p className="text-xs text-stone-500">Patient: {order.patient_name}</p>}
-          <p className="text-xs text-stone-400">{UNIT_LABEL[unit] ?? unit} · Qty {order.quantity}</p>
-        </div>
-        <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Product</h2>
-          <div className="flex items-center gap-3">
-            {product?.picture_name && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={`${BUCKET}/${product.picture_name}`} alt="" className="w-12 h-12 object-contain" />
+      {/* ── Order body — same structure as the registration Confirmation step ── */}
+      <OrderSummary
+        companyName={company?.name ?? '—'}
+        clinician={order.clinician}
+        patientName={order.patient_name}
+        reference={order.reference_customer}
+        product={product ?? {}}
+        unit={unit}
+        quantity={order.quantity}
+        diffSizesPairs={diffSizesPairs}
+        constrLeft={order.construction_left}
+        constrRight={order.construction_right}
+        widthLeft={order.width_left}
+        widthRight={order.width_right}
+        sizeLeft={order.size_left != null ? String(order.size_left) : ''}
+        sizeRight={order.size_right != null ? String(order.size_right) : ''}
+        additions={order.additions ?? null}
+        comments={order.comments}
+        showAdditions={unit !== 'DIFF_SIZES'}
+        commentsFooter={isAdmin && order.comments ? (
+          <div className="pt-2 border-t border-stone-50 space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {transTargets.map(lang => (
+                <button key={lang} onClick={() => start(() => handleTranslate(lang))} disabled={translating}
+                  className="px-3 py-1.5 text-xs font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-colors disabled:opacity-50">
+                  {translating && transLang === lang ? 'Translating…' : `Translate ${LANG_LABEL[lang]}`}
+                </button>
+              ))}
+            </div>
+            {translation && (
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                <p className="text-[10px] font-semibold text-blue-400 uppercase tracking-wide mb-1">Translation ({transLang.toUpperCase()})</p>
+                <p className="text-sm text-blue-900 whitespace-pre-wrap">{translation}</p>
+              </div>
             )}
-            <div>
-              <p className="font-bold text-stone-900">{product?.colour_id ?? '—'}</p>
-              <p className="text-xs text-stone-500">{product?.color_name} · {product?.closure}</p>
-            </div>
           </div>
-          {(order.construction_left || order.construction_right) && <p className="text-xs text-stone-400">Construction: {fmtSide(order.construction_left, order.construction_right, unit)}</p>}
-          {(order.width_left || order.width_right)               && <p className="text-xs text-stone-400">Width: {fmtSide(order.width_left, order.width_right, unit)}</p>}
-          {(order.size_left  || order.size_right)                && <p className="text-xs text-stone-400">Size EU: {fmtSide(order.size_left, order.size_right, unit)}</p>}
-          {order.piedro_order_id && <p className="text-xs font-semibold text-stone-700">Piedro Order: {order.piedro_order_id}</p>}
-        </div>
-      </div>
-
-      {/* ── Comments + translation ────────────────────────────────────── */}
-      {order.comments && (
-        <div className="bg-white rounded-[14px] p-5 space-y-3" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Comments</h2>
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{order.comments}</p>
-
-          {isAdmin && (
-            <div className="pt-2 border-t border-stone-50 space-y-2">
-              <div className="flex gap-2">
-                <button onClick={() => start(() => handleTranslate('en'))} disabled={translating}
-                  className="px-3 py-1.5 text-xs font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-colors disabled:opacity-50">
-                  {translating && transLang === 'en' ? 'Translating…' : '🇬🇧 Translate EN'}
-                </button>
-                <button onClick={() => start(() => handleTranslate('pt'))} disabled={translating}
-                  className="px-3 py-1.5 text-xs font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-colors disabled:opacity-50">
-                  {translating && transLang === 'pt' ? 'Translating…' : '🇵🇹 Translate PT'}
-                </button>
-              </div>
-              {translation && (
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                  <p className="text-[10px] font-semibold text-blue-400 uppercase tracking-wide mb-1">Translation ({transLang.toUpperCase()})</p>
-                  <p className="text-sm text-blue-900 whitespace-pre-wrap">{translation}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Additions ─────────────────────────────────────────────────── */}
-      {addSections.length > 0 && (
-        <div className="bg-white rounded-[14px] p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-4">Additions</h2>
-          <div className="space-y-4">
-            {addSections.map(sec => (
-              <div key={sec.section}>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2">{sec.section}</p>
-                <div className="divide-y divide-stone-50">
-                  {sec.filled.map((f, i) => (
-                    <div key={i} className="flex items-baseline justify-between py-1.5 gap-4">
-                      <span className="text-xs text-stone-500">{f.label}</span>
-                      <span className="text-xs font-semibold text-stone-800 shrink-0">{f.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        ) : undefined}
+      />
     </div>
   )
 }
