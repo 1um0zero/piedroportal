@@ -348,9 +348,8 @@ replace) the existing chat where the user can already ask specific questions. Us
       gated, desktop + mobile). Business settings stay piedro_admin (Anabela).
 - [x] **21.3** ✅ `set-admin.mjs` accepts `super_admin`; AdminUsers shows it as a static badge (assigned
       via CLI, not the UI selector).
-- [ ] **21.4** 👤 **Grant the role:** (1) run `migrations/013_role_super_admin.sql` in the Supabase SQL
-      Editor (profiles.role has a CHECK constraint that must allow the new value), then (2)
-      `node scripts/set-admin.mjs tavares@umzero.pt super_admin`.
+- [x] **21.4** ✅ Granted: migration 013 run in Supabase + `tavares@umzero.pt` set to `super_admin`
+      (2026-06-08).
 - [ ] **21.5** 🤖 **RLS follow-up:** when RLS (migration 002) is enabled/tested, update policies that grant
       `piedro_admin` to also grant `super_admin` (app uses the service client today, so not blocking).
 
