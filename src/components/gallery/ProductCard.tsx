@@ -120,7 +120,7 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
             <div className="text-[10px] text-stone-500 space-y-0.5">
               {constructions.map((c, i) => (
                 <div key={i} className="flex items-baseline gap-1.5">
-                  <span className="font-medium text-stone-700 shrink-0">{c.construction}</span>
+                  <span className="font-medium text-stone-700 shrink-0">{translateFilterValueSync(c.construction, locale)}</span>
                   <span className="text-stone-400">{c.widths.join(' · ')}</span>
                 </div>
               ))}

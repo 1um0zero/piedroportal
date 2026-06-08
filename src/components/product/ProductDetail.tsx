@@ -356,7 +356,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                 <div key={i}
                   className={`grid grid-cols-2 px-4 py-2.5 gap-4 ${i % 2 === 0 ? 'bg-white' : 'bg-stone-50/50'}`}>
                   <span className="font-medium text-stone-700 leading-snug">
-                    {g.names.join(', ')}
+                    {g.names.map((n) => translateFilterValueSync(n, locale)).join(', ')}
                   </span>
                   <span className="flex flex-wrap gap-1">
                     {g.widths.map((w) => (
