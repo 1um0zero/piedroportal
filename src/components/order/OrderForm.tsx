@@ -57,18 +57,30 @@ function Chips({ options, value, onChange, pill = false, collapse = false, rende
   )
 }
 
+// ── Side label (clear, colour-coded Left/Right marker) ───────────────────────
+function SideLabel({ side, text }: { side: 'L' | 'R'; text: string }) {
+  return (
+    <p className="flex items-center gap-1.5 text-xs font-semibold text-stone-600">
+      <span className={`inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold text-white
+        ${side === 'L' ? 'bg-stone-600' : 'bg-gold'}`}>{side}</span>
+      {text}<span className="text-red-400 ml-0.5">*</span>
+    </p>
+  )
+}
+
 // ── Size input with datalist ──────────────────────────────────────────────────
-function SizeInput({ sizes, value, onChange, label, onBlurAfterSnap }: {
+function SizeInput({ sizes, value, onChange, label, side, onBlurAfterSnap }: {
   sizes: string[]
   value: string
   onChange: (v: string) => void
   label: string
+  side?: 'L' | 'R'
   onBlurAfterSnap?: (v: string) => void
 }) {
   const id = `size-list-${label}`
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] text-stone-400 uppercase tracking-wide">{label}</p>
+      {side ? <SideLabel side={side} text={label} /> : <p className="text-[10px] text-stone-400 uppercase tracking-wide">{label}</p>}
       <div className="relative">
         <input
           list={id}
@@ -784,12 +796,12 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
-                      <Chips collapse renderLabel={trConstruction} options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
+                      <SideLabel side="L" text={t('left')} />
+                      <Chips renderLabel={trConstruction} options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
                     </div>
                     <div className="space-y-1.5">
-                      <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
-                      <Chips collapse renderLabel={trConstruction} options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
+                      <SideLabel side="R" text={t('right')} />
+                      <Chips renderLabel={trConstruction} options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
                     </div>
                   </div>
                 )}
@@ -816,12 +828,12 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
-                    <Chips collapse pill options={widthsL} value={widthLeft} onChange={setWidthLeft} renderLabel={(v) => displayWidth(v, widthsL, locale)} />
+                    <SideLabel side="L" text={t('left')} />
+                    <Chips pill options={widthsL} value={widthLeft} onChange={setWidthLeft} renderLabel={(v) => displayWidth(v, widthsL, locale)} />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
-                    <Chips collapse pill options={widthsR} value={widthRight} onChange={setWidthR} renderLabel={(v) => displayWidth(v, widthsR, locale)} />
+                    <SideLabel side="R" text={t('right')} />
+                    <Chips pill options={widthsR} value={widthRight} onChange={setWidthR} renderLabel={(v) => displayWidth(v, widthsR, locale)} />
                   </div>
                 </div>
               )}
@@ -845,9 +857,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 />
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft} label={`${t('left')} *`}
+                  <SizeInput sizes={sizes} value={sizeLeft} onChange={setSizeLeft} label={t('left')} side="L"
                     onBlurAfterSnap={v => { if (v && !sizeRight) setSizeR(v) }} />
-                  <SizeInput sizes={sizes} value={sizeRight} onChange={setSizeR} label={`${t('right')} *`} />
+                  <SizeInput sizes={sizes} value={sizeRight} onChange={setSizeR} label={t('right')} side="R" />
                 </div>
               )}
             </div>
