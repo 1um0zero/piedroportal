@@ -2,7 +2,6 @@
 
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
-import Anthropic from '@anthropic-ai/sdk'
 import type { ApprovalState, ProductionState } from '@/lib/order-status'
 
 export type { ApprovalState, ProductionState }
@@ -84,6 +83,9 @@ export async function translateTextAction(
   if (!process.env.ANTHROPIC_API_KEY) return { error: 'Translation not available (ANTHROPIC_API_KEY not set)' }
 
   try {
+    // Lazy import so this module never fails to load if the SDK has a load-time issue
+    // (a failed top-level import here would 500 every action in this file).
+    const { default: Anthropic } = await import('@anthropic-ai/sdk')
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     const LANGS: Record<string, string> = {
       en: 'English', pt: 'Portuguese (European)', nl: 'Dutch', fr: 'French', de: 'German',

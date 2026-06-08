@@ -10,11 +10,6 @@ const SELECT = `
   companies(id, name, erp_code)
 `
 
-// "New" = a portal-origin order submitted by the client and not yet touched by staff
-// (the validation queue). Migrated/historical orders (dataverse_id set) are excluded.
-const isNew = (o: { status?: string; approval_state?: string | null; dataverse_id?: string | null }) =>
-  o.status === 'submitted' && !o.dataverse_id && (!o.approval_state || o.approval_state === 'registered')
-
 // Age window keeps the default fetch small (most orders are historical/migrated).
 const AGE_MONTHS: Record<string, number> = { '3m': 3, '6m': 6, '12m': 12 }
 function ageCutoff(age: string): string | null {
@@ -59,15 +54,5 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))
   all.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
 
-  const metrics = {
-    total:      all.length,
-    new:        all.filter(isNew).length,
-    draft:      all.filter(o => o.status === 'draft').length,
-    submitted:  all.filter(o => o.status === 'submitted').length,
-    approved:   all.filter(o => o.status === 'approved').length,
-    production: all.filter(o => o.status === 'in_production').length,
-    urgent:     all.filter(o => (o.additions as any)?.urgent === true).length,
-  }
-
-  return <OrdersPage orders={all} metrics={metrics} isAdmin={true} currentUserId={scope.userId} age={age} />
+  return <OrdersPage orders={all} isAdmin={true} currentUserId={scope.userId} age={age} />
 }

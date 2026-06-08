@@ -85,22 +85,11 @@ export default async function OrdersRoute() {
   const signed = await signOrderPdfs(orders.filter(o => o.pdf_url).map(o => o.id))
   orders.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
 
-  // Metrics
-  const all       = orders ?? []
-  const metrics   = {
-    total:      all.length,
-    new:        all.filter(o => o.status === 'submitted' && !o.dataverse_id && (!o.approval_state || o.approval_state === 'registered')).length,
-    draft:      all.filter(o => o.status === 'draft').length,
-    submitted:  all.filter(o => o.status === 'submitted').length,
-    approved:   all.filter(o => o.status === 'approved').length,
-    production: all.filter(o => o.status === 'in_production').length,
-    urgent:     all.filter(o => (o.additions as any)?.urgent === true).length,
-  }
+  const all = orders ?? []
 
   return (
     <OrdersPage
       orders={all}
-      metrics={metrics}
       isAdmin={false}
       currentUserId={user.id}
     />
