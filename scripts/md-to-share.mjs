@@ -8,12 +8,17 @@ import { readFileSync, writeFileSync } from 'fs'
 import { marked } from 'marked'
 
 const DOCS = [
-  { src: 'docs/compliance/CLIENT-ACTIONS.en.md', out: 'public/share/client-actions-en.html', title: 'Client Action List (EN)' },
-  { src: 'docs/compliance/CLIENT-ACTIONS.nl.md', out: 'public/share/client-actions-nl.html', title: 'Actielijst klant (NL)' },
-  { src: 'docs/launch/LAUNCH-QUESTIONNAIRE.md',   out: 'public/share/questionario.html',      title: 'Launch Questionnaire' },
+  { src: 'docs/compliance/CLIENT-ACTIONS.en.md',    out: 'public/share/client-actions-en.html',    title: 'Client Action List (EN)' },
+  { src: 'docs/compliance/CLIENT-ACTIONS.nl.md',    out: 'public/share/client-actions-nl.html',    title: 'Actielijst klant (NL)' },
+  { src: 'docs/compliance/COMPLIANCE-REPORT.en.md', out: 'public/share/compliance-report-en.html', title: 'Compliance Report (EN)', draft: true },
+  { src: 'docs/compliance/COMPLIANCE-REPORT.nl.md', out: 'public/share/compliance-report-nl.html', title: 'Compliance-rapport (NL)', draft: true },
 ]
 
-const shell = (title, body) => `<!DOCTYPE html>
+const DRAFT_BANNER = `<div style="background:#fde8e8;border:1px solid #f5c2c2;color:#b91c1c;border-radius:10px;padding:12px 16px;margin:0 0 20px;font-size:13px">
+  <strong>⚠ Draft — not certified.</strong> AI-drafted; must be reviewed and certified by a DPO / legal counsel before any official publication.
+</div>`
+
+const shell = (title, body, draft = false) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -49,6 +54,7 @@ const shell = (title, body) => `<!DOCTYPE html>
 <body>
   <div class="page">
     <a class="back" href="/share/index.html">← Admin docs</a>
+    ${draft ? DRAFT_BANNER : ''}
     <article class="doc">
 ${body}
     </article>
@@ -60,6 +66,6 @@ ${body}
 for (const d of DOCS) {
   const md = readFileSync(d.src, 'utf8')
   const body = marked.parse(md)
-  writeFileSync(d.out, shell(d.title, body))
+  writeFileSync(d.out, shell(d.title, body, d.draft))
   console.log(`✓ ${d.src} → ${d.out}`)
 }

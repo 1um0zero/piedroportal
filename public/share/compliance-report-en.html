@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Piedro Portal — Compliance Report (EN)</title>
+<style>
+  :root{--gold:#B8975A;--gold-dark:#9A7A42;--ink:#1c1917;--stone:#44403c;--stone-l:#a8a29e;--line:#e7e5e4;--bg:#faf8f4}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;margin:0}
+  .page{max-width:820px;margin:0 auto;padding:40px 28px 80px}
+  .back{display:inline-block;margin-bottom:22px;font-size:13px;color:var(--gold-dark);text-decoration:none}
+  .back:hover{text-decoration:underline}
+  .doc h1{font-size:26px;font-weight:800;letter-spacing:-.4px;margin:.2em 0 .5em;border-bottom:3px solid var(--gold);padding-bottom:.3em}
+  .doc h2{font-size:18px;font-weight:800;color:var(--gold-dark);margin:1.6em 0 .5em}
+  .doc h3{font-size:15px;font-weight:700;margin:1.2em 0 .4em}
+  .doc p{margin:.6em 0;color:var(--stone)}
+  .doc ul,.doc ol{margin:.5em 0 .8em;padding-left:1.4em}
+  .doc li{margin:.3em 0;color:var(--stone)}
+  .doc a{color:var(--gold-dark)}
+  .doc code{background:#f3ecdd;color:var(--gold-dark);padding:1px 5px;border-radius:5px;font-size:.88em}
+  .doc pre{background:#1c1917;color:#fafaf9;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px}
+  .doc pre code{background:none;color:inherit;padding:0}
+  .doc blockquote{border-left:3px solid var(--gold);margin:.8em 0;padding:.2em 0 .2em 14px;color:var(--stone-l);font-style:italic}
+  .doc table{border-collapse:collapse;width:100%;margin:1em 0;font-size:13.5px}
+  .doc th,.doc td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  .doc th{background:#f3ecdd;color:var(--gold-dark)}
+  .doc hr{border:none;border-top:1px solid var(--line);margin:1.6em 0}
+  .doc strong{color:var(--ink)}
+  @media print{body{background:#fff}.back{display:none}}
+</style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="/share/index.html">← Admin docs</a>
+    <div style="background:#fde8e8;border:1px solid #f5c2c2;color:#b91c1c;border-radius:10px;padding:12px 16px;margin:0 0 20px;font-size:13px">
+  <strong>⚠ Draft — not certified.</strong> AI-drafted; must be reviewed and certified by a DPO / legal counsel before any official publication.
+</div>
+    <article class="doc">
+<h1>Piedro Portal — Compliance, Security &amp; Quality Report</h1>
+<p><strong>Prepared for:</strong> Inclusion in the ISO 13485 technical dossier of Piedro International
+<strong>System:</strong> Piedro Portal — B2B ordering portal for custom orthopaedic footwear
+<strong>Document type:</strong> Software / infrastructure compliance assessment
+<strong>Version:</strong> 1.0
+<strong>Date:</strong> 2026-06-04
+<strong>Status:</strong> Pre-production assessment with gap analysis</p>
+<blockquote>
+<p><strong>Disclaimer.</strong> This is a <em>technical</em> compliance assessment produced by the engineering team. It is <strong>not legal advice</strong>. The legal artefacts and data-protection conclusions (controller/processor roles, lawful bases, retention periods, DPIA outcome) must be reviewed and signed off by a qualified Data Protection Officer (DPO) and/or legal counsel before go-live.</p>
+</blockquote>
+<hr>
+<h2>1. System overview</h2>
+<p>The Piedro Portal is a <strong>private, authenticated</strong> web application (no anonymous ordering) used by orthopaedic clinics, clinicians and podologists to browse Piedro&#39;s catalogue and place orders for <strong>custom-made orthopaedic footwear</strong> for <strong>named patients</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Provider</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend / SSR</td>
+<td>Next.js 16 (App Router), React 19</td>
+<td>Vercel</td>
+<td>Hosting, CDN, serverless functions</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>PostgreSQL</td>
+<td>Supabase</td>
+<td>Orders, profiles, companies, catalogue</td>
+</tr>
+<tr>
+<td>Authentication</td>
+<td>Supabase Auth (GoTrue)</td>
+<td>Supabase</td>
+<td>Email/password, sessions</td>
+</tr>
+<tr>
+<td>File storage</td>
+<td>Supabase Storage</td>
+<td>Supabase</td>
+<td>Product images, order PDFs, avatars</td>
+</tr>
+<tr>
+<td>Transactional email</td>
+<td>Resend API</td>
+<td>Resend</td>
+<td>Order notifications with PDF attachments</td>
+</tr>
+<tr>
+<td>In-app assistant</td>
+<td>Claude (Haiku)</td>
+<td>Anthropic</td>
+<td>Conversational order search/duplication</td>
+</tr>
+</tbody></table>
+<h3>1.1 Categories of personal data processed</h3>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Subject</th>
+<th>GDPR classification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Email, full name, gender, avatar</td>
+<td>Clinician (portal user)</td>
+<td>Ordinary personal data (Art. 4)</td>
+</tr>
+<tr>
+<td>Patient name / reference / clinician note</td>
+<td><strong>Patient</strong></td>
+<td><strong>Special category — health data (Art. 9)</strong></td>
+</tr>
+<tr>
+<td>Orthopaedic measurements &amp; &quot;additions&quot; (insoles, heel lifts, deformity corrections, sizes per foot)</td>
+<td><strong>Patient</strong></td>
+<td><strong>Special category — health data (Art. 9)</strong></td>
+</tr>
+<tr>
+<td>Company, ERP code, country</td>
+<td>Clinic (legal entity)</td>
+<td>Business data</td>
+</tr>
+</tbody></table>
+<p>The presence of <strong>patient health data (Article 9 GDPR)</strong> is the single most important driver of the obligations below. It raises the bar from &quot;standard web app&quot; to &quot;processing of special-category data&quot;, which triggers stricter security, a likely <strong>DPIA</strong>, and careful <strong>international-transfer</strong> controls.</p>
+<hr>
+<h2>2. Applicable standards and legal references</h2>
+<h3>2.1 Data protection (primary)</h3>
+<table>
+<thead>
+<tr>
+<th>Reference</th>
+<th>Applies because</th>
+<th>Key obligations for this portal</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Regulation (EU) 2016/679 (GDPR)</strong></td>
+<td>EU data subjects (NL + EU clinics &amp; patients)</td>
+<td>Lawful basis (Art. 6) + Art. 9(2) condition for health data; transparency (Arts. 13–14); security (Art. 32); processor contracts (Art. 28); ROPA (Art. 30); breach notification 72 h (Arts. 33–34); DPIA (Art. 35)</td>
+</tr>
+<tr>
+<td><strong>UK GDPR + Data Protection Act 2018</strong></td>
+<td>UK clinics &amp; patients</td>
+<td>Equivalent to GDPR; ICO is supervisory authority; UK international-transfer rules (IDTA/Addendum)</td>
+</tr>
+<tr>
+<td><strong>NL: UAVG (Uitvoeringswet AVG)</strong></td>
+<td>Dutch establishment / clinics</td>
+<td>Dutch implementation of GDPR; Autoriteit Persoonsgegevens (AP) is supervisory authority</td>
+</tr>
+<tr>
+<td><strong>ePrivacy Directive 2002/58/EC (cookie rules)</strong></td>
+<td>EU visitors</td>
+<td>Consent for non-essential cookies/storage. <em>Current status: only essential auth cookies are used → consent banner not strictly required, but a cookie notice is recommended.</em></td>
+</tr>
+<tr>
+<td><strong>EU–US Data Privacy Framework / SCCs</strong></td>
+<td>US sub-processors (Vercel, Resend, Anthropic)</td>
+<td>Valid transfer mechanism required for personal data leaving the EEA/UK</td>
+</tr>
+</tbody></table>
+<h3>2.2 Medical device &amp; quality system</h3>
+<table>
+<thead>
+<tr>
+<th>Reference</th>
+<th>Relevance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ISO 13485:2016</strong> (client is certified)</td>
+<td>The portal is <strong>software used in the quality management system</strong> → falls under <strong>clause 4.1.6 (validation of QMS software)</strong> and <strong>clause 4.2 (document &amp; record control)</strong>. The portal is a <em>record-generating tool</em> in the order/realisation process (clause 7).</td>
+</tr>
+<tr>
+<td><strong>Regulation (EU) 2017/745 (MDR)</strong></td>
+<td>Custom-made orthopaedic footwear is typically a <strong>custom-made device (Annex XIII)</strong>. The order it captures is effectively the <strong>prescription/statement (Annex XIII §1)</strong>. Retention of that documentation: <strong>min. 10 years</strong> after the last device is placed on the market.</td>
+</tr>
+<tr>
+<td><strong>UK MDR 2002 (as amended)</strong></td>
+<td>Post-Brexit equivalent for UK-supplied custom-made devices; UKCA marking regime.</td>
+</tr>
+<tr>
+<td><strong>ISO 14971</strong> (risk management) / <strong>IEC 62304</strong> (medical-device software lifecycle)</td>
+<td><em>Likely out of scope for the portal itself</em> — the portal has <strong>no medical purpose</strong> (it does not diagnose, measure, or determine therapy; the clinician does). It is an ordering/administrative tool, so it is <strong>not a medical device</strong> and IEC 62304 does not apply. This determination should be <strong>documented</strong> (a short &quot;qualification statement&quot;) and kept in the dossier. ISO 14971 applies to the <em>footwear</em>, not the portal.</td>
+</tr>
+</tbody></table>
+<h3>2.3 Information security &amp; quality (recommended / best practice)</h3>
+<table>
+<thead>
+<tr>
+<th>Reference</th>
+<th>Why it matters here</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ISO/IEC 27001 / 27002</strong></td>
+<td>Industry baseline for an ISMS. Even if Piedro is not 27001-certified, aligning the portal&#39;s controls to Annex A demonstrates &quot;appropriate technical measures&quot; under GDPR Art. 32. The cloud providers below are 27001-certified, which Piedro can cite.</td>
+</tr>
+<tr>
+<td><strong>ISO/IEC 27701</strong></td>
+<td>Privacy extension to 27001 — useful evidence of GDPR accountability.</td>
+</tr>
+<tr>
+<td><strong>ISO/IEC 27018</strong></td>
+<td>Protection of PII in public cloud (Supabase/Vercel align to it).</td>
+</tr>
+<tr>
+<td><strong>EN 301 549 / WCAG 2.1 AA</strong> + <strong>European Accessibility Act (Dir. 2019/882)</strong></td>
+<td>Accessibility. The EAA (in force June 2025) primarily targets B2C e-commerce; a B2B clinical portal is lower-risk, but WCAG 2.1 AA is a reasonable target and is increasingly expected in healthcare procurement.</td>
+</tr>
+</tbody></table>
+<h3>2.4 Provider certifications Piedro can cite in the dossier</h3>
+<ul>
+<li><strong>Vercel</strong> — SOC 2 Type II; ISO 27001; GDPR-compliant DPA available.</li>
+<li><strong>Supabase</strong> — SOC 2 Type II; ISO 27001; HIPAA-capable (on higher plans); GDPR DPA + EU region available.</li>
+<li><strong>Resend</strong> — SOC 2; GDPR DPA available.</li>
+<li><strong>Anthropic</strong> — SOC 2 Type II; ISO 27001; ISO 42001 (AI); offers a Commercial DPA and <strong>zero-data-retention</strong> options.</li>
+</ul>
+<blockquote>
+<p>Collect and file the signed <strong>DPA</strong> from each of the four providers. These, plus their certificates, are direct evidence for ISO 13485 supplier control (clause 7.4) and GDPR Art. 28.</p>
+</blockquote>
+<hr>
+<h2>3. Required legal artefacts, on-portal text and logos</h2>
+<p>The portal is <strong>not public</strong>, but authenticated B2B medical portals still require the following. Items marked <strong>MISSING</strong> are not yet present in the application.</p>
+<h3>3.1 Legal documents / pages</h3>
+<table>
+<thead>
+<tr>
+<th>Artefact</th>
+<th>Purpose</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Privacy Policy / Data Protection Notice</strong></td>
+<td>GDPR Arts. 13–14. Must address <strong>both</strong> the clinician (user) and the <strong>patient</strong> whose data is entered. Identify controller(s), lawful basis, Art. 9 condition, recipients/sub-processors, transfers, retention, rights, DPO contact.</td>
+<td><strong>MISSING</strong> — add a <code>/privacy</code> page, linked in footer + at registration</td>
+</tr>
+<tr>
+<td><strong>Terms of Use / Terms of Service</strong></td>
+<td>Defines the contractual relationship, acceptable use, account responsibilities, liability.</td>
+<td><strong>MISSING</strong> — add <code>/terms</code></td>
+</tr>
+<tr>
+<td><strong>Cookie notice</strong></td>
+<td>Even with only essential cookies, a short notice (&quot;we use essential cookies to keep you signed in&quot;) is best practice.</td>
+<td><strong>MISSING</strong> (low priority — no consent needed for essential only)</td>
+</tr>
+<tr>
+<td><strong>Data Processing Agreement (DPA)</strong> between Piedro and each clinic</td>
+<td>Clarifies who is controller/processor for patient data and the security commitments. <strong>Critical</strong> given health data.</td>
+<td><strong>MISSING</strong> (legal/commercial document, not in-app)</td>
+</tr>
+<tr>
+<td><strong>Sub-processor list</strong> (public or on request)</td>
+<td>Transparency on Vercel/Supabase/Resend/Anthropic.</td>
+<td><strong>MISSING</strong> — include in Privacy Policy</td>
+</tr>
+<tr>
+<td><strong>Legal notice / Imprint (Impressum)</strong></td>
+<td>Required in some jurisdictions (e.g. Germany DDG, NL company-info rules): legal name, registered address, registration number, VAT, contact.</td>
+<td><strong>MISSING</strong> — add to footer / <code>/legal</code></td>
+</tr>
+<tr>
+<td><strong>Records of Processing Activities (ROPA)</strong></td>
+<td>GDPR Art. 30 — internal register.</td>
+<td><strong>MISSING</strong> (internal doc)</td>
+</tr>
+<tr>
+<td><strong>Data Protection Impact Assessment (DPIA)</strong></td>
+<td>GDPR Art. 35 — <strong>likely mandatory</strong>: large-scale processing of special-category (health) data.</td>
+<td><strong>MISSING</strong> (internal doc)</td>
+</tr>
+<tr>
+<td><strong>Breach-response procedure</strong></td>
+<td>72-hour notification (Art. 33).</td>
+<td><strong>MISSING</strong> (internal doc)</td>
+</tr>
+<tr>
+<td><strong>Data-subject-rights procedure</strong></td>
+<td>Access/rectification/erasure/portability, balanced against medical retention.</td>
+<td><strong>MISSING</strong> (internal doc)</td>
+</tr>
+<tr>
+<td><strong>Consent / lawful-basis statement at data entry</strong></td>
+<td>The clinic must have a lawful basis to enter patient data; the portal should surface a short notice on the order form.</td>
+<td><strong>MISSING</strong> (UI note + clinic-side process)</td>
+</tr>
+</tbody></table>
+<h3>3.2 On-portal text and logos</h3>
+<ul>
+<li><strong>Footer</strong> with: company legal name, © year, links to Privacy, Terms, Legal Notice, and &quot;Sub-processors&quot;. (Currently absent on most pages.)</li>
+<li><strong>Piedro logo + ISO 13485 certification mark</strong> — the ISO mark may only be displayed per the <strong>certification body&#39;s rules</strong> (usually with cert number; the mark belongs to the certifier, not the standard). Confirm usage rules with the notified/certification body before placing it.</li>
+<li><strong>CE / UKCA marking</strong> belongs on the <em>device and its documentation</em> (footwear), <strong>not</strong> on the portal UI. Do not place CE on the website to avoid implying the software is a CE-marked device.</li>
+<li><strong>Cookie/Privacy</strong> link visible before/at login.</li>
+</ul>
+<hr>
+<h2>4. Software development lifecycle (for ISO 13485 §4.1.6 &amp; §7.3-style control)</h2>
+<p>ISO 13485 requires that software used in the QMS be <strong>validated</strong> and that changes be <strong>controlled and traceable</strong>. Current state and gaps:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Current state</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Version control</td>
+<td>✅ Git + GitHub, full history</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Branching &amp; change records</td>
+<td>⚠️ Work committed directly to <code>master</code></td>
+<td>Define a documented branch/PR + review policy; commit messages already descriptive</td>
+</tr>
+<tr>
+<td>Code review</td>
+<td>⚠️ Informal</td>
+<td>Document a review step (even single-reviewer) for traceability</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>✅ Vercel auto-deploy on push</td>
+<td>Document the pipeline; add a deployment approval/record for production</td>
+</tr>
+<tr>
+<td>Build/lint/type-check</td>
+<td>⚠️ <code>tsc</code> clean; ESLint has pre-existing errors; no CI gate</td>
+<td>Add a CI gate (type-check + lint + build must pass before deploy)</td>
+</tr>
+<tr>
+<td><strong>Automated tests</strong></td>
+<td>❌ <strong>No test suite</strong></td>
+<td><strong>Gap.</strong> ISO 13485 §4.1.6 expects documented software <strong>validation</strong>. Add: (a) a validation plan, (b) test protocols for the order workflow and access control, (c) execution records. At minimum, unit tests on server actions + an end-to-end &quot;place order&quot; test.</td>
+</tr>
+<tr>
+<td>Requirements traceability</td>
+<td>❌ None formal</td>
+<td>Maintain a lightweight requirements ↔ test matrix in the dossier</td>
+</tr>
+<tr>
+<td>Environments</td>
+<td>✅ Separate prod (Vercel); dev local</td>
+<td>Document; consider a staging environment for pre-prod validation</td>
+</tr>
+<tr>
+<td>Configuration / secrets</td>
+<td>✅ Env vars, not committed (<code>.env*</code> git-ignored)</td>
+<td>OK; document secret-rotation procedure</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Security assessment</h2>
+<h3>5.1 Controls in place ✅</h3>
+<ul>
+<li><strong>Transport security:</strong> HTTPS/TLS enforced by Vercel; HSTS available.</li>
+<li><strong>Authentication:</strong> Supabase Auth (GoTrue) — passwords hashed (bcrypt) server-side, never stored in app; email confirmation on registration; httpOnly session cookies.</li>
+<li><strong>Authorisation / RBAC:</strong> three roles (<code>user</code>, <code>company_admin</code>, <code>piedro_admin</code>); every admin page and server action re-checks the role server-side.</li>
+<li><strong>Multi-tenant isolation:</strong> orders are scoped by <code>user_companies</code>; regular users see only their own orders, company admins see their companies, Piedro admins see all. <em>(Hardened 2026-06-04: order creation now validates company membership and forces status server-side.)</em></li>
+<li><strong>Encryption at rest:</strong> Supabase Postgres &amp; Storage encrypted (AES-256) by the provider.</li>
+<li><strong>Secrets:</strong> service-role key and API keys held in environment variables, server-only; <code>.env*</code> git-ignored (verified).</li>
+<li><strong>Input of elevated state blocked:</strong> users cannot create orders at elevated statuses (server-side enforcement).</li>
+</ul>
+<h3>5.2 Security gaps ⚠️ / ❌ (remediation required)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Severity</th>
+<th>Finding</th>
+<th>Remediation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>S1</td>
+<td>🔴 High</td>
+<td><strong>Patient health data is sent to Anthropic (US)</strong> by the in-app assistant: chat tools query <code>patient_name</code>, clinician, sizes and additions and pass them to the Claude API. This is an <strong>international transfer of Article 9 data</strong>.</td>
+<td>Sign Anthropic&#39;s <strong>DPA + enable zero-data-retention</strong>; document the transfer (SCCs/DPF) in the ROPA; <strong>or</strong> restrict the assistant so it does not return patient identifiers; <strong>or</strong> make the assistant opt-in per clinic. Until resolved, treat as a transfer risk.</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>🔴 High</td>
+<td><strong>Order PDFs containing patient data are emailed via Resend (US)</strong> to a Piedro address. International transfer + the recipient address is a hard-coded fallback.</td>
+<td>Sign Resend DPA; confirm transfer mechanism; verify a <strong>Piedro-owned domain</strong> as sender (currently <code>onboarding@resend.dev</code>, a sandbox/test sender — not production-grade and may be undeliverable). Ensure the destination address is configured, not a fallback.</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>🟠 Med</td>
+<td><strong>Data residency unconfirmed.</strong> EU/UK health data should be stored in an <strong>EU region</strong>. The Supabase project region is not documented.</td>
+<td>Confirm and document the Supabase region (recommend <strong>EU — Frankfurt</strong>). If not EU, plan migration. Document Vercel function region too.</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>🟠 Med</td>
+<td><strong>No database Row-Level Security (RLS)</strong> as defence-in-depth. The app relies on the service-role key + application checks. The <code>user_companies</code> migration did not enable RLS.</td>
+<td><strong>Prepared:</strong> policies written in <code>migrations/002_rls_policies.sql</code> — run in staging, test, then apply to production.</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>🟠 Med</td>
+<td><strong>No audit/access log</strong> of who viewed or changed patient data.</td>
+<td>ISO 13485 record control + GDPR accountability expect this. Add an append-only audit log (who, what, when) for order create/read/update/status changes.</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>🟠 Med</td>
+<td><strong>Two unauthenticated API routes:</strong> <code>/api/orders/send</code> and <code>/api/orders/preview</code>.</td>
+<td><strong>Resolved:</strong> <code>/api/orders/send</code> deleted (dead duplicate); <code>/api/orders/preview</code> now requires an authenticated session.</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>🟡 Low</td>
+<td><strong>Email HTML not escaped</strong> (<code>patient_name</code>, <code>reference</code>, <code>full_name</code> interpolated into email HTML).</td>
+<td><strong>Resolved:</strong> all user/patient values are HTML-escaped; the sender is configurable via <code>EMAIL_FROM</code>.</td>
+</tr>
+<tr>
+<td>S8</td>
+<td>🟡 Low</td>
+<td><strong>No security headers / CSP.</strong></td>
+<td><strong>Resolved:</strong> CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy and Permissions-Policy added in <code>next.config</code>; portal set to <code>noindex</code> + <code>robots.txt</code>.</td>
+</tr>
+<tr>
+<td>S9</td>
+<td>🟡 Low</td>
+<td><strong>No rate limiting</strong> on auth and the AI chat endpoint.</td>
+<td>Add rate limiting (e.g. Vercel/Upstash) to mitigate brute force and cost-abuse.</td>
+</tr>
+<tr>
+<td>S10</td>
+<td>🟡 Low</td>
+<td><strong>MFA not enforced</strong> for privileged (<code>piedro_admin</code>) accounts.</td>
+<td>Enable Supabase MFA, at least for admins.</td>
+</tr>
+<tr>
+<td>S11</td>
+<td>🟡 Low</td>
+<td><strong>Password policy</strong> is min 8 chars, client-side only.</td>
+<td>Enforce server-side via Supabase Auth password policy.</td>
+</tr>
+</tbody></table>
+<h3>5.3 Recommended assurance activities</h3>
+<ul>
+<li>Independent <strong>penetration test</strong> before go-live (and annually).</li>
+<li><strong>Vulnerability monitoring</strong> of dependencies (Dependabot / <code>npm audit</code> in CI).</li>
+<li>Document an <strong>incident-response / breach</strong> runbook (detect → contain → assess → notify within 72 h → record).</li>
+</ul>
+<hr>
+<h2>6. Backup, recovery &amp; business continuity</h2>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Current / required</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Database backups</td>
+<td>Supabase provides automated daily backups; <strong>Point-in-Time Recovery (PITR)</strong> is available on paid plans</td>
+<td>Confirm the plan; <strong>enable PITR</strong>; document <strong>RPO</strong> (e.g. ≤ 24 h, or minutes with PITR) and <strong>RTO</strong></td>
+</tr>
+<tr>
+<td>Storage backups (PDFs, images, avatars)</td>
+<td>Supabase Storage is durable but <strong>not automatically point-in-time recoverable like the DB</strong></td>
+<td>Define a backup/export job for the <code>order-pdfs</code> bucket (orders are records that must survive — see retention)</td>
+</tr>
+<tr>
+<td>Restore testing</td>
+<td>Not documented</td>
+<td><strong>Perform and record a test restore</strong> at least annually — auditors ask for evidence the backup actually works</td>
+</tr>
+<tr>
+<td>Backup encryption &amp; location</td>
+<td>Provider-encrypted, EU region (to confirm — S3)</td>
+<td>Document</td>
+</tr>
+<tr>
+<td>Disaster recovery plan</td>
+<td>Not documented</td>
+<td>Write a short DR plan: provider outage, data loss, key compromise; include provider status pages and escalation contacts</td>
+</tr>
+<tr>
+<td>Business continuity</td>
+<td>Vercel + Supabase are highly available (multi-AZ)</td>
+<td>Document the dependency and SLA expectations</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. Data retention &amp; data-subject rights</h2>
+<ul>
+<li><strong>Retention conflict to resolve:</strong> MDR custom-made device documentation must be kept <strong>≥ 10 years</strong>, while GDPR requires <strong>storage limitation</strong> (don&#39;t keep PII longer than necessary). Define a <strong>retention schedule</strong> that keeps the <em>device record</em> for the legal minimum while minimising/pseudonymising patient identifiers where possible.</li>
+<li><strong>Right to erasure</strong> is constrained by the medical-record retention obligation — document this exception in the Privacy Policy and the rights procedure.</li>
+<li>Provide processes for <strong>access, rectification, portability, restriction, objection</strong>.</li>
+<li>Consider <strong>pseudonymisation</strong> of patient identifiers in analytics/dashboards (the admin dashboards already aggregate, which is good).</li>
+</ul>
+<hr>
+<h2>8. Gap analysis — prioritised action plan</h2>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Item</th>
+<th>Owner</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P0 — before go-live</strong></td>
+<td>S1 Anthropic transfer of health data — DPA + zero-retention or restrict assistant</td>
+<td>Eng + DPO</td>
+<td>Security/Legal</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td>S2 Resend transfer + verified production sender domain</td>
+<td>Eng + DPO</td>
+<td>Security/Legal</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td>Privacy Policy, Terms, Legal Notice pages + footer</td>
+<td>Eng + Legal</td>
+<td>Legal</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td>Sign &amp; file DPAs (Vercel, Supabase, Resend, Anthropic)</td>
+<td>DPO</td>
+<td>Legal</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td>DPIA for health-data processing</td>
+<td>DPO</td>
+<td>Legal</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td>S3 Confirm EU data residency (Supabase region)</td>
+<td>Eng</td>
+<td>Security</td>
+</tr>
+<tr>
+<td><strong>P1 — soon after</strong></td>
+<td>S5 Audit logging of patient-data access/changes</td>
+<td>Eng</td>
+<td>Security/ISO</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>Software validation: validation plan + test protocols + automated tests</td>
+<td>Eng/QA</td>
+<td>ISO 13485 §4.1.6</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>S4 Enable RLS; S6 secure/remove unauth API routes</td>
+<td>Eng</td>
+<td>Security</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>ROPA, breach procedure, data-subject-rights procedure, retention schedule</td>
+<td>DPO</td>
+<td>Legal/ISO</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>S7 email escaping, S8 security headers/CSP, S9 rate limiting, S10 admin MFA, S11 password policy</td>
+<td>Eng</td>
+<td>Security</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>CI gate (type-check/lint/build); document SDLC; staging env</td>
+<td>Eng</td>
+<td>ISO/Quality</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Penetration test; dependency scanning</td>
+<td>Eng</td>
+<td>Assurance</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>WCAG 2.1 AA accessibility pass; cookie notice; UI i18n completeness</td>
+<td>Eng</td>
+<td>Quality</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>9. Statement for the ISO dossier (summary)</h2>
+<blockquote>
+<p>The Piedro Portal is a private, authenticated B2B ordering application built on a modern, security-reviewed stack (Next.js on Vercel, Supabase, Resend, Anthropic), all of whose infrastructure providers hold <strong>SOC 2 Type II</strong> and <strong>ISO/IEC 27001</strong> certifications. The application enforces role-based access control and per-company data isolation, uses TLS in transit and provider-managed AES-256 encryption at rest, keeps all source code under version control with traceable change history, and deploys through an automated pipeline.</p>
+<p>The portal is assessed as <strong>software used within the quality management system (ISO 13485 §4.1.6)</strong> and <strong>not a medical device</strong> (no medical purpose). It generates records relevant to the custom-made-device order process (MDR Annex XIII).</p>
+<p>Outstanding items required before production launch are tracked in §8, the most significant being formalisation of international-transfer controls for patient health data (DPAs with US sub-processors), the data-protection documentation set (Privacy Policy, DPIA, ROPA), confirmation of EU data residency, documented software validation/testing, and audit logging. Once these are closed, the portal will meet the technical and organisational measures expected for processing of special-category health data under GDPR and for inclusion in an ISO 13485 quality system.</p>
+</blockquote>
+<hr>
+<p><em>End of report. Maintain this document under version control; update on each material change to the system or its sub-processors.</em></p>
+
+    </article>
+  </div>
+</body>
+</html>
