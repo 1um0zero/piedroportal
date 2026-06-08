@@ -570,7 +570,10 @@
       "col_pdf": "PDF",
       "no_orders": "Geen bestellingen gevonden",
       "download_pdf": "PDF downloaden",
-      "repeat_order": "Bestelling herhalen"
+      "repeat_order": "Bestelling herhalen",
+      "metric_new": "Nieuw",
+      "col_additions": "Aanpassingen",
+      "additions_yes": "Ja"
     },
     "users": {
       "title": "Gebruikersbeheer",

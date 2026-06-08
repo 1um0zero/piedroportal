@@ -56,6 +56,10 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
   const adds  = order.additions as Record<string, unknown> | null
   const approvalMeta  = APPROVAL_STATES.find(s => s.value === approvalSt)
   const productionMeta = PRODUCTION_STATES.find(s => s.value === productionSt)
+  // Production (and later invoice/tracking) only make sense once the order is approved
+  // and handed to the factory — hide them for new orders awaiting validation.
+  const isApprovedOrBeyond = approvalSt === 'approved'
+    || ['approved', 'in_production', 'shipped', 'delivered'].includes(order.status)
 
   // Additions for display
   const addSections = SECTIONS.map(sec => {
@@ -163,7 +167,7 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
 
           {/* Approval state */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Approval State (cr56f_state_approval)</label>
+            <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Approval State</label>
             <div className="flex flex-wrap gap-2">
               {APPROVAL_STATES.map(s => (
                 <button key={s.value}
@@ -181,22 +185,24 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
             )}
           </div>
 
-          {/* Production state */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Production State (cr56f_productionstate)</label>
-            <div className="flex flex-wrap gap-2">
-              {PRODUCTION_STATES.map(s => (
-                <button key={s.value}
-                  onClick={() => setProductionSt(productionSt === s.value ? '' : s.value)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all
-                    ${productionSt === s.value
-                      ? 'bg-amber-500 text-white border-amber-500'
-                      : 'text-stone-500 border-stone-200 hover:border-stone-400 bg-white'}`}>
-                  {s.label}
-                </button>
-              ))}
+          {/* Production state — only once approved & handed to the factory */}
+          {isApprovedOrBeyond && (
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Production State</label>
+              <div className="flex flex-wrap gap-2">
+                {PRODUCTION_STATES.map(s => (
+                  <button key={s.value}
+                    onClick={() => setProductionSt(productionSt === s.value ? '' : s.value)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all
+                      ${productionSt === s.value
+                        ? 'bg-amber-500 text-white border-amber-500'
+                        : 'text-stone-500 border-stone-200 hover:border-stone-400 bg-white'}`}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <button onClick={() => start(() => handleSave())} disabled={saving}
             className="px-6 py-2.5 bg-stone-800 text-white text-sm font-semibold rounded-xl hover:bg-stone-700 transition-colors disabled:opacity-50">

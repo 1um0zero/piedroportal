@@ -24,7 +24,7 @@ const STATUS_STYLES: Record<string, string> = {
 const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
 type Metrics = {
-  total: number; draft: number; submitted: number
+  total: number; new: number; draft: number; submitted: number
   approved: number; production: number; urgent: number
 }
 
@@ -32,9 +32,29 @@ type Props = {
   orders: any[]
   metrics: Metrics
   isAdmin: boolean
+  currentUserId?: string
 }
 
-export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
+// "New" = submitted by the client and not yet touched by staff (the validation queue).
+const isNewOrder = (o: { status?: string; approval_state?: string | null }) =>
+  o.status === 'submitted' && (!o.approval_state || o.approval_state === 'registered')
+
+// Whether an order carries at least one filled addition.
+function hasAdditions(adds: Record<string, any> | null | undefined): boolean {
+  if (!adds) return false
+  for (const v of Object.values(adds)) {
+    if (v === null || v === undefined || v === '' || v === false) continue
+    if (typeof v === 'object') {
+      const sv = v as { l?: unknown; r?: unknown }
+      if ((sv.l != null && sv.l !== '' && sv.l !== false) || (sv.r != null && sv.r !== '' && sv.r !== false)) return true
+      continue
+    }
+    return true
+  }
+  return false
+}
+
+export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -47,6 +67,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatus]   = useState('')
   const [urgentOnly, setUrgentOnly] = useState(false)
+  const [newOnly, setNewOnly]       = useState(false)
   const [page, setPage]             = useState(1)
   const [repeating, setRepeating]   = useState<string | null>(null)
   const PER_PAGE = 50
@@ -67,6 +88,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
   const filtered = useMemo(() => {
     setPage(1)  // reset to first page on filter change
     return orders.filter(o => {
+      if (newOnly && !isNewOrder(o)) return false
       if (statusFilter && o.status !== statusFilter) return false
       if (urgentOnly && !o.additions?.urgent) return false
       if (search) {
@@ -81,7 +103,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
       }
       return true
     })
-  }, [orders, search, statusFilter, urgentOnly])
+  }, [orders, search, statusFilter, urgentOnly, newOnly])
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
@@ -97,25 +119,39 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {[
-          { label: t('metric_total'), value: metrics.total, filter: '' },
-          { label: t('metric_draft'), value: metrics.draft, filter: 'draft' },
-          { label: t('metric_submitted'), value: metrics.submitted, filter: 'submitted' },
-          { label: t('metric_approved'), value: metrics.approved, filter: 'approved' },
-          { label: t('metric_production'), value: metrics.production, filter: 'in_production' },
-          { label: `🔴 ${t('metric_urgent')}`, value: metrics.urgent, filter: '', urgent: true },
-        ].map(({ label, value, filter, urgent }) => (
-          <button key={label}
-            onClick={() => urgent ? setUrgentOnly(u => !u) : setStatus(s => s === filter ? '' : filter)}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+        {([
+          { key: 'total',      label: t('metric_total'),       value: metrics.total,
+            active: !newOnly && !urgentOnly && statusFilter === '',
+            onClick: () => { setNewOnly(false); setUrgentOnly(false); setStatus('') } },
+          { key: 'new',        label: t('metric_new'),         value: metrics.new, accent: true,
+            active: newOnly,
+            onClick: () => { setNewOnly(v => !v); setStatus(''); setUrgentOnly(false) } },
+          { key: 'draft',      label: t('metric_draft'),       value: metrics.draft,
+            active: statusFilter === 'draft',
+            onClick: () => { setNewOnly(false); setStatus(s => s === 'draft' ? '' : 'draft') } },
+          { key: 'submitted',  label: t('metric_submitted'),   value: metrics.submitted,
+            active: statusFilter === 'submitted',
+            onClick: () => { setNewOnly(false); setStatus(s => s === 'submitted' ? '' : 'submitted') } },
+          { key: 'approved',   label: t('metric_approved'),    value: metrics.approved,
+            active: statusFilter === 'approved',
+            onClick: () => { setNewOnly(false); setStatus(s => s === 'approved' ? '' : 'approved') } },
+          { key: 'production', label: t('metric_production'),   value: metrics.production,
+            active: statusFilter === 'in_production',
+            onClick: () => { setNewOnly(false); setStatus(s => s === 'in_production' ? '' : 'in_production') } },
+          { key: 'urgent',     label: `🔴 ${t('metric_urgent')}`, value: metrics.urgent,
+            active: urgentOnly,
+            onClick: () => { setUrgentOnly(u => !u); setNewOnly(false) } },
+        ]).map(({ key, label, value, active, accent, onClick }) => (
+          <button key={key} onClick={onClick}
             className={`p-3 rounded-xl border text-left transition-all
-              ${(urgent ? urgentOnly : statusFilter === filter) && filter !== ''
+              ${active
                 ? 'border-gold bg-gold/5'
-                : urgent && urgentOnly
-                  ? 'border-gold bg-gold/5'
+                : accent
+                  ? 'border-gold/40 bg-gold/[0.03] hover:border-gold/60'
                   : 'border-stone-100 bg-white hover:border-stone-200'}`}
             style={{ boxShadow: 'var(--shadow-card)' }}>
-            <p className="text-2xl font-bold text-stone-800">{nz(value)}</p>
+            <p className={`text-2xl font-bold ${accent ? 'text-gold-dark' : 'text-stone-800'}`}>{nz(value)}</p>
             <p className="text-xs text-stone-500 mt-0.5">{label}</p>
           </button>
         ))}
@@ -179,6 +215,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                 <th className="px-4 py-3 text-left">{t('col_status')}</th>
                 <th className="px-4 py-3 text-left">{t('col_date')}</th>
                 <th className="px-4 py-3 text-left">{t('col_unit')}</th>
+                <th className="px-4 py-3 text-left">{t('col_additions')}</th>
                 <th className="px-4 py-3 text-left">{t('col_pdf')}</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -186,7 +223,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 8 : 7}
+                  <td colSpan={isAdmin ? 9 : 8}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     {t('no_orders')}
                   </td>
@@ -278,6 +315,12 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                     <td className="px-4 py-3 text-stone-500 text-xs">
                       {o.unit ?? '—'}
                     </td>
+                    {/* Additions */}
+                    <td className="px-4 py-3">
+                      {hasAdditions(o.additions)
+                        ? <span className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-gold/10 text-gold-dark">{t('additions_yes')}</span>
+                        : <span className="text-stone-300 text-xs">—</span>}
+                    </td>
                     {/* PDF */}
                     <td className="px-4 py-3">
                       {o.pdf_url ? (
@@ -294,10 +337,11 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                         <span className="text-stone-200 text-xs pl-1">—</span>
                       )}
                     </td>
-                    {/* Repeat */}
+                    {/* Repeat — only on the requester's own orders (server also enforces this) */}
                     <td className="px-2 py-3">
+                      {currentUserId && o.user_id === currentUserId ? (
                       <button
-                        onClick={() => handleRepeat(o.id, o.products?.id)}
+                        onClick={(e) => { e.stopPropagation(); handleRepeat(o.id, o.products?.id) }}
                         disabled={repeating === o.id}
                         title={t('repeat_order')}
                         className="inline-flex items-center justify-center w-7 h-7 rounded-lg
@@ -315,6 +359,7 @@ export default function OrdersPage({ orders, metrics, isAdmin }: Props) {
                           </svg>
                         )}
                       </button>
+                      ) : null}
                     </td>
                   </tr>
                 )

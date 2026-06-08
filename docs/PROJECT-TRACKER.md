@@ -313,6 +313,23 @@ replace) the existing chat where the user can already ask specific questions. Us
 - [ ] **18.7** **Branches as PT-language scopes:** VSI (production) and VSI-C are branches; reuse the
       branch model (notify locale = PT, model scope). See `project_branch_offices`.
 
+## 20. Order panel & list — staff validation UX — 🟠 / 🤖  (2026-06-08)
+- [x] **20.1** Orders list: **"New" metric + filter** (validation queue = submitted & not yet
+      touched: approval_state null/registered). ✅
+- [x] **20.2** Orders list: **Additions "Yes" column**. ✅
+- [x] **20.3** Orders list: **Duplicate hidden unless owner** (server already enforced; UI now matches). ✅
+- [x] **20.4** Order panel: **drop cr56f_ from labels**; **hide Production State for new orders** (shows
+      only once approved/handed to factory; same rule will apply to invoice/tracking). ✅
+- [ ] **20.5** **Reuse the Confirmation step (Tab3) in the order panel body** — extract Tab3 from
+      `OrderForm.tsx` into a shared component used by both the order registration and the order detail,
+      so any change applies to both. Keep the **translation buttons** here (not in registration); add an
+      option to **auto-translate to the user's locale** when it differs from the order's. Also fixes the
+      order panel's hardcoded-English i18n gap. · 🤖 (bigger refactor)
+- [ ] **20.6** **Shortcut to "New orders" in admin nav** (in addition to the in-page metric). · 🤖
+- [ ] **20.7** **Imported option values are raw Dataverse option-set codes** (e.g. zipper = 987…) — not
+      converted to their labels. Fix the import to map option-set codes → string values (needs the
+      Dataverse option-set metadata); re-import. Until then some additions show numeric codes. · 🤖 + 👤
+
 ## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
 > Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when
 > empty/false (Power Pages form-designer artifact — one checkbox per expandable area). The ERP

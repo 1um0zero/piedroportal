@@ -570,7 +570,10 @@
       "col_pdf": "PDF",
       "no_orders": "Aucune commande trouvée",
       "download_pdf": "Télécharger le PDF",
-      "repeat_order": "Répéter la commande"
+      "repeat_order": "Répéter la commande",
+      "metric_new": "Nouvelles",
+      "col_additions": "Adaptations",
+      "additions_yes": "Oui"
     },
     "users": {
       "title": "Gestion des utilisateurs",

@@ -570,7 +570,10 @@
       "col_pdf": "PDF",
       "no_orders": "No orders found",
       "download_pdf": "Download PDF",
-      "repeat_order": "Repeat order"
+      "repeat_order": "Repeat order",
+      "metric_new": "New",
+      "col_additions": "Additions",
+      "additions_yes": "Yes"
     },
     "users": {
       "title": "User Management",

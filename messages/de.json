@@ -570,7 +570,10 @@
       "col_pdf": "PDF",
       "no_orders": "Keine Bestellungen gefunden",
       "download_pdf": "PDF herunterladen",
-      "repeat_order": "Bestellung wiederholen"
+      "repeat_order": "Bestellung wiederholen",
+      "metric_new": "Neu",
+      "col_additions": "Anpassungen",
+      "additions_yes": "Ja"
     },
     "users": {
       "title": "Benutzerverwaltung",
