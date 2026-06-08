@@ -581,7 +581,9 @@
       "age_3m": "Laatste 3 maanden",
       "age_6m": "Laatste 6 maanden",
       "age_12m": "Afgelopen jaar",
-      "age_all": "Alles"
+      "age_all": "Alles",
+      "delete_order": "Concept verwijderen",
+      "delete_confirm": "Dit concept verwijderen? Dit kan niet ongedaan worden gemaakt."
     },
     "users": {
       "title": "Gebruikersbeheer",

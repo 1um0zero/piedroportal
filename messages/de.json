@@ -581,7 +581,9 @@
       "age_3m": "Letzte 3 Monate",
       "age_6m": "Letzte 6 Monate",
       "age_12m": "Letztes Jahr",
-      "age_all": "Alle"
+      "age_all": "Alle",
+      "delete_order": "Entwurf löschen",
+      "delete_confirm": "Diesen Entwurf löschen? Dies kann nicht rückgängig gemacht werden."
     },
     "users": {
       "title": "Benutzerverwaltung",

@@ -581,7 +581,9 @@
       "age_3m": "3 derniers mois",
       "age_6m": "6 derniers mois",
       "age_12m": "Dernière année",
-      "age_all": "Tout"
+      "age_all": "Tout",
+      "delete_order": "Supprimer le brouillon",
+      "delete_confirm": "Supprimer ce brouillon ? Cette action est irréversible."
     },
     "users": {
       "title": "Gestion des utilisateurs",
