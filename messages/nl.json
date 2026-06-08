@@ -212,7 +212,8 @@
     "order_submitted": "Bestelling ingediend.",
     "order_submitted_pdf_error": "Bestelling ingediend. PDF-fout:",
     "order_submitted_email_error": "Bestelling ingediend. PDF gegenereerd. E-mailfout:",
-    "order_submitted_complete": "Bestelling ingediend. PDF gegenereerd en e-mail verzonden."
+    "order_submitted_complete": "Bestelling ingediend. PDF gegenereerd en e-mail verzonden.",
+    "cancel": "Annuleren"
   },
   "additions": {
     "yes": "Ja",

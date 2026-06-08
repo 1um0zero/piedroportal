@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { useRouter } from '@/i18n/navigation'
+import { useRouter, Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions } from './additions-config'
 import OrderSummary from './OrderSummary'
+import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
+import { displayWidth } from '@/lib/width-display'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -30,12 +32,13 @@ type Props = {
 }
 
 // ── Single-select chip ────────────────────────────────────────────────────────
-function Chips({ options, value, onChange, pill = false, collapse = false }: {
+function Chips({ options, value, onChange, pill = false, collapse = false, renderLabel }: {
   options: string[]
   value: string
   onChange: (v: string) => void
   pill?: boolean
   collapse?: boolean
+  renderLabel?: (v: string) => string
 }) {
   const displayed = collapse && value ? [value] : options
   return (
@@ -47,7 +50,7 @@ function Chips({ options, value, onChange, pill = false, collapse = false }: {
             ${o === value
               ? 'bg-gold text-white border-gold shadow-sm'
               : 'text-stone-600 border-stone-200 bg-white hover:border-gold/60 hover:text-gold'}`}>
-          {o}
+          {renderLabel ? renderLabel(o) : o}
         </button>
       ))}
     </div>
@@ -100,6 +103,14 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const locale = useLocale()
   const router = useRouter()
   const d = draftData  // shorthand for pre-fill
+
+  // Filter-value translations (construction names) come from a synchronous cache
+  // populated async — preload it, then bump state so the chips re-render translated.
+  const [, setI18nReady] = useState(0)
+  useEffect(() => {
+    preloadFilterTranslations().then(() => setI18nReady(n => n + 1))
+  }, [])
+  const trConstruction = (v: string) => translateFilterValueSync(v, locale as Locale)
 
   // ── Restore state from sessionStorage (for locale changes) ──
   const STORAGE_KEY = `order-form-state-${product.id}`
@@ -411,7 +422,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <h1 className="text-lg font-semibold text-stone-900 mb-4">{t('title')}</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-lg font-semibold text-stone-900">{t('title')}</h1>
+        <Link href={`/gallery/${product.id}`}
+          className="text-sm font-medium text-stone-400 hover:text-stone-700 inline-flex items-center gap-1.5">
+          <span aria-hidden>←</span> {t('cancel')}
+        </Link>
+      </div>
 
       {/* Step tabs */}
       <div className="flex gap-0 border-b border-stone-200 mb-6">
@@ -752,7 +769,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 {!isDouble ? (
                   <div className="space-y-1.5">
                     {sideLabel && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{sideLabel}</p>}
-                    <Chips collapse
+                    <Chips collapse renderLabel={trConstruction}
                       options={constructionOpts}
                       value={unit === 'RIGHT' ? constrRight : constrLeft}
                       onChange={unit === 'RIGHT'
@@ -764,11 +781,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
-                      <Chips collapse options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
+                      <Chips collapse renderLabel={trConstruction} options={constructionOpts} value={constrLeft} onChange={setConstrLeft} />
                     </div>
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
-                      <Chips collapse options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
+                      <Chips collapse renderLabel={trConstruction} options={constructionOpts} value={constrRight} onChange={(v) => { setConstrR(v); setWidthR('') }} />
                     </div>
                   </div>
                 )}
@@ -789,17 +806,18 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                     options={unit === 'RIGHT' ? widthsR : widthsL}
                     value={unit === 'RIGHT' ? widthRight : widthLeft}
                     onChange={unit === 'RIGHT' ? setWidthR : setWidthLeft}
+                    renderLabel={(v) => displayWidth(v, unit === 'RIGHT' ? widthsR : widthsL, locale)}
                   />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')} <span className="text-red-400">*</span></p>
-                    <Chips collapse pill options={widthsL} value={widthLeft} onChange={setWidthLeft} />
+                    <Chips collapse pill options={widthsL} value={widthLeft} onChange={setWidthLeft} renderLabel={(v) => displayWidth(v, widthsL, locale)} />
                   </div>
                   <div className="space-y-1.5">
                     <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')} <span className="text-red-400">*</span></p>
-                    <Chips collapse pill options={widthsR} value={widthRight} onChange={setWidthR} />
+                    <Chips collapse pill options={widthsR} value={widthRight} onChange={setWidthR} renderLabel={(v) => displayWidth(v, widthsR, locale)} />
                   </div>
                 </div>
               )}
