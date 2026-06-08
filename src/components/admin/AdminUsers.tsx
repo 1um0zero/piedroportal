@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
+import { isPiedroAdmin } from '@/lib/roles'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'super_admin'
 
 type UserCompany = {
   company_id: string
@@ -32,6 +33,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
   company_admin: 'bg-blue-50 text-blue-600',
   piedro_admin:  'bg-gold/10 text-gold',
   branch_staff:  'bg-emerald-50 text-emerald-600',
+  super_admin:   'bg-stone-800 text-white',
 }
 
 type RowProps = {
@@ -94,9 +96,13 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {/* Role chips */}
+        {/* Role chips (super_admin is assigned via CLI, shown as a static badge) */}
         <div className="flex gap-1">
-          {(['user', 'branch_staff', 'piedro_admin'] as UserRole[]).map(role => (
+          {u.role === 'super_admin' ? (
+            <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg ${ROLE_COLORS.super_admin}`}>
+              {t('role_super_admin')}
+            </span>
+          ) : (['user', 'branch_staff', 'piedro_admin'] as UserRole[]).map(role => (
             <button key={role}
               onClick={() => u.role !== role && changeRole(u.id, role)}
               disabled={saving === u.id}
@@ -122,7 +128,7 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
         )}
 
         {/* Companies summary + toggle */}
-        {u.role !== 'piedro_admin' && (
+        {!isPiedroAdmin(u.role) && (
           <>
             <span className="text-xs text-stone-500">
               {u.companies.length === 0 ? t('no_companies') : (() => {
@@ -141,7 +147,7 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
       </div>
 
       {/* Expanded: Company management */}
-      {isExpanded && u.role !== 'piedro_admin' && (
+      {isExpanded && !isPiedroAdmin(u.role) && (
         <div className="mt-3 p-3 bg-stone-50 rounded-lg space-y-3 relative">
           {/* Loading overlay */}
           {saving === u.id && (
@@ -305,8 +311,8 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     }
   }
 
-  const pending  = users.filter(u => u.companies.length === 0 && u.role !== 'piedro_admin')
-  const admins   = users.filter(u => u.role === 'piedro_admin')
+  const pending  = users.filter(u => u.companies.length === 0 && !isPiedroAdmin(u.role))
+  const admins   = users.filter(u => isPiedroAdmin(u.role))
   const assigned = users.filter(u => u.companies.length > 0)
 
   const rowProps = {

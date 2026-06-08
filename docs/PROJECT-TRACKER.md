@@ -338,6 +338,20 @@ replace) the existing chat where the user can already ask specific questions. Us
       counting portal-origin unvalidated orders. "New" now **excludes migrated** orders (dataverse_id set)
       so it counts real new work, not the 920 historical submitted.
 
+## 21. Roles: super_admin (infrastructure) above piedro_admin — 🟠 / 🤖 + 👤  (2026-06-08)
+> Two admin tiers: **piedro_admin** = Anabela (alopes@piedro.nl), general Piedro/business admin —
+> sees & manages all *business/operational* configuration. **super_admin** = Jorge (tavares@umzero.pt),
+> infrastructure/technical owner — everything piedro_admin can do **plus** technical/infra tools.
+- [x] **21.1** ✅ `super_admin` role added (types + `src/lib/roles.ts` `isPiedroAdmin`/`isSuperAdmin`);
+      all back-office access checks now go through `isPiedroAdmin` so super_admin inherits piedro_admin.
+- [x] **21.2** ✅ **"Unassigned orders" is super_admin-only** (page guard `requireSuperAdminPage` + nav link
+      gated, desktop + mobile). Business settings stay piedro_admin (Anabela).
+- [x] **21.3** ✅ `set-admin.mjs` accepts `super_admin`; AdminUsers shows it as a static badge (assigned
+      via CLI, not the UI selector).
+- [ ] **21.4** 👤 **Run:** `node scripts/set-admin.mjs tavares@umzero.pt super_admin` (prod) to grant it.
+- [ ] **21.5** 🤖 **RLS follow-up:** when RLS (migration 002) is enabled/tested, update policies that grant
+      `piedro_admin` to also grant `super_admin` (app uses the service client today, so not blocking).
+
 ## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
 > Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when
 > empty/false (Power Pages form-designer artifact — one checkbox per expandable area). The ERP

@@ -584,6 +584,7 @@
       "role_user": "User",
       "role_company_admin": "Company Admin",
       "role_piedro_admin": "Piedro Admin",
+      "role_super_admin": "Super Admin",
       "updating": "Updating…",
       "companies": "Companies",
       "view_assigned": "view only assigned",

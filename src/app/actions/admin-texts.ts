@@ -2,6 +2,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { getAdminScope } from '@/lib/admin/scope'
+import { isPiedroAdmin } from '@/lib/roles'
 import { setSettings } from '@/lib/settings'
 import { TEXT_BASES, TEXT_LOCALES } from '@/lib/texts-config'
 
@@ -11,7 +12,7 @@ const ALLOWED = new Set(
 
 async function assertAdmin(): Promise<{ userId: string } | { error: string }> {
   const scope = await getAdminScope()
-  if (!scope || scope.role !== 'piedro_admin') return { error: 'Not authorized' }
+  if (!scope || !isPiedroAdmin(scope.role)) return { error: 'Not authorized' }
   return { userId: scope.userId }
 }
 

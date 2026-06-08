@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
 import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
@@ -16,13 +17,15 @@ export default async function Navbar({ locale }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let isAdmin = false
+  let isSuper = false
   let isBackoffice = false
   let profile: { role: string; full_name?: string; avatar_url?: string } | null = null
   if (user) {
     const { data } = await supabase
       .from('profiles').select('role, full_name, avatar_url').eq('id', user.id).single()
     profile = data
-    isAdmin = profile?.role === 'piedro_admin'
+    isAdmin = isPiedroAdmin(profile?.role)
+    isSuper = isSuperAdmin(profile?.role)
     isBackoffice = isAdmin || profile?.role === 'branch_staff'
   }
 
@@ -95,9 +98,11 @@ export default async function Navbar({ locale }: Props) {
                   <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('users')}
                   </Link>
-                  <Link href="/admin/orders/unassigned" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                    {t('unassigned')}
-                  </Link>
+                  {isSuper && (
+                    <Link href="/admin/orders/unassigned" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                      {t('unassigned')}
+                    </Link>
+                  )}
                   <Link href="/admin/settings" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('settings')}
                   </Link>
@@ -156,6 +161,7 @@ export default async function Navbar({ locale }: Props) {
         {/* Mobile hamburger — only on mobile */}
         <NavbarMobile
           isAdmin={isAdmin}
+          isSuper={isSuper}
           isBackoffice={isBackoffice}
           isLoggedIn={!!user}
           locale={locale}

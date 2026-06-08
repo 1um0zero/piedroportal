@@ -584,6 +584,7 @@
       "role_user": "Utilisateur",
       "role_company_admin": "Admin société",
       "role_piedro_admin": "Admin Piedro",
+      "role_super_admin": "Super Admin",
       "updating": "Mise à jour…",
       "companies": "Sociétés",
       "view_assigned": "voir seulement attribuées",

@@ -3,6 +3,7 @@ import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanies, getUserExclusiveLabels } from '@/lib/user-companies'
+import { isPiedroAdmin } from '@/lib/roles'
 import OrderForm from '@/components/order/OrderForm'
 import type { Product } from '@/types'
 
@@ -36,7 +37,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
     ? await supabase.from('profiles').select('id, email, full_name, role, company_id, preferred_locale').eq('id', user.id).single()
     : { data: null }
 
-  const isAdmin = profile?.role === 'piedro_admin'
+  const isAdmin = isPiedroAdmin(profile?.role)
 
   let companies: Company[] = []
   let userCompany: Company | null = null

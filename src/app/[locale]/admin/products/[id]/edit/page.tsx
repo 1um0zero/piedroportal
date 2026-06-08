@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
+import { isPiedroAdmin } from '@/lib/roles'
 import ProductForm, { type ExclusiveCompany } from '@/components/admin/ProductForm'
 import type { Product } from '@/types'
 
@@ -33,7 +34,7 @@ export default async function EditProductPage({ params }: Props) {
   if (!scope.canModel(product.style_name)) redirect('/admin/products')
   const t = await getTranslations('admin.products')
 
-  const companies = scope.role === 'piedro_admin' ? await getExclusiveCompanies() : undefined
+  const companies = isPiedroAdmin(scope.role) ? await getExclusiveCompanies() : undefined
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">

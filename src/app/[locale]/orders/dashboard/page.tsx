@@ -6,6 +6,7 @@ import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import { Link } from '@/i18n/navigation'
 import { nz } from '@/lib/format'
+import { isPiedroAdmin } from '@/lib/roles'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -73,7 +74,7 @@ export default async function ClientDashboard() {
   if (!user) redirect('/login')
 
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role === 'piedro_admin') redirect('/admin')
+  if (isPiedroAdmin(profile?.role)) redirect('/admin')
 
   // Membership comes from user_companies, not the deprecated profiles.company_id
   const userHasCompany = await hasAnyCompany(user.id)

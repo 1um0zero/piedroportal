@@ -2,8 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPiedroAdmin } from '@/lib/roles'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'super_admin'
 
 export async function updateUserRoleAction(
   userId: string,
@@ -14,10 +15,10 @@ export async function updateUserRoleAction(
   if (!user) return { error: 'Not authenticated' }
 
   const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
 
   // Prevent removing your own admin role
-  if (userId === user.id && role !== 'piedro_admin') {
+  if (userId === user.id && !isPiedroAdmin(role)) {
     return { error: 'Cannot remove your own admin role' }
   }
 
@@ -37,7 +38,7 @@ export async function toggleCompanyAdminAction(
   if (!user) return { error: 'Not authenticated' }
 
   const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
 
   const service = createServiceClient()
 
@@ -61,7 +62,7 @@ export async function addUserCompanyAction(
   if (!user) return { error: 'Not authenticated' }
 
   const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
 
   const service = createServiceClient()
 
@@ -83,7 +84,7 @@ export async function removeUserCompanyAction(
   if (!user) return { error: 'Not authenticated' }
 
   const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') return { error: 'Not authorized' }
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
 
   const service = createServiceClient()
 

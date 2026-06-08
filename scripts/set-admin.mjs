@@ -3,7 +3,7 @@
  * piedro_admin / branch_staff to Piedro staff (Q4.4).
  *
  * Usage: node scripts/set-admin.mjs <email> [role]
- *   role defaults to "piedro_admin"; valid: user | company_admin | piedro_admin | branch_staff
+ *   role defaults to "piedro_admin"; valid: user | company_admin | piedro_admin | branch_staff | super_admin
  */
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
@@ -18,9 +18,9 @@ const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_
 
 const email = process.argv[2]
 const role = process.argv[3] ?? 'piedro_admin'
-const VALID = ['user', 'company_admin', 'piedro_admin', 'branch_staff']
+const VALID = ['user', 'company_admin', 'piedro_admin', 'branch_staff', 'super_admin']
 if (!email || !VALID.includes(role)) {
-  console.error('Usage: node scripts/set-admin.mjs <email> [user|company_admin|piedro_admin|branch_staff]')
+  console.error('Usage: node scripts/set-admin.mjs <email> [user|company_admin|piedro_admin|branch_staff|super_admin]')
   process.exit(1)
 }
 

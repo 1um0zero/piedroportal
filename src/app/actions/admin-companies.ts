@@ -3,13 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
+import { isPiedroAdmin } from '@/lib/roles'
 
 // ── Auth helper (piedro_admin only) ───────────────────────────────────────────
 
 async function assertPiedroAdmin(): Promise<string | null> {
   const scope = await getAdminScope()
   if (!scope) return 'Not authenticated'
-  if (scope.role !== 'piedro_admin') return 'Not authorized'
+  if (!isPiedroAdmin(scope.role)) return 'Not authorized'
   return null
 }
 

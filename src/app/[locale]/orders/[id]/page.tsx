@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
+import { isPiedroAdmin } from '@/lib/roles'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
@@ -26,7 +27,7 @@ export default async function OrderDetailPage({ params }: Props) {
   const { data: profile } = await sb
     .from('profiles').select('role').eq('id', user.id).single()
 
-  if (profile?.role === 'piedro_admin') redirect(`/admin/orders/${id}`)
+  if (isPiedroAdmin(profile?.role)) redirect(`/admin/orders/${id}`)
 
   // Check if user has any company
   const userHasCompany = await hasAnyCompany(user.id)

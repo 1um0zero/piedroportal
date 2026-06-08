@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requirePiedroAdminPage } from '@/lib/admin/scope'
+import { requireSuperAdminPage } from '@/lib/admin/scope'
 import { nz } from '@/lib/format'
 
 // Reason codes written by scripts/backfill-order-users.mjs
@@ -11,7 +11,7 @@ const REASONS = ['no_contact_on_order', 'contact_not_migrated', 'contact_company
 type Row = any
 
 export default async function UnassignedOrdersPage() {
-  await requirePiedroAdminPage()
+  await requireSuperAdminPage()
   const t = await getTranslations('unassignedOrders')
 
   const service = createServiceClient()

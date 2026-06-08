@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { getSettings } from '@/lib/settings'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
@@ -73,7 +74,7 @@ export async function insertOrderAction(
   // Validate company ownership: a non-admin can only order for a company they
   // belong to (user_companies). Piedro admins may order on behalf of any company.
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  const isPiedroAdmin = profile?.role === 'piedro_admin'
+  const isPiedroAdmin = isPiedroAdminRole(profile?.role)
   if (!isPiedroAdmin) {
     const companyIds = await getUserCompanyIds(user.id)
     if (!row.company_id || !companyIds.includes(row.company_id)) {
@@ -248,7 +249,7 @@ export async function updateOrderAction(
 
   // Validate company ownership (admins exempt — they may act on any company).
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  const isPiedroAdmin = profile?.role === 'piedro_admin'
+  const isPiedroAdmin = isPiedroAdminRole(profile?.role)
   if (!isPiedroAdmin) {
     const companyIds = await getUserCompanyIds(user.id)
     if (!row.company_id || !companyIds.includes(row.company_id)) {

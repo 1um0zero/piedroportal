@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdfs } from '@/lib/order-pdf'
+import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 export default async function OrdersRoute() {
@@ -17,7 +18,7 @@ export default async function OrdersRoute() {
     .eq('id', user.id)
     .single()
 
-  const isPiedroAdmin = profile?.role === 'piedro_admin'
+  const isPiedroAdmin = isPiedroAdminRole(profile?.role)
 
   // Piedro admins go to the back-office orders view
   if (isPiedroAdmin) redirect('/admin/orders')

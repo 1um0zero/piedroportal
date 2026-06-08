@@ -584,6 +584,7 @@
       "role_user": "Gebruiker",
       "role_company_admin": "Bedrijfsbeheerder",
       "role_piedro_admin": "Piedro-beheerder",
+      "role_super_admin": "Super Admin",
       "updating": "Bijwerken…",
       "companies": "Bedrijven",
       "view_assigned": "alleen toegewezen",

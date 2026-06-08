@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAdminScope, type AdminScope } from '@/lib/admin/scope'
+import { isPiedroAdmin } from '@/lib/roles'
 
 /**
  * Verify the caller is a logged-in piedro_admin.
@@ -13,7 +14,7 @@ export async function requireAdmin(): Promise<{ ok: true } | { error: NextRespon
 
   const { data: profile } = await supabase
     .from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'piedro_admin')
+  if (!isPiedroAdmin(profile?.role))
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
 
   return { ok: true }

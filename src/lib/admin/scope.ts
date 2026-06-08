@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
 import type { UserRole } from '@/types'
 
 /**
@@ -35,8 +36,9 @@ export async function getAdminScope(): Promise<AdminScope | null> {
     .from('profiles').select('role, branch_id').eq('id', user.id).single()
 
   const role = profile?.role as UserRole | undefined
-  if (role === 'piedro_admin') {
-    return { userId: user.id, role, branchId: null, allModels: true, canModel: () => true }
+  // super_admin (infra/technical) is a superset of piedro_admin (operational).
+  if (isPiedroAdmin(role)) {
+    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true }
   }
 
   if (role === 'branch_staff') {
@@ -77,9 +79,16 @@ export async function requireBackofficePage(): Promise<AdminScope> {
   return scope
 }
 
-/** Server-component guard: requires piedro_admin. Redirects to the gallery otherwise. */
+/** Server-component guard: requires piedro_admin (or super_admin). Redirects to the gallery otherwise. */
 export async function requirePiedroAdminPage(): Promise<AdminScope> {
   const scope = await getAdminScope()
-  if (!scope || scope.role !== 'piedro_admin') redirect('/gallery')
+  if (!scope || !isPiedroAdmin(scope.role)) redirect('/gallery')
+  return scope
+}
+
+/** Server-component guard: requires super_admin (infrastructure/technical). */
+export async function requireSuperAdminPage(): Promise<AdminScope> {
+  const scope = await getAdminScope()
+  if (!scope || !isSuperAdmin(scope.role)) redirect('/gallery')
   return scope
 }

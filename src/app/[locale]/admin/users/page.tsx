@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPiedroAdmin } from '@/lib/roles'
 import AdminUsers from '@/components/admin/AdminUsers'
 
 export default async function AdminUsersPage() {
@@ -11,7 +12,7 @@ export default async function AdminUsersPage() {
 
   const { data: me } = await supabase
     .from('profiles').select('role').eq('id', user.id).single()
-  if (me?.role !== 'piedro_admin') redirect('/gallery')
+  if (!isPiedroAdmin(me?.role)) redirect('/gallery')
 
   // Load all data with service client (bypasses RLS)
   const service = createServiceClient()
