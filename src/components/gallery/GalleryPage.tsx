@@ -45,8 +45,12 @@ export function applyFilters(
     if (exclude !== 'colours'       && f.colours.length > 0 && !f.colours.includes(p.color_basic))         return false
     if (exclude !== 'constructions' && f.constructions.length > 0
       && !p.constructions?.some((c) => f.constructions.includes(c.construction)))                          return false
-    if (exclude !== 'widths'        && f.widths.length > 0
-      && !p.constructions?.some((c) => c.widths?.some((w) => f.widths.includes(w))))                      return false
+    if (exclude !== 'widths'        && f.widths.length > 0) {
+      // Scope the width match to the selected construction(s): a width only
+      // counts if it belongs to a construction the user is actually filtering on.
+      const cons = (p.constructions ?? []).filter((c) => f.constructions.length === 0 || f.constructions.includes(c.construction))
+      if (!cons.some((c) => c.widths?.some((w) => f.widths.includes(w))))                                  return false
+    }
     if (exclude !== 'sizes'         && f.sizes.length > 0
       && !f.sizes.some((s) => s >= p.size_first && s <= p.size_last))                                     return false
     if (f.search && !p.style_name.toLowerCase().includes(f.search.toLowerCase()))                         return false
@@ -146,9 +150,15 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const optTypes         = useMemo(() => [...new Set(forType.map((p) => p.type).filter(Boolean))].sort() as string[], [forType])
   const optColours       = useMemo(() => [...new Set(forColour.map((p) => p.color_basic).filter(Boolean))].sort(), [forColour])
   const optConstructions = useMemo(() => [...new Set(forConstructions.flatMap((p) => p.constructions?.map((c) => c.construction) ?? []))].sort(), [forConstructions])
-  const optWidths        = useMemo(() => [...new Set(forWidths.flatMap((p) => p.constructions?.flatMap((c) => c.widths ?? []) ?? []))]
+  // Width options reflect the selected construction(s): if a construction is
+  // filtered, only show widths belonging to it (each construction has its own
+  // standard widths), otherwise show widths across all constructions.
+  const optWidths        = useMemo(() => [...new Set(forWidths.flatMap((p) =>
+      (p.constructions ?? [])
+        .filter((c) => filters.constructions.length === 0 || filters.constructions.includes(c.construction))
+        .flatMap((c) => c.widths ?? [])))]
     .filter(w => w && w !== '--' && w !== '-')
-    .sort(sortWidths), [forWidths])
+    .sort(sortWidths), [forWidths, filters.constructions])
   const optSizes         = useMemo(() => availableSizes(forSizes), [forSizes])
 
   // ── Final filtered list (wishlist filter applied here, needs context) ──
