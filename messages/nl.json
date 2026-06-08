@@ -796,6 +796,14 @@
     "saving": "Opslaan…",
     "saved": "Opgeslagen",
     "no_results": "Geen resultaten",
-    "hint": "Lege velden vallen terug op de Engelse waarde. Wijzigingen zijn na het opslaan meteen actief."
+    "hint": "Lege velden vallen terug op de Engelse waarde. Wijzigingen zijn na het opslaan meteen actief.",
+    "colour_words": "Kleurwoorden",
+    "word": "Woord",
+    "recompose": "Hercomponeren",
+    "recomposed": "{n} kleuren hersamengesteld",
+    "missing_words": "ontbrekende woorden: {words}",
+    "manual": "handmatig",
+    "recompose_hint": "Bouw de basiskleur-vertalingen opnieuw op uit het woordenboek (handmatig bewerkte worden overgeslagen).",
+    "colour_hint": "Bewerk het woordenboek en klik op Hercomponeren om de kleurenlijst opnieuw te genereren. Handmatig bewerkte kleuren worden gemarkeerd en nooit overschreven."
   }
 }

@@ -15,12 +15,25 @@ export default async function AdminTranslationsPage() {
   await requirePiedroAdminPage()
   const service = createServiceClient()
 
-  // Existing UI/filter translations (key → row).
+  // Existing UI/filter translations (key → row), incl. the colour-word dictionary.
   const { data: trans } = await service
     .from('translations')
     .select('key, en, nl, fr, de, category')
-    .in('category', ['closure', 'type', 'construction', 'colour'])
+    .in('category', ['closure', 'type', 'construction', 'colour', 'colour_word'])
   const byKey = new Map((trans ?? []).map(r => [r.key, r]))
+
+  // Manual-override flags (the `manual` column may not exist until the
+  // colour-words migration has been run — degrade gracefully if so).
+  const manualMap = new Map<string, boolean>()
+  const { data: manualRows, error: manualErr } = await service
+    .from('translations').select('key, manual').eq('category', 'colour')
+  if (!manualErr) for (const r of manualRows ?? []) manualMap.set(r.key, !!r.manual)
+
+  // Colour-word dictionary rows (standalone; key is prefixed "word:<English>").
+  const colourWords: TransRow[] = (trans ?? [])
+    .filter(r => r.category === 'colour_word')
+    .map(r => ({ key: r.key, label: r.en, en: r.en, nl: r.nl ?? '', fr: r.fr ?? '', de: r.de ?? '' }))
+    .sort((a, b) => a.en.localeCompare(b.en))
 
   // Distinct values actually present on products (so the grid also surfaces
   // untranslated values that have no row yet, e.g. AGO / TWIST LOCK SYSTEM).
@@ -53,7 +66,7 @@ export default async function AdminTranslationsPage() {
   const buildRows = (values: Set<string>): TransRow[] =>
     [...values].sort((a, b) => a.localeCompare(b)).map(v => {
       const r = byKey.get(v)
-      return { key: v, en: r?.en ?? v, nl: r?.nl ?? '', fr: r?.fr ?? '', de: r?.de ?? '' }
+      return { key: v, en: r?.en ?? v, nl: r?.nl ?? '', fr: r?.fr ?? '', de: r?.de ?? '', manual: manualMap.get(v) ?? false }
     })
 
   const shoeRows: ShoeRow[] = [...shoeColours.entries()]
@@ -66,6 +79,7 @@ export default async function AdminTranslationsPage() {
       closure={buildRows(closures)}
       type={buildRows(types)}
       colour={buildRows(basicColours)}
+      colourWords={colourWords}
       shoeColours={shoeRows}
     />
   )

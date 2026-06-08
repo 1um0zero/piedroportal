@@ -796,6 +796,14 @@
     "saving": "Speichern…",
     "saved": "Gespeichert",
     "no_results": "Keine Ergebnisse",
-    "hint": "Leere Felder verwenden den englischen Wert. Änderungen gelten sofort nach dem Speichern."
+    "hint": "Leere Felder verwenden den englischen Wert. Änderungen gelten sofort nach dem Speichern.",
+    "colour_words": "Farbwörter",
+    "word": "Wort",
+    "recompose": "Neu zusammensetzen",
+    "recomposed": "{n} Farben neu zusammengesetzt",
+    "missing_words": "fehlende Wörter: {words}",
+    "manual": "manuell",
+    "recompose_hint": "Grundfarben-Übersetzungen aus dem Wörterbuch neu aufbauen (manuell bearbeitete werden übersprungen).",
+    "colour_hint": "Bearbeiten Sie das Wörterbuch und klicken Sie auf Neu zusammensetzen, um die Farbliste zu erzeugen. Manuell bearbeitete Farben werden markiert und nie überschrieben."
   }
 }

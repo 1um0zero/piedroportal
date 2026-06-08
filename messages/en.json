@@ -796,6 +796,14 @@
     "saving": "Saving…",
     "saved": "Saved",
     "no_results": "No results",
-    "hint": "Empty cells fall back to the English value. Changes apply immediately after saving."
+    "hint": "Empty cells fall back to the English value. Changes apply immediately after saving.",
+    "colour_words": "Colour words",
+    "word": "Word",
+    "recompose": "Recompose",
+    "recomposed": "{n} colours recomposed",
+    "missing_words": "missing words: {words}",
+    "manual": "manual",
+    "recompose_hint": "Rebuild basic-colour translations from the word dictionary (skips manually edited ones).",
+    "colour_hint": "Edit the word dictionary, then Recompose to regenerate the colour list. Manually edited colours are marked and never overwritten."
   }
 }

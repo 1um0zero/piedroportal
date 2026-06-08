@@ -796,6 +796,14 @@
     "saving": "Enregistrement…",
     "saved": "Enregistré",
     "no_results": "Aucun résultat",
-    "hint": "Les cellules vides reviennent à la valeur anglaise. Les modifications s’appliquent dès l’enregistrement."
+    "hint": "Les cellules vides reviennent à la valeur anglaise. Les modifications s’appliquent dès l’enregistrement.",
+    "colour_words": "Mots de couleur",
+    "word": "Mot",
+    "recompose": "Recomposer",
+    "recomposed": "{n} couleurs recomposées",
+    "missing_words": "mots manquants : {words}",
+    "manual": "manuel",
+    "recompose_hint": "Reconstruire les traductions des couleurs de base à partir du dictionnaire (ignore celles modifiées manuellement).",
+    "colour_hint": "Modifiez le dictionnaire, puis Recomposer pour régénérer la liste des couleurs. Les couleurs modifiées manuellement sont marquées et jamais écrasées."
   }
 }
