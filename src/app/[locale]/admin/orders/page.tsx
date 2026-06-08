@@ -14,19 +14,35 @@ const SELECT = `
 const isNew = (o: { status?: string; approval_state?: string | null }) =>
   o.status === 'submitted' && (!o.approval_state || o.approval_state === 'registered')
 
-export default async function AdminOrdersPage() {
+// Age window keeps the default fetch small (most orders are historical/migrated).
+const AGE_MONTHS: Record<string, number> = { '3m': 3, '6m': 6, '12m': 12 }
+function ageCutoff(age: string): string | null {
+  const months = AGE_MONTHS[age]
+  if (!months) return null // 'all'
+  const d = new Date()
+  d.setMonth(d.getMonth() - months)
+  return d.toISOString()
+}
+
+type Props = { searchParams: Promise<{ age?: string }> }
+
+export default async function AdminOrdersPage({ searchParams }: Props) {
   const scope = await requireBackofficePage()
+  const age = (await searchParams).age ?? '3m'
+  const cutoff = ageCutoff(age)
 
   const service = createServiceClient()
   let allOrders: any[] = []
   let offset = 0
   const PAGE = 1000
   while (true) {
-    const { data, error } = await service
+    let q = service
       .from('orders')
       .select(SELECT)
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
+    if (cutoff) q = q.gte('created_at', cutoff)
+    const { data, error } = await q
     if (error || !data?.length) break
     allOrders = allOrders.concat(data)
     if (data.length < PAGE) break
@@ -52,5 +68,5 @@ export default async function AdminOrdersPage() {
     urgent:     all.filter(o => (o.additions as any)?.urgent === true).length,
   }
 
-  return <OrdersPage orders={all} metrics={metrics} isAdmin={true} currentUserId={scope.userId} />
+  return <OrdersPage orders={all} metrics={metrics} isAdmin={true} currentUserId={scope.userId} age={age} />
 }

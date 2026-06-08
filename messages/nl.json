@@ -104,7 +104,6 @@
     "products": "Producten",
     "users": "Gebruikers",
     "orders_admin": "Bestellingen",
-    "new_orders": "Nieuwe bestellingen",
     "branches": "Filialen",
     "companies": "Bedrijven",
     "unassigned": "Niet toegewezen",
@@ -574,7 +573,11 @@
       "repeat_order": "Bestelling herhalen",
       "metric_new": "Nieuw",
       "col_additions": "Aanpassingen",
-      "additions_yes": "Ja"
+      "additions_yes": "Ja",
+      "age_3m": "Laatste 3 maanden",
+      "age_6m": "Laatste 6 maanden",
+      "age_12m": "Afgelopen jaar",
+      "age_all": "Alles"
     },
     "users": {
       "title": "Gebruikersbeheer",

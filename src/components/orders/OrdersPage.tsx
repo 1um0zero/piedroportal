@@ -34,7 +34,10 @@ type Props = {
   metrics: Metrics
   isAdmin: boolean
   currentUserId?: string
+  age?: string
 }
+
+const AGE_OPTIONS = ['3m', '6m', '12m', 'all'] as const
 
 // "New" = submitted by the client and not yet touched by staff (the validation queue).
 const isNewOrder = (o: { status?: string; approval_state?: string | null }) =>
@@ -55,7 +58,7 @@ function hasAdditions(adds: Record<string, any> | null | undefined): boolean {
   return false
 }
 
-export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: Props) {
+export default function OrdersPage({ orders, metrics, isAdmin, currentUserId, age = '3m' }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -107,6 +110,25 @@ export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: 
     })
   }, [orders, search, statusFilter, urgentOnly, newOnly])
 
+  const currentYear = new Date().getFullYear()
+
+  // Status chips: New (left) → … → Total (rendered separately, right).
+  // Draft is hidden when there are none (Piedro rarely needs it; drafts are the client's).
+  const metricCards: { key: string; label: string; value: number; active: boolean; accent?: boolean; onClick: () => void }[] = [
+    { key: 'new', label: t('metric_new'), value: metrics.new, accent: true, active: newOnly,
+      onClick: () => { setNewOnly(v => !v); setStatus(''); setUrgentOnly(false) } },
+    ...(metrics.draft > 0 ? [{ key: 'draft', label: t('metric_draft'), value: metrics.draft, active: statusFilter === 'draft',
+      onClick: () => { setNewOnly(false); setStatus(s => s === 'draft' ? '' : 'draft') } }] : []),
+    { key: 'submitted', label: t('metric_submitted'), value: metrics.submitted, active: statusFilter === 'submitted',
+      onClick: () => { setNewOnly(false); setStatus(s => s === 'submitted' ? '' : 'submitted') } },
+    { key: 'approved', label: t('metric_approved'), value: metrics.approved, active: statusFilter === 'approved',
+      onClick: () => { setNewOnly(false); setStatus(s => s === 'approved' ? '' : 'approved') } },
+    { key: 'production', label: t('metric_production'), value: metrics.production, active: statusFilter === 'in_production',
+      onClick: () => { setNewOnly(false); setStatus(s => s === 'in_production' ? '' : 'in_production') } },
+    { key: 'urgent', label: `🔴 ${t('metric_urgent')}`, value: metrics.urgent, active: urgentOnly,
+      onClick: () => { setUrgentOnly(u => !u); setNewOnly(false) } },
+  ]
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -120,31 +142,9 @@ export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: 
         )}
       </div>
 
-      {/* Metrics */}
+      {/* Metrics — New on the left, Total (with age window) on the right */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        {([
-          { key: 'total',      label: t('metric_total'),       value: metrics.total,
-            active: !newOnly && !urgentOnly && statusFilter === '',
-            onClick: () => { setNewOnly(false); setUrgentOnly(false); setStatus('') } },
-          { key: 'new',        label: t('metric_new'),         value: metrics.new, accent: true,
-            active: newOnly,
-            onClick: () => { setNewOnly(v => !v); setStatus(''); setUrgentOnly(false) } },
-          { key: 'draft',      label: t('metric_draft'),       value: metrics.draft,
-            active: statusFilter === 'draft',
-            onClick: () => { setNewOnly(false); setStatus(s => s === 'draft' ? '' : 'draft') } },
-          { key: 'submitted',  label: t('metric_submitted'),   value: metrics.submitted,
-            active: statusFilter === 'submitted',
-            onClick: () => { setNewOnly(false); setStatus(s => s === 'submitted' ? '' : 'submitted') } },
-          { key: 'approved',   label: t('metric_approved'),    value: metrics.approved,
-            active: statusFilter === 'approved',
-            onClick: () => { setNewOnly(false); setStatus(s => s === 'approved' ? '' : 'approved') } },
-          { key: 'production', label: t('metric_production'),   value: metrics.production,
-            active: statusFilter === 'in_production',
-            onClick: () => { setNewOnly(false); setStatus(s => s === 'in_production' ? '' : 'in_production') } },
-          { key: 'urgent',     label: `🔴 ${t('metric_urgent')}`, value: metrics.urgent,
-            active: urgentOnly,
-            onClick: () => { setUrgentOnly(u => !u); setNewOnly(false) } },
-        ]).map(({ key, label, value, active, accent, onClick }) => (
+        {metricCards.map(({ key, label, value, active, accent, onClick }) => (
           <button key={key} onClick={onClick}
             className={`p-3 rounded-xl border text-left transition-all
               ${active
@@ -157,6 +157,24 @@ export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: 
             <p className="text-xs text-stone-500 mt-0.5">{label}</p>
           </button>
         ))}
+
+        {/* Total — to the right; on admin it carries the age-window selector */}
+        <div className={`p-3 rounded-xl border transition-all
+          ${!newOnly && !urgentOnly && statusFilter === '' ? 'border-gold bg-gold/5' : 'border-stone-100 bg-white'}`}
+          style={{ boxShadow: 'var(--shadow-card)' }}>
+          <button onClick={() => { setNewOnly(false); setUrgentOnly(false); setStatus('') }} className="text-left w-full">
+            <p className="text-2xl font-bold text-stone-800">{nz(metrics.total)}</p>
+            <p className="text-xs text-stone-500 mt-0.5">{t('metric_total')}</p>
+          </button>
+          {isAdmin && (
+            <select value={age}
+              onClick={e => e.stopPropagation()}
+              onChange={e => router.push(`${pathname}?age=${e.target.value}` as Parameters<typeof router.push>[0])}
+              className="mt-1.5 w-full rounded-md border border-stone-200 px-1.5 py-0.5 text-[11px] text-stone-500 focus:border-gold focus:outline-none">
+              {AGE_OPTIONS.map(o => <option key={o} value={o}>{t(`age_${o}`)}</option>)}
+            </select>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -307,10 +325,15 @@ export default function OrdersPage({ orders, metrics, isAdmin, currentUserId }: 
                         ) : null
                       })()}
                     </td>
-                    {/* Date */}
+                    {/* Date — year shown only for orders before the current year */}
                     <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
                       {o.created_at
-                        ? new Date(o.created_at).toLocaleDateString(locale, { day:'2-digit', month:'short', year:'2-digit' })
+                        ? (() => {
+                            const d = new Date(o.created_at)
+                            return d.toLocaleDateString(locale, d.getFullYear() < currentYear
+                              ? { day:'2-digit', month:'short', year:'numeric' }
+                              : { day:'2-digit', month:'short' })
+                          })()
                         : '—'}
                     </td>
                     {/* Unit */}

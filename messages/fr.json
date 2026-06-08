@@ -104,7 +104,6 @@
     "products": "Produits",
     "users": "Utilisateurs",
     "orders_admin": "Commandes",
-    "new_orders": "Nouvelles commandes",
     "branches": "Filiales",
     "companies": "Sociétés",
     "unassigned": "Non attribuées",
@@ -574,7 +573,11 @@
       "repeat_order": "Répéter la commande",
       "metric_new": "Nouvelles",
       "col_additions": "Adaptations",
-      "additions_yes": "Oui"
+      "additions_yes": "Oui",
+      "age_3m": "3 derniers mois",
+      "age_6m": "6 derniers mois",
+      "age_12m": "Dernière année",
+      "age_all": "Tout"
     },
     "users": {
       "title": "Gestion des utilisateurs",

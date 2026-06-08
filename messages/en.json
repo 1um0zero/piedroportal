@@ -104,7 +104,6 @@
     "products": "Products",
     "users": "Users",
     "orders_admin": "Orders",
-    "new_orders": "New orders",
     "branches": "Branches",
     "companies": "Companies",
     "unassigned": "Unassigned",
@@ -574,7 +573,11 @@
       "repeat_order": "Repeat order",
       "metric_new": "New",
       "col_additions": "Additions",
-      "additions_yes": "Yes"
+      "additions_yes": "Yes",
+      "age_3m": "Last 3 months",
+      "age_6m": "Last 6 months",
+      "age_12m": "Last year",
+      "age_all": "All time"
     },
     "users": {
       "title": "User Management",
