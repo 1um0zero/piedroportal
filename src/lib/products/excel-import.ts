@@ -25,7 +25,7 @@ export interface SheetInfo {
 export function suggestSheetMode(name: string): SheetMode {
   const n = name.trim().toUpperCase()
   if (n === 'DELISTED') return 'delisted'
-  if (n === 'KIDS' || n === 'ADULTS') return 'active'
+  if (n === 'KIDS' || n === 'ADULTS' || n === 'FASHION') return 'active'
   return 'skip' // Sheet1 and anything unexpected
 }
 
@@ -116,12 +116,19 @@ function colourCode(v: unknown): string {
   return /^\d+$/.test(s) ? s.padStart(4, '0') : s
 }
 
+// Width base notation: N,R,W is just the Dutch display of S,M,L — always store
+// the base so the catalogue is consistent regardless of how the sheet spells it.
+const WIDTH_BASE: Record<string, string> = { N: 'S', R: 'M', W: 'L' }
+
 function buildConstructions(constructionList: unknown, widthList: unknown): Construction[] {
   const cl = String(constructionList ?? '').trim()
   if (!cl) return []
   const constructions = cl.split(/[,;]/).map(s => s.trim()).filter(Boolean)
-  const widths = String(widthList ?? '')
-    .split(/[,;]/).map(s => s.trim()).filter(Boolean)
+  const widths = [...new Set(
+    String(widthList ?? '')
+      .split(/[,;]/).map(s => s.trim()).filter(Boolean)
+      .map(w => WIDTH_BASE[w] ?? w),
+  )]
   return constructions.map(c => ({ construction: c, widths }))
 }
 

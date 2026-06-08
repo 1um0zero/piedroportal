@@ -699,7 +699,13 @@
       "stat_rejected": "Geweigerd",
       "sample_rejected": "Geweigerd — geen constructie",
       "rejected_warning": "{n} model(len) overgeslagen — geen constructie. Elk model moet minstens één constructie hebben; corrigeer het bestand en importeer opnieuw.",
-      "result_rejected": "{n} geweigerd (geen constructie)"
+      "result_rejected": "{n} geweigerd (geen constructie)",
+      "stat_discrepancies": "Verschillen",
+      "sample_discrepancies": "Verschillen — bestand wijkt af van het portaal",
+      "col_diff": "Afwijkende kolommen",
+      "result_created": "{n} nieuw aangemaakt",
+      "result_discrepancies": "{n} verschillen (niet toegepast)",
+      "validate_hint": "Alleen nieuwe modellen worden aangemaakt. Bestaande modellen worden gevalideerd, niet gewijzigd — het portaal is de bron."
     },
     "branches": {
       "title": "Filialen",

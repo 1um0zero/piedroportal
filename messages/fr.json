@@ -699,7 +699,13 @@
       "stat_rejected": "Rejetés",
       "sample_rejected": "Rejetés — sans construction",
       "rejected_warning": "{n} modèle(s) ignoré(s) — sans construction. Chaque modèle doit avoir au moins une construction ; corrigez le fichier et réimportez.",
-      "result_rejected": "{n} rejetés (sans construction)"
+      "result_rejected": "{n} rejetés (sans construction)",
+      "stat_discrepancies": "Écarts",
+      "sample_discrepancies": "Écarts — le fichier diffère du portail",
+      "col_diff": "Colonnes différentes",
+      "result_created": "{n} nouveaux créés",
+      "result_discrepancies": "{n} écarts (non appliqués)",
+      "validate_hint": "Seuls les nouveaux modèles sont créés. Les modèles existants sont validés, pas modifiés — le portail est la source."
     },
     "branches": {
       "title": "Filiales",

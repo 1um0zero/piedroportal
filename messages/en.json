@@ -699,7 +699,13 @@
       "stat_rejected": "Rejected",
       "sample_rejected": "Rejected — no construction",
       "rejected_warning": "{n} model(s) skipped — no construction. Every model must have at least one construction; fix the sheet and re-import.",
-      "result_rejected": "{n} rejected (no construction)"
+      "result_rejected": "{n} rejected (no construction)",
+      "stat_discrepancies": "Discrepancies",
+      "sample_discrepancies": "Discrepancies — sheet disagrees with the portal",
+      "col_diff": "Differing columns",
+      "result_created": "{n} new created",
+      "result_discrepancies": "{n} discrepancies (not applied)",
+      "validate_hint": "Only new models are created. Existing models are validated, not changed — the portal is the source of truth."
     },
     "branches": {
       "title": "Branch offices",

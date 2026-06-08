@@ -699,7 +699,13 @@
       "stat_rejected": "Abgelehnt",
       "sample_rejected": "Abgelehnt — keine Konstruktion",
       "rejected_warning": "{n} Modell(e) übersprungen — keine Konstruktion. Jedes Modell muss mindestens eine Konstruktion haben; korrigieren Sie die Datei und importieren Sie erneut.",
-      "result_rejected": "{n} abgelehnt (keine Konstruktion)"
+      "result_rejected": "{n} abgelehnt (keine Konstruktion)",
+      "stat_discrepancies": "Abweichungen",
+      "sample_discrepancies": "Abweichungen — Datei weicht vom Portal ab",
+      "col_diff": "Abweichende Spalten",
+      "result_created": "{n} neu erstellt",
+      "result_discrepancies": "{n} Abweichungen (nicht angewendet)",
+      "validate_hint": "Es werden nur neue Modelle erstellt. Bestehende Modelle werden geprüft, nicht geändert — das Portal ist die Quelle."
     },
     "branches": {
       "title": "Niederlassungen",

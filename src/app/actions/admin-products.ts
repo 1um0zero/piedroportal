@@ -69,11 +69,11 @@ function toRow(p: ImportedProduct): Omit<Product, 'id' | 'picture_name' | 'color
 
 export interface ImportResult {
   created: number
-  updated: number
-  delisted: number
-  skipped?: number  // rows ignored because the model is out of the caller's scope
-  rejected?: number // active rows rejected for having no constructions
+  skipped?: number       // rows ignored because the model is out of the caller's scope
+  rejected?: number      // active rows rejected for having no constructions
   rejectedRefs?: string[]
+  discrepancies?: number // existing rows where the sheet disagrees with the DB (reported, NOT applied)
+  discrepancyRefs?: string[]
   error?: string
 }
 
@@ -89,17 +89,17 @@ export async function applyProductImport(
   formData: FormData,
 ): Promise<ImportResult> {
   const scope = await assertBackoffice()
-  if (typeof scope === 'string') return { created: 0, updated: 0, delisted: 0, error: scope }
+  if (typeof scope === 'string') return { created: 0, error: scope }
 
   const file = formData.get('file')
   const modesRaw = formData.get('sheetModes')
-  if (!(file instanceof File)) return { created: 0, updated: 0, delisted: 0, error: 'No file' }
+  if (!(file instanceof File)) return { created: 0, error: 'No file' }
 
   let sheetModes: Record<string, SheetMode>
   try {
     sheetModes = JSON.parse(String(modesRaw ?? '{}'))
   } catch {
-    return { created: 0, updated: 0, delisted: 0, error: 'Invalid sheet selection' }
+    return { created: 0, error: 'Invalid sheet selection' }
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
@@ -107,47 +107,31 @@ export async function applyProductImport(
   const existing = await fetchAllExisting()
   const preview = diffAgainstExisting(imported, existing)
 
-  // Construction-less models are never written (a product with no construction
-  // can't be ordered). Surface them so the sheet gets fixed.
+  // The portal is the source of truth: the import only CREATES new models and
+  // VALIDATES existing ones. It never overwrites existing rows (the sheet can be
+  // stale/partial) — discrepancies are reported so the sheet can be fixed.
   const rejected = preview.withEmptyConstructions.length
   const rejectedRefs = preview.withEmptyConstructions.map(e => e.colour_id)
 
   // Restrict every change to models within the caller's scope.
   let skipped = 0
   const inCreate = preview.toCreate.filter(p => scope.canModel(p.style_name) || (skipped++, false))
-  const inUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name) || (skipped++, false))
-  const inDelist = preview.toDelist.filter(d => scope.canModel(d.style_name) || (skipped++, false))
+  const inUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name))
+  const discrepancies = inUpdate.length
+  const discrepancyRefs = inUpdate.map(u => u.product.colour_id)
 
   const service = createServiceClient()
   const BATCH = 200
 
-  // Inserts (picture_name starts empty — images are uploaded separately)
+  // Inserts only (picture_name starts empty — images are uploaded separately).
   const toInsert = inCreate.map(p => ({ id: randomUUID(), picture_name: '', ...toRow(p) }))
   for (let i = 0; i < toInsert.length; i += BATCH) {
     const { error } = await service.from('products').insert(toInsert.slice(i, i + BATCH))
-    if (error) return { created: 0, updated: 0, delisted: 0, skipped, error: `Insert failed: ${error.message}` }
-  }
-
-  // Updates (by id)
-  let updated = 0
-  for (const u of inUpdate) {
-    const { error } = await service.from('products').update(toRow(u.product)).eq('id', u.existingId)
-    if (error) return { created: toInsert.length, updated, delisted: 0, skipped, error: `Update failed: ${error.message}` }
-    updated++
-  }
-
-  // Delist
-  let delisted = 0
-  const delistIds = inDelist.map(d => d.existingId)
-  for (let i = 0; i < delistIds.length; i += BATCH) {
-    const slice = delistIds.slice(i, i + BATCH)
-    const { error } = await service.from('products').update({ active: false }).in('id', slice)
-    if (error) return { created: toInsert.length, updated, delisted, skipped, error: `Delist failed: ${error.message}` }
-    delisted += slice.length
+    if (error) return { created: 0, skipped, rejected, rejectedRefs, error: `Insert failed: ${error.message}` }
   }
 
   revalidatePath('/admin/products')
-  return { created: toInsert.length, updated, delisted, skipped, rejected, rejectedRefs }
+  return { created: toInsert.length, skipped, rejected, rejectedRefs, discrepancies, discrepancyRefs }
 }
 
 // ── Standalone product CRUD ──────────────────────────────────────────────────

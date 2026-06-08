@@ -73,10 +73,10 @@ export default function ProductImport() {
       fd.append('sheetModes', JSON.stringify(modes))
       const res = await applyProductImport(fd)
       if (res.error) { setError(res.error); return }
-      const base = t('result', { created: res.created, updated: res.updated, delisted: res.delisted })
-      const parts = [base]
-      if (res.skipped) parts.push(t('result_skipped', { n: res.skipped }))
+      const parts = [t('result_created', { n: res.created })]
+      if (res.discrepancies) parts.push(t('result_discrepancies', { n: res.discrepancies }))
       if (res.rejected) parts.push(t('result_rejected', { n: res.rejected }))
+      if (res.skipped) parts.push(t('result_skipped', { n: res.skipped }))
       setDone(parts.join(' · '))
       setPreview(null)
       router.refresh()
@@ -156,23 +156,19 @@ export default function ProductImport() {
             </div>
           )}
 
-          {/* Counts */}
-          <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+          {/* Counts — the import only CREATES new + VALIDATES existing */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <Stat label={t('stat_new')} value={preview.counts.create} color="text-emerald-600" />
-            <Stat label={t('stat_updated')} value={preview.counts.update} color="text-blue-600" />
+            <Stat label={t('stat_discrepancies')} value={preview.counts.update} color="text-amber-600" />
             <Stat label={t('stat_unchanged')} value={preview.counts.unchanged} color="text-stone-400" />
-            <Stat label={t('stat_delisted')} value={preview.counts.delist} color="text-red-500" />
-            <Stat label={t('stat_pending')} value={preview.counts.pending} color="text-amber-600" />
+            <Stat label={t('stat_pending')} value={preview.counts.pending} color="text-stone-500" />
             <Stat label={t('stat_rejected')} value={preview.counts.rejected} color="text-red-600" />
           </div>
 
           {/* Samples */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <SampleTable title={t('sample_new')} rows={preview.samples.create.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.section])} cols={['colour_id', t('col_style_colour'), t('col_section')]} />
-            <SampleTable title={t('sample_updated')} rows={preview.samples.update.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.changedFields.join(', ')])} cols={['colour_id', t('col_style_colour'), t('col_changed')]} />
-            {preview.samples.delist.length > 0 && (
-              <SampleTable title={t('sample_delist')} rows={preview.samples.delist.map(r => [r.colour_id, r.style_name])} cols={['colour_id', t('col_style')]} />
-            )}
+            <SampleTable title={t('sample_discrepancies')} rows={preview.samples.update.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.changedFields.join(', ')])} cols={['colour_id', t('col_style_colour'), t('col_diff')]} />
             {preview.samples.pending.length > 0 && (
               <SampleTable title={t('sample_pending')} rows={preview.samples.pending.map(r => [r.colour_id, r.stretch ?? '', r.last ?? '', r.outStock ?? ''])} cols={['colour_id', 'STRETCH', 'LAST', 'OUT/STOCK']} />
             )}
@@ -185,12 +181,12 @@ export default function ProductImport() {
           <div className="flex items-center gap-3">
             <button
               onClick={confirm}
-              disabled={applying || (preview.counts.create + preview.counts.update + preview.counts.delist === 0)}
+              disabled={applying || preview.counts.create === 0}
               className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
             >
               {applying ? t('importing') : t('confirm_import')}
             </button>
-            <span className="text-xs text-stone-400">{t('untouched_hint')}</span>
+            <span className="text-xs text-stone-400">{t('validate_hint')}</span>
           </div>
         </>
       )}
