@@ -14,7 +14,7 @@ const PORTAL_STATUS_BADGE: Record<string, string> = {
   cancelled: 'bg-red-50 text-red-500',
 }
 const PORTAL_STATUS_LABEL: Record<string, string> = {
-  draft: 'Draft', submitted: 'Submitted', approved: 'Approved',
+  draft: 'Draft', submitted: 'New', approved: 'Approved',
   in_production: 'In Production', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
 }
 
@@ -115,17 +115,18 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
           {order.piedro_order_id && <p className="text-sm font-semibold text-stone-700 mt-1">Piedro Order: {order.piedro_order_id}</p>}
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${PORTAL_STATUS_BADGE[order.status] ?? 'bg-stone-100 text-stone-500'}`}>
-            {PORTAL_STATUS_LABEL[order.status] ?? order.status}
-          </span>
-          {approvalMeta && (
+          {/* Single current state: production (VSI) > approval (Piedro) > portal status */}
+          {productionMeta ? (
+            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700">
+              {productionMeta.label}
+            </span>
+          ) : approvalMeta && approvalSt !== 'registered' ? (
             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${approvalMeta.color}`}>
               {approvalMeta.label}
             </span>
-          )}
-          {productionMeta && (
-            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700">
-              {productionMeta.label}
+          ) : (
+            <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${PORTAL_STATUS_BADGE[order.status] ?? 'bg-stone-100 text-stone-500'}`}>
+              {PORTAL_STATUS_LABEL[order.status] ?? order.status}
             </span>
           )}
           {order.pdf_url && (

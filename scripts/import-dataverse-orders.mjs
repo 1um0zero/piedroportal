@@ -44,16 +44,28 @@ function decodeUnit(raw) {
 }
 
 // ── Status decode ─────────────────────────────────────────────────────────────
-// Migrated orders are historical: the Piedro Order nº (cr56f_order_piedro) is set by
-// staff at acceptance, so its presence means the order was already approved/processed
-// in the old flow. Only orders without it (registered on the very day of the final
-// import, not yet handled) are genuinely "new" / submitted. Cancelled = statecode 1.
+// Map the Dataverse approval (cr56f_state_approval) and production (cr56f_productionstate)
+// option-sets to our enums (read the FormattedValue label, normalize to snake_case), then
+// derive the portal status. production_state (set by the factory/VSI) is the most current.
+const APPROVAL_VALUES   = new Set(['registered', 'under_analysis', 'approved', 'refused', 'need_attention', 'awaiting_payment'])
+const PRODUCTION_VALUES = new Set(['order_received', 'in_preparation', 'cutting', 'stitching', 'mounting', 'finishing', 'fitting', 'modeling', 'preparing', 'delivered'])
+const norm = (s) => (s == null ? null : String(s).toLowerCase().trim().replace(/\s+/g, '_'))
+
 function decodeStates(o) {
-  if (o.statecode === 1) return { status: 'cancelled', approval_state: 'refused' }
-  const piedroOrder = o.cr56f_order_piedro
-  const hasPiedroOrder = piedroOrder != null && String(piedroOrder).trim() !== ''
-  if (hasPiedroOrder || o.cr56f_state_approval) return { status: 'approved', approval_state: 'approved' }
-  return { status: 'submitted', approval_state: 'registered' }
+  const fv = (f) => o[`${f}@OData.Community.Display.V1.FormattedValue`]
+  let approval = norm(fv('cr56f_state_approval'))
+  if (!APPROVAL_VALUES.has(approval)) approval = 'registered'
+  let production = norm(fv('cr56f_productionstate'))
+  if (!PRODUCTION_VALUES.has(production)) production = null
+
+  let status
+  if (o.statecode === 1 || approval === 'refused') status = 'cancelled'
+  else if (production === 'delivered')              status = 'delivered'
+  else if (production)                              status = 'in_production'
+  else if (approval === 'approved')                status = 'approved'
+  else                                             status = 'submitted'  // new / pending
+
+  return { status, approval_state: approval, production_state: production }
 }
 
 // ── Map additions fields ──────────────────────────────────────────────────────
@@ -135,7 +147,7 @@ console.log('Fetching orders from Dataverse...')
 
 const SELECT = [
   'cr56f_wpp_ordersid','cr56f_name','createdon','modifiedon','statecode',
-  'cr56f_step','cr56f_state_approval','cr56f_order_piedro','cr56f_clinicist','cr56f_patient',
+  'cr56f_step','cr56f_state_approval','cr56f_productionstate','cr56f_order_piedro','cr56f_clinicist','cr56f_patient',
   'cr56f_customerref','cr56f_qty','cr56f_totalpairs','cr56f_shoeunit',
   'cr56f_footsizelf','cr56f_footsizerf','cr56f_comments','cr56f_7urgent',
   '_cr56f_customer_value','_cr56f_style_color_value',
@@ -235,17 +247,19 @@ console.log(`  Step histogram            : ${JSON.stringify(stepHistogram)}`)
 console.log(`  ✓ Expected Supabase count after import = ${recon.kept}\n`)
 
 // ── Map to Supabase ───────────────────────────────────────────────────────────
-const rows = kept.map(o => ({
+const rows = kept.map(o => {
+  const states = decodeStates(o)
+  return {
   id:                 o.cr56f_wpp_ordersid,
   dataverse_id:       o.cr56f_wpp_ordersid,
   // Piedro Order = the NL/UK ERP order nº (staff-filled), gates approval + VSI import.
-  // ⚠️ confirm the exact Dataverse field name before relying on this on re-import.
   piedro_order_id:    o.cr56f_order_piedro ?? null,
   user_id:            null,   // no direct mapping to Supabase auth users
   company_id:         o['_cr56f_customer_value'] ?? null,
   product_id:         o['_cr56f_style_color_value'] ?? null,
-  status:             decodeStates(o).status,
-  approval_state:     decodeStates(o).approval_state,
+  status:             states.status,
+  approval_state:     states.approval_state,
+  production_state:   states.production_state,
   unit:               decodeUnit(o.cr56f_shoeunit),
   clinician:          o.cr56f_clinicist ?? null,
   patient_name:       o.cr56f_patient ?? null,
@@ -258,7 +272,8 @@ const rows = kept.map(o => ({
   imported_at:        new Date().toISOString(),
   created_at:         o.createdon ?? new Date().toISOString(),
   updated_at:         o.modifiedon ?? new Date().toISOString(),
-}))
+  }
+})
 
 // Stats
 const withProduct  = rows.filter(r => r.product_id).length

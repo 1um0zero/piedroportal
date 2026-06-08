@@ -301,29 +301,18 @@ export default function OrdersPage({ orders, metrics, isAdmin, currentUserId, ag
                         <p className="text-xs text-stone-400">{company?.erp_code ?? ''}</p>
                       </td>
                     )}
-                    {/* Status */}
-                    <td className="px-4 py-3 space-y-1">
-                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full
-                                       ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>
-                        {ts.has(o.status) ? ts(o.status) : o.status}
-                      </span>
-                      {/* Approval state badge */}
-                      {o.approval_state && o.approval_state !== 'registered' && (() => {
-                        const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
-                        return a ? (
-                          <span className={`inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full ${a.color}`}>
-                            {ta(a.value)}
-                          </span>
-                        ) : null
-                      })()}
-                      {/* Production state badge */}
-                      {o.production_state && (() => {
-                        const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
-                        return p ? (
-                          <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-50 text-amber-700">
-                            {tp(p.value)}
-                          </span>
-                        ) : null
+                    {/* Status — single current state: production (VSI) > approval (Piedro) > portal status */}
+                    <td className="px-4 py-3">
+                      {(() => {
+                        if (o.production_state) {
+                          const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
+                          return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{p ? tp(p.value) : o.production_state}</span>
+                        }
+                        if (o.approval_state && o.approval_state !== 'registered') {
+                          const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
+                          return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${a?.color ?? 'bg-stone-100 text-stone-500'}`}>{a ? ta(a.value) : o.approval_state}</span>
+                        }
+                        return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>{ts.has(o.status) ? ts(o.status) : o.status}</span>
                       })()}
                     </td>
                     {/* Date — year shown only for orders before the current year */}

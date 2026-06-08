@@ -483,7 +483,7 @@
     },
     "status": {
       "draft": "Brouillon",
-      "submitted": "Soumise",
+      "submitted": "Nouvelle",
       "approved": "Approuvée",
       "in_production": "En production",
       "shipped": "Expédiée",
