@@ -41,12 +41,14 @@ export default async function AdminUsersPage() {
     const existing = ucMap.get(uc.user_id) ?? []
     existing.push({
       company_id: uc.company_id,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       company_name: (uc as any).companies?.name ?? null,
       is_company_admin: uc.is_company_admin,
     })
     ucMap.set(uc.user_id, existing)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const users = (profiles ?? []).map((p: any) => {
     const userCompanies = ucMap.get(p.id) ?? []
     return {

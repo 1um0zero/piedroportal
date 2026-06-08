@@ -28,6 +28,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const cutoff = ageCutoff(age)
 
   const service = createServiceClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let allOrders: any[] = []
   let offset = 0
   const PAGE = 1000

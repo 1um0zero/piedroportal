@@ -26,7 +26,7 @@ export default function PrivacyPage() {
 
       <Section title="2. Who this notice is for">
         <p>
-          The Portal is used by orthopaedic clinics and their clinicians ("users") to order custom-made
+          The Portal is used by orthopaedic clinics and their clinicians (&quot;users&quot;) to order custom-made
           footwear for their patients. This notice covers (a) the personal data of users, and (b) the
           patient data that clinicians enter when placing an order.
         </p>
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Account data (users):</strong> name, email, gender (optional), profile photo, company, role.</li>
           <li><strong>Order &amp; patient data:</strong> patient name/reference, prescribing clinician, and the
-            orthopaedic specification (construction, width, sizes per foot, and "additions" such as insoles,
+            orthopaedic specification (construction, width, sizes per foot, and &quot;additions&quot; such as insoles,
             heel lifts and deformity corrections).</li>
           <li><strong>Technical data:</strong> authentication session cookies and standard server logs.</li>
         </ul>
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
           <li><strong>To provide the ordering service</strong> and manufacture the device — performance of a
             contract / legitimate interests (Art. 6(1)(b)/(f)).</li>
           <li><strong>Health data (Art. 9):</strong> processed on the basis of, e.g., Art. 9(2)(h) (provision of
-            health/social care and medical devices) and/or the patient's explicit consent obtained by the clinic.
+            health/social care and medical devices) and/or the patient&apos;s explicit consent obtained by the clinic.
             <em> [Confirm the applicable Art. 9 condition with legal counsel.]</em></li>
           <li><strong>Account security &amp; legal obligations</strong> (Art. 6(1)(c)).</li>
         </ul>

@@ -317,7 +317,7 @@ export function OrderPdf({
               <View key={sec.label}>
                 <Text style={{ ...s.cardTitle, marginTop: 8, marginBottom: 4 }}>{sec.label}</Text>
                 {sec.filled.map((f, i) => {
-                  const isParent = (f as any).isParent === true
+                  const isParent = (f as { isParent?: boolean }).isParent === true
                   const isChild = f.label.includes('·')
 
                   if (isParent) {

@@ -38,7 +38,7 @@ export default function TermsPage() {
       <Section title="4. Orders">
         <p>
           Orders placed through the Portal are requests for custom-made orthopaedic footwear and are subject to
-          {' '}{LEGAL.tradeName}'s confirmation and applicable commercial agreement. You are responsible for the
+          {' '}{LEGAL.tradeName}&apos;s confirmation and applicable commercial agreement. You are responsible for the
           accuracy of the specifications and patient details you submit.
         </p>
       </Section>

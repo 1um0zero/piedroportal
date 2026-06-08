@@ -32,6 +32,7 @@ export async function getUserCompanies(userId: string): Promise<CompanyWithAdmin
 
   if (error || !data) return []
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map((uc: any) => ({
     id: uc.companies.id,
     name: uc.companies.name,
@@ -92,6 +93,7 @@ export async function getAdminCompanies(userId: string): Promise<CompanyWithAdmi
 
   if (error || !data) return []
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map((uc: any) => ({
     id: uc.companies.id,
     name: uc.companies.name,

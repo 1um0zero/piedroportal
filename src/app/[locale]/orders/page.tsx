@@ -53,6 +53,7 @@ export default async function OrdersRoute() {
     companies(id, name, erp_code)
   `
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let allOrders: any[] = []
   let offset = 0
   const PAGE = 1000

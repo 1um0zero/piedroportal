@@ -360,6 +360,19 @@ replace) the existing chat where the user can already ask specific questions. Us
 - [ ] **21.5** 🤖 **RLS follow-up:** when RLS (migration 002) is enabled/tested, update policies that grant
       `piedro_admin` to also grant `super_admin` (app uses the service client today, so not blocking).
 
+## 22. Code quality: lint gate & cleanup — 🟠 / 🤖  (2026-06-08)
+- [x] **22.1** ✅ **Pre-commit hook** (`.githooks/pre-commit`, wired via package `prepare` →
+      `core.hooksPath`): blocks commits that fail `tsc` or add ESLint **errors** in staged files.
+      Enforces "no new errors". (Fresh clones: run `npm install` once to set the hook path.)
+- [x] **22.2** ✅ **Lint errors → 0** (was 41): fixed unescaped entities, `no-explicit-any`
+      (typed or scoped-disabled for dynamic Supabase rows), etc.
+- [ ] **22.3** **React Compiler rules deferred to warnings** (`set-state-in-effect`,
+      `set-state-in-render`, `refs` — ~25). They flag working code that isn't optimal under the
+      future React Compiler. Refactor them with runtime testing (or adopt React Compiler) then
+      re-enable as errors. · 🤖
+- [ ] **22.4** Mop up the remaining mechanical **warnings** (unused vars/imports, unused
+      expressions, alt-text) so `npm run lint` is fully clean. · 🤖
+
 ## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
 > Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when
 > empty/false (Power Pages form-designer artifact — one checkbox per expandable area). The ERP

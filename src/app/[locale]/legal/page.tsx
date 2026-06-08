@@ -14,7 +14,7 @@ export default function LegalNoticePage() {
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 mb-8">
         <strong>Draft for review.</strong> Complete the placeholders in <code>src/lib/legal-info.ts</code> with
-        Piedro's registration details before publication.
+        Piedro&apos;s registration details before publication.
       </div>
 
       <dl className="text-sm text-stone-700 space-y-3">

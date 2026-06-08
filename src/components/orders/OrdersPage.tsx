@@ -25,6 +25,7 @@ const STATUS_STYLES: Record<string, string> = {
 const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
 type Props = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   orders: any[]
   isAdmin: boolean
   currentUserId?: string
@@ -43,7 +44,7 @@ const PENDING_STATES = new Set(['under_analysis', 'need_attention', 'awaiting_pa
 const isUrgent = (o: { additions?: { urgent?: boolean } | null }) => o.additions?.urgent === true
 
 // Whether an order carries at least one filled addition.
-function hasAdditions(adds: Record<string, any> | null | undefined): boolean {
+function hasAdditions(adds: Record<string, unknown> | null | undefined): boolean {
   if (!adds) return false
   for (const v of Object.values(adds)) {
     if (v === null || v === undefined || v === '' || v === false) continue
