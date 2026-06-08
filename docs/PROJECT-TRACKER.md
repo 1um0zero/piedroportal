@@ -43,8 +43,11 @@ Last updated: 2026-06-06.
 - [ ] **3.4** Rebuild from Dataverse in order (each `--dry-run` first) · 👥
   - [ ] 3.4.a `import-accounts.mjs` → companies · 👤 run
   - [ ] 3.4.b `dataverse-import.mjs` → products · 👤 run
-  - [ ] 3.4.c `import-dataverse-orders.mjs` → orders (**step-3 only**, **TESTES\*** excluded) ✅ built · 👤 run
-- [ ] **3.5** **Reconciliation**: `count(*) orders` == script's "expected = kept" · 👥
+  - [x] 3.4.c `import-dataverse-orders.mjs` → orders ✅ **run 2026-06-08** (wipe 3832 → import 3107 step-3,
+        TESTES*/non-step-3 excluded). All corrections applied: piedro_order_id from cr56f_order_piedro,
+        option-sets as FormattedValue labels (no codes), and correct status/approval (approved 3105 /
+        submitted 2 — fixes the bogus ~920 "submitted").
+- [x] **3.5** **Reconciliation**: count = 3107 == expected (kept). ✅
 - [ ] **3.6** Re-create portal-only data not in Dataverse: branches, exclusive labels, company_admins · 👤 *(Q3.3)*
 - [ ] **3.7** ~~Import legacy order PDFs~~ **DEFERRED (Q11.3)**: in SharePoint via a `pdf_link` column,
       not all filled — "esquecer isto para já". Revisit post-launch. · 🟡
