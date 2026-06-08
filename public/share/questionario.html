@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Piedro Portal — Launch Questionnaire</title>
+<style>
+  :root{--gold:#B8975A;--gold-dark:#9A7A42;--ink:#1c1917;--stone:#44403c;--stone-l:#a8a29e;--line:#e7e5e4;--bg:#faf8f4}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;margin:0}
+  .page{max-width:820px;margin:0 auto;padding:40px 28px 80px}
+  .back{display:inline-block;margin-bottom:22px;font-size:13px;color:var(--gold-dark);text-decoration:none}
+  .back:hover{text-decoration:underline}
+  .doc h1{font-size:26px;font-weight:800;letter-spacing:-.4px;margin:.2em 0 .5em;border-bottom:3px solid var(--gold);padding-bottom:.3em}
+  .doc h2{font-size:18px;font-weight:800;color:var(--gold-dark);margin:1.6em 0 .5em}
+  .doc h3{font-size:15px;font-weight:700;margin:1.2em 0 .4em}
+  .doc p{margin:.6em 0;color:var(--stone)}
+  .doc ul,.doc ol{margin:.5em 0 .8em;padding-left:1.4em}
+  .doc li{margin:.3em 0;color:var(--stone)}
+  .doc a{color:var(--gold-dark)}
+  .doc code{background:#f3ecdd;color:var(--gold-dark);padding:1px 5px;border-radius:5px;font-size:.88em}
+  .doc pre{background:#1c1917;color:#fafaf9;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px}
+  .doc pre code{background:none;color:inherit;padding:0}
+  .doc blockquote{border-left:3px solid var(--gold);margin:.8em 0;padding:.2em 0 .2em 14px;color:var(--stone-l);font-style:italic}
+  .doc table{border-collapse:collapse;width:100%;margin:1em 0;font-size:13.5px}
+  .doc th,.doc td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  .doc th{background:#f3ecdd;color:var(--gold-dark)}
+  .doc hr{border:none;border-top:1px solid var(--line);margin:1.6em 0}
+  .doc strong{color:var(--ink)}
+  @media print{body{background:#fff}.back{display:none}}
+</style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="/share/index.html">← Admin docs</a>
+    <article class="doc">
+<h1>Piedro Portal — Launch Validation Questionnaire</h1>
+<p>Fill in answers inline (after each <code>→</code>). Each maps to a roadmap item. Anything you don&#39;t know yet,
+mark <code>?</code> so we can chase it. Drafted 2026-06-06.</p>
+<hr>
+<h2>1. Domain, DNS &amp; hosting</h2>
+<ul>
+<li><strong>Q1.1</strong> What is the production domain, and is it already registered? (e.g. <code>portal.piedro.com</code>)
+→ atualmente está associado a portal.piedro.pt, mas chega-se ao portal atual através de um link em piedro.com, portanto: piedro.pt tem se ser ajustado e eles têm de ajustar o link no site deles, depois vou querer configurar o piedro.com para redirecionar para cá </li>
+<li><strong>Q1.2</strong> Who controls the DNS for that domain (registrar name / Cloudflare / Piedro IT)? Can you add
+records this weekend?
+→ respondi acima, no piedro.pt eu controlo e posso colocar um redirecionador no power pages para mandar para cá tudo o que chegar lá, até me podes ajudar a fazer isso</li>
+<li><strong>Q1.3</strong> When you said &quot;DDNS to update&quot; — what exactly? Is there an on-prem machine (the a-shell/ERP
+host?) behind a dynamic IP that needs a DDNS updater, or did you mean the portal&#39;s DNS records?
+→ esquece isto, já respondi acima</li>
+<li><strong>Q1.4</strong> Keep the old Power Pages URL alive as a redirect to the new portal, or take it down?
+→ vou mantê-la viva mas em background para validar dados importados e, até encomendas, aliás, importante: os PDF que existam lá têm de ser importados e associado o novo esquema de link seguro (é meio out of topic, mas é para não me esquecer de te dizer isto)</li>
+</ul>
+<h2>2. Environment &amp; region</h2>
+<ul>
+<li><strong>Q2.1</strong> Are these set in <strong>Vercel production</strong> env (yes/no each): Supabase URL + anon + service key,
+<code>RESEND_API_KEY</code>, <code>EMAIL_FROM</code>, <code>ANTHROPIC_API_KEY</code>, Dataverse creds?
+→ sim</li>
+<li><strong>Q2.2</strong> Which <strong>region</strong> is the Supabase project in? (must be EU for patient data)
+→ ireland (penso eu)</li>
+</ul>
+<h2>3. Data wipe &amp; rebuild</h2>
+<ul>
+<li><strong>Q3.1</strong> Confirm what counts as <strong>test data</strong> to destroy: orders? test users? test companies?
+Should product images already in the <code>products</code> bucket be kept? Wipe all <code>order-pdfs</code>?
+→ está respondido mais abaixo</li>
+<li><strong>Q3.2</strong> Which of migrations <strong>001–005</strong> have already been run in the <strong>production</strong> Supabase?
+→ está tudo feito</li>
+<li><strong>Q3.3</strong> Portal-only data that is NOT in Dataverse and must be re-created after rebuild: which
+<strong>branches</strong> exist, which <strong>exclusive labels</strong> map to which companies, and who is <strong>company_admin</strong>?
+→ acho que já respondi mais abaixo</li>
+<li><strong>Q3.4</strong> Is it safe to assume Dataverse GUIDs stay the primary keys (so re-imports are idempotent)?
+→ acho que sim</li>
+</ul>
+<h2>4. User migration</h2>
+<ul>
+<li><strong>Q4.1</strong> How do we know <strong>which contact is the company_admin</strong> of each clinic? (a Dataverse field?
+web role? primary contact? you tell me per account?)
+→ é selecionado por um admin na ficha do company</li>
+<li><strong>Q4.2</strong> What to do with contacts that have <strong>no email</strong> or share an email with another contact?
+→ não é suposto haver users sem email porque no power platform era obrigatório no login e não permitia repetidos, se aparecer algum nessas circunstâncias reporta </li>
+<li><strong>Q4.3</strong> Do you want migrated old orders <strong>linked back to their user</strong> (backfill <code>orders.user_id</code>),
+or is company-level linkage enough?
+→ quero <strong>linked back to their user</strong> </li>
+<li><strong>Q4.4</strong> Who needs <strong><code>piedro_admin</code></strong> (full back-office) and who needs <strong><code>branch_staff</code></strong> accounts,
+and for which branches?
+→ ?????</li>
+<li><strong>Q4.5</strong> Roughly how many users/contacts and how many companies are we migrating?
+→ creio que uns 340 users e umas 200 companies</li>
+</ul>
+<h2>5. Email</h2>
+<ul>
+<li><strong>Q5.1</strong> What is the verified Piedro <strong>sending domain/address</strong> for Resend (e.g. <code>noreply@piedro.com</code>)?
+Is the domain already verified in Resend?
+→ eu tenho de verificar, mas pode começar com piedro.pt e depois vai como piedro.com</li>
+</ul>
+<h2>6. ERP / a-shell integration  ← the part you most want help with</h2>
+<ul>
+<li><strong>Q6.1</strong> Architecture choice: <strong>(A)</strong> portal writes orders back into Dataverse and a-shell stays as
+is; or <strong>(B)</strong> a-shell reads orders directly from the new portal/Supabase (recommended). Which?
+→ b) só devemos considerar a) como emergência no caso de não conseguirmos resolver de outra maneira e começar a acumular encomendas online para serem tratadas no ERP </li>
+<li><strong>Q6.2</strong> <strong>The flaws in the current Dataverse→a-shell import you want gone.</strong> List them — e.g.
+duplicate imports, wrong/missing additions, manual steps, field mismatches, timing/polling issues,
+encoding, sided L/R confusion, etc.
+→ as additions nem sempre são descarregadas e obriga a uma segunda validação e o processo é muito mal desenhado, não tive nenhuma ajuda para a sua implementação, então, basicamente descarrego muita informação e valido do lado do ERP o que torna o processo lento e falível, no sentido contrário, porque o ERP também atualiza o estado de produção no portal, há muitas vezes erros de atualização e nem sei onde está o problema</li>
+<li><strong>Q6.3</strong> How does a-shell <strong>pull and authenticate</strong> today against the Dataverse API (polling
+interval? OAuth? a specific user?) and can its import code be changed before Monday?
+→ eu tenho total controlo sob o código do ERP, a importação é por ordem manual e baseada num token com chamadas html</li>
+<li><strong>Q6.4</strong> Does a-shell need to <strong>send status back</strong> to the portal (e.g. in production / shipped), or
+is it one-way (portal → ERP)?
+→ sim, disse-o acima</li>
+<li><strong>Q6.5</strong> What is the <strong>minimum order data a-shell needs</strong> to create a production order? (so we design
+a tight export contract instead of dumping everything)
+→ não entendi como mínimo, eu quero todas as encomendas registadas e aprovadas com todos os dados</li>
+<li><strong>Q6.6</strong> Acceptable if, on Monday, ERP gets orders via a <strong>temporary bridge / manual export</strong> while
+the clean integration is finished in week 1? (yes/no)
+→ yes</li>
+</ul>
+<h2>7. Customer communication</h2>
+<ul>
+<li><strong>Q7.1</strong> Who announces the new portal, through what channel, and when? (email blast / account
+managers / banner on old portal)
+→ vou decidir isso na 2ª feira com a Piedro</li>
+<li><strong>Q7.2</strong> What&#39;s the <strong>support channel</strong> during the first week and who is on call?
+→ o staff da Piedro na NL, mas o chat deverá prestar todos os esclarecimentos de utilização</li>
+<li><strong>Q7.3</strong> Want me to <strong>draft</strong> the customer announcement + first-login instructions in NL/EN/FR/DE?
+→ para já não</li>
+</ul>
+<h2>8. Compliance / legal</h2>
+<ul>
+<li><strong>Q8.1</strong> Do you have final content for <strong>Privacy Policy / Terms / Impressum</strong> (currently placeholders)?
+→ acho que já me deste tudo o que a Piedro tem de preencher, vou enviar para eles</li>
+<li><strong>Q8.2</strong> Are <strong>DPAs</strong> in place with Supabase, Vercel, Resend, <strong>Anthropic</strong>? If Anthropic isn&#39;t
+covered, should the <strong>in-app chat be disabled</strong> at launch (it sends patient data to the US)?
+→ vou garantir isso</li>
+<li><strong>Q8.3</strong> The compliance docs (<code>docs/compliance/*</code>) and legal page texts (<code>src/lib/legal-info.ts</code>)
+are <strong>AI-drafted, not certified</strong>. Who is the <strong>DPO / legal counsel</strong> that will review and certify
+them, and is that review booked before Monday? (We cannot publish uncertified legal text.)
+→ vou garantir isso</li>
+</ul>
+<h2>9. Operations &amp; risk</h2>
+<ul>
+<li><strong>Q9.1</strong> Is there a <strong>maintenance/freeze window</strong> you can impose on the old portal during cutover?
+→ sim</li>
+<li><strong>Q9.2</strong> Who fixes issues on <strong>Monday</strong> (you, me on standby, Piedro IT)?
+→ we all</li>
+<li><strong>Q9.3</strong> If something goes wrong, is a <strong>soft launch</strong> (limited clinics first) acceptable, or is it
+all-or-nothing on Monday?
+→ all-or-nothing</li>
+</ul>
+<h2>10. Scope vs. timeline (the honest one)</h2>
+<ul>
+<li><strong>Q10.1</strong> Given ~2 days, what is the <strong>true must-have</strong> for Monday vs. acceptable as week-1
+fast-follow? Rank: user migration · ERP integration · data rebuild · compliance · comms.
+→ vamos fazer o máximo e vai dar certo, mas a ERP integration é o final</li>
+</ul>
+<h2>11. Data import rules (confirm)</h2>
+<ul>
+<li><strong>Q11.1</strong> Confirm &quot;confirmed order&quot; = <strong><code>cr56f_step</code> equals 3</strong> (the import now imports only step 3;
+earlier steps are counted but not imported). Is <code>3</code> the right literal value?
+→ sim &quot;3&quot; ou numeral 3</li>
+<li><strong>Q11.2</strong> Confirm the <strong>test client</strong> to exclude is matched by account <strong>name starting with
+&quot;TESTES&quot;</strong> (case-insensitive). Any other test accounts to exclude?
+→ name=&quot;TESTES*****&quot;</li>
+<li><strong>Q11.3</strong> (from your Q1.4 note) The <strong>order PDFs already stored in Power Pages/Dataverse</strong> must be
+imported and re-linked to the new private-bucket + signed-URL scheme. Where do they live in
+Dataverse (annotation/note attachments on the order? a SharePoint/blob? a field URL?) so I can
+write the importer?
+→ estão no sharepoint, tem uma coluna pdf_link, mas nem todas estão preenchidas, podemos esquecer isto para já</li>
+</ul>
+
+    </article>
+  </div>
+</body>
+</html>

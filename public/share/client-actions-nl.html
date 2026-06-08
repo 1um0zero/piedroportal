@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Piedro Portal — Actielijst klant (NL)</title>
+<style>
+  :root{--gold:#B8975A;--gold-dark:#9A7A42;--ink:#1c1917;--stone:#44403c;--stone-l:#a8a29e;--line:#e7e5e4;--bg:#faf8f4}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;margin:0}
+  .page{max-width:820px;margin:0 auto;padding:40px 28px 80px}
+  .back{display:inline-block;margin-bottom:22px;font-size:13px;color:var(--gold-dark);text-decoration:none}
+  .back:hover{text-decoration:underline}
+  .doc h1{font-size:26px;font-weight:800;letter-spacing:-.4px;margin:.2em 0 .5em;border-bottom:3px solid var(--gold);padding-bottom:.3em}
+  .doc h2{font-size:18px;font-weight:800;color:var(--gold-dark);margin:1.6em 0 .5em}
+  .doc h3{font-size:15px;font-weight:700;margin:1.2em 0 .4em}
+  .doc p{margin:.6em 0;color:var(--stone)}
+  .doc ul,.doc ol{margin:.5em 0 .8em;padding-left:1.4em}
+  .doc li{margin:.3em 0;color:var(--stone)}
+  .doc a{color:var(--gold-dark)}
+  .doc code{background:#f3ecdd;color:var(--gold-dark);padding:1px 5px;border-radius:5px;font-size:.88em}
+  .doc pre{background:#1c1917;color:#fafaf9;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px}
+  .doc pre code{background:none;color:inherit;padding:0}
+  .doc blockquote{border-left:3px solid var(--gold);margin:.8em 0;padding:.2em 0 .2em 14px;color:var(--stone-l);font-style:italic}
+  .doc table{border-collapse:collapse;width:100%;margin:1em 0;font-size:13.5px}
+  .doc th,.doc td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  .doc th{background:#f3ecdd;color:var(--gold-dark)}
+  .doc hr{border:none;border-top:1px solid var(--line);margin:1.6em 0}
+  .doc strong{color:var(--ink)}
+  @media print{body{background:#fff}.back{display:none}}
+</style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="/share/index.html">← Admin docs</a>
+    <article class="doc">
+<h1>Piedro Portal — Actielijst voor de klant (voor het ISO 13485-dossier)</h1>
+<p><strong>Bijlage bij:</strong> <code>COMPLIANCE-REPORT.md</code>
+<strong>Datum:</strong> 2026-06-04
+<strong>Doel:</strong> Alles wat van Piedro (de klant) afhangt om de Portal productieklaar en juridisch conform te maken. Het ontwikkelteam heeft de technische maatregelen in §1 al geïmplementeerd; de onderstaande punten vereisen commerciële, juridische, configuratie- of operationele beslissingen van Piedro.</p>
+<blockquote>
+<p>Legenda — <strong>P0</strong> = vereist vóór livegang · <strong>P1</strong> = kort na livegang · <strong>P2</strong> = doorlopend.</p>
+</blockquote>
+<hr>
+<h2>Reeds geïmplementeerd door het ontwikkelteam ✅</h2>
+<ul>
+<li>Bedrijfslidmaatschapsmodel geünificeerd; toegang tot het bestelproces hersteld.</li>
+<li>Aanmaken van bestellingen verstevigd (server-side validatie van bedrijfseigendom en status).</li>
+<li>Een niet-geauthenticeerd e-mail-endpoint verwijderd; het PDF-voorbeeld-endpoint geauthenticeerd.</li>
+<li>HTML-escaping van alle patiënt-/kliniekwaarden in e-mails.</li>
+<li>Beveiligingsheaders + Content-Security-Policy; portal uitgesloten van zoekmachines (<code>robots.txt</code>, <code>noindex</code>).</li>
+<li>Profielupdates verplaatst naar een server action met een veld-whitelist (geen zelf-escalatie van rol).</li>
+<li>Juridische pagina&#39;s opgezet: <strong>Privacybeleid</strong>, <strong>Gebruiksvoorwaarden</strong>, <strong>Juridische kennisgeving</strong>, plus footer, tabel met subverwerkers en een melding over essentiële cookies.</li>
+<li>Row-Level Security-beleid voor de database voorbereid (<code>migrations/002_rls_policies.sql</code>).</li>
+<li>E-mailclient bestand tegen ontbrekende configuratie.</li>
+</ul>
+<hr>
+<h2>1. Gegevensbescherming &amp; contracten (juridisch / FG)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Prioriteit</th>
+<th>Actie</th>
+<th>Waarom</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>P0</strong></td>
+<td><strong>Onderteken en archiveer verwerkersovereenkomsten (DPA&#39;s)</strong> met Vercel, Supabase, Resend en Anthropic.</td>
+<td>AVG art. 28; ISO 13485 leveranciersbeheer (7.4). Bewijs voor het dossier.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>P0</strong></td>
+<td><strong>Anthropic (AI-assistent) verwerkt patiëntgegevens die naar de VS worden gestuurd.</strong> Onderteken de DPA van Anthropic <strong>en activeer zero-data-retention</strong>, óf laat ons de assistent beperken zodat hij geen patiëntidentificatie toont, óf maak hem opt-in per kliniek.</td>
+<td>Art. 9 gezondheidsgegevens + internationale doorgifte.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>P0</strong></td>
+<td><strong>Resend (e-mail) stuurt patiënt-PDF&#39;s naar de VS.</strong> Bevestig DPA + doorgiftemechanisme en <strong>verifieer een eigen verzenddomein van Piedro</strong> (DNS-records); stel daarna de variabele <code>EMAIL_FROM</code> in. Het huidige afzenderadres is een niet-bezorgbaar testadres.</td>
+<td>Bezorgbaarheid + doorgifteconformiteit.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>P0</strong></td>
+<td><strong>Voer een DPIA uit</strong> (gegevensbeschermingseffectbeoordeling).</td>
+<td>Art. 35 — waarschijnlijk verplicht bij grootschalige gezondheidsgegevens.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>P0</strong></td>
+<td><strong>Bepaal de verwerkingsverantwoordelijke / verwerker-relatie</strong> met klinieken en stel een <strong>DPA-sjabloon</strong> voor hen op.</td>
+<td>Bepaalt rechtsgrond &amp; verantwoordelijkheden.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>P1</strong></td>
+<td>Maak het <strong>verwerkingsregister (ROPA)</strong>, een <strong>procedure voor datalekken</strong> (melding binnen 72 uur), een <strong>procedure voor rechten van betrokkenen</strong> en een <strong>bewaarschema</strong> dat de 10-jarige bewaarplicht voor hulpmiddeldossiers afweegt tegen de AVG-opslagbeperking.</td>
+<td>Art. 30/33/34; ISO documentbeheer.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>P0</strong></td>
+<td><strong>Laat een jurist</strong> het Privacybeleid, de Voorwaarden en de Juridische kennisgeving <strong>beoordelen</strong> en <strong>vertaal ze (NL/FR/DE)</strong>.</td>
+<td>De pagina&#39;s in de app zijn Engelse concepten met placeholders.</td>
+</tr>
+</tbody></table>
+<h2>2. Configuratie &amp; hosting (Piedro / ontwikkeling samen)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Prioriteit</th>
+<th>Actie</th>
+<th>Waarom</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>8</td>
+<td><strong>P0</strong></td>
+<td><strong>Bevestig dat het Supabase-project in een EU-regio staat</strong> (bijv. Frankfurt). Zo niet, plan een migratie.</td>
+<td>Datalocatie gezondheidsgegevens.</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>P0</strong></td>
+<td><strong>Vul de placeholders in <code>src/lib/legal-info.ts</code></strong>: juridische naam, vestigingsadres, KvK-nummer, btw-nummer, telefoon, contact-e-mail, FG-e-mail, ISO 13485-certificaatnummer.</td>
+<td>Voedt de juridische pagina&#39;s &amp; footer.</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>P0</strong></td>
+<td><strong>Stel de productie-omgevingsvariabelen</strong> in Vercel in: <code>EMAIL_FROM</code>, <code>ORDER_NOTIFY_EMAIL</code>, <code>ADMIN_NOTIFY_EMAIL</code>, <code>NEXT_PUBLIC_CONTACT_EMAIL</code>, <code>NEXT_PUBLIC_DPO_EMAIL</code>, <code>NEXT_PUBLIC_SITE_URL</code>, <code>SUPABASE_WEBHOOK_SECRET</code>.</td>
+<td>Vervangt hard-coded testwaarden.</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>P0</strong></td>
+<td><strong>Voer <code>migrations/002_rls_policies.sql</code></strong> uit in een staging-/branch-database, test de volledige app en pas het daarna toe op productie.</td>
+<td>Defence-in-depth (RLS).</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>P0</strong></td>
+<td><strong>Zet de <code>order-pdfs</code>-opslag-bucket op Privé</strong> in Supabase. <em>(In code gedaan: de app levert PDF&#39;s nu uitsluitend via kortlevende ondertekende URL&#39;s.)</em> Zolang de bucket openbaar blijft, blijven de objecten via URL bereikbaar.</td>
+<td>Patiëntgegevens mogen niet openbaar bereikbaar zijn.</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>P1</strong></td>
+<td><strong>Activeer MFA</strong> voor <code>piedro_admin</code>-accounts en bevestig het <strong>wachtwoordbeleid</strong> van Supabase.</td>
+<td>Bescherming van bevoorrechte accounts.</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>P2</strong></td>
+<td><strong>Voorzie rate limiting</strong> (Vercel/Upstash) voor inloggen en de AI-assistent.</td>
+<td>Brute force / kostenmisbruik.</td>
+</tr>
+</tbody></table>
+<h2>3. Back-up, continuïteit &amp; assurance (Piedro / operations)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Prioriteit</th>
+<th>Actie</th>
+<th>Waarom</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>15</td>
+<td><strong>P0</strong></td>
+<td><strong>Bevestig het Supabase-abonnement en activeer Point-in-Time Recovery (PITR)</strong>; documenteer <strong>RPO/RTO</strong>; plan en <strong>registreer een testherstel</strong>.</td>
+<td>ISO-bewaarplicht; auditors eisen bewijs dat back-ups werken.</td>
+</tr>
+<tr>
+<td>16</td>
+<td><strong>P1</strong></td>
+<td>Definieer een back-up-/exportroutine voor de <strong>opslag-buckets</strong> (PDF&#39;s, afbeeldingen).</td>
+<td>Dossiers moeten provider-incidenten overleven.</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>P1</strong></td>
+<td>Schrijf een beknopt <strong>uitwijkplan (disaster recovery)</strong> (provider-uitval, gegevensverlies, sleutelcompromittering).</td>
+<td>Bedrijfscontinuïteit.</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>P1</strong></td>
+<td>Laat vóór livegang een onafhankelijke <strong>penetratietest</strong> uitvoeren (jaarlijks herhalen).</td>
+<td>Onafhankelijke assurance.</td>
+</tr>
+</tbody></table>
+<h2>4. Branding &amp; keurmerken</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Prioriteit</th>
+<th>Actie</th>
+<th>Waarom</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>19</td>
+<td><strong>P1</strong></td>
+<td><strong>Bevestig het gebruik van het ISO 13485-keurmerk</strong> met uw certificeringsinstantie (keurmerk + certificaatnummer, volgens hun regels).</td>
+<td>Het keurmerk is eigendom van de certificeerder.</td>
+</tr>
+<tr>
+<td>20</td>
+<td><strong>P2</strong></td>
+<td>Plaats <strong>geen</strong> CE/UKCA-markering op de Portal-UI — die hoort op het schoeisel en de documentatie.</td>
+<td>Voorkom de suggestie dat de software een CE-gemarkeerd hulpmiddel is.</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Documenten op te nemen in het ISO-dossier</h3>
+<p><code>COMPLIANCE-REPORT.md</code> (het rapport), deze actielijst, de ondertekende DPA&#39;s van subverwerkers, de DPIA, de ROPA, het bewijs van back-up/herstel, de softwarevalidatie-records (zie rapport §4) en het penetratietestrapport.</p>
+<p><em>Geen juridisch advies — te beoordelen door een FG / juridisch adviseur.</em></p>
+
+    </article>
+  </div>
+</body>
+</html>

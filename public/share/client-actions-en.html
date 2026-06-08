@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Piedro Portal — Client Action List (EN)</title>
+<style>
+  :root{--gold:#B8975A;--gold-dark:#9A7A42;--ink:#1c1917;--stone:#44403c;--stone-l:#a8a29e;--line:#e7e5e4;--bg:#faf8f4}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;margin:0}
+  .page{max-width:820px;margin:0 auto;padding:40px 28px 80px}
+  .back{display:inline-block;margin-bottom:22px;font-size:13px;color:var(--gold-dark);text-decoration:none}
+  .back:hover{text-decoration:underline}
+  .doc h1{font-size:26px;font-weight:800;letter-spacing:-.4px;margin:.2em 0 .5em;border-bottom:3px solid var(--gold);padding-bottom:.3em}
+  .doc h2{font-size:18px;font-weight:800;color:var(--gold-dark);margin:1.6em 0 .5em}
+  .doc h3{font-size:15px;font-weight:700;margin:1.2em 0 .4em}
+  .doc p{margin:.6em 0;color:var(--stone)}
+  .doc ul,.doc ol{margin:.5em 0 .8em;padding-left:1.4em}
+  .doc li{margin:.3em 0;color:var(--stone)}
+  .doc a{color:var(--gold-dark)}
+  .doc code{background:#f3ecdd;color:var(--gold-dark);padding:1px 5px;border-radius:5px;font-size:.88em}
+  .doc pre{background:#1c1917;color:#fafaf9;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px}
+  .doc pre code{background:none;color:inherit;padding:0}
+  .doc blockquote{border-left:3px solid var(--gold);margin:.8em 0;padding:.2em 0 .2em 14px;color:var(--stone-l);font-style:italic}
+  .doc table{border-collapse:collapse;width:100%;margin:1em 0;font-size:13.5px}
+  .doc th,.doc td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  .doc th{background:#f3ecdd;color:var(--gold-dark)}
+  .doc hr{border:none;border-top:1px solid var(--line);margin:1.6em 0}
+  .doc strong{color:var(--ink)}
+  @media print{body{background:#fff}.back{display:none}}
+</style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="/share/index.html">← Admin docs</a>
+    <article class="doc">
+<h1>Piedro Portal — Client Action List (for the ISO 13485 dossier)</h1>
+<p><strong>Companion to:</strong> <code>COMPLIANCE-REPORT.md</code>
+<strong>Date:</strong> 2026-06-04
+<strong>Purpose:</strong> Everything that depends on Piedro (the client) to make the Portal production-ready and legally compliant. The engineering team has already implemented the technical controls listed in §1; the items below require commercial, legal, configuration or operational decisions by Piedro.</p>
+<blockquote>
+<p>Legend — <strong>P0</strong> = required before go-live · <strong>P1</strong> = shortly after launch · <strong>P2</strong> = ongoing.</p>
+</blockquote>
+<hr>
+<h2>Already implemented by the engineering team ✅</h2>
+<ul>
+<li>Company-membership model unified; order flow access fixed.</li>
+<li>Order creation hardened (server-side company-ownership and status validation).</li>
+<li>Removed an unauthenticated email endpoint; authenticated the PDF-preview endpoint.</li>
+<li>HTML-escaping of all patient/clinic values in emails.</li>
+<li>Security headers + Content-Security-Policy; portal excluded from search engines (<code>robots.txt</code>, <code>noindex</code>).</li>
+<li>Profile updates moved to a server action with a field whitelist (no role self-escalation).</li>
+<li>Legal pages scaffolded: <strong>Privacy Policy</strong>, <strong>Terms of Use</strong>, <strong>Legal Notice</strong>, plus footer, sub-processor table and an essential-cookies notice.</li>
+<li>Database Row-Level Security policies prepared (<code>migrations/002_rls_policies.sql</code>).</li>
+<li>Email client hardened against missing configuration.</li>
+</ul>
+<hr>
+<h2>1. Data-protection &amp; contracts (legal / DPO)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Priority</th>
+<th>Action</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>P0</strong></td>
+<td><strong>Sign and file Data Processing Agreements (DPAs)</strong> with Vercel, Supabase, Resend and Anthropic.</td>
+<td>GDPR Art. 28; ISO 13485 supplier control (7.4). Evidence for the dossier.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>P0</strong></td>
+<td><strong>Anthropic (AI assistant) handles patient data sent to the US.</strong> Either sign Anthropic&#39;s DPA <strong>and enable zero-data-retention</strong>, or instruct us to restrict the assistant so it does not expose patient identifiers, or make it opt-in per clinic.</td>
+<td>Art. 9 health data + international transfer.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>P0</strong></td>
+<td><strong>Resend (email) sends patient PDFs to the US.</strong> Confirm DPA + transfer mechanism, and <strong>verify a Piedro-owned sender domain</strong> (DNS records); then set the <code>EMAIL_FROM</code> variable. Current sender is a non-deliverable test address.</td>
+<td>Deliverability + transfer compliance.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>P0</strong></td>
+<td><strong>Carry out a DPIA</strong> (Data Protection Impact Assessment).</td>
+<td>Art. 35 — likely mandatory for large-scale health data.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>P0</strong></td>
+<td><strong>Decide the controller / processor relationship</strong> with clinics and put a <strong>DPA template</strong> in place for them.</td>
+<td>Determines lawful basis &amp; responsibilities.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>P1</strong></td>
+<td>Create the <strong>Records of Processing Activities (ROPA)</strong>, a <strong>breach-response procedure</strong> (72-hour notification), a <strong>data-subject-rights procedure</strong>, and a <strong>retention schedule</strong> balancing the 10-year device-record duty against GDPR storage limitation.</td>
+<td>Art. 30/33/34; ISO record control.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>P0</strong></td>
+<td><strong>Have legal counsel review</strong> the Privacy Policy, Terms and Legal Notice, then <strong>translate them (NL/FR/DE)</strong>.</td>
+<td>The in-app pages are English drafts with placeholders.</td>
+</tr>
+</tbody></table>
+<h2>2. Configuration &amp; hosting (Piedro / engineering together)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Priority</th>
+<th>Action</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>8</td>
+<td><strong>P0</strong></td>
+<td><strong>Confirm the Supabase project is in an EU region</strong> (e.g. Frankfurt). If not, plan a migration.</td>
+<td>Health-data residency.</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>P0</strong></td>
+<td><strong>Fill the placeholders in <code>src/lib/legal-info.ts</code></strong>: legal name, registered address, KvK number, VAT/BTW, phone, contact email, DPO email, ISO 13485 certificate number.</td>
+<td>Powers the legal pages &amp; footer.</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>P0</strong></td>
+<td><strong>Set the production environment variables</strong> in Vercel: <code>EMAIL_FROM</code>, <code>ORDER_NOTIFY_EMAIL</code>, <code>ADMIN_NOTIFY_EMAIL</code>, <code>NEXT_PUBLIC_CONTACT_EMAIL</code>, <code>NEXT_PUBLIC_DPO_EMAIL</code>, <code>NEXT_PUBLIC_SITE_URL</code>, <code>SUPABASE_WEBHOOK_SECRET</code>.</td>
+<td>Replaces hard-coded test fallbacks.</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>P0</strong></td>
+<td><strong>Run <code>migrations/002_rls_policies.sql</code></strong> in a staging/branch database, test the full app, then apply to production.</td>
+<td>Defence-in-depth (RLS).</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>P0</strong></td>
+<td><strong>Set the <code>order-pdfs</code> Storage bucket to Private</strong> in Supabase. <em>(Done in code: the app now serves PDFs only through short-lived signed URLs.)</em> While the bucket stays public the objects remain reachable by URL.</td>
+<td>Patient data must not be publicly reachable.</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>P1</strong></td>
+<td><strong>Enable MFA</strong> for <code>piedro_admin</code> accounts and confirm the Supabase <strong>password policy</strong>.</td>
+<td>Privileged-account protection.</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>P2</strong></td>
+<td><strong>Provision rate limiting</strong> (Vercel/Upstash) for login and the AI assistant.</td>
+<td>Brute-force / cost abuse.</td>
+</tr>
+</tbody></table>
+<h2>3. Backup, continuity &amp; assurance (Piedro / operations)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Priority</th>
+<th>Action</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>15</td>
+<td><strong>P0</strong></td>
+<td><strong>Confirm the Supabase plan and enable Point-in-Time Recovery (PITR)</strong>; document <strong>RPO/RTO</strong>; schedule and <strong>record a test restore</strong>.</td>
+<td>ISO record retention; auditors require evidence backups work.</td>
+</tr>
+<tr>
+<td>16</td>
+<td><strong>P1</strong></td>
+<td>Define a backup/export routine for the <strong>storage buckets</strong> (PDFs, images).</td>
+<td>Records must survive provider issues.</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>P1</strong></td>
+<td>Write a short <strong>disaster-recovery plan</strong> (provider outage, data loss, key compromise).</td>
+<td>Business continuity.</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>P1</strong></td>
+<td>Commission an independent <strong>penetration test</strong> before go-live (repeat annually).</td>
+<td>Independent assurance.</td>
+</tr>
+</tbody></table>
+<h2>4. Branding &amp; marks</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Priority</th>
+<th>Action</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>19</td>
+<td><strong>P1</strong></td>
+<td><strong>Confirm ISO 13485 mark usage</strong> with your certification body (mark + certificate number, per their rules).</td>
+<td>The mark belongs to the certifier.</td>
+</tr>
+<tr>
+<td>20</td>
+<td><strong>P2</strong></td>
+<td>Do <strong>not</strong> place CE/UKCA marks on the Portal UI — they belong on the footwear and its documentation.</td>
+<td>Avoid implying the software is a CE-marked device.</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Documents to include in the ISO dossier</h3>
+<p><code>COMPLIANCE-REPORT.md</code> (this report), this action list, the signed sub-processor DPAs, the DPIA, the ROPA, the backup/restore evidence, the software-validation records (see report §4), and the penetration-test report.</p>
+<p><em>Not legal advice — to be reviewed by a DPO / legal counsel.</em></p>
+
+    </article>
+  </div>
+</body>
+</html>
