@@ -14,6 +14,7 @@ export interface AdditionField {
   closureOnly?:    'LACE' | 'VELCRO'  // show only when product has this closure
   collapse?:       boolean        // hide other chips once one is selected
   glb?:            { l: string; r: string }  // 3D model filenames in Supabase products/3d/
+  images?:         Record<string, string>    // for type 'image': value → /public path of the diagram
 }
 
 export interface AdditionSection {
@@ -81,7 +82,14 @@ export const SECTIONS: AdditionSection[] = [
     key: 'sole',
     fields: [
       // Rocker + sub-options
-      { key: 'rocker',       type: 'image',  side: 'both', collapse: true, values: ['Normal Rocker','Advancing Rocker','Polyphase Rocker','Delaying Rocker','2-Phase Rocker'], dataverseKey: 'cr56f_2rockersoletypes' },
+      { key: 'rocker',       type: 'image',  side: 'both', collapse: true, values: ['Normal Rocker','Advancing Rocker','Polyphase Rocker','Delaying Rocker','2-Phase Rocker'], dataverseKey: 'cr56f_2rockersoletypes',
+        images: {
+          'Normal Rocker':    '/rocker/normal.png',
+          'Advancing Rocker': '/rocker/advancing.png',
+          'Polyphase Rocker': '/rocker/polyphase.png',
+          'Delaying Rocker':  '/rocker/delaying.png',
+          '2-Phase Rocker':   '/rocker/2-phase.png',
+        } },
       { key: 'rocker_toes',  type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2toes' },
       { key: 'rocker_joint', type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2joint' },
       { key: 'rocker_heel',  type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2heel' },

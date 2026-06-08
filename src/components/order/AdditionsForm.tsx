@@ -154,6 +154,63 @@ function OptionChips({ values, value, onChange, collapse = false }: {
   )
 }
 
+// Image picker — selectable diagram cards (used for the Rocker Sole type field)
+function ImageChips({ values, value, onChange, images }: {
+  values: (number | string)[]
+  value: unknown
+  onChange: (v: string | null) => void
+  images: Record<string, string>
+}) {
+  return (
+    <div className="flex flex-wrap gap-2.5">
+      {values.map((v) => {
+        const key = String(v)
+        const src = images[key]
+        const selected = value === v
+        return (
+          <button key={key} type="button"
+            onClick={() => onChange(selected ? null : key)}
+            title={key}
+            className={`group relative flex flex-col items-center w-[120px] rounded-lg border p-1.5 transition-all
+              ${selected
+                ? 'border-gold ring-2 ring-gold/30 bg-gold/5 shadow-sm'
+                : 'border-stone-200 bg-white hover:border-gold/60'}`}>
+            {src ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={src} alt={key}
+                className="w-full h-[64px] object-contain pointer-events-none" />
+            ) : (
+              <div className="w-full h-[64px] flex items-center justify-center text-[10px] text-stone-300">—</div>
+            )}
+            <span className={`mt-1 text-[10px] leading-tight font-medium text-center
+              ${selected ? 'text-gold' : 'text-stone-600'}`}>
+              {key}
+            </span>
+            {selected && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-white
+                               flex items-center justify-center shadow-sm">
+                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            )}
+            {/* Enlarged preview on hover */}
+            {src && (
+              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50
+                               hidden group-hover:block">
+                <span className="block rounded-lg border border-stone-200 bg-white p-2 shadow-xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={key} className="w-[260px] h-auto object-contain" />
+                </span>
+              </span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // Classic select dropdown — used for closure fields in LEFT_RIGHT mode
 function SelectCombo({ values, value, onChange, t }: {
   values: (number | string)[]
@@ -254,6 +311,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
 
     if (field.type === 'mm')
       return <MmInput values={field.values ?? []} value={val} onChange={setVal} />
+    if (field.type === 'image' && field.images)
+      return <ImageChips values={field.values ?? []} value={val} onChange={setVal} images={field.images} />
     if (field.type === 'image' || field.type === 'option')
       return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
     if (field.type === 'toggle')
