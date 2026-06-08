@@ -39,8 +39,12 @@ const AGE_OPTIONS = ['3m', '6m', '12m', 'all'] as const
 const isNewOrder = (o: { status?: string; approval_state?: string | null }) =>
   o.status === 'submitted' && (!o.approval_state || o.approval_state === 'registered')
 
-// "Pending" = the client submitted but Piedro is holding a decision.
+// "Pending" = Piedro is holding a decision AND the order is not yet in production
+// (status still 'submitted'). Buckets are mutually exclusive: an order already in
+// production is counted in Production, never double-counted in Pending.
 const PENDING_STATES = new Set(['under_analysis', 'need_attention', 'awaiting_payment'])
+const isPending = (o: { status?: string; approval_state?: string | null }) =>
+  o.status === 'submitted' && PENDING_STATES.has(o.approval_state ?? '')
 const isUrgent = (o: { additions?: { urgent?: boolean } | null }) => o.additions?.urgent === true
 
 // Whether an order carries at least one filled addition.
@@ -93,7 +97,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
     setPage(1)  // reset to first page on filter change
     return orders.filter(o => {
       if (active === 'new')          { if (!isNewOrder(o)) return false }
-      else if (active === 'pending') { if (!PENDING_STATES.has(o.approval_state)) return false }
+      else if (active === 'pending') { if (!isPending(o)) return false }
       else if (active === 'refused') { if (o.approval_state !== 'refused') return false }
       else if (active)               { if (o.status !== active) return false }
       if (search) {
@@ -120,7 +124,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
       const u = isUrgent(o)
       if (o.status === 'draft')                 { c.draft++;      if (u) c.draftU++ }
       if (isNewOrder(o))                        { c.new++;        if (u) c.newU++ }
-      if (PENDING_STATES.has(o.approval_state)) { c.pending++;    if (u) c.pendingU++ }
+      if (isPending(o))                         { c.pending++;    if (u) c.pendingU++ }
       if (o.status === 'approved')              { c.approved++;   if (u) c.approvedU++ }
       if (o.status === 'in_production')         { c.production++; if (u) c.productionU++ }
       if (o.approval_state === 'refused')       c.refused++
