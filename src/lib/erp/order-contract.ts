@@ -6,7 +6,9 @@
  * the ERP import. Keep it additive (never rename/remove a field without bumping
  * `contract_version`).
  */
-export const ERP_CONTRACT_VERSION = 1
+import { explodeAdditions, type ErpAddition } from '@/lib/additions-explode'
+
+export const ERP_CONTRACT_VERSION = 2
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>
@@ -31,7 +33,7 @@ export interface ErpOrder {
   construction: { left: string | null; right: string | null }
   width: { left: string | null; right: string | null }
   comments: string | null
-  additions: Record<string, unknown> | null
+  additions: ErpAddition[]          // normalized 1:N list (only present items)
   created_at: string | null
   updated_at: string | null
   exported_at: string | null
@@ -69,7 +71,7 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     construction: { left: row.construction_left ?? null, right: row.construction_right ?? null },
     width: { left: row.width_left ?? null, right: row.width_right ?? null },
     comments: row.comments ?? null,
-    additions,
+    additions: explodeAdditions(additions),
     created_at: row.created_at ?? null,
     updated_at: row.updated_at ?? null,
     exported_at: row.erp_exported_at ?? null,

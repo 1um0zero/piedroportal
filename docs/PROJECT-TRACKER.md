@@ -382,10 +382,10 @@ replace) the existing chat where the user can already ask specific questions. Us
 > before integrating a-shell**. Section/parent/side denormalized onto each row (simpler + ERP/SQL
 > friendly). Standalone toggles stay as bool rows; parent toggles with children become derived.
 
-- [ ] **19.1** **Phase 1 (before a-shell, low risk):** pure `explodeAdditions(order)` (config + JSONB →
-      normalized array `{section, field_key, parent_key, side, type, value}`, only present items). Use it
-      in the ERP contract (`additions` becomes an array; bump `contract_version` → 2); optionally in
-      PDF/detail/dashboards. No migration, no write-path change. · 🤖
+- [x] **19.1** ✅ **Phase 1** done: `src/lib/additions-explode.ts` `explodeAdditions()` (config + JSONB →
+      normalized list `{section, field, parent, side ['l'|'r'|'g'], type, value}`, only present items).
+      ERP contract now emits `additions` as that array; `ERP_CONTRACT_VERSION` → 2. No migration, no
+      write-path change — the a-shell-facing shape is locked. (Optional: reuse in PDF/detail/dashboards.)
 - [ ] **19.2** **Phase 2 (storage refactor, when there's runway):** table `order_additions`
       (`order_id, section, field_key, parent_key, side ['l'|'r'|'g'], field_type, value_num/text/bool`,
       indexes on order_id/field_key/section). Backfill from JSONB via `explodeAdditions`. Switch
