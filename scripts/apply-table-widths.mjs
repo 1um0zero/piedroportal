@@ -26,8 +26,12 @@ const env = Object.fromEntries(
 const API = env.DATAVERSE_URL + '/api/data/v9.2'
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 
-const FASHION_WIDTHS = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'M']
-const splitList = s => String(s ?? '').split(/[,;]/).map(x => x.trim()).filter(Boolean)
+// All 17 fashion styles map to F,H,J,K,M in the source table (AGO rows carry the
+// real width list). Constructions default to Rehabilitation + Stability.
+const FASHION_WIDTHS = ['F', 'H', 'J', 'K', 'M']
+// Base notation: N,R,W is the NL display of S,M,L — store the base.
+const BASE = { N: 'S', R: 'M', W: 'L' }
+const splitList = s => [...new Set(String(s ?? '').split(/[,;]/).map(x => x.trim()).filter(Boolean).map(w => BASE[w] ?? w))]
 const eq = (a, b) => JSON.stringify([...(a ?? [])].sort()) === JSON.stringify([...(b ?? [])].sort())
 
 async function token() {
