@@ -354,8 +354,8 @@ export function OrderPdf({
                     )
                     return (
                       <View key={i} wrap={false} style={{ marginTop: 4, marginBottom: 4 }}>
-                        <Text style={s.fieldLabel}>{f.label}</Text>
-                        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', marginTop: 3 }}>
+                        <Text style={{ fontSize: 8, color: MUTED, marginBottom: 4 }}>{f.label}</Text>
+                        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
                           <View style={{ flexDirection: 'row', gap: 6 }}>
                             {twoImgs
                               ? <>{fig(imgL!, f.l, t('additions.left'))}{fig(imgR!, f.r, t('additions.right'))}</>
