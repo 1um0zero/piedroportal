@@ -306,7 +306,6 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
                         )}
                         <div className="min-w-0">
                           <p className="font-medium text-stone-800 truncate">
-                            {isUrgent && <span title={t('urgent_only')} className="mr-1.5 inline-block w-2 h-2 rounded-full bg-red-500 align-middle" />}
                             {product?.style_name ?? '—'}
                           </p>
                           <p className="text-xs text-stone-400 truncate">
@@ -334,7 +333,9 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
                     {/* Status — current state: production (VSI) > approval (Piedro) > portal status.
                         Anomaly: in production but NOT approved → flag the approval state in red. */}
                     <td className="px-4 py-3">
-                      <div className="flex flex-col items-start gap-1">
+                      <div className="flex items-start gap-1.5">
+                        {isUrgent && <span title={t('urgent_only')} className="mt-1.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />}
+                        <div className="flex flex-col items-start gap-1">
                         {(() => {
                           if (o.production_state) {
                             const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
@@ -353,6 +354,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
                             ⚠ {a ? ta(a.value) : o.approval_state}
                           </span>
                         })()}
+                        </div>
                       </div>
                     </td>
                     {/* Date — year shown only for orders before the current year */}
