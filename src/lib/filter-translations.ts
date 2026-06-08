@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/client'
 import type { Locale } from '@/types'
 
 type FilterCategory = 'closure' | 'type' | 'construction'
@@ -11,28 +10,28 @@ const translationCache = new Map<string, Record<Locale, string>>()
 let cachePopulated = false
 
 /**
- * Fetches all filter translations from database and populates cache
+ * Fetches all filter translations from database and populates cache.
+ * Uses a raw REST fetch (not the supabase-js client) — same pattern as the
+ * gallery — because the SDK client can hang on the session in the browser.
  */
 async function populateCache() {
   if (cachePopulated) return
 
-  const supabase = createClient()
-  const { data } = await supabase
-    .from('translations')
-    .select('key, en, nl, fr, de, category')
-    .in('category', ['closure', 'type', 'construction', 'colour'])
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!base || !key) return
 
-  if (data) {
-    for (const row of data) {
-      translationCache.set(row.key, {
-        en: row.en,
-        nl: row.nl,
-        fr: row.fr,
-        de: row.de,
-      })
-    }
-    cachePopulated = true
+  const url = `${base}/rest/v1/translations`
+    + `?select=key,en,nl,fr,de,category`
+    + `&category=in.(closure,type,construction,colour)`
+  const res = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+  if (!res.ok) return
+
+  const data = (await res.json()) as { key: string; en: string; nl: string; fr: string; de: string }[]
+  for (const row of data) {
+    translationCache.set(row.key, { en: row.en, nl: row.nl, fr: row.fr, de: row.de })
   }
+  cachePopulated = true
 }
 
 /**
