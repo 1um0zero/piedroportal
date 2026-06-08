@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useLocale } from 'next-intl'
-import { useRouter } from '@/i18n/navigation'
+import { useRouter, Link } from '@/i18n/navigation'
 import OrderSummary from './OrderSummary'
 import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
@@ -23,10 +23,13 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmin: boolean }) {
+export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  order: any; isAdmin: boolean; prevId?: string | null; nextId?: string | null
+}) {
   const router = useRouter()
   const locale = useLocale()
+  const base = isAdmin ? '/admin/orders' : '/orders'
   const [, start] = useTransition()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const product = (Array.isArray(order.products) ? order.products[0] : order.products) as any
@@ -80,6 +83,28 @@ export default function OrderDetailView({ order, isAdmin }: { order: any; isAdmi
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-5">
+
+      {/* Side navigator — previous (newer) / next (older) order */}
+      {prevId && (
+        <Link href={`${base}/${prevId}` as Parameters<typeof Link>[0]['href']}
+          aria-label="Previous order" title="Previous order"
+          className="fixed left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white border border-stone-200 text-stone-500 hover:text-gold hover:border-gold flex items-center justify-center transition-colors"
+          style={{ boxShadow: 'var(--shadow-card)' }}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </Link>
+      )}
+      {nextId && (
+        <Link href={`${base}/${nextId}` as Parameters<typeof Link>[0]['href']}
+          aria-label="Next order" title="Next order"
+          className="fixed right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white border border-stone-200 text-stone-500 hover:text-gold hover:border-gold flex items-center justify-center transition-colors"
+          style={{ boxShadow: 'var(--shadow-card)' }}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </Link>
+      )}
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">

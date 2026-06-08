@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdf } from '@/lib/order-pdf'
+import { getOrderNeighbors } from '@/lib/order-neighbors'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
@@ -70,6 +71,13 @@ export default async function OrderDetailPage({ params }: Props) {
   // Replace the stored path with a short-lived signed URL (private bucket).
   if (order.pdf_url) order.pdf_url = await signOrderPdf(id)
 
+  // Prev/next navigator — within the same visibility scope as the list.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const applyScope = (q: any) => isCompanyAdmin ? q.in('company_id', adminCompanyIds) : q.eq('user_id', user.id)
+  const { prevId, nextId } = order.created_at
+    ? await getOrderNeighbors(service, { id: order.id, created_at: order.created_at }, applyScope)
+    : { prevId: null, nextId: null }
+
   return (
     <div>
       <div className="max-w-4xl mx-auto px-6 pt-6">
@@ -78,7 +86,7 @@ export default async function OrderDetailPage({ params }: Props) {
           ← My Orders
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={false} />
+      <OrderDetailView order={order} isAdmin={false} prevId={prevId} nextId={nextId} />
     </div>
   )
 }

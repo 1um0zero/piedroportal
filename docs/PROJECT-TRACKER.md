@@ -332,6 +332,12 @@ replace) the existing chat where the user can already ask specific questions. Us
       for choice fields (lining, cl_laces, cl_velcro, stiff_hard, toe_puffs, zipper, rocker) instead of the
       code. ⚠️ **Takes effect on re-import** (upsert overwrites existing rows) — part of the data rebuild.
 
+- [x] **20.8** ✅ Order panel: **Save All** hardened (try/catch + strip undefined + real error
+      message instead of an opaque Next digest); **side prev/next navigator** (`getOrderNeighbors`,
+      scope-aware) on admin + client detail; **gold "new" badge** on the Orders nav (desktop + mobile),
+      counting portal-origin unvalidated orders. "New" now **excludes migrated** orders (dataverse_id set)
+      so it counts real new work, not the 920 historical submitted.
+
 ## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
 > Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when
 > empty/false (Power Pages form-designer artifact — one checkbox per expandable area). The ERP

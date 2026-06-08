@@ -12,9 +12,10 @@ type Props = {
   isLoggedIn:   boolean
   locale:       string
   locales:      string[]
+  newOrdersCount?: number
 }
 
-export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locales }: Props) {
+export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('nav')
   const close = () => setOpen(false)
@@ -62,7 +63,14 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
               {isLoggedIn && isBackoffice && (
                 <>
                   <Link href="/admin"          onClick={close} className={linkCls}>{t('dashboard')}</Link>
-                  <Link href="/admin/orders"   onClick={close} className={linkCls}>{t('orders_admin')}</Link>
+                  <Link href="/admin/orders"   onClick={close} className={linkCls}>
+                    {t('orders_admin')}
+                    {newOrdersCount > 0 && (
+                      <span className="ml-2 min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-gold text-white rounded-full inline-flex items-center justify-center">
+                        {newOrdersCount > 99 ? '99+' : newOrdersCount}
+                      </span>
+                    )}
+                  </Link>
                   <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
                   {isAdmin && (
                     <>

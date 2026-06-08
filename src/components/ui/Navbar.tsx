@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
@@ -23,6 +24,19 @@ export default async function Navbar({ locale }: Props) {
     profile = data
     isAdmin = profile?.role === 'piedro_admin'
     isBackoffice = isAdmin || profile?.role === 'branch_staff'
+  }
+
+  // Count of portal-origin orders awaiting staff validation (badge on Orders).
+  let newOrdersCount = 0
+  if (isAdmin) {
+    const service = createServiceClient()
+    const { count } = await service
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'submitted')
+      .is('dataverse_id', null)
+      .or('approval_state.is.null,approval_state.eq.registered')
+    newOrdersCount = count ?? 0
   }
 
   return (
@@ -59,8 +73,13 @@ export default async function Navbar({ locale }: Props) {
               <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('dashboard')}
               </Link>
-              <Link href="/admin/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+              <Link href="/admin/orders" className="relative text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('orders_admin')}
+                {newOrdersCount > 0 && (
+                  <span className="absolute -top-2 -right-3 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-gold text-white rounded-full flex items-center justify-center">
+                    {newOrdersCount > 99 ? '99+' : newOrdersCount}
+                  </span>
+                )}
               </Link>
               <Link href="/admin/products" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('products')}
@@ -141,6 +160,7 @@ export default async function Navbar({ locale }: Props) {
           isLoggedIn={!!user}
           locale={locale}
           locales={[...routing.locales]}
+          newOrdersCount={newOrdersCount}
         />
       </div>
     </header>

@@ -18,52 +18,62 @@ export async function updateOrderAdminAction(
     piedro_notes?:    string
   },
 ): Promise<{ ok?: boolean; error?: string }> {
-  const scope = await getAdminScope()
-  if (!scope) return { error: 'Not authenticated' }
-  if (scope.role === 'branch_staff' && !scope.branchId) return { error: 'Not authorized' }
+  try {
+    const scope = await getAdminScope()
+    if (!scope) return { error: 'Not authenticated' }
+    if (scope.role === 'branch_staff' && !scope.branchId) return { error: 'Not authorized' }
 
-  const service = createServiceClient()
+    const service = createServiceClient()
 
-  // Branch staff can only act on orders whose product model is within their scope.
-  if (!scope.allModels) {
-    const { data: ord } = await service
-      .from('orders').select('products(style_name)').eq('id', orderId).single()
-    const style = (ord as { products?: { style_name?: string } } | null)?.products?.style_name
-    if (!scope.canModel(style)) return { error: 'Not authorized' }
-  }
-
-  // Validation: cannot approve without Piedro Order ID
-  if (fields.approval_state === 'approved') {
-    const { data: order } = await service
-      .from('orders')
-      .select('piedro_order_id')
-      .eq('id', orderId)
-      .single()
-    const currentPiedroId = fields.piedro_order_id ?? order?.piedro_order_id
-    if (!currentPiedroId?.trim()) {
-      return { error: 'Piedro Order # is required before approving.' }
+    // Branch staff can only act on orders whose product model is within their scope.
+    if (!scope.allModels) {
+      const { data: ord } = await service
+        .from('orders').select('products(style_name)').eq('id', orderId).single()
+      const style = (ord as { products?: { style_name?: string } } | null)?.products?.style_name
+      if (!scope.canModel(style)) return { error: 'Not authorized' }
     }
-  }
 
-  // Also update the portal status to keep them in sync
-  const statusMap: Partial<Record<ApprovalState, string>> = {
-    approved:         'approved',
-    refused:          'cancelled',
-    under_analysis:   'submitted',
-    need_attention:   'submitted',
-    awaiting_payment: 'submitted',
-  }
-  const update: Record<string, unknown> = { ...fields }
-  if (fields.approval_state && statusMap[fields.approval_state]) {
-    update.status = statusMap[fields.approval_state]
-  }
-  if (fields.production_state) {
-    update.status = 'in_production'
-  }
+    // Validation: cannot approve without Piedro Order ID
+    if (fields.approval_state === 'approved') {
+      const { data: order } = await service
+        .from('orders')
+        .select('piedro_order_id')
+        .eq('id', orderId)
+        .single()
+      const currentPiedroId = fields.piedro_order_id ?? order?.piedro_order_id
+      if (!currentPiedroId?.trim()) {
+        return { error: 'Piedro Order # is required before approving.' }
+      }
+    }
 
-  const { error } = await service.from('orders').update(update).eq('id', orderId)
-  if (error) return { error: error.message }
-  return { ok: true }
+    // Also update the portal status to keep them in sync
+    const statusMap: Partial<Record<ApprovalState, string>> = {
+      approved:         'approved',
+      refused:          'cancelled',
+      under_analysis:   'submitted',
+      need_attention:   'submitted',
+      awaiting_payment: 'submitted',
+    }
+    // Strip undefined so we never blank a column we didn't mean to touch.
+    const update: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(fields)) if (v !== undefined) update[k] = v
+    if (fields.approval_state && statusMap[fields.approval_state]) {
+      update.status = statusMap[fields.approval_state]
+    }
+    if (fields.production_state) {
+      update.status = 'in_production'
+    }
+
+    const { error } = await service.from('orders').update(update).eq('id', orderId)
+    if (error) {
+      console.error('updateOrderAdminAction update error', error)
+      return { error: error.message || error.details || error.hint || error.code || 'Update failed' }
+    }
+    return { ok: true }
+  } catch (e) {
+    console.error('updateOrderAdminAction threw', e)
+    return { error: e instanceof Error ? e.message : 'Unexpected error' }
+  }
 }
 
 export async function translateTextAction(

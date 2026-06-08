@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdf } from '@/lib/order-pdf'
+import { getOrderNeighbors } from '@/lib/order-neighbors'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
@@ -46,6 +47,12 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   // Replace the stored path with a short-lived signed URL (private bucket).
   if (order.pdf_url) order.pdf_url = await signOrderPdf(id)
 
+  // Prev/next navigator — only for full-catalogue admins (branch scope is by model,
+  // which can't be expressed in a simple neighbour query).
+  const { prevId, nextId } = scope.allModels && order.created_at
+    ? await getOrderNeighbors(service, { id: order.id, created_at: order.created_at })
+    : { prevId: null, nextId: null }
+
   return (
     <div>
       <div className="max-w-4xl mx-auto px-6 pt-6">
@@ -54,7 +61,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           ← All Orders
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={true} />
+      <OrderDetailView order={order} isAdmin={true} prevId={prevId} nextId={nextId} />
     </div>
   )
 }

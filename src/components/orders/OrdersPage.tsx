@@ -39,9 +39,10 @@ type Props = {
 
 const AGE_OPTIONS = ['3m', '6m', '12m', 'all'] as const
 
-// "New" = submitted by the client and not yet touched by staff (the validation queue).
-const isNewOrder = (o: { status?: string; approval_state?: string | null }) =>
-  o.status === 'submitted' && (!o.approval_state || o.approval_state === 'registered')
+// "New" = a portal-origin order submitted and not yet touched by staff (validation queue).
+// Migrated/historical orders (dataverse_id set) are excluded.
+const isNewOrder = (o: { status?: string; approval_state?: string | null; dataverse_id?: string | null }) =>
+  o.status === 'submitted' && !o.dataverse_id && (!o.approval_state || o.approval_state === 'registered')
 
 // Whether an order carries at least one filled addition.
 function hasAdditions(adds: Record<string, any> | null | undefined): boolean {
