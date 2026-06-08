@@ -291,3 +291,23 @@ replace) the existing chat where the user can already ask specific questions. Us
 - [ ] **18.6** **Livingston / ZSM** — sub-areas of pair-by-pair = a filter over the portal (later).
 - [ ] **18.7** **Branches as PT-language scopes:** VSI (production) and VSI-C are branches; reuse the
       branch model (notify locale = PT, model scope). See `project_branch_offices`.
+
+## 19. Additions data model — normalize before a-shell — 🟠 / 🤖  (decided 2026-06-08)
+> Problem: `orders.additions` is a wide JSONB; `emptyAdditions()` writes ALL ~60 fields even when
+> empty/false (Power Pages form-designer artifact — one checkbox per expandable area). The ERP
+> contract currently exports this raw cluttered JSON. **Decision: normalize to a related 1:N table**
+> (N≥0), keep `additions-config.ts` as the form's source of truth, and **lock the ERP-facing shape
+> before integrating a-shell**. Section/parent/side denormalized onto each row (simpler + ERP/SQL
+> friendly). Standalone toggles stay as bool rows; parent toggles with children become derived.
+
+- [ ] **19.1** **Phase 1 (before a-shell, low risk):** pure `explodeAdditions(order)` (config + JSONB →
+      normalized array `{section, field_key, parent_key, side, type, value}`, only present items). Use it
+      in the ERP contract (`additions` becomes an array; bump `contract_version` → 2); optionally in
+      PDF/detail/dashboards. No migration, no write-path change. · 🤖
+- [ ] **19.2** **Phase 2 (storage refactor, when there's runway):** table `order_additions`
+      (`order_id, section, field_key, parent_key, side ['l'|'r'|'g'], field_type, value_num/text/bool`,
+      indexes on order_id/field_key/section). Backfill from JSONB via `explodeAdditions`. Switch
+      AdditionsForm/OrderForm writes + reads (dashboards/PDF/detail) to it; dual-write then drop the
+      JSONB. ERP contract output unchanged → a-shell unaffected. · 🤖 build + 👤 run migration
+- [ ] **19.3** Consider promoting `urgent` to a real `orders.urgent` column (used for filter/sort/ERP)
+      instead of living inside additions. · 🤖
