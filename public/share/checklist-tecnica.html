@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Piedro Portal — Checklist técnica (super_admin)</title>
+<style>
+  :root{
+    --gold:#B8975A; --gold-dark:#9A7A42; --ink:#1c1917; --stone:#57534e; --stone-l:#a8a29e;
+    --line:#e7e5e4; --bg:#faf8f4; --card:#fff; --shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px rgba(28,25,23,.06);
+    --green:#16a34a; --amber:#d97706; --red:#dc2626; --blue:#2563eb;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .page{max-width:1000px;margin:0 auto;padding:44px 36px 72px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:24px;margin-bottom:32px}
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .brand h1{font-size:27px;font-weight:800;letter-spacing:-.5px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--ink);display:inline-block}
+  .tag{color:var(--gold-dark);font-style:italic;font-size:14px}
+  .sub{margin-top:10px;color:var(--stone);font-size:14px;max-width:760px}
+  .meta{margin-top:14px;display:flex;gap:20px;flex-wrap:wrap;font-size:12.5px;color:var(--stone-l)}
+  .meta b{color:var(--stone);font-weight:600}
+  .ov{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+  .ov .c{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px}
+  .ov .c .k{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--stone-l)}
+  .ov .c .v{font-size:24px;font-weight:800;margin-top:2px}
+  .ov .v.g{color:var(--green)} .ov .v.a{color:var(--amber)} .ov .v.r{color:var(--red)} .ov .v.b{color:var(--blue)}
+  .block{background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+  .bh{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .bh .ti{font-size:15px;font-weight:800;flex:1}
+  .bh .prio{font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.4px}
+  .p0{background:#fde8e8;color:var(--red)} .p1{background:#fef0e0;color:var(--amber)} .p2{background:#fef9e7;color:#a16207}
+  ul.items{list-style:none}
+  ul.items li{display:flex;gap:11px;padding:9px 18px;border-top:1px solid #f5f3f0;font-size:13.5px;align-items:flex-start}
+  ul.items li:first-child{border-top:none}
+  .chk{flex-shrink:0;width:18px;height:18px;border-radius:5px;border:1.6px solid var(--stone-l);margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .chk.done{background:var(--green);border-color:var(--green);color:#fff}
+  li .txt{flex:1;color:var(--stone)} li .txt b{color:var(--ink);font-weight:600}
+  code{background:#f3ecdd;color:var(--gold-dark);padding:1px 5px;border-radius:5px;font-size:12px}
+  h2{font-size:12px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--gold-dark);margin:40px 0 14px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--stone);margin:10px 0 4px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--stone-l);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  a{color:var(--gold-dark)}
+  @media print{body{background:#fff}.page{padding:0 14px}.block,.ov .c{box-shadow:none;border:1px solid var(--line)}.block{break-inside:avoid}}
+  @media(max-width:720px){.ov{grid-template-columns:1fr 1fr}.page{padding:26px 16px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand"><h1>Checklist técnica</h1><span class="dot"></span><span class="tag">super_admin · infra &amp; engenharia</span></div>
+    <p class="sub">A minha lista (Jorge / super_admin): infraestrutura, dados, segurança, integração ERP e dívida técnica.
+      Separada da checklist de negócio da Anabela. Fonte: <code>docs/PROJECT-TRACKER.md</code>.</p>
+    <div class="meta">
+      <span><b>Dono:</b> tavares@umzero.pt (super_admin)</span>
+      <span><b>Atualizado:</b> 8 de Junho de 2026</span>
+      <span><b>Negócio (Anabela):</b> <a href="/share/estrutura-e-arranque.html">estrutura &amp; arranque</a></span>
+    </div>
+  </header>
+
+  <div class="ov">
+    <div class="c"><div class="k">Já feito hoje</div><div class="v g">✅</div><div class="b" style="font-size:10px;color:var(--stone-l)">role, reimport, additions F1, lint+hook</div></div>
+    <div class="c"><div class="k">Bloqueadores P0</div><div class="v r">infra</div><div class="b" style="font-size:10px;color:var(--stone-l)">DNS · env · backup · QA</div></div>
+    <div class="c"><div class="k">Grande a seguir</div><div class="v a">ERP/VSI</div><div class="b" style="font-size:10px;color:var(--stone-l)">import invertido</div></div>
+    <div class="c"><div class="k">Dívida técnica</div><div class="v b">§18/19/22</div><div class="b" style="font-size:10px;color:var(--stone-l)">modelo de dados</div></div>
+  </div>
+  <div class="legend">
+    <span><span class="chk done" style="width:15px;height:15px;font-size:10px">✓</span> Feito</span>
+    <span><span class="chk" style="width:15px;height:15px"></span> Por fazer</span>
+    <span>🔴 P0 (bloqueia) · 🟠 P1 · 🟡 P2</span>
+  </div>
+
+  <!-- DONE -->
+  <h2>✅ Concluído (sessão 8 Jun)</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Entregue e em produção</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt"><b>Papel <code>super_admin</code></b> (infra) acima de piedro_admin; migração 013 + conta promovida; guards centralizados (<code>isPiedroAdmin</code>/<code>isSuperAdmin</code>).</span></li>
+      <li><span class="chk done">✓</span><span class="txt"><b>Reimport limpo das encomendas</b> (3832→3107): só step-3, sem TESTES/lixo; estados reais (delivered/in_production), <code>piedro_order_id</code>, option-sets em texto.</span></li>
+      <li><span class="chk done">✓</span><span class="txt"><b>Additions — Fase 1</b>: <code>explodeAdditions()</code> + contrato ERP normalizado (lista 1:N, <code>contract_version</code> 2).</span></li>
+      <li><span class="chk done">✓</span><span class="txt"><b>Qualidade</b>: ESLint 0 erros + <b>hook pre-commit</b> (tsc + lint nos ficheiros em staging).</span></li>
+      <li><span class="chk done">✓</span><span class="txt"><b>Back-office</b>: companies com pesquisa robusta + colunas; chips de orders (New/Pending/Approved/Production/Total) com urgentes; painel "CONFIRM changes"; navegador prev/next; doc público em <code>/share</code>.</span></li>
+    </ul>
+  </div>
+
+  <!-- INFRA -->
+  <h2>1 · Infra, DNS &amp; deploy</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Domínio, ambiente, go-live</span><span class="prio p0">P0</span></div>
+    <ul class="items">
+      <li><span class="chk"></span><span class="txt">Apontar <b>portal.piedro.pt</b> ao Vercel + adicionar/verificar domínio + TLS.</span></li>
+      <li><span class="chk"></span><span class="txt">Redirecionador no Power Pages antigo → novo portal (manter PP em background).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Env Vercel prod</b>: <code>NEXT_PUBLIC_SITE_URL</code>, <code>ERP_API_TOKEN</code>, notify emails fallback; confirmar Supabase/Resend/Anthropic/Dataverse.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>SPF/DKIM/DMARC</b> do domínio de envio (Resend).</span></li>
+      <li><span class="chk"></span><span class="txt">Remover <code>robots noindex</code> no go-live (e do <code>/share</code> se necessário).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Plano de rollback</b> (reverter DNS / restaurar snapshot Supabase).</span></li>
+    </ul>
+  </div>
+
+  <!-- DATA -->
+  <h2>2 · Dados</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Migração, backup, integridade</span><span class="prio p0">P0</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Migrações 001–013 corridas; companies (200) + users (282) migrados; orders reimportadas (3107).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Snapshot/backup</b> antes de mexidas; confirmar dados de teste destruídos.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Backfill <code>orders.user_id</code></b> — bloqueado (o campo de contacto por order está vazio no Dataverse). Decidir: ligação só a nível de company, ou outra fonte.</span></li>
+      <li><span class="chk"></span><span class="txt">Importar PDFs legados do SharePoint com link seguro (adiado, pós-arranque).</span></li>
+    </ul>
+  </div>
+
+  <!-- SECURITY -->
+  <h2>3 · Segurança</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">RLS, buckets, rate limit, monitorização</span><span class="prio p1">P1</span></div>
+    <ul class="items">
+      <li><span class="chk"></span><span class="txt"><b>RLS</b> (migração 002) ativo e testado ponta-a-ponta; atualizar policies para incluir <code>super_admin</code>.</span></li>
+      <li><span class="chk"></span><span class="txt">Bucket <code>order-pdfs</code> = <b>Privado</b> (URLs assinados).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Rate limiting</b> em <code>/api/chat</code> e rotas de PDF.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>MFA</b> para admins (Supabase).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Sentry</b> (erros) + agenda de backups Supabase.</span></li>
+      <li><span class="chk"></span><span class="txt">Audit log de acesso a dados de paciente (ISO/MDR).</span></li>
+    </ul>
+  </div>
+
+  <!-- ERP -->
+  <h2>4 · Integração ERP / VSI (a grande)</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Import invertido (SHUZ / a-shell)</span><span class="prio p1">P1</span></div>
+    <ul class="items">
+      <li><span class="chk done">✓</span><span class="txt">Endpoints base: <code>GET /api/erp/orders</code> + <code>/ack</code> + <code>/status</code>; contrato normalizado (additions como lista).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Branch "produção" em PT</b> (VSI): lista de encomendas aprovadas por integrar; aberto no browser da VM Windows do Datacenter.</span></li>
+      <li><span class="chk"></span><span class="txt">Gerar ficheiro + executar <code>c:\\piedro\\platuz\\bin\\ashw32.exe</code> (a-shell) com parâmetros; a-shell escreve o estado de volta (http).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Status-back</b> do ERP (produção/corte/costura/acabamento/delivered/invoiced) + invoice nº/data + tracking nº/link.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>VSI-C</b> ↔ futura área "custom" do portal.</span></li>
+    </ul>
+  </div>
+
+  <!-- DATA MODEL -->
+  <h2>5 · Modelo de dados da encomenda</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Normalização & campos em falta</span><span class="prio p1">P1</span></div>
+    <ul class="items">
+      <li><span class="chk"></span><span class="txt"><b>Additions Fase 2 (§19.2):</b> tabela <code>order_additions</code> + backfill (via <code>explodeAdditions</code>) + mudar escrita/leitura; largar o JSONB. Promover <code>urgent</code> a coluna (§19.3).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Campos invoice/tracking (§18.2)</b> — alimentados pela VSI via status-back.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Histórico de estados (§18.8)</b>: tabela <code>order_state_events</code> (quem/quando/origem) + timeline na ficha.</span></li>
+    </ul>
+  </div>
+
+  <!-- QUALITY / AI -->
+  <h2>6 · Dívida técnica &amp; IA</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Qualidade e funcionalidades futuras</span><span class="prio p2">P2</span></div>
+    <ul class="items">
+      <li><span class="chk"></span><span class="txt"><b>Regras React Compiler (§22.3)</b> — refatorar os ~25 avisos (setState em effect / refs no render) com testes; depois reativar como erros.</span></li>
+      <li><span class="chk"></span><span class="txt">Agregação SQL para dashboards (hoje O(n) em JS); completar labelFr/labelDe das additions.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Briefing pós-login com IA (§16.1)</b> — resumo NL por utilizador (sem nomes de paciente; mesmas regras de DPA do chat).</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Order intake por texto natural (§16.3)</b> — pré-preenchimento via LLM, validação humana.</span></li>
+    </ul>
+  </div>
+
+  <!-- QA -->
+  <h2>7 · QA / GO–NO-GO</h2>
+  <div class="block">
+    <div class="bh"><span class="ti">Smoke test final</span><span class="prio p0">P0</span></div>
+    <ul class="items">
+      <li><span class="chk"></span><span class="txt">Login + reset forçado · galeria/filtros · encomenda completa (5 modos) · PDF (bucket privado) · admin (estados/produtos/empresas/branches) · 4 papéis com âmbito certo · 4 línguas.</span></li>
+      <li><span class="chk"></span><span class="txt"><b>Decisão GO / NO-GO.</b></span></li>
+    </ul>
+  </div>
+
+  <footer>
+    <span>Piedro Portal — checklist técnica (super_admin)</span>
+    <span>Imprimir para PDF: Ctrl/Cmd + P · detalhe em docs/PROJECT-TRACKER.md</span>
+  </footer>
+</div>
+</body>
+</html>

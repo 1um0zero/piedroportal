@@ -106,6 +106,10 @@ export default async function Navbar({ locale }: Props) {
                   <Link href="/admin/settings" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('settings')}
                   </Link>
+                  <a href="/share/index.html" target="_blank" rel="noopener noreferrer"
+                    className="text-xs font-semibold tracking-wider text-gold hover:text-gold-dark uppercase transition-colors">
+                    {t('docs')}
+                  </a>
                 </>
               )}
             </>

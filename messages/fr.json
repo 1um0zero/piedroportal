@@ -107,7 +107,8 @@
     "branches": "Filiales",
     "companies": "Sociétés",
     "unassigned": "Non attribuées",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "docs": "Docs"
   },
   "gallery": {
     "kids": "Enfants",
