@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
@@ -84,7 +85,7 @@ export default async function OrderDetailPage({ params }: Props) {
       <div className="max-w-4xl mx-auto px-6 pt-6">
         <Link href="/orders"
           className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors">
-          ← My Orders
+          ← {(await getTranslations('nav'))('orders')}
         </Link>
       </div>
       <OrderDetailView order={order} isAdmin={false} prevId={prevId} nextId={nextId} />

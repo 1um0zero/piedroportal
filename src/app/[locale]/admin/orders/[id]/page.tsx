@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdf } from '@/lib/order-pdf'
@@ -58,7 +59,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       <div className="max-w-4xl mx-auto px-6 pt-6">
         <Link href="/admin/orders"
           className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors">
-          ← All Orders
+          ← {(await getTranslations('nav'))('orders')}
         </Link>
       </div>
       <OrderDetailView order={order} isAdmin={true} prevId={prevId} nextId={nextId} />

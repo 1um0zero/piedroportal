@@ -111,7 +111,7 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
         <div>
           <p className="text-xs text-stone-400 mb-1">Order</p>
           <h1 className="text-2xl font-bold text-stone-900">{order.reference_customer ?? '—'}</h1>
-          <p className="text-sm text-stone-500 mt-0.5">{new Date(order.created_at).toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })}</p>
+          <p className="text-sm text-stone-500 mt-0.5">{new Date(order.created_at).toLocaleDateString(locale, { day:'2-digit', month:'long', year:'numeric' })}</p>
           {order.piedro_order_id && <p className="text-sm font-semibold text-stone-700 mt-1">Piedro Order: {order.piedro_order_id}</p>}
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
