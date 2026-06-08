@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { isNew } from '@/components/gallery/GalleryPage'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
+import { displayWidth } from '@/lib/width-display'
 import type { Product, Locale } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -360,7 +361,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                   </span>
                   <span className="flex flex-wrap gap-1">
                     {g.widths.map((w) => (
-                      <span key={w} className="px-1.5 py-0.5 text-xs bg-stone-100 rounded font-mono text-stone-700">{w}</span>
+                      <span key={w} className="px-1.5 py-0.5 text-xs bg-stone-100 rounded font-mono text-stone-700">{displayWidth(w, g.widths, locale)}</span>
                     ))}
                   </span>
                 </div>

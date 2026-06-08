@@ -8,6 +8,7 @@ import type { Product, Locale } from '@/types'
 import { isNew } from './GalleryPage'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { translateFilterValueSync } from '@/lib/filter-translations'
+import { displayWidths } from '@/lib/width-display'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}`
@@ -121,7 +122,7 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
               {constructions.map((c, i) => (
                 <div key={i} className="flex items-baseline gap-1.5">
                   <span className="font-medium text-stone-700 shrink-0">{translateFilterValueSync(c.construction, locale)}</span>
-                  <span className="text-stone-400">{c.widths.join(' · ')}</span>
+                  <span className="text-stone-400">{displayWidths(c.widths, locale).join(' · ')}</span>
                 </div>
               ))}
             </div>

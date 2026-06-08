@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import type { Locale } from '@/types'
 import { translateFilterValueSync } from '@/lib/filter-translations'
+import { displayWidth } from '@/lib/width-display'
 import type { Filters } from './GalleryPage'
 
 type Props = {
@@ -93,11 +94,13 @@ function PillChips({
   options,
   selected,
   onToggle,
+  renderLabel,
 }: {
   label: string
   options: string[]
   selected: string[]
   onToggle: (v: string) => void
+  renderLabel?: (v: string) => string
 }) {
   if (!options.length) return null
   return (
@@ -115,7 +118,7 @@ function PillChips({
                 ? 'bg-gold text-white border-gold shadow-sm'
                 : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
           >
-            {o}
+            {renderLabel ? renderLabel(o) : o}
           </button>
         ))}
       </div>
@@ -414,7 +417,8 @@ export default function GalleryFilters({
           {/* Width pills */}
           {optWidths.length > 1 && (
             <PillChips label={t('width')} options={optWidths}
-              selected={filters.widths} onToggle={(v) => toggleArr('widths', v)} />
+              selected={filters.widths} onToggle={(v) => toggleArr('widths', v)}
+              renderLabel={(v) => displayWidth(v, optWidths, locale)} />
           )}
 
           {/* Size chips + input */}
