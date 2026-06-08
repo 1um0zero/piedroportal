@@ -89,10 +89,13 @@ export default function OrderSummary(props: OrderSummaryProps) {
       if (!hasL && !hasR) return []
 
       const baseLabel = getFieldLabel(field, ta).replace(/↳\s*/g, '  · ').replace(/\s*\(mm\)/gi, '')
+      const isImage = field.type === 'image'
       return [{
         label: baseLabel,
         l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
         r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
+        imgL: isImage && hasL ? (field.images?.[String(sv!.l)] ?? null) : null,
+        imgR: isImage && hasR ? (field.images?.[String(sv!.r)] ?? null) : null,
       }]
     })
     return { key: sec.key, label: getSectionLabel(sec, ta), filled }
@@ -260,11 +263,22 @@ export default function OrderSummary(props: OrderSummaryProps) {
                           </div>
                         )
                       }
+                      const img = (f as { imgL?: string | null; imgR?: string | null })
+                      const cell = (text: string | null, imgSrc: string | null | undefined) =>
+                        imgSrc ? (
+                          <span className="inline-flex flex-col items-end gap-1">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={imgSrc} alt="" className="h-11 object-contain" />
+                            <span className="text-stone-800 font-semibold">{text}</span>
+                          </span>
+                        ) : (
+                          <span className="text-stone-800 font-semibold text-right">{text ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                        )
                       return (
                         <div key={i} className={`grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                           <span className="text-stone-600">{f.label}</span>
-                          <span className="text-stone-800 font-semibold text-right">{f.l ?? (f.l === null && f.r === null ? '' : '—')}</span>
-                          <span className="text-stone-800 font-semibold text-right">{f.r ?? (f.l === null && f.r === null ? '' : '—')}</span>
+                          {cell(f.l, img.imgL)}
+                          {cell(f.r, img.imgR)}
                         </div>
                       )
                     })}
@@ -285,10 +299,20 @@ export default function OrderSummary(props: OrderSummaryProps) {
                           </div>
                         )
                       }
+                      const img = (f as { imgL?: string | null; imgR?: string | null })
+                      const imgSrc = img.imgL ?? img.imgR
                       return (
                         <div key={i} className={`grid grid-cols-[2fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50 ${isChild ? 'pl-6' : ''}`}>
                           <span className="text-stone-600">{f.label}</span>
-                          <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r ?? ''}</span>
+                          {imgSrc ? (
+                            <span className="inline-flex flex-col items-end gap-1">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imgSrc} alt="" className="h-11 object-contain" />
+                              <span className="text-stone-800 font-semibold">{f.l ?? f.r ?? ''}</span>
+                            </span>
+                          ) : (
+                            <span className="text-stone-800 font-semibold text-right">{f.l ?? f.r ?? ''}</span>
+                          )}
                         </div>
                       )
                     })}

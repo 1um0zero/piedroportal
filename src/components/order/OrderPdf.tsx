@@ -41,6 +41,8 @@ const s = StyleSheet.create({
   fieldVal:      { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
   fieldValL:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
   fieldValR:     { flex: 1, fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' },
+  fieldValImg:   { flex: 1, alignItems: 'flex-end' },
+  rockerImg:     { width: 84, height: 48, objectFit: 'contain' },
   lrHeader:      { flexDirection: 'row', paddingBottom: 4, borderBottom: `1px solid ${BORDER}`, marginBottom: 2 },
   lrHeaderLabel: { flex: 2, fontSize: 7, color: MUTED },
   lrHeaderSide:  { flex: 1, fontSize: 7, color: MUTED, textAlign: 'center' },
@@ -150,11 +152,18 @@ export function OrderPdf({
         const hasR = sv?.r != null && sv.r !== '' && sv.r !== false
         if (!hasL && !hasR) return []
 
+        const isImage = field.type === 'image'
+        const imgUrl = (v: unknown) => {
+          const path = field.images?.[String(v)]
+          return path ? `${SITE_URL}${path}` : null
+        }
         return [{
           label: fieldLabel.replace(/\s*\(mm\)/gi, '').replace(/↳\s*/g, '  · '),
           l: hasL ? (field.type === 'mm' ? `${String(sv!.l)} mm` : String(sv!.l)) : null,
           r: hasR ? (field.type === 'mm' ? `${String(sv!.r)} mm` : String(sv!.r)) : null,
-          global: false
+          global: false,
+          imgL: isImage && hasL ? imgUrl(sv!.l) : null,
+          imgR: isImage && hasR ? imgUrl(sv!.r) : null,
         }]
       })
       return { label: t(`additions.sections.${sec.key}`), filled }
@@ -330,14 +339,32 @@ export function OrderPdf({
                     )
                   }
 
+                  const img = (f as { imgL?: string | null; imgR?: string | null })
+                  const imgCell = (text: string | null, src: string | null | undefined, emptyOnBoth: boolean) =>
+                    src ? (
+                      <View style={s.fieldValImg}>
+                        {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF */}
+                        <Image src={src} style={s.rockerImg} />
+                        <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' }}>{text}</Text>
+                      </View>
+                    ) : (
+                      <Text style={isDouble ? s.fieldValL : s.fieldVal}>{text ?? (emptyOnBoth ? '' : t('additions.empty_value'))}</Text>
+                    )
+
                   return (
                     <View key={i} style={{ ...s.fieldRow, paddingLeft: isChild ? 12 : 0 }}>
                       <Text style={s.fieldLabel}>{f.label}</Text>
                       {isDouble && !f.global ? (
                         <>
-                          <Text style={s.fieldValL}>{f.l ?? (f.l === null && f.r === null ? '' : t('additions.empty_value'))}</Text>
-                          <Text style={s.fieldValR}>{f.r ?? (f.l === null && f.r === null ? '' : t('additions.empty_value'))}</Text>
+                          {imgCell(f.l, img.imgL, f.l === null && f.r === null)}
+                          {imgCell(f.r, img.imgR, f.l === null && f.r === null)}
                         </>
+                      ) : (img.imgL ?? img.imgR) ? (
+                        <View style={s.fieldValImg}>
+                          {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf Image, alt n/a in PDF */}
+                          <Image src={(img.imgL ?? img.imgR)!} style={s.rockerImg} />
+                          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'right' }}>{f.l ?? f.r ?? ''}</Text>
+                        </View>
                       ) : (
                         <Text style={s.fieldVal}>{f.l ?? f.r ?? ''}</Text>
                       )}
