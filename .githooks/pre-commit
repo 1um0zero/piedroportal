@@ -1,0 +1,22 @@
+#!/bin/sh
+# Pre-commit gate: block commits that don't type-check or that introduce ESLint
+# errors in the files being committed. Set up automatically via the package.json
+# "prepare" script (git config core.hooksPath .githooks), or run that once manually.
+
+echo "▶ pre-commit: TypeScript type-check…"
+if ! npx tsc --noEmit -p tsconfig.json; then
+  echo "✖ TypeScript errors — commit blocked. Fix them and try again."
+  exit 1
+fi
+
+# Lint only the staged .ts/.tsx files (fast; blocks on errors, not warnings).
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx)$' || true)
+if [ -n "$files" ]; then
+  echo "▶ pre-commit: ESLint on staged files…"
+  if ! npx eslint $files; then
+    echo "✖ ESLint errors in staged files — commit blocked. Fix them and try again."
+    exit 1
+  fi
+fi
+
+echo "✓ pre-commit checks passed"
