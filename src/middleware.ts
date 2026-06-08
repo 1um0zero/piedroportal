@@ -76,5 +76,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|api/|auth/|share/).*)',],
+  // `.*\\..*` excludes any path with a file extension (e.g. /rocker/normal.png,
+  // /piedro-logo.png) so public static assets are served directly, not routed by i18n.
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|api/|auth/|share/|.*\\..*).*)',],
 }
