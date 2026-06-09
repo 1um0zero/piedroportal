@@ -873,6 +873,9 @@
     "weekend": "Wochenende",
     "holiday": "PT-Feiertag",
     "saving": "Speichern…",
-    "recomputed": "{n} Bestellungen neu berechnet"
+    "recomputed": "{n} Bestellungen neu berechnet",
+    "reprocess": "Bestellungen neu berechnen",
+    "recomputing": "Neuberechnung…",
+    "pending_recompute": "Schließungsänderungen gespeichert. Neu berechnen, um die voraussichtlichen Versanddaten bestehender Bestellungen zu aktualisieren (erfolgt auch automatisch beim Verlassen der Seite)."
   }
 }

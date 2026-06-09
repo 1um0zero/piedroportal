@@ -873,6 +873,9 @@
     "weekend": "Weekend",
     "holiday": "PT holiday",
     "saving": "Saving…",
-    "recomputed": "Recalculated {n} orders"
+    "recomputed": "Recalculated {n} orders",
+    "reprocess": "Reprocess orders",
+    "recomputing": "Recalculating…",
+    "pending_recompute": "Closure changes saved. Reprocess to update the expected dispatch dates of existing orders (also done automatically when you leave this page)."
   }
 }

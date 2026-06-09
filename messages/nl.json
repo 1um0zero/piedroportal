@@ -873,6 +873,9 @@
     "weekend": "Weekend",
     "holiday": "PT feestdag",
     "saving": "Opslaan…",
-    "recomputed": "{n} bestellingen herberekend"
+    "recomputed": "{n} bestellingen herberekend",
+    "reprocess": "Bestellingen herberekenen",
+    "recomputing": "Herberekenen…",
+    "pending_recompute": "Sluitingswijzigingen opgeslagen. Herbereken om de verwachte verzenddatums van bestaande bestellingen bij te werken (gebeurt ook automatisch wanneer u deze pagina verlaat)."
   }
 }

@@ -873,6 +873,9 @@
     "weekend": "Week-end",
     "holiday": "Jour férié PT",
     "saving": "Enregistrement…",
-    "recomputed": "{n} commandes recalculées"
+    "recomputed": "{n} commandes recalculées",
+    "reprocess": "Recalculer les commandes",
+    "recomputing": "Recalcul…",
+    "pending_recompute": "Modifications enregistrées. Recalculez pour mettre à jour les dates d’expédition prévues des commandes existantes (effectué aussi automatiquement en quittant cette page)."
   }
 }

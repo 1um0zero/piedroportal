@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { ptHolidays } from '@/lib/dispatch'
-import { setClosure } from '@/app/actions/factory-closures'
+import { setClosure, recomputeDispatchDatesAction } from '@/app/actions/factory-closures'
 
 type Kind = 'closure' | 'vacation' | 'bridge'
 type Closure = { date: string; kind: string; note?: string | null }
@@ -39,6 +39,33 @@ export default function FactoryCalendar({ closures: initial }: { closures: Closu
   const [kind, setKind] = useState<Kind>('closure')
   const [pending, start] = useTransition()
   const [msg, setMsg] = useState<string | null>(null)
+  // Closures changed since the last dispatch recompute. We save each click
+  // immediately but defer the (expensive) recompute until the admin finishes —
+  // so marking a whole holiday period doesn't recompute on every single day.
+  const [dirty, setDirty] = useState(false)
+  const [recomputing, setRecomputing] = useState(false)
+  const dirtyRef = useRef(false)
+  dirtyRef.current = dirty
+
+  async function recompute() {
+    setRecomputing(true); setMsg(null)
+    try {
+      const res = await recomputeDispatchDatesAction()
+      if (res.error) { setMsg(res.error); return }
+      setDirty(false)
+      setMsg(res.recomputed != null ? t('recomputed', { n: res.recomputed }) : null)
+    } finally {
+      setRecomputing(false)
+    }
+  }
+
+  // Auto-recompute on leaving the page (best-effort) if there are pending changes.
+  useEffect(() => {
+    const flush = () => { if (dirtyRef.current) { dirtyRef.current = false; recomputeDispatchDatesAction().catch(() => {}) } }
+    window.addEventListener('pagehide', flush)
+    return () => { window.removeEventListener('pagehide', flush); flush() }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const today = new Date(); today.setUTCHours(0, 0, 0, 0)
   const months = Array.from({ length: 3 }, (_, i) => {
@@ -62,7 +89,7 @@ export default function FactoryCalendar({ closures: initial }: { closures: Closu
     start(async () => {
       const res = await setClosure(key, kind, !currentlyClosed)
       if (res.error) { setMsg(res.error); return }
-      setMsg(res.recomputed != null ? t('recomputed', { n: res.recomputed }) : null)
+      setDirty(true) // dispatch recompute is deferred to "reprocess" / page exit
     })
   }
 
@@ -73,10 +100,26 @@ export default function FactoryCalendar({ closures: initial }: { closures: Closu
           <h1 className="text-xl font-bold text-stone-900">{t('title')}</h1>
           <p className="text-sm text-stone-500 mt-0.5">{t('description')}</p>
         </div>
-        {pending && <span className="text-xs text-stone-400 inline-flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 border-2 border-stone-300 border-t-gold rounded-full animate-spin" /> {t('saving')}
-        </span>}
+        <div className="flex items-center gap-3">
+          {pending && <span className="text-xs text-stone-400 inline-flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 border-2 border-stone-300 border-t-gold rounded-full animate-spin" /> {t('saving')}
+          </span>}
+          {dirty && (
+            <button type="button" onClick={recompute} disabled={recomputing}
+              className="px-4 py-2 rounded-lg bg-gold text-white text-sm font-semibold hover:bg-gold-dark
+                         transition-colors disabled:opacity-50 inline-flex items-center gap-2">
+              {recomputing && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+              {recomputing ? t('recomputing') : t('reprocess')}
+            </button>
+          )}
+        </div>
       </div>
+
+      {dirty && (
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          {t('pending_recompute')}
+        </p>
+      )}
 
       {/* Kind selector + legend */}
       <div className="flex flex-wrap items-center gap-3">

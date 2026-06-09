@@ -51,10 +51,16 @@ export async function recomputeDispatchDates(service?: Svc): Promise<{ updated: 
   return { updated }
 }
 
-/** Add or remove a factory closure for a date, then recompute dispatch dates. */
+/**
+ * Add or remove a factory closure for a date. Does NOT recompute dispatch dates
+ * — that is deferred so the admin can mark a whole holiday period click-by-click
+ * without triggering an expensive recompute each time. Call
+ * `recomputeDispatchDatesAction` once afterwards (the calendar does this on exit
+ * and via an explicit "reprocess" button).
+ */
 export async function setClosure(
   date: string, kind: 'closure' | 'vacation' | 'bridge', on: boolean,
-): Promise<{ error?: string; recomputed?: number }> {
+): Promise<{ error?: string }> {
   const scope = await getAdminScope()
   if (!scope || !isPiedroAdmin(scope.role)) return { error: 'Not authorized' }
   const service = createServiceClient()
@@ -66,9 +72,15 @@ export async function setClosure(
     const { error } = await service.from('factory_closures').delete().eq('date', date)
     if (error) return { error: error.message }
   }
-
-  const { updated } = await recomputeDispatchDates(service)
   revalidatePath('/admin/factory-calendar')
+  return {}
+}
+
+/** Recompute dispatch dates for all open orders after closure changes (auth-guarded). */
+export async function recomputeDispatchDatesAction(): Promise<{ error?: string; recomputed?: number }> {
+  const scope = await getAdminScope()
+  if (!scope || !isPiedroAdmin(scope.role)) return { error: 'Not authorized' }
+  const { updated } = await recomputeDispatchDates()
   revalidatePath('/orders')
   revalidatePath('/admin/orders')
   return { recomputed: updated }
