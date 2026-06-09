@@ -96,10 +96,13 @@ async function main() {
 
   if (!APPLY) { console.log('\n(run with --apply to write profiles + wishlist)'); return }
 
-  for (let i = 0; i < profilePatches.length; i += 100) {
-    const { error } = await sb.from('profiles').upsert(profilePatches.slice(i, i + 100), { onConflict: 'id' })
-    if (error) { console.error('✗ profiles:', error.message); process.exit(1) }
+  let pn = 0
+  for (const patch of profilePatches) {
+    const { id, ...fields } = patch
+    const { error } = await sb.from('profiles').update(fields).eq('id', id)
+    if (error) console.error(`  ✗ profile ${id}: ${error.message}`); else pn++
   }
+  console.log(`  profiles updated: ${pn}`)
   // dedupe wishlist rows
   const seen = new Set(), wl = []
   for (const r of wishRows) { const k = `${r.user_id}|${r.product_id}`; if (!seen.has(k)) { seen.add(k); wl.push(r) } }
