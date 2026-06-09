@@ -212,31 +212,47 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     } catch { /* ignore */ }
   }, [section, filters])
 
-  // ── Persist scroll position (debounced) so returning restores it ──
+  // ── Persist scroll position so returning restores it ──
+  // rAF-throttled while scrolling, plus a flush on navigate-away (effect cleanup
+  // / pagehide). The flush matters: clicking a product is a client-side nav, so
+  // without it the LAST scroll position would be lost and we'd restore higher up.
   const browseRef = useRef({ section, filters })
   browseRef.current = { section, filters }
   useEffect(() => {
     if (typeof window === 'undefined') return
-    let timer: ReturnType<typeof setTimeout>
+    let raf = 0
+    const save = () => {
+      try {
+        sessionStorage.setItem(STATE_KEY, JSON.stringify({ ...browseRef.current, scrollY: window.scrollY }))
+      } catch { /* ignore */ }
+    }
     const onScroll = () => {
-      clearTimeout(timer)
-      timer = setTimeout(() => {
-        try {
-          sessionStorage.setItem(STATE_KEY, JSON.stringify({ ...browseRef.current, scrollY: window.scrollY }))
-        } catch { /* ignore */ }
-      }, 200)
+      if (raf) return
+      raf = requestAnimationFrame(() => { raf = 0; save() })
     }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => { window.removeEventListener('scroll', onScroll); clearTimeout(timer) }
+    window.addEventListener('pagehide', save)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('pagehide', save)
+      if (raf) cancelAnimationFrame(raf)
+      save() // flush the final scroll position when navigating away
+    }
   }, [])
 
   // ── Restore scroll once the target section has rendered its cards ──
+  // Retry over a few frames in case layout settles late (so we reach the exact
+  // saved position instead of landing short).
   useEffect(() => {
     if (pendingScroll.current == null || loading || filtered.length === 0) return
     const y = pendingScroll.current
     pendingScroll.current = null
-    // Two RAFs: wait for the grid to lay out before scrolling.
-    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)))
+    let tries = 0
+    const tryScroll = () => {
+      window.scrollTo(0, y)
+      if (tries++ < 8 && Math.abs(window.scrollY - y) > 2) requestAnimationFrame(tryScroll)
+    }
+    requestAnimationFrame(() => requestAnimationFrame(tryScroll))
   }, [loading, filtered.length])
 
   // ── Auto-clear values that are no longer available ──
