@@ -455,7 +455,8 @@
     "cookie_ok": "Verstanden",
     "refresh": "Aktualisieren",
     "refresh_hint": "Neueste Version laden",
-    "built": "Erstellt {date}"
+    "built": "Erstellt {date}",
+    "updated": "Aktualisiert {datetime}"
   },
   "dashboard": {
     "title_user": "Mein Dashboard",

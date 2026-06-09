@@ -455,7 +455,8 @@
     "cookie_ok": "Compris",
     "refresh": "Actualiser",
     "refresh_hint": "Charger la dernière version",
-    "built": "Compilé {date}"
+    "built": "Compilé {date}",
+    "updated": "Mis à jour {datetime}"
   },
   "dashboard": {
     "title_user": "Mon tableau de bord",

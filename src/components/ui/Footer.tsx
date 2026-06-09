@@ -24,8 +24,12 @@ export default function Footer() {
   const t = useTranslations('footer')
   const locale = useLocale()
   const year = new Date().getFullYear()
+  // Show the build date AND time — easier to tell "am I up to date?" after a
+  // deploy than a commit hash. Rendered in the user's local timezone.
   const built = BUILD_TIME
-    ? new Date(BUILD_TIME).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+    ? new Date(BUILD_TIME).toLocaleString(locale, {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      })
     : ''
 
   return (
@@ -44,8 +48,8 @@ export default function Footer() {
 
           {/* Version + force-refresh — lets users update without knowing Ctrl+Shift+R */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-stone-300 font-mono" title={built ? t('built', { date: built }) : undefined}>
-              v{VERSION}
+            <span className="text-[11px] text-stone-400" title={`v${VERSION}`}>
+              {built ? t('updated', { datetime: built }) : `v${VERSION}`}
             </span>
             <button type="button" onClick={forceRefresh} title={t('refresh_hint')}
               className="inline-flex items-center gap-1 rounded-md border border-stone-200 px-2 py-1

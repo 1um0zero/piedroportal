@@ -455,7 +455,8 @@
     "cookie_ok": "Begrepen",
     "refresh": "Vernieuwen",
     "refresh_hint": "Laad de nieuwste versie",
-    "built": "Gebouwd {date}"
+    "built": "Gebouwd {date}",
+    "updated": "Bijgewerkt {datetime}"
   },
   "dashboard": {
     "title_user": "Mijn dashboard",
