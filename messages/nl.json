@@ -590,7 +590,9 @@
       "age_12m": "Afgelopen jaar",
       "age_all": "Alles",
       "delete_order": "Concept verwijderen",
-      "delete_confirm": "Dit concept verwijderen? Dit kan niet ongedaan worden gemaakt."
+      "delete_confirm": "Dit concept verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "metric_delivered": "Geleverd",
+      "age_period": "Kies periode…"
     },
     "users": {
       "title": "Gebruikersbeheer",

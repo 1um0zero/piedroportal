@@ -590,7 +590,9 @@
       "age_12m": "Last year",
       "age_all": "All time",
       "delete_order": "Delete draft",
-      "delete_confirm": "Delete this draft order? This cannot be undone."
+      "delete_confirm": "Delete this draft order? This cannot be undone.",
+      "metric_delivered": "Delivered",
+      "age_period": "Choose period…"
     },
     "users": {
       "title": "User Management",

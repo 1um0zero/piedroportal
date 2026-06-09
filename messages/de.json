@@ -590,7 +590,9 @@
       "age_12m": "Letztes Jahr",
       "age_all": "Alle",
       "delete_order": "Entwurf löschen",
-      "delete_confirm": "Diesen Entwurf löschen? Dies kann nicht rückgängig gemacht werden."
+      "delete_confirm": "Diesen Entwurf löschen? Dies kann nicht rückgängig gemacht werden.",
+      "metric_delivered": "Geliefert",
+      "age_period": "Zeitraum wählen…"
     },
     "users": {
       "title": "Benutzerverwaltung",

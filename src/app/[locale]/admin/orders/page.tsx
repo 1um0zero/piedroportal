@@ -20,12 +20,15 @@ function ageCutoff(age: string): string | null {
   return d.toISOString()
 }
 
-type Props = { searchParams: Promise<{ age?: string }> }
+type Props = { searchParams: Promise<{ age?: string; from?: string; to?: string }> }
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
   const scope = await requireBackofficePage()
-  const age = (await searchParams).age ?? '3m'
-  const cutoff = ageCutoff(age)
+  const sp = await searchParams
+  const age = sp.age ?? '3m'
+  // A specific from–to period (both required) overrides the quick age window.
+  const useRange = !!(sp.from && sp.to)
+  const cutoff = useRange ? null : ageCutoff(age)
 
   const service = createServiceClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,7 +41,8 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
       .select(SELECT)
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
-    if (cutoff) q = q.gte('created_at', cutoff)
+    if (useRange) q = q.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
+    else if (cutoff) q = q.gte('created_at', cutoff)
     const { data, error } = await q
     if (error || !data?.length) break
     allOrders = allOrders.concat(data)
@@ -55,5 +59,5 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))
   all.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
 
-  return <OrdersPage orders={all} isAdmin={true} currentUserId={scope.userId} age={age} />
+  return <OrdersPage orders={all} isAdmin={true} currentUserId={scope.userId} age={age} from={sp.from} to={sp.to} />
 }

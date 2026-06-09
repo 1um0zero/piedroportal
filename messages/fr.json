@@ -590,7 +590,9 @@
       "age_12m": "Dernière année",
       "age_all": "Tout",
       "delete_order": "Supprimer le brouillon",
-      "delete_confirm": "Supprimer ce brouillon ? Cette action est irréversible."
+      "delete_confirm": "Supprimer ce brouillon ? Cette action est irréversible.",
+      "metric_delivered": "Livrées",
+      "age_period": "Choisir période…"
     },
     "users": {
       "title": "Gestion des utilisateurs",

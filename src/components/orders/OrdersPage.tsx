@@ -30,6 +30,8 @@ type Props = {
   isAdmin: boolean
   currentUserId?: string
   age?: string
+  from?: string
+  to?: string
 }
 
 const AGE_OPTIONS = ['3m', '6m', '12m', 'all'] as const
@@ -62,7 +64,7 @@ function hasAdditions(adds: Record<string, unknown> | null | undefined): boolean
   return false
 }
 
-export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' }: Props) {
+export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m', from, to }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -81,6 +83,12 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
   const [page, setPage]           = useState(1)
   const [repeating, setRepeating] = useState<string | null>(null)
   const [deleting, setDeleting]   = useState<string | null>(null)
+  // Age window (quick presets) or a specific from–to period — server-side.
+  const [periodMode, setPeriodMode] = useState(!!(from || to))
+  const [fromD, setFromD] = useState(from ?? '')
+  const [toD,   setToD]   = useState(to ?? '')
+  const pushWindow = (qs: string) => router.push(`${pathname}?${qs}` as Parameters<typeof router.push>[0])
+  const applyPeriod = (f: string, tt: string) => { if (f && tt) pushWindow(`from=${f}&to=${tt}`) }
 
   const selectChip   = (key: string) => { setUrgentFilter(false); setActive(a => a === key ? '' : key) }
   const selectUrgent = (key: string) => { setActive(key); setUrgentFilter(true) }
@@ -139,10 +147,13 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
 
   // All chip counts (and how many of each are urgent) computed from the windowed set.
   const counts = useMemo(() => {
-    const c = { total: orders.length, draft: 0, draftU: 0, new: 0, newU: 0,
+    const c = { total: 0, delivered: 0, draft: 0, draftU: 0, new: 0, newU: 0,
       pending: 0, pendingU: 0, approved: 0, approvedU: 0, production: 0, productionU: 0, refused: 0 }
     for (const o of orders) {
       const u = isUrgent(o)
+      // Total is every active order; Delivered is counted (and shown) separately.
+      if (o.status === 'delivered') c.delivered++
+      else c.total++
       if (o.status === 'draft')                 { c.draft++;      if (u) c.draftU++ }
       if (isNewOrder(o))                        { c.new++;        if (u) c.newU++ }
       if (isPending(o))                         { c.pending++;    if (u) c.pendingU++ }
@@ -179,7 +190,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
 
       {/* Chips: Draft? → New → Pending → Approved(+refused) → Production → Total (right).
           Urgent is shown inside each chip (red dot), not as a separate chip. */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
         {chips.map(c => (
           <div key={c.key} role="button" tabIndex={0}
             onClick={() => selectChip(c.key)}
@@ -187,9 +198,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
             className={`p-3 rounded-xl border text-left transition-all cursor-pointer
               ${active === c.key && !urgentFilter
                 ? 'border-gold bg-gold/5'
-                : c.accent
-                  ? 'border-gold/40 bg-gold/[0.03] hover:border-gold/60'
-                  : 'border-stone-100 bg-white hover:border-stone-200'}`}
+                : 'border-stone-100 bg-white hover:border-stone-200'}`}
             style={{ boxShadow: 'var(--shadow-card)' }}>
             <p className={`text-2xl font-bold ${c.accent ? 'text-gold-dark' : 'text-stone-800'}`}>{nz(c.count)}</p>
             <p className="text-xs text-stone-500 mt-0.5">{c.label}</p>
@@ -212,22 +221,26 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
           </div>
         ))}
 
-        {/* Total — to the right; on admin it carries the age-window selector */}
-        <div className={`p-3 rounded-xl border transition-all
-          ${active === '' && !urgentFilter ? 'border-gold bg-gold/5' : 'border-stone-100 bg-white'}`}
+        {/* Total — every active order (delivered counted separately, on the right) */}
+        <div className={`p-3 rounded-xl border transition-all cursor-pointer
+          ${active === '' && !urgentFilter ? 'border-gold bg-gold/5' : 'border-stone-100 bg-white hover:border-stone-200'}`}
+          role="button" tabIndex={0}
+          onClick={() => { setActive(''); setUrgentFilter(false) }}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setActive(''); setUrgentFilter(false) } }}
           style={{ boxShadow: 'var(--shadow-card)' }}>
-          <button onClick={() => { setActive(''); setUrgentFilter(false) }} className="text-left w-full">
-            <p className="text-2xl font-bold text-stone-800">{nz(counts.total)}</p>
-            <p className="text-xs text-stone-500 mt-0.5">{t('metric_total')}</p>
-          </button>
-          {isAdmin && (
-            <select value={age}
-              onClick={e => e.stopPropagation()}
-              onChange={e => router.push(`${pathname}?age=${e.target.value}` as Parameters<typeof router.push>[0])}
-              className="mt-1.5 w-full rounded-md border border-stone-200 px-1.5 py-0.5 text-[11px] text-stone-500 focus:border-gold focus:outline-none">
-              {AGE_OPTIONS.map(o => <option key={o} value={o}>{t(`age_${o}`)}</option>)}
-            </select>
-          )}
+          <p className="text-2xl font-bold text-stone-800">{nz(counts.total)}</p>
+          <p className="text-xs text-stone-500 mt-0.5">{t('metric_total')}</p>
+        </div>
+
+        {/* Delivered — separate total, to the right of Total */}
+        <div className={`p-3 rounded-xl border transition-all cursor-pointer
+          ${active === 'delivered' && !urgentFilter ? 'border-gold bg-gold/5' : 'border-stone-100 bg-white hover:border-stone-200'}`}
+          role="button" tabIndex={0}
+          onClick={() => selectChip('delivered')}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') selectChip('delivered') }}
+          style={{ boxShadow: 'var(--shadow-card)' }}>
+          <p className="text-2xl font-bold text-stone-800">{nz(counts.delivered)}</p>
+          <p className="text-xs text-stone-500 mt-0.5">{t('metric_delivered')}</p>
         </div>
       </div>
 
@@ -261,6 +274,42 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m' 
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
           </svg>
         </div>
+
+        {/* Age window — quick presets, or a specific from–to period (admin). Applies
+            to every status in view (it's the server-side fetch window). */}
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <select
+                value={periodMode ? 'period' : age}
+                onChange={e => {
+                  const v = e.target.value
+                  if (v === 'period') { setPeriodMode(true) }
+                  else { setPeriodMode(false); pushWindow(`age=${v}`) }
+                }}
+                className="h-9 px-3 pr-8 text-sm bg-white border border-stone-200 rounded-lg
+                           appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30">
+                {AGE_OPTIONS.map(o => <option key={o} value={o}>{t(`age_${o}`)}</option>)}
+                <option value="period">{t('age_period')}</option>
+              </select>
+              <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+            {periodMode && (
+              <div className="flex items-center gap-1.5">
+                <input type="date" value={fromD} max={toD || undefined}
+                  onChange={e => { setFromD(e.target.value); applyPeriod(e.target.value, toD) }}
+                  className="h-9 px-2 text-sm bg-white border border-stone-200 rounded-lg focus:border-gold focus:outline-none" />
+                <span className="text-stone-400 text-sm">–</span>
+                <input type="date" value={toD} min={fromD || undefined}
+                  onChange={e => { setToD(e.target.value); applyPeriod(fromD, e.target.value) }}
+                  className="h-9 px-2 text-sm bg-white border border-stone-200 rounded-lg focus:border-gold focus:outline-none" />
+              </div>
+            )}
+          </div>
+        )}
 
         <p className="ml-auto text-sm text-stone-400">
           {t('count', { count: filtered.length })}
