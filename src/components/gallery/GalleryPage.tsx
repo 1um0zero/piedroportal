@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product, Section } from '@/types'
 import { useWishlist } from '@/contexts/WishlistContext'
@@ -32,6 +32,11 @@ const EMPTY: Filters = {
   constructions: [], widths: [], sizes: [],
   search: '', onlyNew: false, onlyWishlist: false,
 }
+
+// Remembers the browse state (section + filters + scroll) so returning from a
+// product page lands back where the user left off, not at the top of KIDS.
+// Not sensitive (no patient data), so sessionStorage is fine.
+const STATE_KEY = 'gallery-browse-state'
 
 // ── Core filter fn (exclude one dimension for cascading options) ───────────────
 export function applyFilters(
@@ -133,6 +138,32 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     getMyExclusiveProducts().then(setExclusives).catch(() => {})
   }, [])
 
+  // ── Restore browse state on mount (after returning from a product page) ──
+  // Done in an effect (not in useState initialisers) to avoid an SSR/hydration
+  // mismatch: the server always renders the default section.
+  const pendingScroll = useRef<number | null>(null)
+  const didRestore = useRef(false)
+  useEffect(() => {
+    if (didRestore.current) return
+    didRestore.current = true
+    let saved: { section?: Section; filters?: Filters; scrollY?: number } | null = null
+    try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
+    if (!saved) return
+    if (saved.filters) setFilters(saved.filters)
+    if (typeof saved.scrollY === 'number') pendingScroll.current = saved.scrollY
+    const s = saved.section
+    if (s && SECTIONS.includes(s) && s !== section) {
+      setSection(s)
+      if (!cache[s]) {
+        setLoading(true)
+        fetchSection(s)
+          .then((data) => setCache((prev) => ({ ...prev, [s]: data })))
+          .catch((err) => console.error('[Gallery] restore fetch error:', err))
+          .finally(() => setLoading(false))
+      }
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const sectionProducts = useMemo(() => {
     const base = cache[section] ?? []
     const extra = exclusives.filter((p) => p.section === section)
@@ -172,6 +203,41 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     if (filters.onlyWishlist) return base.filter((p) => wishlistIds.has(p.id))
     return base
   }, [sectionProducts, filters, wishlistIds])
+
+  // ── Persist browse state (section + filters) whenever it changes ──
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({ section, filters, scrollY: window.scrollY }))
+    } catch { /* ignore */ }
+  }, [section, filters])
+
+  // ── Persist scroll position (debounced) so returning restores it ──
+  const browseRef = useRef({ section, filters })
+  browseRef.current = { section, filters }
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    let timer: ReturnType<typeof setTimeout>
+    const onScroll = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        try {
+          sessionStorage.setItem(STATE_KEY, JSON.stringify({ ...browseRef.current, scrollY: window.scrollY }))
+        } catch { /* ignore */ }
+      }, 200)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => { window.removeEventListener('scroll', onScroll); clearTimeout(timer) }
+  }, [])
+
+  // ── Restore scroll once the target section has rendered its cards ──
+  useEffect(() => {
+    if (pendingScroll.current == null || loading || filtered.length === 0) return
+    const y = pendingScroll.current
+    pendingScroll.current = null
+    // Two RAFs: wait for the grid to lay out before scrolling.
+    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)))
+  }, [loading, filtered.length])
 
   // ── Auto-clear values that are no longer available ──
   function autoClean<T>(key: keyof Filters, current: T[], avail: T[]) {

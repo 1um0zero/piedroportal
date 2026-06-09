@@ -89,7 +89,7 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
         )}
         {product.diabetics && (
           <span title={tp('diabetic')} aria-label={tp('diabetic')}
-            className={`absolute z-10 px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase bg-stone-700 text-white rounded-full shadow-sm cursor-help ${isNew(product) ? 'top-2 left-14' : 'top-2 left-2'}`}>D</span>
+            className={`absolute z-10 px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase bg-stone-700 text-white rounded-full shadow-sm ${isNew(product) ? 'top-2 left-14' : 'top-2 left-2'}`}>D</span>
         )}
       </div>
 
