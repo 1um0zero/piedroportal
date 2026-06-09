@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { SECTIONS } from './additions-config'
 import { getFieldLabel, getSectionLabel, translateOptionValue, groupImageBlocks } from '@/lib/additions-helpers'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
+import { displayWidthByConstruction } from '@/lib/width-display'
 import type { Locale } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
@@ -57,6 +58,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
   const [, setI18nReady] = useState(0)
   useEffect(() => { preloadFilterTranslations().then(() => setI18nReady(n => n + 1)) }, [])
   const trC = (v?: string | null) => translateFilterValueSync(v ?? '', locale as Locale)
+  const trW = (w?: string | null, constr?: string | null) => displayWidthByConstruction(w ?? '', constr, locale)
   const isDouble = unit === 'LEFT_RIGHT'
 
   const t  = useTranslations('order')
@@ -250,8 +252,8 @@ export default function OrderSummary(props: OrderSummaryProps) {
               {(widthLeft || widthRight) && (
                 <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
                   <span className="font-semibold text-stone-600">{t('width')}</span>
-                  <span className="text-stone-800 font-semibold text-center">{widthLeft || '—'}</span>
-                  <span className="text-stone-800 font-semibold text-center">{widthRight || '—'}</span>
+                  <span className="text-stone-800 font-semibold text-center">{trW(widthLeft, constrLeft) || '—'}</span>
+                  <span className="text-stone-800 font-semibold text-center">{trW(widthRight, constrRight) || '—'}</span>
                 </div>
               )}
               {(sizeLeft || sizeRight) && (
@@ -273,7 +275,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
               {(widthLeft || widthRight) && (
                 <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
                   <span className="font-semibold text-stone-600">{t('width')}</span>
-                  <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? widthRight : widthLeft}</span>
+                  <span className="text-stone-800 font-semibold text-right">{trW(unit === 'RIGHT' ? widthRight : widthLeft, unit === 'RIGHT' ? constrRight : constrLeft)}</span>
                 </div>
               )}
               {unit !== 'DIFF_SIZES' && (sizeLeft || sizeRight) && (

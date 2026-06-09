@@ -7,6 +7,7 @@ import { getUserCompanyIds } from '@/lib/user-companies'
 import { getSettings } from '@/lib/settings'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
 import { escapeHtml } from '@/lib/escape-html'
+import { displayWidthByConstruction } from '@/lib/width-display'
 import { getTranslations } from 'next-intl/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { Resend } from 'resend'
@@ -149,7 +150,8 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
       reference: row.reference_customer, status: row.status, unit: row.unit,
       clinician: row.clinician, patient_name: row.patient_name, quantity: row.quantity,
       construction_left: tr(row.construction_left), construction_right: tr(row.construction_right),
-      width_left: row.width_left, width_right: row.width_right,
+      width_left: row.width_left ? displayWidthByConstruction(row.width_left, row.construction_left, loc) : row.width_left,
+      width_right: row.width_right ? displayWidthByConstruction(row.width_right, row.construction_right, loc) : row.width_right,
       size_left: row.size_left, size_right: row.size_right,
       additions: row.additions, comments: row.comments,
       created_at: new Date().toISOString(),

@@ -74,17 +74,20 @@ function availableSizes(products: Product[]): number[] {
 }
 
 // ── Width sort: numerics first → L,M,N,R → rest (S,W…) ─────────────────────
-const LMNR = ['L', 'M', 'N', 'R']
+// S,M,L (and its NL display N,R,W) read naturally as Small→Medium→Large, not
+// alphabetically (L,M,S). Rank them by size so chips show S M L → N R W.
+const SIZE_RANK: Record<string, number> = { S: 1, M: 2, L: 3, N: 1, R: 2, W: 3 }
 function parseWidthNum(s: string) {
   return parseFloat(s.replace('½', '.5').replace(/(\d)1\/2/, '$1.5'))
 }
 function sortWidths(a: string, b: string): number {
   const numA = /^\d/.test(a), numB = /^\d/.test(b)
-  const lmnrA = LMNR.includes(a), lmnrB = LMNR.includes(b)
   if (numA !== numB) return numA ? -1 : 1
   if (numA && numB) return parseWidthNum(a) - parseWidthNum(b)
-  if (lmnrA !== lmnrB) return lmnrA ? -1 : 1
-  if (lmnrA && lmnrB) return LMNR.indexOf(a) - LMNR.indexOf(b)
+  const rA = SIZE_RANK[a], rB = SIZE_RANK[b]
+  if (rA && rB) return rA - rB   // S < M < L
+  if (rA) return -1
+  if (rB) return 1
   return a.localeCompare(b)
 }
 
