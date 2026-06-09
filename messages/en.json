@@ -222,7 +222,8 @@
     "cancel": "Cancel",
     "continue_to_orders": "Continue to My Orders",
     "redirecting": "Redirecting to My Orders…",
-    "order_not_saved": "The order was NOT saved — please try again."
+    "order_not_saved": "The order was NOT saved — please try again.",
+    "dispatch_closure_notice": "Note: the factory is closed on {dates} in the coming days, so your expected dispatch may be later than usual."
   },
   "additions": {
     "yes": "Yes",

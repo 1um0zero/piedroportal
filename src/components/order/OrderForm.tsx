@@ -29,6 +29,7 @@ type Props = {
   draftId?:    string                          // set when editing/duplicating a draft
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   draftData?:  Record<string, any> | null      // pre-fill values from existing order
+  closuresAhead?: { date: string; reason: 'holiday' | 'closure' }[]  // factory closed days in the dispatch window
 }
 
 // ── Single-select chip ────────────────────────────────────────────────────────
@@ -111,7 +112,7 @@ function SizeInput({ sizes, value, onChange, label, side, onBlurAfterSnap }: {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData }: Props) {
+export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData, closuresAhead = [] }: Props) {
   const t  = useTranslations('order')
   const locale = useLocale()
   const router = useRouter()
@@ -492,6 +493,19 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           <span aria-hidden>←</span> {t('cancel')}
         </Link>
       </div>
+
+      {closuresAhead.length > 0 && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+          <p className="text-sm text-amber-800">
+            {t('dispatch_closure_notice', {
+              dates: closuresAhead.map(c => new Date(`${c.date}T00:00:00Z`).toLocaleDateString(locale, { day: '2-digit', month: 'short' })).join(', '),
+            })}
+          </p>
+        </div>
+      )}
 
       {/* Step tabs */}
       <div className="flex gap-0 border-b border-stone-200 mb-6">

@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanies, getUserExclusiveLabels } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
+import { getSettings } from '@/lib/settings'
+import { closuresAhead } from '@/lib/dispatch'
 import OrderForm from '@/components/order/OrderForm'
 import type { Product } from '@/types'
 
@@ -92,9 +94,24 @@ export default async function OrderPage({ params, searchParams }: Props) {
     if (data && (data.user_id === user.id || isAdmin)) draftData = data
   }
 
+  // Warn the buyer if the factory is closed within the dispatch window (so they
+  // know their expected dispatch may be later than usual).
+  const dispatchSettings = await getSettings(['dispatch_days_normal', 'dispatch_days_urgent'])
+  const windowDays = Math.max(
+    parseInt(dispatchSettings.dispatch_days_normal || '0', 10) || 0,
+    parseInt(dispatchSettings.dispatch_days_urgent || '0', 10) || 0,
+  )
+  let upcomingClosures: { date: string; reason: 'holiday' | 'closure' }[] = []
+  if (windowDays > 0) {
+    const { data: cl } = await createServiceClient().from('factory_closures').select('date')
+    const closures = new Set((cl ?? []).map(r => (r as { date: string }).date))
+    upcomingClosures = closuresAhead(closures, windowDays)
+  }
+
   return (
     <OrderForm
       product={product}
+      closuresAhead={upcomingClosures}
       userId={user?.id ?? ''}
       userProfile={profile ?? { id: '', email: '', company_id: null, full_name: null, role: 'user', preferred_locale: 'en' }}
       userCompany={userCompany}

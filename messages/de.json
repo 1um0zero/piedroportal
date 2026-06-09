@@ -222,7 +222,8 @@
     "cancel": "Abbrechen",
     "continue_to_orders": "Weiter zu Meine Bestellungen",
     "redirecting": "Weiterleitung zu Meine Bestellungen…",
-    "order_not_saved": "Die Bestellung wurde NICHT gespeichert — bitte erneut versuchen."
+    "order_not_saved": "Die Bestellung wurde NICHT gespeichert — bitte erneut versuchen.",
+    "dispatch_closure_notice": "Hinweis: Die Fabrik ist in den kommenden Tagen am {dates} geschlossen, daher kann sich Ihr voraussichtlicher Versand verzögern."
   },
   "additions": {
     "yes": "Ja",

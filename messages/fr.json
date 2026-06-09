@@ -222,7 +222,8 @@
     "cancel": "Annuler",
     "continue_to_orders": "Continuer vers Mes commandes",
     "redirecting": "Redirection vers Mes commandes…",
-    "order_not_saved": "La commande n’a PAS été enregistrée — veuillez réessayer."
+    "order_not_saved": "La commande n’a PAS été enregistrée — veuillez réessayer.",
+    "dispatch_closure_notice": "Remarque : l’usine est fermée le {dates} dans les prochains jours, votre expédition prévue peut donc être plus tardive que d’habitude."
   },
   "additions": {
     "yes": "Oui",
