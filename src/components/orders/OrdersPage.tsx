@@ -275,9 +275,9 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
           </svg>
         </div>
 
-        {/* Age window — quick presets, or a specific from–to period (admin). Applies
-            to every status in view (it's the server-side fetch window). */}
-        {isAdmin && (
+        {/* Age window — quick presets, or a specific from–to period. Applies to
+            every status in view (it's the server-side fetch window). */}
+        {(
           <div className="flex items-center gap-2">
             <div className="relative">
               <select
@@ -401,6 +401,17 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                         {isUrgent && <span title={t('urgent_only')} className="mt-1.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         <div className="flex flex-col items-start gap-1">
                         {(() => {
+                          // Delivered with a carrier link → show "Tracking" as a link instead of the badge.
+                          const isDelivered = o.status === 'delivered' || o.production_state === 'delivered'
+                          if (isDelivered && o.tracking_link) {
+                            return (
+                              <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
+                                onClick={e => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors">
+                                {t('tracking')} ↗
+                              </a>
+                            )
+                          }
                           if (o.production_state) {
                             const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
                             return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{p ? tp(p.value) : o.production_state}</span>

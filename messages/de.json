@@ -592,7 +592,8 @@
       "delete_order": "Entwurf löschen",
       "delete_confirm": "Diesen Entwurf löschen? Dies kann nicht rückgängig gemacht werden.",
       "metric_delivered": "Geliefert",
-      "age_period": "Zeitraum wählen…"
+      "age_period": "Zeitraum wählen…",
+      "tracking": "Tracking"
     },
     "users": {
       "title": "Benutzerverwaltung",

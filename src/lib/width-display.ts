@@ -16,11 +16,11 @@ const WIDTH_I18N: Record<string, Record<string, string>> = {
 
 const isSmlFamily = (widths: string[]) => widths.some((w) => w === 'S' || w === 'L')
 
-// The S,M,L width system is used only by the AFO/AGO constructions; everything
-// else (numeric, adult letter codes E,G,I,K,M…) is not. So when we only have a
-// single width value (an order line, the PDF) we can disambiguate the otherwise
-// shared "M" by the construction.
-const SML_CONSTRUCTIONS = new Set(['AFO', 'AGO'])
+// The S,M,L width system is used only by the AFO construction; everything else
+// (numeric, adult letter codes E,G,I,K,M…) is not. So when we only have a single
+// width value (an order line, the PDF) we disambiguate the otherwise shared "M"
+// by the construction. (AGO is not a construction — it lives in the info field.)
+const SML_CONSTRUCTIONS = new Set(['AFO'])
 
 /** Translate one width, disambiguating S,M,L by the construction it belongs to. */
 export function displayWidthByConstruction(w: string, construction: string | null | undefined, locale: string): string {

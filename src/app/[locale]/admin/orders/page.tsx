@@ -1,6 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdfs } from '@/lib/order-pdf'
+import { attachTracking } from '@/lib/order-tracking'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const SELECT = `
@@ -54,6 +55,8 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const all = scope.allModels
     ? allOrders
     : allOrders.filter(o => scope.canModel(o.products?.style_name))
+
+  await attachTracking(all, service)
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))

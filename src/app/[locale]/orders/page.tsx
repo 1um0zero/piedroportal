@@ -4,13 +4,31 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdfs } from '@/lib/order-pdf'
+import { attachTracking } from '@/lib/order-tracking'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import OrdersPage from '@/components/orders/OrdersPage'
 
-export default async function OrdersRoute() {
+const AGE_MONTHS: Record<string, number> = { '3m': 3, '6m': 6, '12m': 12 }
+function ageCutoff(age: string): string | null {
+  const months = AGE_MONTHS[age]
+  if (!months) return null // 'all'
+  const d = new Date()
+  d.setMonth(d.getMonth() - months)
+  return d.toISOString()
+}
+
+type Props = { searchParams: Promise<{ age?: string; from?: string; to?: string }> }
+
+export default async function OrdersRoute({ searchParams }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  // Users see all their orders by default; the age/period window is optional.
+  const sp = await searchParams
+  const age = sp.age ?? 'all'
+  const useRange = !!(sp.from && sp.to)
+  const cutoff = useRange ? null : ageCutoff(age)
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -70,6 +88,9 @@ export default async function OrdersRoute() {
       query = query.eq('user_id', user.id)
     }
 
+    if (useRange) query = query.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
+    else if (cutoff) query = query.gte('created_at', cutoff)
+
     const { data, error } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
@@ -81,6 +102,7 @@ export default async function OrdersRoute() {
   }
 
   const orders = allOrders
+  await attachTracking(orders, service)
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   const signed = await signOrderPdfs(orders.filter(o => o.pdf_url).map(o => o.id))
@@ -93,6 +115,9 @@ export default async function OrdersRoute() {
       orders={all}
       isAdmin={false}
       currentUserId={user.id}
+      age={age}
+      from={sp.from}
+      to={sp.to}
     />
   )
 }

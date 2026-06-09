@@ -592,7 +592,8 @@
       "delete_order": "Concept verwijderen",
       "delete_confirm": "Dit concept verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "metric_delivered": "Geleverd",
-      "age_period": "Kies periode…"
+      "age_period": "Kies periode…",
+      "tracking": "Tracking"
     },
     "users": {
       "title": "Gebruikersbeheer",
