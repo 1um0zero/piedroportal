@@ -45,7 +45,7 @@ export default function FactoryCalendar({ closures: initial }: { closures: Closu
   const [dirty, setDirty] = useState(false)
   const [recomputing, setRecomputing] = useState(false)
   const dirtyRef = useRef(false)
-  dirtyRef.current = dirty
+  useEffect(() => { dirtyRef.current = dirty }, [dirty])
 
   async function recompute() {
     setRecomputing(true); setMsg(null)
@@ -64,7 +64,6 @@ export default function FactoryCalendar({ closures: initial }: { closures: Closu
     const flush = () => { if (dirtyRef.current) { dirtyRef.current = false; recomputeDispatchDatesAction().catch(() => {}) } }
     window.addEventListener('pagehide', flush)
     return () => { window.removeEventListener('pagehide', flush); flush() }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const today = new Date(); today.setUTCHours(0, 0, 0, 0)
