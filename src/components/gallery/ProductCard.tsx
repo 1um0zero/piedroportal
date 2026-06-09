@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import { isNew } from './GalleryPage'
@@ -11,7 +11,11 @@ import { translateFilterValueSync } from '@/lib/filter-translations'
 import { displayWidths } from '@/lib/width-display'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}`
+// `v` busts the Next/Image optimizer cache after a bulk image reprocess (the
+// source path is unchanged, so without a new query key Vercel keeps serving the
+// previously-optimised version). Bump it whenever product images are re-baked.
+const IMG_VERSION = '2'
+const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=${IMG_VERSION}`
 
 const SHADOW     = 'drop-shadow(0 8px 20px rgba(0,0,0,0.11)) drop-shadow(0 2px 5px rgba(0,0,0,0.06))'
 const SHADOW_HOV = 'drop-shadow(0 16px 32px rgba(0,0,0,0.16)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))'
@@ -23,6 +27,7 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
   const [hovered, setHovered]   = useState(false)
   const { ids, toggle }         = useWishlist()
   const locale = useLocale() as Locale
+  const tp = useTranslations('product')
   const wishlisted = ids.has(product.id)
 
   // Get translated color name
@@ -83,7 +88,8 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
           <span className="absolute top-2 left-2 z-10 px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase bg-gold text-white rounded shadow-sm">NEW</span>
         )}
         {product.diabetics && (
-          <span className={`absolute z-10 px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase bg-stone-700 text-white rounded-full shadow-sm ${isNew(product) ? 'top-2 left-14' : 'top-2 left-2'}`}>D</span>
+          <span title={tp('diabetic')} aria-label={tp('diabetic')}
+            className={`absolute z-10 px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase bg-stone-700 text-white rounded-full shadow-sm cursor-help ${isNew(product) ? 'top-2 left-14' : 'top-2 left-2'}`}>D</span>
         )}
       </div>
 
