@@ -142,15 +142,17 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   // Done in an effect (not in useState initialisers) to avoid an SSR/hydration
   // mismatch: the server always renders the default section.
   const pendingScroll = useRef<number | null>(null)
+  const pendingAnchor = useRef<string | null>(null)   // id of the card to scroll back to
   const didRestore = useRef(false)
   useEffect(() => {
     if (didRestore.current) return
     didRestore.current = true
-    let saved: { section?: Section; filters?: Filters; scrollY?: number } | null = null
+    let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
     try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
     if (!saved) return
     if (saved.filters) setFilters(saved.filters)
     if (typeof saved.scrollY === 'number') pendingScroll.current = saved.scrollY
+    pendingAnchor.current = saved.anchorId ?? null
     const s = saved.section
     if (s && SECTIONS.includes(s) && s !== section) {
       setSection(s)
@@ -212,47 +214,37 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     } catch { /* ignore */ }
   }, [section, filters])
 
-  // ── Persist scroll position so returning restores it ──
-  // rAF-throttled while scrolling, plus a flush on navigate-away (effect cleanup
-  // / pagehide). The flush matters: clicking a product is a client-side nav, so
-  // without it the LAST scroll position would be lost and we'd restore higher up.
-  const browseRef = useRef({ section, filters })
-  browseRef.current = { section, filters }
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    let raf = 0
-    const save = () => {
-      try {
-        sessionStorage.setItem(STATE_KEY, JSON.stringify({ ...browseRef.current, scrollY: window.scrollY }))
-      } catch { /* ignore */ }
-    }
-    const onScroll = () => {
-      if (raf) return
-      raf = requestAnimationFrame(() => { raf = 0; save() })
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('pagehide', save)
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('pagehide', save)
-      if (raf) cancelAnimationFrame(raf)
-      save() // flush the final scroll position when navigating away
-    }
-  }, [])
+  // ── Persist browse state at the moment of leaving for a product page ──
+  // Called from the ProductCard click (a client-side nav), so it runs while the
+  // page is still scrolled where the user left it — far more reliable than a
+  // scroll listener, which a fast click can outrun. `anchorId` lets us scroll
+  // the exact card back into view on return (robust against layout/timing).
+  const saveBrowse = (anchorId: string) => {
+    try {
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({ section, filters, anchorId, scrollY: window.scrollY }))
+    } catch { /* ignore */ }
+  }
 
-  // ── Restore scroll once the target section has rendered its cards ──
-  // Retry over a few frames in case layout settles late (so we reach the exact
-  // saved position instead of landing short).
+  // ── Restore position once the target section has rendered its cards ──
+  // Prefer scrolling the clicked card into view (anchor); fall back to scrollY.
   useEffect(() => {
-    if (pendingScroll.current == null || loading || filtered.length === 0) return
-    const y = pendingScroll.current
-    pendingScroll.current = null
-    let tries = 0
-    const tryScroll = () => {
-      window.scrollTo(0, y)
-      if (tries++ < 8 && Math.abs(window.scrollY - y) > 2) requestAnimationFrame(tryScroll)
+    if (loading || filtered.length === 0) return
+    const anchor = pendingAnchor.current
+    if (anchor) {
+      let tries = 0
+      const go = () => {
+        const el = document.querySelector(`[data-product-id="${anchor}"]`)
+        if (el) { el.scrollIntoView({ block: 'center' }); pendingAnchor.current = null; pendingScroll.current = null; return }
+        if (tries++ < 10) requestAnimationFrame(go); else pendingAnchor.current = null
+      }
+      requestAnimationFrame(go)
+      return
     }
-    requestAnimationFrame(() => requestAnimationFrame(tryScroll))
+    if (pendingScroll.current != null) {
+      const y = pendingScroll.current
+      pendingScroll.current = null
+      requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)))
+    }
   }, [loading, filtered.length])
 
   // ── Auto-clear values that are no longer available ──
@@ -391,7 +383,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} showWishlist={showWishlist} />
+            <ProductCard key={p.id} product={p} showWishlist={showWishlist} onNavigate={() => saveBrowse(p.id)} />
           ))}
         </div>
       )}

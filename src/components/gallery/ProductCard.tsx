@@ -20,9 +20,9 @@ const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/pro
 const SHADOW     = 'drop-shadow(0 8px 20px rgba(0,0,0,0.11)) drop-shadow(0 2px 5px rgba(0,0,0,0.06))'
 const SHADOW_HOV = 'drop-shadow(0 16px 32px rgba(0,0,0,0.16)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))'
 
-type Props = { product: Product; showWishlist?: boolean }
+type Props = { product: Product; showWishlist?: boolean; onNavigate?: () => void }
 
-export default function ProductCard({ product, showWishlist = false }: Props) {
+export default function ProductCard({ product, showWishlist = false, onNavigate }: Props) {
   const [imgError, setImgError] = useState(false)
   const [hovered, setHovered]   = useState(false)
   const { ids, toggle }         = useWishlist()
@@ -45,10 +45,12 @@ export default function ProductCard({ product, showWishlist = false }: Props) {
   return (
     <Link
       href={`/gallery/${product.id}`}
+      data-product-id={product.id}
       className="group relative flex flex-col rounded-2xl"
       style={{ outline: '1px solid rgba(30,27,24,0.09)', outlineOffset: '2px' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => onNavigate?.()}
     >
       {/* Image — m-1 = tiny margin from outline, p-2 = maximise visible area */}
       <div
