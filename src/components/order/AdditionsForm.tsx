@@ -530,8 +530,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
                     </div>
                     {checked && (
-                      <div className="mt-2.5 pl-7 flex items-start gap-2">
-                        <div className="flex-1">{renderControl(field, displaySide)}</div>
+                      <div className="mt-2.5 pl-7 flex flex-wrap items-start gap-2">
+                        <div className="flex-1 min-w-[140px]">{renderControl(field, displaySide)}</div>
                         {hasGlb && unit === 'PAIR' && (
                           <div className="flex gap-2 shrink-0">
                             <GlbViewer file={field.glb!.l} inline />
@@ -625,9 +625,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       </span>
                     </div>
                     {(checkedL || checkedR) && (
-                      <div className="mt-2.5 grid grid-cols-2 gap-4 pl-[calc(2rem+1.25rem+0.75rem)]">
-                        <div className="flex items-start gap-2">
-                          <div className="flex-1">
+                      <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-4 pl-[calc(2rem+1.25rem+0.75rem)]">
+                        <div className="flex flex-wrap items-start gap-2">
+                          <div className="flex-1 min-w-[120px]">
                             {checkedL && field.type === 'mm' ? (
                               <MmInput values={field.values ?? []} value={sv?.l}
                                 onChange={v => updateField(field.key, 'l', v)}
@@ -641,8 +641,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           </div>
                           {checkedL && hasGlb && <GlbViewer file={field.glb!.l} inline />}
                         </div>
-                        <div className="flex items-start gap-2">
-                          <div className="flex-1">
+                        <div className="flex flex-wrap items-start gap-2">
+                          <div className="flex-1 min-w-[120px]">
                             {checkedR ? renderControl(field, 'r') : null}
                           </div>
                           {checkedR && hasGlb && <GlbViewer file={field.glb!.r} inline />}

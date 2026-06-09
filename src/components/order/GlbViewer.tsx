@@ -34,7 +34,7 @@ export function GlbViewer({ file, inline = false }: { file: string; inline?: boo
   if (inline) {
     return (
       <div className="rounded-lg overflow-hidden border border-stone-200 bg-stone-50 relative shrink-0"
-        style={{ width: 80, height: 80 }}>
+        style={{ width: 128, height: 128 }}>
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-4 h-4 border-2 border-stone-300 border-t-gold rounded-full animate-spin" />
