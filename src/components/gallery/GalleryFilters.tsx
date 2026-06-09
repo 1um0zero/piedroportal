@@ -126,7 +126,9 @@ function PillChips({
   )
 }
 
-// ── Size range chips + custom input ──────────────────────────────────────────
+// ── Size range chips (sub-scale buckets only) ────────────────────────────────
+// No free-text input: a section mixes EU and UK scales, so typing a bare number
+// is ambiguous ("5" could be UK-5 or a non-existent EU-5). Range chips are enough.
 function SizeChips({
   label,
   sizes,
@@ -138,77 +140,30 @@ function SizeChips({
   selected: number[]
   onToggleBucket: (vals: number[]) => void
 }) {
-  const [custom, setCustom] = useState('')
   const buckets = buildSizeBuckets(sizes)
   if (!buckets.length) return null
-
-  // Sizes selected that don't belong to any bucket (manually typed)
-  const bucketVals = new Set(buckets.flatMap(b => b.values))
-  const customSelected = selected.filter(s => !bucketVals.has(s))
-
-  const min = sizes[0]
-  const max = sizes[sizes.length - 1]
-
-  function submitCustom() {
-    const v = parseFloat(custom.replace(',', '.'))
-    // Only accept sizes within the scale; snap to the nearest available size.
-    if (isNaN(v) || v < min || v > max) { setCustom(''); return }
-    const nearest = sizes.reduce((p, c) => (Math.abs(c - v) < Math.abs(p - v) ? c : p))
-    onToggleBucket([nearest]); setCustom('')
-  }
 
   return (
     <div className="flex items-start gap-3">
       <span className="shrink-0 text-xs font-medium text-stone-400 uppercase tracking-wide pt-1.5 w-24">
         {label}
       </span>
-      <div className="space-y-1.5">
-        {/* Input first — between label and chips. Text + datalist (no spinner):
-            only sizes within the scale are accepted, snapped to the nearest. */}
-        <div className="flex items-center gap-1.5">
-          <input
-            type="text" inputMode="decimal" placeholder={`EU ${min}–${max}`}
-            list="gallery-size-options"
-            value={custom}
-            onFocus={e => e.currentTarget.select()}
-            onChange={e => setCustom(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && submitCustom()}
-            className="h-7 w-24 px-2 text-xs bg-white border border-stone-200 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
-          />
-          <datalist id="gallery-size-options">
-            {sizes.map(s => <option key={s} value={s} />)}
-          </datalist>
-          <button onClick={submitCustom}
-            className="h-7 px-2 text-xs font-semibold bg-stone-100 hover:bg-gold/10
-                       hover:text-gold text-stone-500 rounded-lg border border-stone-200 transition-colors">
-            +
-          </button>
-        </div>
-        {/* Range chips below */}
-        <div className="flex flex-wrap gap-1.5">
-          {buckets.map((b) => {
-            const anySelected = b.values.some((v) => selected.includes(v))
-            return (
-              <button
-                key={b.label}
-                onClick={() => onToggleBucket(b.values)}
-                className={`px-2.5 py-1 text-xs font-medium rounded border transition-all duration-150
-                  ${anySelected
-                    ? 'bg-gold text-white border-gold shadow-sm'
-                    : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
-              >
-                {b.label}
-              </button>
-            )
-          })}
-          {customSelected.map(s => (
-            <button key={s} onClick={() => onToggleBucket([s])}
-              className="px-2.5 py-1 text-xs font-medium rounded border bg-gold text-white border-gold shadow-sm">
-              {s} ×
+      <div className="flex flex-wrap gap-1.5">
+        {buckets.map((b) => {
+          const anySelected = b.values.some((v) => selected.includes(v))
+          return (
+            <button
+              key={b.label}
+              onClick={() => onToggleBucket(b.values)}
+              className={`px-2.5 py-1 text-xs font-medium rounded border transition-all duration-150
+                ${anySelected
+                  ? 'bg-gold text-white border-gold shadow-sm'
+                  : 'text-stone-600 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+            >
+              {b.label}
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </div>
   )
