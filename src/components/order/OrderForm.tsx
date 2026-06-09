@@ -168,6 +168,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [downloadingPdf, setDownloadingPdf] = useState(false)
   const [error,       setError]     = useState('')
   const [successMsg,  setSuccessMsg] = useState('')
+  const [submitIssue, setSubmitIssue] = useState(false)  // submitted OK but email/PDF failed
 
   const showAdditions = unit !== 'DIFF_SIZES'
 
@@ -326,22 +327,29 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         : await insertOrderAction(row, pdfMeta)
       if (result.error) throw new Error(result.error)
 
-      if (status === 'submitted') {
-        const msg = result.pdfError
+      // Order is saved — clear the autosaved draft state now, regardless of any
+      // email/PDF issue (the order itself persisted).
+      if (typeof window !== 'undefined') sessionStorage.removeItem(STORAGE_KEY)
+
+      if (status !== 'submitted') { router.push('/orders'); return }
+
+      const hadIssue = !!(result.pdfError || result.emailError)
+      setSuccessMsg(
+        result.pdfError
           ? `${t('order_submitted_pdf_error')} ${result.pdfError}`
           : result.emailError
             ? `${t('order_submitted_email_error')} ${result.emailError}`
             : result.pdf_url
               ? t('order_submitted_complete')
-              : t('order_submitted')
-        setSuccessMsg(msg)
-        await new Promise(r => setTimeout(r, 3000))
+              : t('order_submitted'),
+      )
+      setSubmitIssue(hadIssue)
+      // On a clean success, auto-redirect. If something failed (email/PDF), keep
+      // the banner up and let the user acknowledge it via the Continue button.
+      if (!hadIssue) {
+        await new Promise(r => setTimeout(r, 2500))
+        router.push('/orders')
       }
-      // Clear saved state on successful submit
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem(STORAGE_KEY)
-      }
-      router.push('/orders')
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -500,15 +508,27 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       {step === 3 && (
         <div className="space-y-4">
 
-          {/* Success banner */}
+          {/* Result banner — green on clean success (auto-redirects), amber if the
+              order was saved but email/PDF failed (stays until acknowledged) */}
           {successMsg && (
-            <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-              <svg className="w-4 h-4 text-green-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            <div className={`flex items-start gap-3 rounded-xl px-4 py-3 border
+              ${submitIssue ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+              <svg className={`w-4 h-4 shrink-0 mt-0.5 ${submitIssue ? 'text-amber-500' : 'text-green-500'}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                {submitIssue
+                  ? <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                  : <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>}
               </svg>
-              <div>
-                <p className="text-sm text-green-700 font-medium">{successMsg}</p>
-                <p className="text-xs text-green-600 mt-0.5">A redirecionar para My Orders…</p>
+              <div className="flex-1">
+                <p className={`text-sm font-medium ${submitIssue ? 'text-amber-800' : 'text-green-700'}`}>{successMsg}</p>
+                {submitIssue ? (
+                  <button type="button" onClick={() => router.push('/orders')}
+                    className="mt-2 rounded-lg bg-stone-800 text-white text-xs font-semibold px-3.5 py-1.5 hover:bg-stone-700 transition-colors">
+                    {t('continue_to_orders')}
+                  </button>
+                ) : (
+                  <p className="text-xs text-green-600 mt-0.5">{t('redirecting')}</p>
+                )}
               </div>
             </div>
           )}

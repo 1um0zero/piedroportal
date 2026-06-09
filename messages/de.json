@@ -213,7 +213,9 @@
     "order_submitted_pdf_error": "Bestellung eingereicht. PDF-Fehler:",
     "order_submitted_email_error": "Bestellung eingereicht. PDF erstellt. E-Mail-Fehler:",
     "order_submitted_complete": "Bestellung eingereicht. PDF erstellt und E-Mail gesendet.",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "continue_to_orders": "Weiter zu Meine Bestellungen",
+    "redirecting": "Weiterleitung zu Meine Bestellungen…"
   },
   "additions": {
     "yes": "Ja",

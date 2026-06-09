@@ -213,7 +213,9 @@
     "order_submitted_pdf_error": "Order submitted. PDF error:",
     "order_submitted_email_error": "Order submitted. PDF generated. Email error:",
     "order_submitted_complete": "Order submitted. PDF generated and email sent.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "continue_to_orders": "Continue to My Orders",
+    "redirecting": "Redirecting to My Orders…"
   },
   "additions": {
     "yes": "Yes",

@@ -213,7 +213,9 @@
     "order_submitted_pdf_error": "Commande soumise. Erreur PDF:",
     "order_submitted_email_error": "Commande soumise. PDF généré. Erreur d'e-mail:",
     "order_submitted_complete": "Commande soumise. PDF généré et e-mail envoyé.",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "continue_to_orders": "Continuer vers Mes commandes",
+    "redirecting": "Redirection vers Mes commandes…"
   },
   "additions": {
     "yes": "Oui",
