@@ -16,7 +16,7 @@ async function getProduct(id: string): Promise<Product | null> {
   )
   const { data } = await sb
     .from('products')
-    .select('id,style_name,colour_id,color_name,closure,picture_name,constructions,size_first,size_last,section,adds_exclude,exclusive')
+    .select('id,style_name,colour_id,color_name,closure,picture_name,constructions,size_first,size_last,size_unit,section,adds_exclude,exclusive')
     .eq('id', id)
     .single()
   return (data as unknown as Product) ?? null

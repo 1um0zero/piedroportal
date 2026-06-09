@@ -118,8 +118,9 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const FIELDS = [
     'id','style_name','colour_id','picture_name','section',
     'closure','type','color_basic','color_name',
-    'size_first','size_last','diabetics','new_until','constructions',
+    'size_first','size_last','size_unit','diabetics','new_until','constructions',
   ].join(',')
+  const FIELDS_NO_UNIT = FIELDS.replace(',size_unit', '')
 
   // ── Per-section cache — seed with server-rendered initial data ──
   const [cache, setCache] = useState<Partial<Record<Section, Product[]>>>(
@@ -264,12 +265,13 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     const base = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     const headers = { apikey: key, Authorization: `Bearer ${key}` }
-    const urlFor = (order: string) =>
-      `${base}/rest/v1/products?select=${encodeURIComponent(FIELDS)}&active=eq.true&section=eq.${s}&or=(exclusive.is.null,exclusive.eq.)&order=${encodeURIComponent(order)}`
-    // Prefer the manual gallery order; fall back to style_name if the
-    // gallery_position column isn't present yet (migration 014 not applied).
-    let res = await fetch(urlFor('gallery_position.asc.nullslast,style_name.asc,colour_id.asc'), { headers })
-    if (!res.ok) res = await fetch(urlFor('style_name.asc,colour_id.asc'), { headers })
+    const urlFor = (order: string, fields: string) =>
+      `${base}/rest/v1/products?select=${encodeURIComponent(fields)}&active=eq.true&section=eq.${s}&or=(exclusive.is.null,exclusive.eq.)&order=${encodeURIComponent(order)}`
+    // Prefer the manual gallery order; degrade gracefully if a migration isn't
+    // applied yet — drop gallery_position order (014) and/or size_unit (015).
+    let res = await fetch(urlFor('gallery_position.asc.nullslast,style_name.asc,colour_id.asc', FIELDS), { headers })
+    if (!res.ok) res = await fetch(urlFor('style_name.asc,colour_id.asc', FIELDS), { headers })
+    if (!res.ok) res = await fetch(urlFor('style_name.asc,colour_id.asc', FIELDS_NO_UNIT), { headers })
     if (!res.ok) throw new Error(`Supabase ${res.status}`)
     return res.json()
   }

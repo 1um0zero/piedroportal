@@ -921,7 +921,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
                 {t('size')}
                 <span className="ml-2 text-gold font-normal text-xs normal-case">
-                  EU {product.size_first}–{product.size_last}
+                  {product.size_unit ?? 'EU'} {product.size_first}–{product.size_last}
                 </span>
               </h3>
               {!isDouble ? (

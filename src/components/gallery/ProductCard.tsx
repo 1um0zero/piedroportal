@@ -138,7 +138,7 @@ export default function ProductCard({ product, showWishlist = false, onNavigate 
 
           {/* Sizes */}
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-stone-400">EU</span>
+            <span className="text-[10px] text-stone-400">{product.size_unit ?? 'EU'}</span>
             <span className="text-[10px] font-semibold text-stone-700">
               {product.size_first} – {product.size_last}
             </span>

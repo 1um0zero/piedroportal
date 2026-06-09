@@ -29,6 +29,7 @@ export interface Product {
   color_name_i18n: ColorNameI18n | null
   size_first: number
   size_last: number
+  size_unit?: 'EU' | 'UK' | null   // size scale unit; null treated as 'EU'
   diabetics: boolean
   info: string | null
   sibling: string | null

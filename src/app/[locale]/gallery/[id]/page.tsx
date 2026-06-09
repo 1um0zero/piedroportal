@@ -5,7 +5,7 @@ import { getUserExclusiveLabels } from '@/lib/user-companies'
 import ProductDetail from '@/components/product/ProductDetail'
 import type { Product } from '@/types'
 
-const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,color_name_i18n,size_first,size_last,diabetics,new_until,constructions,info,sibling,exclusive'
+const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,color_name_i18n,size_first,size_last,size_unit,diabetics,new_until,constructions,info,sibling,exclusive'
 
 async function getProduct(id: string): Promise<Product | null> {
   const sb = createClient(
@@ -34,7 +34,7 @@ async function getSiblings(product: Product): Promise<Product[]> {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
-  const SELECT = 'id,style_name,colour_id,picture_name,color_basic,color_name,color_name_i18n,closure,size_first,size_last,new_until,diabetics,exclusive'
+  const SELECT = 'id,style_name,colour_id,picture_name,color_basic,color_name,color_name_i18n,closure,size_first,size_last,size_unit,new_until,diabetics,exclusive'
 
   // Fetch same style_name
   const { data: same } = await sb

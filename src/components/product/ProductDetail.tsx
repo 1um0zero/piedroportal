@@ -349,7 +349,7 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
             <div className="grid grid-cols-2 px-4 py-3 text-stone-800">
               <span className="text-stone-500">{product.info ?? '—'}</span>
-              <span>EU {selected.size_first}–{selected.size_last}</span>
+              <span>{selected.size_unit ?? 'EU'} {selected.size_first}–{selected.size_last}</span>
             </div>
           </div>
 
