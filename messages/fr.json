@@ -841,5 +841,17 @@
     "manual": "manuel",
     "recompose_hint": "Reconstruire les traductions des couleurs de base à partir du dictionnaire (ignore celles modifiées manuellement).",
     "colour_hint": "Modifiez le dictionnaire, puis Recomposer pour régénérer la liste des couleurs. Les couleurs modifiées manuellement sont marquées et jamais écrasées."
+  },
+  "factoryCalendar": {
+    "title": "Calendrier de fermeture de l’usine",
+    "description": "Marquez les jours où l’usine ne travaille pas. Week-ends et jours fériés portugais sont automatiques ; les commandes non livrées sont recalculées.",
+    "mark_as": "Marquer comme",
+    "kind_closure": "Fermeture",
+    "kind_vacation": "Congés",
+    "kind_bridge": "Pont",
+    "weekend": "Week-end",
+    "holiday": "Jour férié PT",
+    "saving": "Enregistrement…",
+    "recomputed": "{n} commandes recalculées"
   }
 }

@@ -841,5 +841,17 @@
     "manual": "manual",
     "recompose_hint": "Rebuild basic-colour translations from the word dictionary (skips manually edited ones).",
     "colour_hint": "Edit the word dictionary, then Recompose to regenerate the colour list. Manually edited colours are marked and never overwritten."
+  },
+  "factoryCalendar": {
+    "title": "Factory closure calendar",
+    "description": "Mark days the factory does not work. Weekends and Portuguese holidays are automatic; orders not yet delivered are recalculated.",
+    "mark_as": "Mark as",
+    "kind_closure": "Closure",
+    "kind_vacation": "Holiday/vacation",
+    "kind_bridge": "Bridge day",
+    "weekend": "Weekend",
+    "holiday": "PT holiday",
+    "saving": "Saving…",
+    "recomputed": "Recalculated {n} orders"
   }
 }

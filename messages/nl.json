@@ -841,5 +841,17 @@
     "manual": "handmatig",
     "recompose_hint": "Bouw de basiskleur-vertalingen opnieuw op uit het woordenboek (handmatig bewerkte worden overgeslagen).",
     "colour_hint": "Bewerk het woordenboek en klik op Hercomponeren om de kleurenlijst opnieuw te genereren. Handmatig bewerkte kleuren worden gemarkeerd en nooit overschreven."
+  },
+  "factoryCalendar": {
+    "title": "Sluitingskalender fabriek",
+    "description": "Markeer dagen waarop de fabriek niet werkt. Weekends en Portugese feestdagen zijn automatisch; nog niet geleverde bestellingen worden herberekend.",
+    "mark_as": "Markeren als",
+    "kind_closure": "Sluiting",
+    "kind_vacation": "Vakantie",
+    "kind_bridge": "Brugdag",
+    "weekend": "Weekend",
+    "holiday": "PT feestdag",
+    "saving": "Opslaan…",
+    "recomputed": "{n} bestellingen herberekend"
   }
 }

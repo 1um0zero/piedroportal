@@ -841,5 +841,17 @@
     "manual": "manuell",
     "recompose_hint": "Grundfarben-Übersetzungen aus dem Wörterbuch neu aufbauen (manuell bearbeitete werden übersprungen).",
     "colour_hint": "Bearbeiten Sie das Wörterbuch und klicken Sie auf Neu zusammensetzen, um die Farbliste zu erzeugen. Manuell bearbeitete Farben werden markiert und nie überschrieben."
+  },
+  "factoryCalendar": {
+    "title": "Werks-Schließkalender",
+    "description": "Markieren Sie Tage, an denen die Fabrik nicht arbeitet. Wochenenden und portugiesische Feiertage sind automatisch; noch nicht gelieferte Bestellungen werden neu berechnet.",
+    "mark_as": "Markieren als",
+    "kind_closure": "Schließung",
+    "kind_vacation": "Urlaub",
+    "kind_bridge": "Brückentag",
+    "weekend": "Wochenende",
+    "holiday": "PT-Feiertag",
+    "saving": "Speichern…",
+    "recomputed": "{n} Bestellungen neu berechnet"
   }
 }
