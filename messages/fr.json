@@ -593,7 +593,8 @@
       "delete_confirm": "Supprimer ce brouillon ? Cette action est irréversible.",
       "metric_delivered": "Livrées",
       "age_period": "Choisir période…",
-      "tracking": "Suivi"
+      "tracking": "Suivi",
+      "processing": "Traitement…"
     },
     "users": {
       "title": "Gestion des utilisateurs",

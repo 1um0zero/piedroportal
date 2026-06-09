@@ -593,7 +593,8 @@
       "delete_confirm": "Delete this draft order? This cannot be undone.",
       "metric_delivered": "Delivered",
       "age_period": "Choose period…",
-      "tracking": "Tracking"
+      "tracking": "Tracking",
+      "processing": "Processing…"
     },
     "users": {
       "title": "User Management",

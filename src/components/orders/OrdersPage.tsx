@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
@@ -87,7 +87,11 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
   const [periodMode, setPeriodMode] = useState(!!(from || to))
   const [fromD, setFromD] = useState(from ?? '')
   const [toD,   setToD]   = useState(to ?? '')
-  const pushWindow = (qs: string) => router.push(`${pathname}?${qs}` as Parameters<typeof router.push>[0])
+  const [isWindowPending, startWindow] = useTransition()
+  // Window changes (age/period) hit the server, so run them in a transition and
+  // show a "processing" hint — otherwise it looks frozen (esp. on a big "all").
+  const pushWindow = (qs: string) =>
+    startWindow(() => router.push(`${pathname}?${qs}` as Parameters<typeof router.push>[0]))
   const applyPeriod = (f: string, tt: string) => { if (f && tt) pushWindow(`from=${f}&to=${tt}`) }
 
   const selectChip   = (key: string) => { setUrgentFilter(false); setActive(a => a === key ? '' : key) }
@@ -308,6 +312,12 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                   className="h-9 px-2 text-sm bg-white border border-stone-200 rounded-lg focus:border-gold focus:outline-none" />
               </div>
             )}
+            {isWindowPending && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-stone-400">
+                <span className="w-3.5 h-3.5 border-2 border-stone-300 border-t-gold rounded-full animate-spin" />
+                {t('processing')}
+              </span>
+            )}
           </div>
         )}
 
@@ -318,7 +328,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-[14px] overflow-hidden"
+      <div className={`bg-white rounded-[14px] overflow-hidden transition-opacity ${isWindowPending ? 'opacity-60' : ''}`}
         style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
