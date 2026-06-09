@@ -156,6 +156,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   // login flow uses window.location).
   const goToOrders = () => {
     if (typeof window === 'undefined') return
+    // Clear the draft bubble only when actually leaving — so a locale switch on
+    // the post-submit confirmation keeps it, but navigating away discards it.
+    try { sessionStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
     window.location.assign(locale === 'en' ? '/orders' : `/${locale}/orders`)
   }
 
@@ -195,8 +198,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [discarding,  setDiscarding] = useState(false)
   const [downloadingPdf, setDownloadingPdf] = useState(false)
   const [error,       setError]     = useState('')
-  const [successMsg,  setSuccessMsg] = useState('')
-  const [submitIssue, setSubmitIssue] = useState(false)  // submitted OK but email/PDF failed
+  // Persisted too, so a locale switch on the post-submit confirmation keeps the
+  // banner (and keeps the submit buttons disabled) instead of resetting to Tab1.
+  const [successMsg,  setSuccessMsg] = useState(() => getInitialState('successMsg', ''))
+  const [submitIssue, setSubmitIssue] = useState(() => getInitialState('submitIssue', false))  // submitted OK but email/PDF failed
 
   const showAdditions = unit !== 'DIFF_SIZES'
 
@@ -237,7 +242,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     const state = {
       selectedCompanyId, unit, clinician, patientName, reference, quantity,
       constrLeft, constrRight, widthLeft, widthRight, sizeLeft, sizeRight,
-      additions, diffSizesPairs, step
+      additions, diffSizesPairs, step, successMsg, submitIssue
     }
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
@@ -247,7 +252,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   }, [
     selectedCompanyId, unit, clinician, patientName, reference, quantity,
     constrLeft, constrRight, widthLeft, widthRight, sizeLeft, sizeRight,
-    additions, diffSizesPairs, step, STORAGE_KEY
+    additions, diffSizesPairs, step, successMsg, submitIssue, STORAGE_KEY
   ])
 
   // Auto-select if only one construction
@@ -363,10 +368,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         return
       }
 
-      // Confirmed saved — clear the autosaved draft state now, regardless of any
-      // email/PDF issue (the order itself persisted).
-      if (typeof window !== 'undefined') sessionStorage.removeItem(STORAGE_KEY)
-
+      // Confirmed saved. The draft bubble is cleared on navigation (goToOrders),
+      // not here — so a locale switch on the confirmation keeps the banner.
       if (status !== 'submitted') { goToOrders(); return }
 
       const hadIssue = !!(result.pdfError || result.emailError)
@@ -557,14 +560,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               </svg>
               <div className="flex-1">
                 <p className={`text-sm font-medium ${submitIssue ? 'text-amber-800' : 'text-green-700'}`}>{successMsg}</p>
-                {submitIssue ? (
-                  <button type="button" onClick={() => goToOrders()}
-                    className="mt-2 rounded-lg bg-stone-800 text-white text-xs font-semibold px-3.5 py-1.5 hover:bg-stone-700 transition-colors">
-                    {t('continue_to_orders')}
-                  </button>
-                ) : (
-                  <p className="text-xs text-green-600 mt-0.5">{t('redirecting')}</p>
-                )}
+                {!submitIssue && <p className="text-xs text-green-600 mt-0.5">{t('redirecting')}</p>}
+                {/* Always offer an explicit way forward — after a locale switch the
+                    auto-redirect timer is gone, so the user needs this button. */}
+                <button type="button" onClick={() => goToOrders()}
+                  className="mt-2 rounded-lg bg-stone-800 text-white text-xs font-semibold px-3.5 py-1.5 hover:bg-stone-700 transition-colors">
+                  {t('continue_to_orders')}
+                </button>
               </div>
             </div>
           )}

@@ -130,16 +130,31 @@ function orderEmailHtml(t: EmailT, heading: string, ref: string, company: string
 // ── Shared PDF generation helper ──────────────────────────────────────────────
 async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>, userId: string, userEmail?: string): Promise<{ pdf_url?: string; pdfError?: string; emailError?: string }> {
   try {
+    // Translate the categorical values (closure, constructions) into the order's
+    // locale for the PDF — same DB translations the gallery uses.
+    const loc = row.locale
+    const trKeys = [pdfMeta.productClosure, row.construction_left, row.construction_right]
+      .filter((v): v is string => !!v)
+    const trMap: Record<string, string> = {}
+    if (trKeys.length) {
+      const { data: trs } = await service.from('translations').select('key, en, nl, fr, de').in('key', trKeys)
+      for (const r of trs ?? []) {
+        const v = (r as Record<string, string | null>)[loc] || r.en || r.key
+        if (v) trMap[r.key] = v
+      }
+    }
+    const tr = (v: string | null) => (v && trMap[v]) || v
+
     const pdfProps: OrderPdfProps = {
       reference: row.reference_customer, status: row.status, unit: row.unit,
       clinician: row.clinician, patient_name: row.patient_name, quantity: row.quantity,
-      construction_left: row.construction_left, construction_right: row.construction_right,
+      construction_left: tr(row.construction_left), construction_right: tr(row.construction_right),
       width_left: row.width_left, width_right: row.width_right,
       size_left: row.size_left, size_right: row.size_right,
       additions: row.additions, comments: row.comments,
       created_at: new Date().toISOString(),
       companyName: pdfMeta.companyName, productColourId: pdfMeta.productColourId,
-      productColorName: pdfMeta.productColorName, productClosure: pdfMeta.productClosure,
+      productColorName: pdfMeta.productColorName, productClosure: tr(pdfMeta.productClosure) ?? pdfMeta.productClosure,
       productImageUrl: pdfMeta.productImageUrl,
       diff_sizes_pairs: row.diff_sizes_pairs,
       locale: row.locale as 'en' | 'nl' | 'fr' | 'de',

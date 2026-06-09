@@ -1,8 +1,11 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { SECTIONS } from './additions-config'
 import { getFieldLabel, getSectionLabel, translateOptionValue, groupImageBlocks } from '@/lib/additions-helpers'
+import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
+import type { Locale } from '@/types'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -47,6 +50,13 @@ export default function OrderSummary(props: OrderSummaryProps) {
   const additions = props.additions ?? {}
   const diffSizesPairs = props.diffSizesPairs ?? []
   const showAdditions = props.showAdditions ?? true
+
+  // Translate the categorical values (closure, construction) — works standalone
+  // on the order-detail panel too, so preload the cache and re-render once ready.
+  const locale = useLocale()
+  const [, setI18nReady] = useState(0)
+  useEffect(() => { preloadFilterTranslations().then(() => setI18nReady(n => n + 1)) }, [])
+  const trC = (v?: string | null) => translateFilterValueSync(v ?? '', locale as Locale)
   const isDouble = unit === 'LEFT_RIGHT'
 
   const t  = useTranslations('order')
@@ -181,7 +191,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
             <div className="flex items-center justify-between gap-2">
               <p className="font-bold text-stone-900">{product.colour_id}</p>
               {product.closure && (
-                <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">{product.closure}</span>
+                <span className="text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded">{trC(product.closure)}</span>
               )}
             </div>
             <p className="text-sm text-stone-500">{product.color_name}</p>
@@ -233,8 +243,8 @@ export default function OrderSummary(props: OrderSummaryProps) {
               {(constrLeft || constrRight) && (
                 <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
                   <span className="font-semibold text-stone-600">{t('construction')}</span>
-                  <span className="text-stone-800 font-semibold text-center">{constrLeft || '—'}</span>
-                  <span className="text-stone-800 font-semibold text-center">{constrRight || '—'}</span>
+                  <span className="text-stone-800 font-semibold text-center">{trC(constrLeft) || '—'}</span>
+                  <span className="text-stone-800 font-semibold text-center">{trC(constrRight) || '—'}</span>
                 </div>
               )}
               {(widthLeft || widthRight) && (
@@ -257,7 +267,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
               {(constrLeft || constrRight) && (
                 <div className="grid grid-cols-[1fr_1fr] gap-2 py-1.5 text-xs border-b border-stone-50">
                   <span className="font-semibold text-stone-600">{t('construction')}</span>
-                  <span className="text-stone-800 font-semibold text-right">{unit === 'RIGHT' ? constrRight : constrLeft}</span>
+                  <span className="text-stone-800 font-semibold text-right">{trC(unit === 'RIGHT' ? constrRight : constrLeft)}</span>
                 </div>
               )}
               {(widthLeft || widthRight) && (
