@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
 import { nz } from '@/lib/format'
+import { daysUntil } from '@/lib/dispatch'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/products`
@@ -32,9 +33,35 @@ type Props = {
   age?: string
   from?: string
   to?: string
+  showDispatch?: boolean
 }
 
 const AGE_OPTIONS = ['3m', '6m', '12m', 'all'] as const
+
+// Countdown to expected dispatch: green with room, orange when close, red (and
+// "+n") when overdue. Delivered orders freeze into a filled dot.
+function DispatchBadge({ o, t }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  o: any
+  t: (k: string, v?: Record<string, string | number>) => string
+}) {
+  const n = daysUntil(o.expected_dispatch_date)
+  if (n === null) return null
+  const delivered = o.status === 'delivered' || o.production_state === 'delivered'
+  if (delivered) {
+    return <span title={t('dispatch_done')} className="shrink-0 w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+  }
+  const overdue = n < 0
+  const cls = overdue ? 'bg-red-100 text-red-700'
+    : n <= 3 ? 'bg-orange-100 text-orange-700'
+      : 'bg-emerald-100 text-emerald-700'
+  return (
+    <span title={overdue ? t('dispatch_overdue', { n: -n }) : t('dispatch_in', { n })}
+      className={`shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${cls}`}>
+      {overdue ? `+${-n}` : n}<span className="font-medium opacity-70 ml-0.5">d</span>
+    </span>
+  )
+}
 
 // "New" = an order submitted and not yet processed by staff (the validation queue):
 // status submitted + no Piedro triage yet (approval_state registered/null).
@@ -64,7 +91,7 @@ function hasAdditions(adds: Record<string, unknown> | null | undefined): boolean
   return false
 }
 
-export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m', from, to }: Props) {
+export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m', from, to, showDispatch = false }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -440,6 +467,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                           </span>
                         })()}
                         </div>
+                        {showDispatch && <DispatchBadge o={o} t={t} />}
                       </div>
                     </td>
                     {/* Date — year shown only for orders before the current year */}

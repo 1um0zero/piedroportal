@@ -600,7 +600,10 @@
       "metric_delivered": "Delivered",
       "age_period": "Choose period…",
       "tracking": "Tracking",
-      "processing": "Processing…"
+      "processing": "Processing…",
+      "dispatch_in": "Dispatch in {n} days",
+      "dispatch_overdue": "{n} days past expected dispatch",
+      "dispatch_done": "Delivered"
     },
     "users": {
       "title": "User Management",

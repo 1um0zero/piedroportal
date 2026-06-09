@@ -8,6 +8,7 @@ import { getSettings } from '@/lib/settings'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
 import { escapeHtml } from '@/lib/escape-html'
 import { displayWidthByConstruction } from '@/lib/width-display'
+import { addWorkingDays } from '@/lib/dispatch'
 import { getTranslations } from 'next-intl/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { Resend } from 'resend'
@@ -56,6 +57,28 @@ export type PdfMeta = {
   companyName:      string
 }
 
+/**
+ * Expected dispatch date = order day + N working days (settings, normal vs urgent),
+ * skipping weekends, PT holidays and factory closures. Computed once at submit so
+ * /orders stays cheap; recomputed in bulk only when the closure calendar changes.
+ */
+async function computeDispatchDate(
+  service: ReturnType<typeof createServiceClient>,
+  status: string,
+  additions: unknown,
+): Promise<string | null> {
+  if (status !== 'submitted') return null
+  const s = await getSettings(['dispatch_days_normal', 'dispatch_days_urgent'])
+  const normal = parseInt(s.dispatch_days_normal || '0', 10) || 0
+  const urgent = parseInt(s.dispatch_days_urgent || '0', 10) || normal
+  const isUrgent = (additions as { urgent?: boolean } | null)?.urgent === true
+  const days = isUrgent ? urgent : normal
+  if (!days) return null
+  const { data: cl } = await service.from('factory_closures').select('date')
+  const closures = new Set((cl ?? []).map(r => (r as { date: string }).date))
+  return addWorkingDays(new Date().toISOString(), days, closures)
+}
+
 export async function insertOrderAction(
   row:     OrderRow,
   pdfMeta?: PdfMeta,   // provided only when status === 'submitted'
@@ -86,9 +109,10 @@ export async function insertOrderAction(
   // Use service role for DB operations — avoids PGRST116 after INSERT + RLS SELECT mismatch.
   // user_id and status are forced server-side and never trusted from the client.
   const service = createServiceClient()
+  const expected_dispatch_date = await computeDispatchDate(service, row.status, row.additions)
   const { data, error } = await service
     .from('orders')
-    .insert({ ...row, user_id: user.id, status: row.status })
+    .insert({ ...row, user_id: user.id, status: row.status, expected_dispatch_date })
     .select('id')
     .single()
 
@@ -299,9 +323,10 @@ export async function updateOrderAction(
   // Confirm the update actually hit the row (an UPDATE matching 0 rows returns no
   // error). Only a returned id proves the order is persisted — PDF/email come
   // strictly after this.
+  const expected_dispatch_date = await computeDispatchDate(service, row.status, row.additions)
   const { data: updated, error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id, status: row.status })
+    .update({ ...row, user_id: user.id, status: row.status, expected_dispatch_date })
     .eq('id', draftId)
     .eq('user_id', user.id)
     .select('id')

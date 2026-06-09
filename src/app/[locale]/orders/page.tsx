@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { signOrderPdfs } from '@/lib/order-pdf'
-import { attachTracking } from '@/lib/order-tracking'
+import { attachOrderExtras } from '@/lib/order-tracking'
+import { getSettings } from '@/lib/settings'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import OrdersPage from '@/components/orders/OrdersPage'
 
@@ -102,7 +103,9 @@ export default async function OrdersRoute({ searchParams }: Props) {
   }
 
   const orders = allOrders
-  await attachTracking(orders, service)
+  await attachOrderExtras(orders, service)
+  // Users see the dispatch counter only if Piedro turned it on for everyone.
+  const showDispatch = (await getSettings(['dispatch_show_all'])).dispatch_show_all === '1'
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   const signed = await signOrderPdfs(orders.filter(o => o.pdf_url).map(o => o.id))
@@ -118,6 +121,7 @@ export default async function OrdersRoute({ searchParams }: Props) {
       age={age}
       from={sp.from}
       to={sp.to}
+      showDispatch={showDispatch}
     />
   )
 }

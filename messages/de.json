@@ -600,7 +600,10 @@
       "metric_delivered": "Geliefert",
       "age_period": "Zeitraum wählen…",
       "tracking": "Tracking",
-      "processing": "Verarbeiten…"
+      "processing": "Verarbeiten…",
+      "dispatch_in": "Versand in {n} Tagen",
+      "dispatch_overdue": "{n} Tage über dem Versandtermin",
+      "dispatch_done": "Geliefert"
     },
     "users": {
       "title": "Benutzerverwaltung",

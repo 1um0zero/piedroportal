@@ -600,7 +600,10 @@
       "metric_delivered": "Geleverd",
       "age_period": "Kies periode…",
       "tracking": "Tracking",
-      "processing": "Bezig…"
+      "processing": "Bezig…",
+      "dispatch_in": "Verzending over {n} dagen",
+      "dispatch_overdue": "{n} dagen over verwachte verzending",
+      "dispatch_done": "Geleverd"
     },
     "users": {
       "title": "Gebruikersbeheer",

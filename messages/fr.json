@@ -600,7 +600,10 @@
       "metric_delivered": "Livrées",
       "age_period": "Choisir période…",
       "tracking": "Suivi",
-      "processing": "Traitement…"
+      "processing": "Traitement…",
+      "dispatch_in": "Expédition dans {n} jours",
+      "dispatch_overdue": "{n} jours de retard sur l’expédition",
+      "dispatch_done": "Livré"
     },
     "users": {
       "title": "Gestion des utilisateurs",
