@@ -199,10 +199,16 @@ export default function ProductDetail({ product, siblings }: Props) {
     preloadFilterTranslations().then(() => setI18nReady(n => n + 1))
   }, [])
 
+  // Colour code shared across closures, e.g. "1700.0393" → "0393".
+  const colourKey = (p: Product) => (p.colour_id ?? '').split('.').pop() ?? ''
+
   function selectClosure(cl: string) {
     setActiveClosure(cl)
-    const first = allVariants.find((p) => p.closure === cl)
-    if (first) { setSelected(first); setActiveImg(0); setFailed(new Set()) }
+    const inClosure = allVariants.filter((p) => p.closure === cl)
+    // Keep the same colour when switching closure; fall back to first available.
+    const wantKey = colourKey(selected)
+    const next = inClosure.find((p) => colourKey(p) === wantKey) ?? inClosure[0]
+    if (next) { setSelected(next); setActiveImg(0); setFailed(new Set()) }
   }
   function selectVariant(p: Product) {
     setSelected(p); setActiveClosure(p.closure)
