@@ -45,6 +45,7 @@ export default async function AdminProductsPage() {
           <Link href="/admin/products/new" className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark">{t('new_product')}</Link>
           <Link href="/admin/products/import" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('import_excel')}</Link>
           <Link href="/admin/products/images" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('bulk_images')}</Link>
+          <Link href="/admin/products/order" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('gallery_order')}</Link>
         </div>
       </div>
       <ProductsList products={visible} companyByLabel={companyByLabel} />

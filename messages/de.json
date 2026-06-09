@@ -735,7 +735,8 @@
       "all_types": "Alle Typen",
       "col_type": "Typ",
       "col_exclusive": "Exklusiv",
-      "all_exclusive": "Alle exklusiven"
+      "all_exclusive": "Alle exklusiven",
+      "gallery_order": "Galerie-Reihenfolge"
     },
     "branches": {
       "title": "Niederlassungen",
@@ -819,6 +820,22 @@
       "search_models": "Modelle suchen…",
       "no_free_models": "Keine verfügbaren Modelle gefunden.",
       "add_hint": "Es werden nur Modelle angezeigt, die nicht exklusiv für eine andere Firma sind. Durch Hinzufügen wird das Modell exklusiv für diese Firma (alle Farben)."
+    },
+    "order": {
+      "title": "Galerie-Reihenfolge",
+      "subtitle": "Ziehen Sie ein Modell zum Verschieben, oder markieren Sie mehrere und klicken Sie auf einen Einfügepunkt, um sie zusammen zu verschieben.",
+      "back_to_products": "Zurück zu Produkten",
+      "save": "Reihenfolge speichern",
+      "saving": "Speichern…",
+      "saved": "Reihenfolge gespeichert",
+      "empty": "Keine Modelle in diesem Bereich.",
+      "selected_count": "{n} ausgewählt",
+      "drag_hint": "Ziehen Sie ein Modell zum Neuordnen oder markieren Sie mehrere, um sie zusammen zu verschieben.",
+      "move_to_end": "Ans Ende",
+      "clear_selection": "Auswahl aufheben",
+      "insert_here": "Hier einfügen",
+      "unsaved": "Nicht gespeicherte Änderungen",
+      "colours_n": "{n} Farben"
     }
   },
   "adminTranslations": {

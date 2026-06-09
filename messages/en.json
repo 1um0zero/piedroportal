@@ -735,7 +735,8 @@
       "all_types": "All types",
       "col_type": "Type",
       "col_exclusive": "Exclusive",
-      "all_exclusive": "All exclusives"
+      "all_exclusive": "All exclusives",
+      "gallery_order": "Gallery order"
     },
     "branches": {
       "title": "Branch offices",
@@ -819,6 +820,22 @@
       "search_models": "Search models…",
       "no_free_models": "No available models match.",
       "add_hint": "Only models not exclusive to another company are listed. Adding makes the model exclusive to this company (all colours)."
+    },
+    "order": {
+      "title": "Gallery order",
+      "subtitle": "Drag a model to reposition it, or tick several and click an insertion point to move them together.",
+      "back_to_products": "Back to products",
+      "save": "Save order",
+      "saving": "Saving…",
+      "saved": "Order saved",
+      "empty": "No models in this section.",
+      "selected_count": "{n} selected",
+      "drag_hint": "Drag a model to reorder, or tick several to move them together.",
+      "move_to_end": "Move to end",
+      "clear_selection": "Clear selection",
+      "insert_here": "Insert here",
+      "unsaved": "Unsaved changes",
+      "colours_n": "{n} colours"
     }
   },
   "adminTranslations": {

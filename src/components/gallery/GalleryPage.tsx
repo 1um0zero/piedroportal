@@ -189,10 +189,13 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   async function fetchSection(s: Section): Promise<Product[]> {
     const base = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    const url  = `${base}/rest/v1/products?select=${encodeURIComponent(FIELDS)}&active=eq.true&section=eq.${s}&or=(exclusive.is.null,exclusive.eq.)&order=style_name`
-    const res  = await fetch(url, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` },
-    })
+    const headers = { apikey: key, Authorization: `Bearer ${key}` }
+    const urlFor = (order: string) =>
+      `${base}/rest/v1/products?select=${encodeURIComponent(FIELDS)}&active=eq.true&section=eq.${s}&or=(exclusive.is.null,exclusive.eq.)&order=${encodeURIComponent(order)}`
+    // Prefer the manual gallery order; fall back to style_name if the
+    // gallery_position column isn't present yet (migration 014 not applied).
+    let res = await fetch(urlFor('gallery_position.asc.nullslast,style_name.asc,colour_id.asc'), { headers })
+    if (!res.ok) res = await fetch(urlFor('style_name.asc,colour_id.asc'), { headers })
     if (!res.ok) throw new Error(`Supabase ${res.status}`)
     return res.json()
   }

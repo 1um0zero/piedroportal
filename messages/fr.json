@@ -735,7 +735,8 @@
       "all_types": "Tous les types",
       "col_type": "Type",
       "col_exclusive": "Exclusif",
-      "all_exclusive": "Tous les exclusifs"
+      "all_exclusive": "Tous les exclusifs",
+      "gallery_order": "Ordre de la galerie"
     },
     "branches": {
       "title": "Filiales",
@@ -819,6 +820,22 @@
       "search_models": "Rechercher des modèles…",
       "no_free_models": "Aucun modèle disponible ne correspond.",
       "add_hint": "Seuls les modèles non exclusifs à une autre société sont listés. L'ajout rend le modèle exclusif à cette société (toutes les couleurs)."
+    },
+    "order": {
+      "title": "Ordre de la galerie",
+      "subtitle": "Faites glisser un modèle pour le repositionner, ou cochez-en plusieurs et cliquez sur un point d’insertion pour les déplacer ensemble.",
+      "back_to_products": "Retour aux produits",
+      "save": "Enregistrer l’ordre",
+      "saving": "Enregistrement…",
+      "saved": "Ordre enregistré",
+      "empty": "Aucun modèle dans cette section.",
+      "selected_count": "{n} sélectionné(s)",
+      "drag_hint": "Faites glisser un modèle pour réordonner, ou cochez-en plusieurs pour les déplacer ensemble.",
+      "move_to_end": "Déplacer à la fin",
+      "clear_selection": "Effacer la sélection",
+      "insert_here": "Insérer ici",
+      "unsaved": "Modifications non enregistrées",
+      "colours_n": "{n} couleurs"
     }
   },
   "adminTranslations": {

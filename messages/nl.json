@@ -735,7 +735,8 @@
       "all_types": "Alle types",
       "col_type": "Type",
       "col_exclusive": "Exclusief",
-      "all_exclusive": "Alle exclusieve"
+      "all_exclusive": "Alle exclusieve",
+      "gallery_order": "Galerijvolgorde"
     },
     "branches": {
       "title": "Filialen",
@@ -819,6 +820,22 @@
       "search_models": "Modellen zoeken…",
       "no_free_models": "Geen beschikbare modellen gevonden.",
       "add_hint": "Alleen modellen die niet exclusief zijn voor een ander bedrijf worden getoond. Toevoegen maakt het model exclusief voor dit bedrijf (alle kleuren)."
+    },
+    "order": {
+      "title": "Galerijvolgorde",
+      "subtitle": "Sleep een model om het te verplaatsen, of vink er meerdere aan en klik op een invoegpunt om ze samen te verplaatsen.",
+      "back_to_products": "Terug naar producten",
+      "save": "Volgorde opslaan",
+      "saving": "Opslaan…",
+      "saved": "Volgorde opgeslagen",
+      "empty": "Geen modellen in deze sectie.",
+      "selected_count": "{n} geselecteerd",
+      "drag_hint": "Sleep een model om te herordenen, of vink er meerdere aan om ze samen te verplaatsen.",
+      "move_to_end": "Naar het einde",
+      "clear_selection": "Selectie wissen",
+      "insert_here": "Hier invoegen",
+      "unsaved": "Niet-opgeslagen wijzigingen",
+      "colours_n": "{n} kleuren"
     }
   },
   "adminTranslations": {

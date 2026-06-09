@@ -18,15 +18,22 @@ export default async function GalleryRoute() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
-  const { data } = await supabase
-    .from('products')
-    .select(FIELDS)
-    .eq('active', true)
-    .eq('section', 'KIDS')
+  // Manual gallery order first (NULLS LAST → un-ordered styles fall to the end),
+  // then style_name and colour_id keep variants of a style together. Falls back
+  // to style_name order if the gallery_position column isn't present yet
+  // (migration 014 not yet applied) so the public gallery never breaks.
+  const baseQuery = () => supabase
+    .from('products').select(FIELDS).eq('active', true).eq('section', 'KIDS')
     // Customer-exclusive models are never part of the public (cached) set — they
     // are overlaid client-side for the signed-in user (see GalleryPage).
     .or('exclusive.is.null,exclusive.eq.')
-    .order('style_name')
+
+  const ordered = await baseQuery()
+    .order('gallery_position', { ascending: true, nullsFirst: false })
+    .order('style_name').order('colour_id')
+  const data = ordered.error
+    ? (await baseQuery().order('style_name').order('colour_id')).data
+    : ordered.data
 
   const initialProducts = (data ?? []) as unknown as Product[]
 

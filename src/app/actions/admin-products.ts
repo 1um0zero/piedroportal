@@ -188,6 +188,53 @@ export async function updateProduct(
   return { ok: true }
 }
 
+// ── Gallery style ordering ────────────────────────────────────────────────────
+
+const SECTIONS = ['KIDS', 'MEN', 'WOMEN'] as const
+
+/**
+ * Persist the gallery order for a section. `orderedStyles` is the full list of
+ * style_names in their new display order; each style's `gallery_position` is set
+ * to its index (same value written to every colour variant of the style). The
+ * gallery then sorts by gallery_position. Branch staff may only reorder styles
+ * within their scope.
+ */
+export async function saveStyleOrder(
+  section: string,
+  orderedStyles: string[],
+): Promise<{ ok?: boolean; error?: string }> {
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
+  if (!SECTIONS.includes(section as typeof SECTIONS[number])) return { error: 'Invalid section' }
+
+  const service = createServiceClient()
+  const styles = (scope.allModels ? orderedStyles : orderedStyles.filter(s => scope.canModel(s)))
+    .map((s, i) => ({ s, i }))
+
+  // Pooled updates — one statement per style (touches all its variants).
+  let cursor = 0
+  const worker = async (): Promise<void> => {
+    while (cursor < styles.length) {
+      const { s, i } = styles[cursor++]
+      const { error } = await service
+        .from('products')
+        .update({ gallery_position: i })
+        .eq('section', section)
+        .eq('style_name', s)
+      if (error) throw new Error(error.message)
+    }
+  }
+  try {
+    await Promise.all(Array.from({ length: Math.min(8, styles.length) }, worker))
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) }
+  }
+
+  revalidatePath('/admin/products/order')
+  revalidatePath('/gallery')
+  return { ok: true }
+}
+
 export async function setProductActive(
   id: string,
   active: boolean,
