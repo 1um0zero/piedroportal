@@ -215,7 +215,8 @@
     "order_submitted_complete": "Bestelling ingediend. PDF gegenereerd en e-mail verzonden.",
     "cancel": "Annuleren",
     "continue_to_orders": "Verder naar Mijn bestellingen",
-    "redirecting": "Doorsturen naar Mijn bestellingen…"
+    "redirecting": "Doorsturen naar Mijn bestellingen…",
+    "order_not_saved": "De bestelling is NIET opgeslagen — probeer het opnieuw."
   },
   "additions": {
     "yes": "Ja",

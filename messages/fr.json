@@ -215,7 +215,8 @@
     "order_submitted_complete": "Commande soumise. PDF généré et e-mail envoyé.",
     "cancel": "Annuler",
     "continue_to_orders": "Continuer vers Mes commandes",
-    "redirecting": "Redirection vers Mes commandes…"
+    "redirecting": "Redirection vers Mes commandes…",
+    "order_not_saved": "La commande n’a PAS été enregistrée — veuillez réessayer."
   },
   "additions": {
     "yes": "Oui",

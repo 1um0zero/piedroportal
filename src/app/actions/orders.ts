@@ -91,7 +91,12 @@ export async function insertOrderAction(
     .select('id')
     .single()
 
-  if (error) return { error: `${error.message} [${error.code}]` }
+  // Confirm an effective commit: only a row id coming back from the DB proves the
+  // order is persisted. PDF/email (the system's proof of registration) are
+  // generated ONLY after this confirmation, never before.
+  if (error || !data?.id) {
+    return { error: error ? `${error.message} [${error.code}]` : 'The order could not be saved.' }
+  }
   const orderId: string = data.id
 
   if (row.status === 'submitted' && pdfMeta) {
@@ -274,12 +279,19 @@ export async function updateOrderAction(
     return { error: 'Cannot modify orders after submission' }
   }
 
-  const { error } = await service
+  // Confirm the update actually hit the row (an UPDATE matching 0 rows returns no
+  // error). Only a returned id proves the order is persisted — PDF/email come
+  // strictly after this.
+  const { data: updated, error } = await service
     .from('orders')
     .update({ ...row, user_id: user.id, status: row.status })
     .eq('id', draftId)
     .eq('user_id', user.id)
-  if (error) return { error: `${error.message} [${error.code}]` }
+    .select('id')
+    .maybeSingle()
+  if (error || !updated?.id) {
+    return { error: error ? `${error.message} [${error.code}]` : 'The order could not be saved.' }
+  }
 
   if (row.status === 'submitted' && pdfMeta) {
     const pdfResult = await generatePdf(draftId, row, pdfMeta, service, user.id, user.email)

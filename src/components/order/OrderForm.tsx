@@ -353,9 +353,17 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       const result = draftId
         ? await updateOrderAction(draftId, row, pdfMeta)
         : await insertOrderAction(row, pdfMeta)
-      if (result.error) throw new Error(result.error)
 
-      // Order is saved — clear the autosaved draft state now, regardless of any
+      // Treat the order as saved ONLY when the server returns a confirmed id.
+      // Otherwise tell the user clearly it was NOT saved and keep their data so
+      // they can retry — never show a false success or send a confirmation for an
+      // order that didn't persist.
+      if (result.error || !result.id) {
+        setError(`${t('order_not_saved')}${result.error ? ` (${result.error})` : ''}`)
+        return
+      }
+
+      // Confirmed saved — clear the autosaved draft state now, regardless of any
       // email/PDF issue (the order itself persisted).
       if (typeof window !== 'undefined') sessionStorage.removeItem(STORAGE_KEY)
 
@@ -379,7 +387,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         goToOrders()
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(`${t('order_not_saved')} ${e instanceof Error ? e.message : String(e)}`)
     } finally {
       setSubmitting(false)
     }

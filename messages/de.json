@@ -215,7 +215,8 @@
     "order_submitted_complete": "Bestellung eingereicht. PDF erstellt und E-Mail gesendet.",
     "cancel": "Abbrechen",
     "continue_to_orders": "Weiter zu Meine Bestellungen",
-    "redirecting": "Weiterleitung zu Meine Bestellungen…"
+    "redirecting": "Weiterleitung zu Meine Bestellungen…",
+    "order_not_saved": "Die Bestellung wurde NICHT gespeichert — bitte erneut versuchen."
   },
   "additions": {
     "yes": "Ja",
