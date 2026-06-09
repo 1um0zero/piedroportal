@@ -125,11 +125,39 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   }, [])
   const trConstruction = (v: string) => translateFilterValueSync(v, locale as Locale)
 
-  // ── Restore state from sessionStorage (for locale changes) ──
-  // Scope the key by user AND product so an in-progress order never leaks to
-  // another user (or another model) sharing the same browser tab — this carries
-  // patient data, so cross-user persistence would be a privacy breach.
-  const STORAGE_KEY = `order-form-state-${userId}-${product.id}`
+  // ── Per-order draft bubble (autosave that survives a locale switch) ──
+  // Each order gets its own session id so two orders NEVER share state — not
+  // across users, not across models, not even the same user opening the same
+  // model twice. This carries patient data, so any cross-bubble leak is a breach.
+  // The id lives in the URL (?s=…) so it survives the locale-switch remount and a
+  // reload; a brand-new order (no ?s) gets a fresh id and starts clean.
+  const [sessionId] = useState<string>(() => {
+    if (draftId) return `draft-${draftId}`
+    if (typeof window !== 'undefined') {
+      const s = new URLSearchParams(window.location.search).get('s')
+      if (s) return s
+      return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `s${Date.now()}-${Math.random().toString(36).slice(2)}`
+    }
+    return 'new'
+  })
+  useEffect(() => {
+    if (draftId || typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    if (url.searchParams.get('s') !== sessionId) {
+      url.searchParams.set('s', sessionId)
+      window.history.replaceState(window.history.state, '', url.toString())
+    }
+  }, [sessionId, draftId])
+  const STORAGE_KEY = `order-form-state-${userId}-${sessionId}`
+
+  // After a save the session cookies may have been refreshed inside the server
+  // action; a soft App-Router navigation can race that and land on /login. Use a
+  // hard navigation so the server re-reads the current cookies (same reason the
+  // login flow uses window.location).
+  const goToOrders = () => {
+    if (typeof window === 'undefined') return
+    window.location.assign(locale === 'en' ? '/orders' : `/${locale}/orders`)
+  }
 
   function getInitialState<T>(key: string, defaultValue: T): T {
     if (typeof window === 'undefined') return defaultValue
@@ -331,7 +359,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       // email/PDF issue (the order itself persisted).
       if (typeof window !== 'undefined') sessionStorage.removeItem(STORAGE_KEY)
 
-      if (status !== 'submitted') { router.push('/orders'); return }
+      if (status !== 'submitted') { goToOrders(); return }
 
       const hadIssue = !!(result.pdfError || result.emailError)
       setSuccessMsg(
@@ -348,7 +376,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       // the banner up and let the user acknowledge it via the Continue button.
       if (!hadIssue) {
         await new Promise(r => setTimeout(r, 2500))
-        router.push('/orders')
+        goToOrders()
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -367,7 +395,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem(STORAGE_KEY)
       }
-      router.push('/orders')
+      goToOrders()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -522,7 +550,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <div className="flex-1">
                 <p className={`text-sm font-medium ${submitIssue ? 'text-amber-800' : 'text-green-700'}`}>{successMsg}</p>
                 {submitIssue ? (
-                  <button type="button" onClick={() => router.push('/orders')}
+                  <button type="button" onClick={() => goToOrders()}
                     className="mt-2 rounded-lg bg-stone-800 text-white text-xs font-semibold px-3.5 py-1.5 hover:bg-stone-700 transition-colors">
                     {t('continue_to_orders')}
                   </button>

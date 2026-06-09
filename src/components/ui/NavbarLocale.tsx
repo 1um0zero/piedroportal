@@ -27,9 +27,12 @@ export function NavbarLocale({ locales, current }: { locales: string[]; current:
   function change(l: string) {
     setOpen(false)
     if (l === current) return
+    // Preserve the live query string (e.g. the order-form session id ?s=…) so
+    // switching language doesn't drop it and lose / cross-wire in-progress state.
+    const qs = typeof window !== 'undefined' ? window.location.search : ''
     start(async () => {
       await setLocaleAction(l)
-      router.push(pathname, { locale: l })
+      router.push(qs ? `${pathname}${qs}` : pathname, { locale: l })
     })
   }
 
