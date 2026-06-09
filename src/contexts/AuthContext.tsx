@@ -39,7 +39,18 @@ export function AuthProvider({ children, initialProfile, initialLoggedIn, initia
     // Keep in sync with browser session changes (login/logout in other tabs, token refresh)
     const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user)
-      if (!session?.user) { setProfile(null); setHasCompany(false); return }
+      if (!session?.user) {
+        setProfile(null); setHasCompany(false)
+        // Purge any in-progress order state on logout — it holds patient data and
+        // must never carry over to the next user on a shared browser/tab.
+        try {
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const k = sessionStorage.key(i)
+            if (k && k.startsWith('order-form-state-')) sessionStorage.removeItem(k)
+          }
+        } catch { /* ignore */ }
+        return
+      }
       sb.from('profiles').select('*').eq('id', session.user.id).single()
         .then(({ data }) => setProfile(data as Profile | null))
       sb.from('user_companies').select('company_id', { count: 'exact', head: true }).eq('user_id', session.user.id)

@@ -126,7 +126,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const trConstruction = (v: string) => translateFilterValueSync(v, locale as Locale)
 
   // ── Restore state from sessionStorage (for locale changes) ──
-  const STORAGE_KEY = `order-form-state-${product.id}`
+  // Scope the key by user AND product so an in-progress order never leaks to
+  // another user (or another model) sharing the same browser tab — this carries
+  // patient data, so cross-user persistence would be a privacy breach.
+  const STORAGE_KEY = `order-form-state-${userId}-${product.id}`
 
   function getInitialState<T>(key: string, defaultValue: T): T {
     if (typeof window === 'undefined') return defaultValue
