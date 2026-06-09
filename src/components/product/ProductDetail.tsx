@@ -152,7 +152,9 @@ export default function ProductDetail({ product, siblings }: Props) {
   }, [locale])
 
   const colourGrid = useMemo(
-    () => allVariants.filter((p) => p.closure === activeClosure),
+    () => allVariants
+      .filter((p) => p.closure === activeClosure)
+      .sort((a, b) => (a.colour_id ?? '').localeCompare(b.colour_id ?? '')),
     [allVariants, activeClosure],
   )
 
