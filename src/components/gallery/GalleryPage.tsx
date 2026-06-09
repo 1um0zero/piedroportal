@@ -61,13 +61,15 @@ export function applyFilters(
 }
 
 // ── Available sizes helper ────────────────────────────────────────────────────
-function availableSizes(products: Product[]): number[] {
+// Kids scales have whole sizes only (no half sizes) → pass wholeOnly.
+function availableSizes(products: Product[], wholeOnly = false): number[] {
   if (!products.length) return []
   const min = Math.min(...products.map((p) => p.size_first))
   const max = Math.max(...products.map((p) => p.size_last))
+  const step = wholeOnly ? 1 : 0.5
   const out: number[] = []
-  for (let s = min; s <= max + 0.001; s += 0.5) {
-    const r = Math.round(s * 2) / 2
+  for (let s = min; s <= max + 0.001; s += step) {
+    const r = wholeOnly ? Math.round(s) : Math.round(s * 2) / 2
     if (products.some((p) => r >= p.size_first && r <= p.size_last)) out.push(r)
   }
   return out
@@ -162,7 +164,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         .flatMap((c) => c.widths ?? [])))]
     .filter(w => w && w !== '--' && w !== '-')
     .sort(sortWidths), [forWidths, filters.constructions])
-  const optSizes         = useMemo(() => availableSizes(forSizes), [forSizes])
+  const optSizes         = useMemo(() => availableSizes(forSizes, section === 'KIDS'), [forSizes, section])
 
   // ── Final filtered list (wishlist filter applied here, needs context) ──
   const filtered = useMemo(() => {

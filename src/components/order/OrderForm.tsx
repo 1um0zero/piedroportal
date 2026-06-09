@@ -293,9 +293,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     }
   }, [widthsR.length, widthRight, mirror, isDouble, unit]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Size list
+  // Size list — kids scales have whole sizes only (no half sizes)
+  const sizeStep = product.section === 'KIDS' ? 1 : 0.5
   const sizes: string[] = []
-  for (let s = product.size_first; s <= product.size_last; s += 0.5)
+  for (let s = product.size_first; s <= product.size_last; s += sizeStep)
     sizes.push(String(Math.round(s * 2) / 2))
 
   // Mirror helpers — PAIR mirrors both feet; LEFT_RIGHT copies to right if right is empty
@@ -734,10 +735,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               <div className="flex flex-wrap gap-2">
                 {([
                   ['PAIR',       t('unit_pair')],
+                  ['DIFF_SIZES', t('unit_sizes')],
                   ['LEFT',       t('unit_left')],
                   ['RIGHT',      t('unit_right')],
                   ['LEFT_RIGHT', t('unit_lr')],
-                  ['DIFF_SIZES', t('unit_sizes')],
                 ] as [Unit, string][]).map(([val, lbl]) => (
                   <button key={val} type="button" onClick={() => setUnit(val)}
                     className={`px-3.5 py-1.5 rounded-lg border text-sm font-medium transition-all
