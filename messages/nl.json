@@ -452,7 +452,10 @@
     "subprocessors": "Subverwerkers",
     "rights": "Alle rechten voorbehouden.",
     "cookie_notice": "Wij gebruiken alleen essentiële cookies om u ingelogd te houden.",
-    "cookie_ok": "Begrepen"
+    "cookie_ok": "Begrepen",
+    "refresh": "Vernieuwen",
+    "refresh_hint": "Laad de nieuwste versie",
+    "built": "Gebouwd {date}"
   },
   "dashboard": {
     "title_user": "Mijn dashboard",

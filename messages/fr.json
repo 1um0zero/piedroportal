@@ -452,7 +452,10 @@
     "subprocessors": "Sous-traitants",
     "rights": "Tous droits réservés.",
     "cookie_notice": "Nous utilisons uniquement des cookies essentiels pour vous garder connecté.",
-    "cookie_ok": "Compris"
+    "cookie_ok": "Compris",
+    "refresh": "Actualiser",
+    "refresh_hint": "Charger la dernière version",
+    "built": "Compilé {date}"
   },
   "dashboard": {
     "title_user": "Mon tableau de bord",

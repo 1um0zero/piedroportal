@@ -452,7 +452,10 @@
     "subprocessors": "Sub-processors",
     "rights": "All rights reserved.",
     "cookie_notice": "We use only essential cookies to keep you signed in.",
-    "cookie_ok": "Got it"
+    "cookie_ok": "Got it",
+    "refresh": "Refresh",
+    "refresh_hint": "Load the latest version",
+    "built": "Built {date}"
   },
   "dashboard": {
     "title_user": "My Dashboard",

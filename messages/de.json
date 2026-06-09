@@ -452,7 +452,10 @@
     "subprocessors": "Auftragsverarbeiter",
     "rights": "Alle Rechte vorbehalten.",
     "cookie_notice": "Wir verwenden nur essenzielle Cookies, um Sie angemeldet zu halten.",
-    "cookie_ok": "Verstanden"
+    "cookie_ok": "Verstanden",
+    "refresh": "Aktualisieren",
+    "refresh_hint": "Neueste Version laden",
+    "built": "Erstellt {date}"
   },
   "dashboard": {
     "title_user": "Mein Dashboard",

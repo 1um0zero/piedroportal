@@ -43,7 +43,17 @@ const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'off' },
 ]
 
+// App version shown in the footer (so support can ask "which version?" and users
+// can force a refresh after a deploy). Vercel sets VERCEL_GIT_COMMIT_SHA at build;
+// fall back to a build timestamp locally.
+const appVersion = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev'
+const buildTime = new Date().toISOString()
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: appVersion,
+    NEXT_PUBLIC_BUILD_TIME: buildTime,
+  },
   images: {
     remotePatterns: [
       {
