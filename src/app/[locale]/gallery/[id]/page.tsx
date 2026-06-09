@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { getUserExclusiveLabels } from '@/lib/user-companies'
+import { isPiedroAdmin } from '@/lib/roles'
+import { isExclusiveVisible } from '@/lib/exclusive'
 import ProductDetail from '@/components/product/ProductDetail'
 import type { Product } from '@/types'
 
@@ -16,17 +18,16 @@ async function getProduct(id: string): Promise<Product | null> {
   return (data as unknown as Product) ?? null
 }
 
-/** Labels the current visitor may see exclusive models for (empty for anon). */
-async function getVisibleLabels(): Promise<Set<string>> {
+/** The current visitor's exclusivity context (siglas + admin flag). */
+async function getVisibility(): Promise<{ labels: Set<string>; isAdmin: boolean }> {
   const sb = await createServerClient()
   const { data: { user } } = await sb.auth.getUser()
-  if (!user) return new Set()
-  return new Set(await getUserExclusiveLabels(user.id))
-}
-
-function isVisible(p: { exclusive?: string | null }, labels: Set<string>): boolean {
-  const ex = (p.exclusive ?? '').trim().toUpperCase()
-  return !ex || labels.has(ex)
+  if (!user) return { labels: new Set(), isAdmin: false }
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  return {
+    labels: new Set(await getUserExclusiveLabels(user.id)),
+    isAdmin: isPiedroAdmin(profile?.role),
+  }
 }
 
 async function getSiblings(product: Product): Promise<Product[]> {
@@ -74,11 +75,12 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProduct(id)
   if (!product) notFound()
 
-  // Customer-exclusive models 404 for anyone outside the owning company.
-  const labels = await getVisibleLabels()
-  if (!isVisible(product, labels)) notFound()
+  // Customer-exclusive models 404 for anyone outside the owning company (admins see all).
+  const { labels, isAdmin } = await getVisibility()
+  const visible = (p: { exclusive?: string | null }) => isExclusiveVisible(p.exclusive, labels, isAdmin)
+  if (!visible(product)) notFound()
 
-  const siblings = (await getSiblings(product)).filter((p) => isVisible(p, labels))
+  const siblings = (await getSiblings(product)).filter(visible)
 
   return <ProductDetail product={product} siblings={siblings} />
 }

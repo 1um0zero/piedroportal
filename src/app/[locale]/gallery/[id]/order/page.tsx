@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanies, getUserExclusiveLabels } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
+import { isExclusiveVisible } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
 import { closuresAhead } from '@/lib/dispatch'
 import OrderForm from '@/components/order/OrderForm'
@@ -72,11 +73,12 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const product = await getProduct(id)
   if (!product) notFound()
 
-  // Customer-exclusive models: only the owning company's users (or piedro_admin) may order.
-  const exclusive = ((product as unknown as { exclusive?: string | null }).exclusive ?? '').trim().toUpperCase()
+  // Customer-exclusive models: only owning-company users (or piedro_admin) may order.
+  // `exclusive` may list several siglas — visible on a token intersection.
+  const exclusive = (product as unknown as { exclusive?: string | null }).exclusive
   if (exclusive && !isAdmin) {
-    const labels = user ? await getUserExclusiveLabels(user.id) : []
-    if (!labels.includes(exclusive)) notFound()
+    const labels = new Set(user ? await getUserExclusiveLabels(user.id) : [])
+    if (!isExclusiveVisible(exclusive, labels, false)) notFound()
   }
 
   // Load draft data if draftId is provided (duplicate/edit flow).

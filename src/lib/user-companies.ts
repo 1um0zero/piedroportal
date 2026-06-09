@@ -120,26 +120,42 @@ export async function getAdminCompanyIds(userId: string): Promise<string[]> {
 }
 
 /**
- * Get the exclusive labels (siglas) of every company the user belongs to.
- * A product is visible to the user when its `exclusive` matches one of these.
- * Returns uppercased, de-duplicated, non-empty labels.
+ * Get the exclusive labels (siglas) of every company the user belongs to — the
+ * union of the N:N `company_exclusives` table and the legacy single
+ * `companies.exclusive_label`. A product is visible when one of its siglas
+ * matches one of these (see src/lib/exclusive.ts). Uppercased, de-duplicated.
  */
 export async function getUserExclusiveLabels(userId: string): Promise<string[]> {
   const service = createServiceClient()
 
   const { data, error } = await service
     .from('user_companies')
-    .select('companies (exclusive_label)')
+    .select('company_id, companies (exclusive_label)')
     .eq('user_id', userId)
 
   if (error || !data) return []
 
-  const labels = data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((uc: any) => (uc.companies?.exclusive_label ?? '').trim().toUpperCase())
-    .filter(Boolean)
+  const labels = new Set<string>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const uc of data as any[]) {
+    const legacy = (uc.companies?.exclusive_label ?? '').trim().toUpperCase()
+    if (legacy) labels.add(legacy)
+  }
 
-  return [...new Set(labels)]
+  const companyIds = (data as { company_id: string }[]).map((d) => d.company_id)
+  if (companyIds.length) {
+    // Resilient: if the table isn't present yet (migration 016) just use legacy.
+    const { data: ce } = await service
+      .from('company_exclusives')
+      .select('label')
+      .in('company_id', companyIds)
+    for (const r of (ce ?? []) as { label: string }[]) {
+      const l = (r.label ?? '').trim().toUpperCase()
+      if (l) labels.add(l)
+    }
+  }
+
+  return [...labels]
 }
 
 /**
