@@ -53,7 +53,13 @@
     "save": "Enregistrer",
     "saved": "Paramètres enregistrés.",
     "using_env_fallback": "Valeur serveur par défaut : {value}",
-    "edit_texts": "Modifier les textes mot de passe & e-mail →"
+    "edit_texts": "Modifier les textes mot de passe & e-mail →",
+    "dispatch_title": "Expédition prévue",
+    "dispatch_days_normal": "Jours ouvrés — normal",
+    "dispatch_days_urgent": "Jours ouvrés — urgent",
+    "dispatch_show_all": "Afficher le compteur d’expédition à tous les utilisateurs (sinon staff/admin uniquement)",
+    "dispatch_help": "Jours ouvrés ajoutés à la date de commande, hors week-ends, jours fériés portugais et fermetures d’usine.",
+    "dispatch_calendar_link": "Calendrier de fermeture de l’usine"
   },
   "emails": {
     "subject_internal": "Nouvelle commande Piedro — {ref}",

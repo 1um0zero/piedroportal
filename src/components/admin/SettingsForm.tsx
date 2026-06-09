@@ -5,7 +5,10 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { saveSettingsAction } from '@/app/[locale]/admin/settings/actions'
 
-type Cfg = { order_notify_email?: string; admin_notify_email?: string; email_from?: string; notify_locale?: string }
+type Cfg = {
+  order_notify_email?: string; admin_notify_email?: string; email_from?: string; notify_locale?: string
+  dispatch_days_normal?: string; dispatch_days_urgent?: string; dispatch_show_all?: string
+}
 
 const LOCALES = ['en', 'nl', 'fr', 'de'] as const
 
@@ -53,6 +56,29 @@ export default function SettingsForm({ current, envFallback }: { current: Cfg; e
             {LOCALES.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
           </select>
           <p className="text-xs text-stone-400">{t('notify_locale_help')}</p>
+        </div>
+
+        {/* Expected-dispatch counter */}
+        <div className="pt-5 border-t border-stone-100 space-y-4">
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('dispatch_title')}</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('dispatch_days_normal')}</label>
+              <input name="dispatch_days_normal" type="number" min={0} defaultValue={current.dispatch_days_normal ?? ''}
+                className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('dispatch_days_urgent')}</label>
+              <input name="dispatch_days_urgent" type="number" min={0} defaultValue={current.dispatch_days_urgent ?? ''}
+                className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-stone-600">
+            <input type="checkbox" name="dispatch_show_all" defaultChecked={current.dispatch_show_all === '1'} className="custom-gold" />
+            {t('dispatch_show_all')}
+          </label>
+          <p className="text-xs text-stone-400">{t('dispatch_help')}</p>
+          <Link href="/admin/factory-calendar" className="inline-block text-sm text-gold hover:underline">{t('dispatch_calendar_link')} →</Link>
         </div>
 
         {state?.error && (

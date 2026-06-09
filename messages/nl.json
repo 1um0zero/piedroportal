@@ -53,7 +53,13 @@
     "save": "Opslaan",
     "saved": "Instellingen opgeslagen.",
     "using_env_fallback": "Serverstandaard in gebruik: {value}",
-    "edit_texts": "Teksten wachtwoord & reset-e-mail bewerken →"
+    "edit_texts": "Teksten wachtwoord & reset-e-mail bewerken →",
+    "dispatch_title": "Verwachte verzending",
+    "dispatch_days_normal": "Werkdagen — normaal",
+    "dispatch_days_urgent": "Werkdagen — urgent",
+    "dispatch_show_all": "Toon de verzendteller aan alle gebruikers (anders alleen staf/admin)",
+    "dispatch_help": "Werkdagen toegevoegd aan de besteldatum, met overslaan van weekends, Portugese feestdagen en fabriekssluitingen.",
+    "dispatch_calendar_link": "Sluitingskalender fabriek"
   },
   "emails": {
     "subject_internal": "Nieuwe Piedro-bestelling — {ref}",

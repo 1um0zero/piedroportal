@@ -4,7 +4,8 @@ import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import { setSettings } from '@/lib/settings'
 
-const ALLOWED = ['order_notify_email', 'admin_notify_email', 'email_from', 'notify_locale'] as const
+const ALLOWED = ['order_notify_email', 'admin_notify_email', 'email_from', 'notify_locale',
+  'dispatch_days_normal', 'dispatch_days_urgent'] as const
 
 export async function saveSettingsAction(
   _: unknown,
@@ -15,6 +16,8 @@ export async function saveSettingsAction(
 
   const entries: Record<string, string> = {}
   for (const key of ALLOWED) entries[key] = (formData.get(key) as string ?? '').trim()
+  // Checkbox: show the dispatch counter to every user (not just staff/admin).
+  entries['dispatch_show_all'] = formData.get('dispatch_show_all') ? '1' : ''
 
   const { error } = await setSettings(entries, scope.userId)
   if (error) return { error }

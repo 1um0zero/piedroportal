@@ -53,7 +53,13 @@
     "save": "Speichern",
     "saved": "Einstellungen gespeichert.",
     "using_env_fallback": "Server-Standard wird verwendet: {value}",
-    "edit_texts": "Passwort- & Reset-E-Mail-Texte bearbeiten →"
+    "edit_texts": "Passwort- & Reset-E-Mail-Texte bearbeiten →",
+    "dispatch_title": "Voraussichtlicher Versand",
+    "dispatch_days_normal": "Arbeitstage — normal",
+    "dispatch_days_urgent": "Arbeitstage — dringend",
+    "dispatch_show_all": "Versandzähler allen Nutzern anzeigen (sonst nur Staff/Admin)",
+    "dispatch_help": "Arbeitstage ab dem Bestelldatum, ohne Wochenenden, portugiesische Feiertage und Werksschließungen.",
+    "dispatch_calendar_link": "Werks-Schließkalender"
   },
   "emails": {
     "subject_internal": "Neue Piedro-Bestellung — {ref}",

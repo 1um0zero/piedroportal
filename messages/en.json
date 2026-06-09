@@ -53,7 +53,13 @@
     "save": "Save",
     "saved": "Settings saved.",
     "using_env_fallback": "Using server default: {value}",
-    "edit_texts": "Edit set-password & reset email texts →"
+    "edit_texts": "Edit set-password & reset email texts →",
+    "dispatch_title": "Expected dispatch",
+    "dispatch_days_normal": "Working days — normal",
+    "dispatch_days_urgent": "Working days — urgent",
+    "dispatch_show_all": "Show the dispatch counter to all users (otherwise staff/admin only)",
+    "dispatch_help": "Working days added to the order date, skipping weekends, Portuguese holidays and factory closures.",
+    "dispatch_calendar_link": "Factory closure calendar"
   },
   "emails": {
     "subject_internal": "New Piedro order — {ref}",

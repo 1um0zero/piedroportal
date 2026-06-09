@@ -4,7 +4,8 @@ import SettingsForm from '@/components/admin/SettingsForm'
 
 export default async function AdminSettingsPage() {
   await requirePiedroAdminPage()
-  const current = await getSettings(['order_notify_email', 'admin_notify_email', 'email_from', 'notify_locale'])
+  const current = await getSettings(['order_notify_email', 'admin_notify_email', 'email_from', 'notify_locale',
+    'dispatch_days_normal', 'dispatch_days_urgent', 'dispatch_show_all'])
 
   // Show the env-var fallback as a hint when no DB value is set.
   const envFallback = {
