@@ -878,6 +878,70 @@
     "recomputing": "Herberekenen…",
     "pending_recompute": "Sluitingswijzigingen opgeslagen. Herbereken om de verwachte verzenddatums van bestaande bestellingen bij te werken (gebeurt ook automatisch wanneer u deze pagina verlaat)."
   },
+  "homenew": {
+    "hero": {
+      "title": "Welkom bij het nieuwe Piedro Portaal!",
+      "body": [
+        "Dit portaal is exclusief beschikbaar voor onze zakelijke partners.",
+        "We hebben het bestelproces van A tot Z gestroomlijnd, zodat u sneller bestelt, slimmer inkoopt en kostbare tijd bespaart.",
+        "Fijn dat u er bent! Ontdek alles wat ons vernieuwde portaal voor u in petto heeft!"
+      ]
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Damesschoenen",
+        "body": "Uw voeten verdienen de beste zorg. Onze orthopedische damesschoenen bieden optimale ondersteuning en comfort, zonder in te leveren op een verzorgde uitstraling.",
+        "cta": "Ontdek de damescollectie →"
+      },
+      "men": {
+        "title": "Herenschoenen",
+        "body": "Stap de dag in met vertrouwen. Onze orthopedische herenschoenen bieden de ondersteuning en stabiliteit die uw voeten nodig hebben, voor een actieve dag, van ochtend tot avond.",
+        "cta": "Ontdek de herencollectie →"
+      },
+      "kids": {
+        "title": "Kinderschoenen",
+        "body": "Een gezonde voetontwikkeling begint met de juiste schoen. Onze orthopedische kinderschoenen ondersteunen groeiende voetjes op de juiste manier zonder in te leveren op de uitstraling.",
+        "cta": "Ontdek de kindercollectie →"
+      }
+    },
+    "orthosoft": {
+      "title": "Nieuw bij Piedro!",
+      "body": [
+        "Wij breiden ons assortiment continu uit met de beste orthopedische schoenen, van frisse seizoensmodellen tot innovatieve nieuwe lijnen.",
+        "Met trots presenteren wij de nieuwe Piedro Ortho Soft Collectie, speciaal ontwikkeld voor de gevoelige en diabetische voet. Een perfecte combinatie van comfort, zorg en stijl, met de ondersteuning waar u op kan vertrouwen."
+      ],
+      "cta": "Bekijk de Piedro Ortho Soft Collectie →"
+    },
+    "portal": {
+      "title": "Nieuw portaal, nog meer gemak",
+      "intro": "Naast onze nieuwste collecties hebben wij ook ons portaal volledig vernieuwd. U profiteert voortaan van een reeks nieuwe functionaliteiten die uw inkoop nog eenvoudiger maken:",
+      "features": [
+        "Gebruiksvriendelijker bestelproces — Sneller en intuïtiever bestellen, met minder klikken naar uw order.",
+        "Nieuw dashboard — Een helder overzicht van uw bestellingen op één plek.",
+        "Chatfunctie — Gebruik onze chatfunctie voor vragen, advies of ondersteuning.",
+        "Snelle nabestelling — Eerder bestelde artikelen opnieuw bestellen met slechts één klik."
+      ],
+      "note": "Uw accountgegevens en orderhistorie zijn volledig overgenomen, u kunt direct aan de slag.",
+      "cta": "Ontdek alle nieuwe functionaliteiten →"
+    },
+    "evo": {
+      "title": "Nieuw in voorraad: Piedro EVO Schoenen & Boots",
+      "intro": "Goed nieuws! Piedro EVO schoenen en boots zijn vanaf nu direct op voorraad beschikbaar en eenvoudig te bestellen via ons portaal!",
+      "sub": "De Piedro EVO collectie is speciaal ontworpen met extra comfort en functionaliteit in gedachten:",
+      "features": [
+        "Bredere en diepere leesten, voor een perfecte pasvorm in combinatie met EVO's.",
+        "Hoogwaardige materialen, voor extra duurzaamheid en stabiliteit.",
+        "Direct leverbaar, op voorraad en direct te bestellen via ons portaal."
+      ],
+      "cta": "Bestel nu de Piedro EVO collectie →"
+    },
+    "catalogues_card": {
+      "title": "Onze catalogi",
+      "body": "Blader door de volledige Piedro-collectie — net als in het gedrukte boek.",
+      "cta": "Open de catalogi →"
+    }
+  },
   "landing": {
     "hero": {
       "title": "Welkom bij het Piedro Portaal!",

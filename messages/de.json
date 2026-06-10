@@ -878,6 +878,70 @@
     "recomputing": "Neuberechnung…",
     "pending_recompute": "Schließungsänderungen gespeichert. Neu berechnen, um die voraussichtlichen Versanddaten bestehender Bestellungen zu aktualisieren (erfolgt auch automatisch beim Verlassen der Seite)."
   },
+  "homenew": {
+    "hero": {
+      "title": "Willkommen im neuen Piedro-Portal!",
+      "body": [
+        "Dieses Portal steht exklusiv unseren Geschäftspartnern zur Verfügung.",
+        "Wir haben den Bestellprozess von A bis Z optimiert, damit Sie schneller bestellen, klüger einkaufen und wertvolle Zeit sparen.",
+        "Schön, dass Sie hier sind! Entdecken Sie alles, was unser erneuertes Portal für Sie bereithält."
+      ]
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Damenschuhe",
+        "body": "Ihre Füße verdienen die beste Pflege. Unsere orthopädischen Damenschuhe bieten optimale Unterstützung und Komfort, ohne auf ein gepflegtes Erscheinungsbild zu verzichten.",
+        "cta": "Damenkollektion entdecken →"
+      },
+      "men": {
+        "title": "Herrenschuhe",
+        "body": "Starten Sie selbstbewusst in den Tag. Unsere orthopädischen Herrenschuhe bieten die Unterstützung und Stabilität, die Ihre Füße brauchen – für einen aktiven Tag von morgens bis abends.",
+        "cta": "Herrenkollektion entdecken →"
+      },
+      "kids": {
+        "title": "Kinderschuhe",
+        "body": "Eine gesunde Fußentwicklung beginnt mit dem richtigen Schuh. Unsere orthopädischen Kinderschuhe unterstützen wachsende Füße auf die richtige Weise, ohne auf Optik zu verzichten.",
+        "cta": "Kinderkollektion entdecken →"
+      }
+    },
+    "orthosoft": {
+      "title": "Neu bei Piedro!",
+      "body": [
+        "Wir erweitern unser Sortiment kontinuierlich mit den besten orthopädischen Schuhen, von frischen Saisonmodellen bis zu innovativen neuen Linien.",
+        "Mit Stolz präsentieren wir die neue Piedro Ortho Soft Kollektion, speziell entwickelt für den empfindlichen und diabetischen Fuß. Eine perfekte Kombination aus Komfort, Pflege und Stil – mit der Unterstützung, auf die Sie sich verlassen können."
+      ],
+      "cta": "Piedro Ortho Soft Kollektion ansehen →"
+    },
+    "portal": {
+      "title": "Neues Portal, noch mehr Komfort",
+      "intro": "Neben unseren neuesten Kollektionen haben wir auch unser Portal vollständig erneuert. Ab sofort profitieren Sie von einer Reihe neuer Funktionen, die Ihren Einkauf noch einfacher machen:",
+      "features": [
+        "Benutzerfreundlicherer Bestellprozess — Schneller und intuitiver bestellen, mit weniger Klicks bis zur Bestellung.",
+        "Neues Dashboard — Ein klarer Überblick über Ihre Bestellungen an einem Ort.",
+        "Chat-Funktion — Nutzen Sie unseren Chat für Fragen, Beratung oder Unterstützung.",
+        "Schnelle Nachbestellung — Bereits bestellte Artikel mit nur einem Klick erneut bestellen."
+      ],
+      "note": "Ihre Kontodaten und Bestellhistorie wurden vollständig übernommen – Sie können sofort loslegen.",
+      "cta": "Alle neuen Funktionen entdecken →"
+    },
+    "evo": {
+      "title": "Neu auf Lager: Piedro EVO Schuhe & Boots",
+      "intro": "Gute Nachrichten! Piedro EVO Schuhe und Boots sind ab sofort direkt ab Lager verfügbar und einfach über unser Portal bestellbar!",
+      "sub": "Die Piedro EVO Kollektion wurde speziell für extra Komfort und Funktionalität entwickelt:",
+      "features": [
+        "Breitere und tiefere Leisten, für eine perfekte Passform in Kombination mit EVOs.",
+        "Hochwertige Materialien, für extra Haltbarkeit und Stabilität.",
+        "Sofort lieferbar, auf Lager und direkt über unser Portal bestellbar."
+      ],
+      "cta": "Jetzt die Piedro EVO Kollektion bestellen →"
+    },
+    "catalogues_card": {
+      "title": "Unsere Kataloge",
+      "body": "Blättern Sie durch die gesamte Piedro-Kollektion — wie im gedruckten Buch.",
+      "cta": "Kataloge öffnen →"
+    }
+  },
   "landing": {
     "hero": {
       "title": "Willkommen im Piedro-Portal!",

@@ -878,6 +878,70 @@
     "recomputing": "Recalcul…",
     "pending_recompute": "Modifications enregistrées. Recalculez pour mettre à jour les dates d’expédition prévues des commandes existantes (effectué aussi automatiquement en quittant cette page)."
   },
+  "homenew": {
+    "hero": {
+      "title": "Bienvenue sur le nouveau Portail Piedro !",
+      "body": [
+        "Ce portail est exclusivement réservé à nos partenaires professionnels.",
+        "Nous avons rationalisé le processus de commande de A à Z, pour que vous commandiez plus vite, achetiez plus intelligemment et gagniez un temps précieux.",
+        "Ravis de vous accueillir ! Découvrez tout ce que notre portail renouvelé vous réserve."
+      ]
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Chaussures pour femmes",
+        "body": "Vos pieds méritent les meilleurs soins. Nos chaussures orthopédiques pour femmes offrent un soutien et un confort optimaux, sans renoncer à une allure soignée.",
+        "cta": "Découvrir la collection femme →"
+      },
+      "men": {
+        "title": "Chaussures pour hommes",
+        "body": "Abordez la journée en toute confiance. Nos chaussures orthopédiques pour hommes offrent le soutien et la stabilité dont vos pieds ont besoin, pour une journée active du matin au soir.",
+        "cta": "Découvrir la collection homme →"
+      },
+      "kids": {
+        "title": "Chaussures pour enfants",
+        "body": "Un développement sain du pied commence par la bonne chaussure. Nos chaussures orthopédiques pour enfants soutiennent les petits pieds en pleine croissance, sans renoncer au style.",
+        "cta": "Découvrir la collection enfant →"
+      }
+    },
+    "orthosoft": {
+      "title": "Nouveau chez Piedro !",
+      "body": [
+        "Nous élargissons continuellement notre gamme avec les meilleures chaussures orthopédiques, des nouveaux modèles de saison aux lignes innovantes.",
+        "Nous présentons avec fierté la nouvelle collection Piedro Ortho Soft, spécialement développée pour le pied sensible et diabétique. Un mélange parfait de confort, de soin et de style, avec le soutien sur lequel vous pouvez compter."
+      ],
+      "cta": "Voir la collection Piedro Ortho Soft →"
+    },
+    "portal": {
+      "title": "Nouveau portail, encore plus de confort",
+      "intro": "Outre nos dernières collections, nous avons entièrement renouvelé notre portail. Vous profitez désormais d'une série de nouvelles fonctionnalités qui simplifient encore vos achats :",
+      "features": [
+        "Processus de commande plus convivial — Commandez plus vite et plus intuitivement, en moins de clics.",
+        "Nouveau tableau de bord — Un aperçu clair de vos commandes au même endroit.",
+        "Fonction de chat — Utilisez notre chat pour vos questions, conseils ou assistance.",
+        "Recommande rapide — Recommandez vos articles déjà commandés en un seul clic."
+      ],
+      "note": "Vos données de compte et votre historique de commandes ont été entièrement repris ; vous pouvez commencer immédiatement.",
+      "cta": "Découvrir toutes les nouvelles fonctionnalités →"
+    },
+    "evo": {
+      "title": "Nouveau en stock : chaussures et bottines Piedro EVO",
+      "intro": "Bonne nouvelle ! Les chaussures et bottines Piedro EVO sont désormais disponibles directement en stock et faciles à commander via notre portail !",
+      "sub": "La collection Piedro EVO est spécialement conçue pour un confort et une fonctionnalité accrus :",
+      "features": [
+        "Formes plus larges et plus profondes, pour un ajustement parfait avec les EVO.",
+        "Matériaux de haute qualité, pour plus de durabilité et de stabilité.",
+        "Disponible immédiatement, en stock et prêt à commander via notre portail."
+      ],
+      "cta": "Commander la collection Piedro EVO →"
+    },
+    "catalogues_card": {
+      "title": "Nos catalogues",
+      "body": "Feuilletez toute la collection Piedro — comme dans le livre imprimé.",
+      "cta": "Ouvrir les catalogues →"
+    }
+  },
   "landing": {
     "hero": {
       "title": "Bienvenue sur le Portail Piedro !",

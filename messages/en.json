@@ -878,6 +878,70 @@
     "recomputing": "Recalculating…",
     "pending_recompute": "Closure changes saved. Reprocess to update the expected dispatch dates of existing orders (also done automatically when you leave this page)."
   },
+  "homenew": {
+    "hero": {
+      "title": "Welcome to the new Piedro Portal!",
+      "body": [
+        "This portal is exclusively available to our business partners.",
+        "We've streamlined the ordering process from A to Z, so you order faster, buy smarter and save valuable time.",
+        "Great to have you here! Discover everything our renewed portal has in store for you."
+      ]
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Women's shoes",
+        "body": "Your feet deserve the best care. Our orthopaedic women's shoes offer optimal support and comfort, without compromising on a polished look.",
+        "cta": "Discover the women's collection →"
+      },
+      "men": {
+        "title": "Men's shoes",
+        "body": "Step into the day with confidence. Our orthopaedic men's shoes provide the support and stability your feet need, for an active day from morning to evening.",
+        "cta": "Discover the men's collection →"
+      },
+      "kids": {
+        "title": "Children's shoes",
+        "body": "Healthy foot development starts with the right shoe. Our orthopaedic children's shoes support growing feet the right way, without compromising on style.",
+        "cta": "Discover the children's collection →"
+      }
+    },
+    "orthosoft": {
+      "title": "New at Piedro!",
+      "body": [
+        "We continuously expand our range with the very best orthopaedic shoes, from fresh seasonal models to innovative new lines.",
+        "We proudly present the new Piedro Ortho Soft Collection, specially developed for the sensitive and diabetic foot. A perfect blend of comfort, care and style, with the support you can rely on."
+      ],
+      "cta": "View the Piedro Ortho Soft Collection →"
+    },
+    "portal": {
+      "title": "New portal, even more convenience",
+      "intro": "Alongside our latest collections, we've completely renewed our portal. From now on you benefit from a range of new features that make purchasing even easier:",
+      "features": [
+        "More user-friendly ordering — Order faster and more intuitively, with fewer clicks to your order.",
+        "New dashboard — A clear overview of your orders in one place.",
+        "Chat function — Use our chat for questions, advice or support.",
+        "Quick reorder — Reorder previously ordered items with just one click."
+      ],
+      "note": "Your account details and order history have been fully migrated — you can get started right away.",
+      "cta": "Discover all the new features →"
+    },
+    "evo": {
+      "title": "New in stock: Piedro EVO Shoes & Boots",
+      "intro": "Good news! Piedro EVO shoes and boots are now available directly from stock and easy to order through our portal!",
+      "sub": "The Piedro EVO collection is specially designed with extra comfort and functionality in mind:",
+      "features": [
+        "Wider and deeper lasts, for a perfect fit in combination with EVOs.",
+        "High-quality materials, for extra durability and stability.",
+        "Immediately available — in stock and ready to order through our portal."
+      ],
+      "cta": "Order the Piedro EVO collection now →"
+    },
+    "catalogues_card": {
+      "title": "Our catalogues",
+      "body": "Leaf through the full Piedro collection — just like the printed book.",
+      "cta": "Open the catalogues →"
+    }
+  },
   "landing": {
     "hero": {
       "title": "Welcome to the Piedro Portal!",
