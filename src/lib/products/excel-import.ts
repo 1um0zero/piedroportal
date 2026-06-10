@@ -80,11 +80,6 @@ const GENDER_LABEL_MAP: Record<string, Section> = {
   KIDS: 'KIDS', MAN: 'MEN', MEN: 'MEN', WOMAN: 'WOMEN', WOMEN: 'WOMEN',
 }
 
-function decodeGender(raw: unknown): Section {
-  const label = String(raw ?? '').trim().toUpperCase()
-  return GENDER_LABEL_MAP[label] ?? 'MEN'
-}
-
 const FRACS: Record<string, number> = { '½': 0.5, '⅓': 0.333, '⅔': 0.667, '¼': 0.25, '¾': 0.75 }
 
 export function parseSize(v: unknown): number | null {
@@ -151,10 +146,30 @@ export type ImportedProduct = Pick<Product,
   'color_name' | 'size_first' | 'size_last' | 'diabetics' | 'info' | 'sibling' |
   'active' | 'constructions' | 'adds_exclude' | 'exclusive'
 > & {
+  /** OUT/STOCK column (F): STOCK → is_stock; OUT → excluded by default. */
+  is_stock: boolean
+  out: boolean
+  /** Vital fields that came in empty/unparseable — such rows are never imported. */
+  vitalMissing: string[]
   /** PENDING columns, preserved for preview only — not written to the DB yet. */
   pending: { stretch: string | null; last: string | null; outStock: string | null }
   /** Source sheet name (for the preview). */
   sourceSheet: string
+}
+
+// Fields without which a product is unsafe to publish (un-orderable / mislabelled).
+// `constructions` is checked separately (it spans multiple rows).
+function findMissingVital(args: {
+  genderLabel: string; closure: string | null; type: string | null;
+  sizeFirst: number | null; sizeLast: number | null;
+}): string[] {
+  const missing: string[] = []
+  if (!(args.genderLabel in GENDER_LABEL_MAP)) missing.push('section')
+  if (!args.closure) missing.push('closure')
+  if (!args.type) missing.push('type')
+  if (args.sizeFirst == null || args.sizeFirst <= 0) missing.push('size_first')
+  if (args.sizeLast == null || args.sizeLast <= 0) missing.push('size_last')
+  return missing
 }
 
 // ── Workbook parsing ─────────────────────────────────────────────────────────
@@ -199,16 +214,24 @@ export function parseProducts(
         continue
       }
 
+      const genderLabel = String(row[COL.gender] ?? '').trim().toUpperCase()
+      const closure = (str(row[COL.closure]) ?? '').toUpperCase()
+      const type = str(row[COL.type]) ?? ''
+      const sizeFirst = parseSize(row[COL.sizefirst])
+      const sizeLast = parseSize(row[COL.sizelast])
+      // OUT/STOCK column (F): may be absent on some sheets → null → neither flag.
+      const outStockRaw = (str(row[COL.outStock]) ?? '').toUpperCase()
+
       groups.set(colourId, {
         style_name:   styleName,
         colour_id:    colourId,
-        section:      decodeGender(row[COL.gender]),
-        closure:      (str(row[COL.closure]) ?? '').toUpperCase() as Product['closure'],
-        type:         (str(row[COL.type]) ?? '') as Product['type'],
+        section:      GENDER_LABEL_MAP[genderLabel] ?? 'MEN',
+        closure:      closure as Product['closure'],
+        type:         type as Product['type'],
         color_basic:  str(row[COL.colorbasic]) ?? '',
         color_name:   str(row[COL.color_name]) ?? '',
-        size_first:   parseSize(row[COL.sizefirst]) ?? 0,
-        size_last:    parseSize(row[COL.sizelast]) ?? 0,
+        size_first:   sizeFirst ?? 0,
+        size_last:    sizeLast ?? 0,
         diabetics:    parseBool(row[COL.diabetics]),
         info:         str(row[COL.info]),
         sibling:      str(row[COL.sibling]),
@@ -217,6 +240,9 @@ export function parseProducts(
         adds_exclude: str(row[COL.addsExclude]) ?? '',
         // Customer "sigla" — normalise to UPPERCASE so it matches companies.exclusive_label.
         exclusive:    (str(row[COL.exclusive]) ?? '').toUpperCase(),
+        is_stock:     outStockRaw === 'STOCK',
+        out:          outStockRaw === 'OUT',
+        vitalMissing: findMissingVital({ genderLabel, closure, type, sizeFirst, sizeLast }),
         pending: {
           stretch:  str(row[COL.stretch]),
           last:     str(row[COL.last]),
@@ -251,6 +277,7 @@ export interface ExistingProduct {
   constructions: Construction[]
   adds_exclude: string | null
   exclusive: string | null
+  is_stock?: boolean
 }
 
 /** Fields compared to decide whether an existing product changed (picture_name excluded). */
@@ -287,6 +314,12 @@ export interface ImportPreview {
   withPending: { colour_id: string; stretch: string | null; last: string | null; outStock: string | null }[]
   /** Active rows with no constructions — rejected (never created/updated). */
   withEmptyConstructions: { colour_id: string; style_name: string }[]
+  /** Active rows missing a vital field (section/closure/type/sizes) — rejected. */
+  withMissingVital: { colour_id: string; style_name: string; missing: string[] }[]
+  /** New colour_ids marked OUT (col F) — excluded by default, admin may re-include. */
+  outNew: string[]
+  /** Existing products the sheet marks STOCK whose is_stock flag is not yet set. */
+  stockToFlag: { colour_id: string; existingId: string }[]
 }
 
 export function diffAgainstExisting(
@@ -294,13 +327,23 @@ export function diffAgainstExisting(
   existing: ExistingProduct[],
 ): ImportPreview {
   const byColour = new Map(existing.map(e => [e.colour_id, e]))
-  const preview: ImportPreview = { toCreate: [], toUpdate: [], unchanged: 0, toDelist: [], withPending: [], withEmptyConstructions: [] }
+  const preview: ImportPreview = {
+    toCreate: [], toUpdate: [], unchanged: 0, toDelist: [], withPending: [],
+    withEmptyConstructions: [], withMissingVital: [], outNew: [], stockToFlag: [],
+  }
 
   for (const p of imported) {
     const ex = byColour.get(p.colour_id)
 
     if (p.pending.stretch || p.pending.last || p.pending.outStock) {
       preview.withPending.push({ colour_id: p.colour_id, ...p.pending })
+    }
+
+    // The sheet is authoritative for the STOCK designation: flag existing
+    // products it marks STOCK whose is_stock isn't set yet (single-column,
+    // safe — never touches descriptive fields).
+    if (p.is_stock && ex && !ex.is_stock) {
+      preview.stockToFlag.push({ colour_id: p.colour_id, existingId: ex.id })
     }
 
     // DELISTED sheet: only act on products that exist and are currently active.
@@ -320,8 +363,16 @@ export function diffAgainstExisting(
       continue
     }
 
+    // Safety net: never import a product missing a vital field (it would be
+    // mislabelled or un-orderable). Reported, never created.
+    if (p.vitalMissing.length > 0) {
+      preview.withMissingVital.push({ colour_id: p.colour_id, style_name: p.style_name, missing: p.vitalMissing })
+      continue
+    }
+
     if (!ex) {
       preview.toCreate.push(p)
+      if (p.out) preview.outNew.push(p.colour_id)  // OUT → unticked by default in the UI
       continue
     }
 

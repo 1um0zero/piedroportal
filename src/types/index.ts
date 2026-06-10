@@ -38,6 +38,7 @@ export interface Product {
   new_until: string | null  // ISO datetime; null = new without expiry; absent = not new
   adds_exclude: string | null  // e.g. "#cr56f_zipper" — additions to hide for this product
   exclusive: string | null
+  is_stock?: boolean  // STOCK product (buy-as-is); see docs/PROJECT-TRACKER.md §23
 }
 
 export interface Profile {

@@ -742,7 +742,11 @@
       "all_exclusive": "Alle exclusieve",
       "gallery_order": "Galerijvolgorde",
       "import_selected": "{n} van {total} geselecteerd om te importeren",
-      "import_exclude_hint": "Vink modellen uit die u niet wilt importeren."
+      "import_exclude_hint": "Vink modellen uit die u niet wilt importeren.",
+      "col_missing": "Ontbreekt",
+      "result_stock_flagged": "{n} gemarkeerd als voorraad",
+      "out_excluded_note": "{n} model(len) met OUG werden vooraf uitgesloten — aanvinken om toch te importeren.",
+      "stock_flag_note": "{n} bestaand(e) model(len) worden als voorraad gemarkeerd."
     },
     "branches": {
       "title": "Filialen",

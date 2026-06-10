@@ -24,7 +24,7 @@ async function assertBackoffice(): Promise<AdminScope | string> {
 
 const EXISTING_FIELDS =
   'id, colour_id, style_name, section, closure, type, color_basic, color_name, ' +
-  'size_first, size_last, diabetics, info, sibling, active, constructions, adds_exclude, exclusive'
+  'size_first, size_last, diabetics, info, sibling, active, constructions, adds_exclude, exclusive, is_stock'
 
 export async function fetchAllExisting(): Promise<ExistingProduct[]> {
   const service = createServiceClient()
@@ -64,6 +64,7 @@ function toRow(p: ImportedProduct): Omit<Product, 'id' | 'picture_name' | 'color
     constructions: p.constructions,
     adds_exclude: p.adds_exclude,
     exclusive:    p.exclusive,
+    is_stock:     p.is_stock,
   }
 }
 
@@ -74,6 +75,7 @@ export interface ImportResult {
   rejectedRefs?: string[]
   discrepancies?: number // existing rows where the sheet disagrees with the DB (reported, NOT applied)
   discrepancyRefs?: string[]
+  stockFlagged?: number  // existing products newly flagged is_stock from the sheet's STOCK marker
   error?: string
 }
 
@@ -117,8 +119,11 @@ export async function applyProductImport(
   // The portal is the source of truth: the import only CREATES new models and
   // VALIDATES existing ones. It never overwrites existing rows (the sheet can be
   // stale/partial) — discrepancies are reported so the sheet can be fixed.
-  const rejected = preview.withEmptyConstructions.length
-  const rejectedRefs = preview.withEmptyConstructions.map(e => e.colour_id)
+  // Rejected = rows that are unsafe to publish (no constructions OR a vital field
+  // missing); they are never created.
+  const rejectedList = [...preview.withEmptyConstructions, ...preview.withMissingVital]
+  const rejected = rejectedList.length
+  const rejectedRefs = rejectedList.map(e => e.colour_id)
 
   // Restrict every change to models within the caller's scope, and drop any
   // colour_id the admin excluded in the preview.
@@ -140,8 +145,20 @@ export async function applyProductImport(
     if (error) return { created: 0, skipped, rejected, rejectedRefs, error: `Insert failed: ${error.message}` }
   }
 
+  // Flag existing products the sheet marks STOCK (single-column update; safe,
+  // never touches descriptive fields). Skips excluded colour_ids and out-of-scope.
+  const flagIds = preview.stockToFlag
+    .filter(s => !exclude.has(s.colour_id))
+    .map(s => s.existingId)
+  let stockFlagged = 0
+  for (let i = 0; i < flagIds.length; i += BATCH) {
+    const slice = flagIds.slice(i, i + BATCH)
+    const { error } = await service.from('products').update({ is_stock: true }).in('id', slice)
+    if (!error) stockFlagged += slice.length
+  }
+
   revalidatePath('/admin/products')
-  return { created: toInsert.length, skipped, rejected, rejectedRefs, discrepancies, discrepancyRefs }
+  return { created: toInsert.length, skipped, rejected, rejectedRefs, discrepancies, discrepancyRefs, stockFlagged }
 }
 
 // ── Standalone product CRUD ──────────────────────────────────────────────────

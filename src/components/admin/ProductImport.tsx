@@ -11,13 +11,14 @@ type SheetInfo = { name: string; rows: number; suggested: SheetMode }
 type Preview = {
   sheets: SheetInfo[]
   modesUsed: Record<string, SheetMode>
-  counts: { create: number; update: number; unchanged: number; delist: number; pending: number; rejected: number }
+  outNew: string[]
+  counts: { create: number; update: number; unchanged: number; delist: number; pending: number; rejected: number; out: number; stockFlag: number }
   samples: {
-    create: { colour_id: string; style_name: string; color_name: string; section: string }[]
+    create: { colour_id: string; style_name: string; color_name: string; section: string; is_stock: boolean; out: boolean }[]
     update: { colour_id: string; style_name: string; color_name: string; changedFields: string[] }[]
     delist: { colour_id: string; existingId: string; style_name: string }[]
     pending: { colour_id: string; stretch: string | null; last: string | null; outStock: string | null }[]
-    rejected: { colour_id: string; style_name: string }[]
+    rejected: { colour_id: string; style_name: string; missing: string[] }[]
   }
 }
 
@@ -55,7 +56,8 @@ export default function ProductImport() {
       if (!res.ok) { setError(json.error ?? 'Preview failed'); setPreview(null); return }
       setPreview(json)
       setModes(json.modesUsed)
-      setExcluded(new Set())  // fresh preview → everything selected by default
+      // OUT models (col F) start unticked — excluded by default, admin may re-include.
+      setExcluded(new Set<string>(json.outNew ?? []))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Preview failed')
     } finally {
@@ -78,6 +80,7 @@ export default function ProductImport() {
       const res = await applyProductImport(fd)
       if (res.error) { setError(res.error); return }
       const parts = [t('result_created', { n: res.created })]
+      if (res.stockFlagged) parts.push(t('result_stock_flagged', { n: res.stockFlagged }))
       if (res.discrepancies) parts.push(t('result_discrepancies', { n: res.discrepancies }))
       if (res.rejected) parts.push(t('result_rejected', { n: res.rejected }))
       if (res.skipped) parts.push(t('result_skipped', { n: res.skipped }))
@@ -170,6 +173,14 @@ export default function ProductImport() {
             <Stat label={t('stat_rejected')} value={preview.counts.rejected} color="text-red-600" />
           </div>
 
+          {/* OUT pre-exclusion + STOCK flagging notes */}
+          {(preview.counts.out > 0 || preview.counts.stockFlag > 0) && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 space-y-1">
+              {preview.counts.out > 0 && <p>⊘ {t('out_excluded_note', { n: preview.counts.out })}</p>}
+              {preview.counts.stockFlag > 0 && <p>📦 {t('stock_flag_note', { n: preview.counts.stockFlag })}</p>}
+            </div>
+          )}
+
           {/* New products — each row selectable so the admin can exclude any model */}
           <CreateTable
             title={t('sample_new')}
@@ -193,7 +204,7 @@ export default function ProductImport() {
               <SampleTable title={t('sample_pending')} rows={preview.samples.pending.map(r => [r.colour_id, r.stretch ?? '', r.last ?? '', r.outStock ?? ''])} cols={['colour_id', 'STRETCH', 'LAST', 'OUT/STOCK']} />
             )}
             {preview.samples.rejected.length > 0 && (
-              <SampleTable title={t('sample_rejected')} rows={preview.samples.rejected.map(r => [r.colour_id, r.style_name])} cols={['colour_id', t('col_style')]} />
+              <SampleTable title={t('sample_rejected')} rows={preview.samples.rejected.map(r => [r.colour_id, r.style_name, r.missing.join(', ')])} cols={['colour_id', t('col_style'), t('col_missing')]} />
             )}
           </div>
 
@@ -214,7 +225,7 @@ export default function ProductImport() {
   )
 }
 
-type CreateRow = { colour_id: string; style_name: string; color_name: string; section: string }
+type CreateRow = { colour_id: string; style_name: string; color_name: string; section: string; is_stock: boolean; out: boolean }
 
 function CreateTable({
   title, hint, selectedLabel, cols, rows, excluded, onToggle, onToggleAll,
@@ -268,7 +279,13 @@ function CreateTable({
                       className="accent-gold"
                     />
                   </td>
-                  <td className="px-4 py-1.5 text-stone-600">{r.colour_id}</td>
+                  <td className="px-4 py-1.5 text-stone-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      {r.colour_id}
+                      {r.is_stock && <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-dark">stock</span>}
+                      {r.out && <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-600">out</span>}
+                    </span>
+                  </td>
                   <td className="px-4 py-1.5 text-stone-600 truncate max-w-[220px]">{r.style_name} · {r.color_name}</td>
                   <td className="px-4 py-1.5 text-stone-600">{r.section}</td>
                 </tr>

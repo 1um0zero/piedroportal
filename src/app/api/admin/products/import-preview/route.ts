@@ -46,29 +46,39 @@ export async function POST(request: NextRequest) {
     preview.toUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name))
     preview.toDelist = preview.toDelist.filter(d => scope.canModel(d.style_name))
     preview.withEmptyConstructions = preview.withEmptyConstructions.filter(e => scope.canModel(e.style_name))
+    preview.withMissingVital = preview.withMissingVital.filter(e => scope.canModel(e.style_name))
   }
+
+  // Rejected = unsafe to publish (no constructions OR a vital field missing).
+  const rejected = [
+    ...preview.withEmptyConstructions.map(e => ({ ...e, missing: ['constructions'] })),
+    ...preview.withMissingVital,
+  ]
 
   return NextResponse.json({
     sheets,
     modesUsed: modes,
+    outNew: preview.outNew,  // colour_ids to pre-exclude in the grid
     counts: {
       create: preview.toCreate.length,
       update: preview.toUpdate.length,
       unchanged: preview.unchanged,
       delist: preview.toDelist.length,
       pending: preview.withPending.length,
-      rejected: preview.withEmptyConstructions.length,
+      rejected: rejected.length,
+      out: preview.outNew.length,
+      stockFlag: preview.stockToFlag.length,
     },
     samples: {
       // Full list (not sliced): every new product is individually selectable in
       // the preview grid so the admin can exclude rows before confirming.
       create: preview.toCreate
-        .map(p => ({ colour_id: p.colour_id, style_name: p.style_name, color_name: p.color_name, section: p.section })),
+        .map(p => ({ colour_id: p.colour_id, style_name: p.style_name, color_name: p.color_name, section: p.section, is_stock: p.is_stock, out: p.out })),
       update: preview.toUpdate.slice(0, SAMPLE)
         .map(u => ({ colour_id: u.product.colour_id, style_name: u.product.style_name, color_name: u.product.color_name, changedFields: u.changedFields })),
       delist: preview.toDelist.slice(0, SAMPLE),
       pending: preview.withPending.slice(0, SAMPLE),
-      rejected: preview.withEmptyConstructions.slice(0, SAMPLE),
+      rejected: rejected.slice(0, SAMPLE),
     },
   })
 }

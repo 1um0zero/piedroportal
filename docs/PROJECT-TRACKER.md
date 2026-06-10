@@ -442,8 +442,9 @@ updated_at                   comments                     size
       (PK `product_id,size`, `qty_on_hand`, `updated_at`), `stock_orders` (no draft), `stock_order_items`.
       RLS mirrors `orders` (own-row select net; service-role writes). · 👤 **run migration 017 in Supabase**
 - [x] **23.2** ✅ Back-office `/admin/stock` (piedro_admin): search-to-add a model to stock + editable
-      per-size qty grid (`admin-stock.ts` actions; `StockAdmin.tsx`). Nav link added. XLS importer for
-      stock qty = still TODO (manual entry works now; seed `is_stock` from `all_models` = follow-up).
+      per-size qty grid (`admin-stock.ts` actions; `StockAdmin.tsx`). Nav link added.
+      **`is_stock` now auto-seeded from the XLS** (OUT/STOCK col F): STOCK → is_stock on new + existing
+      rows; see §24. Per-size stock QTY still comes from manual entry (XLS qty import = follow-up).
 - [x] **23.3** ✅ `getStockProducts()` in `actions/stock.ts`: `available = qty_on_hand − reserved`,
       reserved = Σ qty of NON-terminal (`shipped/delivered/cancelled` excluded) stock orders. Re-checked
       again server-side at submit so a stale grid can't oversell.
@@ -464,3 +465,28 @@ updated_at                   comments                     size
       badge + "N models · M pairs"; no additions/repeat for stock rows. Detail pages
       `/orders/stock/[id]` (read-only) + `/admin/orders/stock/[id]` (status editor →
       `updateStockOrderStatusAction`, terminal states free reserved stock). i18n EN/NL/FR/DE.
+
+## 24. Product import — OUT/STOCK col + data-integrity safety net — ✅ (2026-06-10)
+> Concern (Jorge): the XLS column F (`OUT/STOCK`) exists on KIDS but not ADULTS — could it shift the
+> other columns / import articles with vital data missing or distorted?
+>
+> **Answer:** no shift — the parser maps columns by **header name**, per-sheet, never by position
+> (`readSheet` reads each sheet's own first row as headers; `COL.*` are header strings). A column that
+> exists only on one sheet simply yields `null` on the others; every `cr56f_*` field is matched by its
+> own name regardless of position. Only risks are renamed/duplicated headers (→ missing data, not
+> cross-contamination).
+>
+> **Decisions adopted (Jorge):** `OUT` → excluded by default; `STOCK` → marks `is_stock`. Plus a hard
+> data-integrity gate.
+
+- [x] **24.1** ✅ Column F wired in `excel-import.ts`: `STOCK` → `is_stock=true`; `OUT` → `out=true`.
+- [x] **24.2** ✅ Safety net: `findMissingVital()` rejects any new row missing a vital field
+      (section/closure/type/size_first/size_last); construction-less rows already rejected. Rejected rows
+      are reported (with the missing field names) and **never inserted**.
+- [x] **24.3** ✅ `OUT` rows arrive **pre-unticked** in the preview grid (excluded by default); admin can
+      re-tick to import. Per-row + select-all checkboxes already added (see import row-exclusion).
+- [x] **24.4** ✅ `STOCK` flag applied to **new** rows (on insert) and **existing** rows (targeted
+      single-column `is_stock=true` update — never touches descriptive fields, respects the
+      "never overwrite" rule). Result line reports `{n} flagged as stock`.
+- [x] **24.5** ✅ Preview UI: STOCK/OUT badges per row, OUT pre-exclusion + STOCK-flag notes, rejected
+      table shows the missing fields. i18n EN/NL/FR/DE. (Header-sanity check = optional follow-up.)

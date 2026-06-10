@@ -742,7 +742,11 @@
       "all_exclusive": "Alle exklusiven",
       "gallery_order": "Galerie-Reihenfolge",
       "import_selected": "{n} von {total} zum Import ausgewählt",
-      "import_exclude_hint": "Modelle abwählen, die nicht importiert werden sollen."
+      "import_exclude_hint": "Modelle abwählen, die nicht importiert werden sollen.",
+      "col_missing": "Fehlt",
+      "result_stock_flagged": "{n} als Lager markiert",
+      "out_excluded_note": "{n} mit OUT markierte Modelle wurden vorab ausgeschlossen — ankreuzen, um sie dennoch zu importieren.",
+      "stock_flag_note": "{n} vorhandene Modelle werden als Lager markiert."
     },
     "branches": {
       "title": "Niederlassungen",

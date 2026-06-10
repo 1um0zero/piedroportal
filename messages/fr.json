@@ -742,7 +742,11 @@
       "all_exclusive": "Tous les exclusifs",
       "gallery_order": "Ordre de la galerie",
       "import_selected": "{n} sur {total} sélectionnés à importer",
-      "import_exclude_hint": "Décochez les modèles que vous ne voulez pas importer."
+      "import_exclude_hint": "Décochez les modèles que vous ne voulez pas importer.",
+      "col_missing": "Manquant",
+      "result_stock_flagged": "{n} marqués comme stock",
+      "out_excluded_note": "{n} modèle(s) marqué(s) OUT ont été pré-exclus — cochez pour importer quand même.",
+      "stock_flag_note": "{n} modèle(s) existant(s) seront marqués comme stock."
     },
     "branches": {
       "title": "Filiales",

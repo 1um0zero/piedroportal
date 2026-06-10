@@ -742,7 +742,11 @@
       "all_exclusive": "All exclusives",
       "gallery_order": "Gallery order",
       "import_selected": "{n} of {total} selected to import",
-      "import_exclude_hint": "Untick any model you do not want to import."
+      "import_exclude_hint": "Untick any model you do not want to import.",
+      "col_missing": "Missing",
+      "result_stock_flagged": "{n} flagged as stock",
+      "out_excluded_note": "{n} model(s) marked OUT were pre-excluded — tick to import anyway.",
+      "stock_flag_note": "{n} existing model(s) will be flagged as stock."
     },
     "branches": {
       "title": "Branch offices",
