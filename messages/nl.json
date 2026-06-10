@@ -115,7 +115,8 @@
     "unassigned": "Niet toegewezen",
     "settings": "Instellingen",
     "docs": "Docs",
-    "translations": "Vertalingen"
+    "translations": "Vertalingen",
+    "stock": "Voorraad"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -837,6 +838,20 @@
       "insert_here": "Hier invoegen",
       "unsaved": "Niet-opgeslagen wijzigingen",
       "colours_n": "{n} kleuren"
+    },
+    "stock": {
+      "title": "Voorraadbeheer",
+      "intro": "Stel de voorraad per maat in voor voorraadmodellen. Beschikbaar voor klanten = op voorraad − gereserveerd door openstaande bestellingen.",
+      "addTitle": "Een model aan voorraad toevoegen",
+      "searchPlaceholder": "Zoek op referentie of stijl…",
+      "noResults": "Geen overeenkomende modellen.",
+      "add": "Toevoegen",
+      "remove": "Uit voorraad verwijderen",
+      "save": "Opslaan",
+      "saved": "Opgeslagen",
+      "saving": "Opslaan…",
+      "size": "Maat",
+      "noStock": "Nog geen modellen in voorraad. Voeg er hierboven een toe."
     }
   },
   "adminTranslations": {
@@ -993,7 +1008,10 @@
   "catalogues": {
     "title": "Onze catalogi",
     "subtitle": "Blader door de volledige Piedro-collectie — net als in het gedrukte boek.",
-    "tabs": { "kids": "Kinderen", "adults": "Volwassenen" },
+    "tabs": {
+      "kids": "Kinderen",
+      "adults": "Volwassenen"
+    },
     "prev": "Vorige pagina",
     "next": "Volgende pagina",
     "page": "{n} / {total}"
@@ -1040,5 +1058,27 @@
         "PLACEHOLDER — Een tweede paragraaf vervolgt het verhaal, voegt details en uitleg toe en verbindt de afbeeldingen met de kernboodschap."
       ]
     }
+  },
+  "stock": {
+    "title": "Voorraad",
+    "heading": "Bestellen uit voorraad",
+    "intro": "Deze modellen zijn op voorraad en worden geleverd zoals ze zijn. Kies de maten en aantallen die u nodig heeft.",
+    "pending": "Uw account wacht op goedkeuring. U kunt nog geen bestellingen plaatsen.",
+    "noProducts": "Er zijn momenteel geen voorraadproducten beschikbaar.",
+    "limited": "Beperkt tot {max} paar",
+    "pairs": "paar",
+    "lineTotal": "{count} paar",
+    "company": "Bedrijf",
+    "selectCompany": "Selecteer een bedrijf",
+    "comments": "Opmerkingen",
+    "commentsPlaceholder": "Iets dat we moeten weten over deze bestelling?",
+    "totalPairs": "Totaal: {count} paar",
+    "clear": "Wissen",
+    "submit": "Bestelling plaatsen",
+    "submitting": "Bestelling plaatsen…",
+    "success": "Bestelling succesvol geplaatst.",
+    "emptyCart": "Selecteer minstens één paar om te bestellen.",
+    "size": "Maat",
+    "remove": "Een paar verwijderen"
   }
 }

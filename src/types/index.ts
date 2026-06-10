@@ -98,6 +98,52 @@ export interface Order {
   lines: OrderLine[]
 }
 
+// ── STOCK products (buy-as-is from stock) — see docs/PROJECT-TRACKER.md §23 ──
+
+/** Physical stock on hand per (product, size). The portal never decrements this
+ *  in-app; available = qty_on_hand − reserved (computed). */
+export interface ProductStock {
+  product_id: string
+  size: number
+  qty_on_hand: number
+  updated_at: string
+}
+
+/** A STOCK product row enriched with per-size availability for the grid.
+ *  `available` is already qty_on_hand − reserved, and only sizes with
+ *  available > 0 are present. */
+export interface StockProduct extends Product {
+  sizes: StockSize[]
+}
+
+export interface StockSize {
+  size: number
+  available: number
+}
+
+export interface StockOrderItem {
+  id: string
+  stock_order_id: string
+  product_id: string
+  size: number
+  qty: number
+}
+
+/** STOCK orders reuse the OrderStatus enum but never use 'draft' — they reserve
+ *  on submit. */
+export interface StockOrder {
+  id: string
+  user_id: string
+  company_id: string | null
+  status: OrderStatus
+  locale: Locale
+  comments: string | null
+  expected_dispatch_date: string | null
+  created_at: string
+  updated_at: string
+  items: StockOrderItem[]
+}
+
 export interface Translation {
   key: string
   en: string

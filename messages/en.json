@@ -115,7 +115,8 @@
     "unassigned": "Unassigned",
     "settings": "Settings",
     "docs": "Docs",
-    "translations": "Translations"
+    "translations": "Translations",
+    "stock": "Stock"
   },
   "gallery": {
     "kids": "Kids",
@@ -837,6 +838,20 @@
       "insert_here": "Insert here",
       "unsaved": "Unsaved changes",
       "colours_n": "{n} colours"
+    },
+    "stock": {
+      "title": "Stock management",
+      "intro": "Set the on-hand quantity per size for stock models. Available to customers = on hand − reserved by open orders.",
+      "addTitle": "Add a model to stock",
+      "searchPlaceholder": "Search by reference or style…",
+      "noResults": "No matching models.",
+      "add": "Add",
+      "remove": "Remove from stock",
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "size": "Size",
+      "noStock": "No models in stock yet. Add one above."
     }
   },
   "adminTranslations": {
@@ -993,7 +1008,10 @@
   "catalogues": {
     "title": "Our catalogues",
     "subtitle": "Leaf through the full Piedro collection — just like the printed book.",
-    "tabs": { "kids": "Kids", "adults": "Adults" },
+    "tabs": {
+      "kids": "Kids",
+      "adults": "Adults"
+    },
     "prev": "Previous page",
     "next": "Next page",
     "page": "{n} / {total}"
@@ -1040,5 +1058,27 @@
         "PLACEHOLDER — A second paragraph continues the story, adds detail and explanation, and ties the images above back to the main point."
       ]
     }
+  },
+  "stock": {
+    "title": "Stock",
+    "heading": "Order from stock",
+    "intro": "These models are in stock and shipped as-is. Pick the sizes and quantities you need.",
+    "pending": "Your account is awaiting approval. You cannot place orders yet.",
+    "noProducts": "There are no stock products available right now.",
+    "limited": "Limited to {max} pairs",
+    "pairs": "pairs",
+    "lineTotal": "{count} pairs",
+    "company": "Company",
+    "selectCompany": "Select a company",
+    "comments": "Comments",
+    "commentsPlaceholder": "Anything we should know about this order?",
+    "totalPairs": "Total: {count} pairs",
+    "clear": "Clear",
+    "submit": "Place order",
+    "submitting": "Placing order…",
+    "success": "Order placed successfully.",
+    "emptyCart": "Select at least one pair to order.",
+    "size": "Size",
+    "remove": "Remove a pair"
   }
 }

@@ -56,6 +56,7 @@ export function NavbarMobile({ isAdmin, isSuper = false, isBackoffice, isLoggedI
 
               {isLoggedIn && !isBackoffice && (
                 <>
+                  <Link href="/stock"            onClick={close} className={linkCls}>{t('stock')}</Link>
                   <Link href="/orders/dashboard" onClick={close} className={linkCls}>{t('dashboard')}</Link>
                   <Link href="/orders"           onClick={close} className={linkCls}>{t('orders')}</Link>
                 </>

@@ -393,3 +393,64 @@ replace) the existing chat where the user can already ask specific questions. Us
       JSONB. ERP contract output unchanged → a-shell unaffected. · 🤖 build + 👤 run migration
 - [ ] **19.3** Consider promoting `urgent` to a real `orders.urgent` column (used for filter/sort/ERP)
       instead of living inside additions. · 🤖
+
+## 23. STOCK products — buy-as-is from stock — 🟡 / 🤖 + 👤  (designed 2026-06-10)
+> **What it is:** a *completely different* ordering scheme from the configured-order flow. STOCK shoes
+> are sold as-is — **no additions, no patient, no L/R config**. The user browses a grid of in-stock
+> `style.colour`, clicks the sizes they want (one click = one pair, incrementing a per-size counter),
+> and submits. **Multiple `style.colour` in one order.** Flag source: `OUT/STOCK` column in the
+> `all_models` XLS (≈7 KIDS models today). EVO CTA on `/homenew` links here. See [[project_stock_products]].
+>
+> **Decisions taken (user, 2026-06-10):**
+> - **Data model = Option 1 (independent structure)**, NOT bolted onto `orders`. The existing `orders`
+>   row is single-product / single-patient / additions-heavy / sided; STOCK is multi-product / sizes+qty.
+>   Two new tables; reuse the *surrounding* infra (status enum, dispatch, email/PDF, `/orders` list via a
+>   unified view), don't reinvent it. Synergistic with §19 (both validate header→items shape).
+> - **Stock source:** external **XLS import** now (future **ERP** — *not* Dataverse) **+ manual entry in
+>   back-office**. Same dual path as `/admin/products`. Model is import-agnostic so ERP later just swaps
+>   the importer.
+> - **Reservation = computed, never decremented.** `qty_on_hand` is the physical truth (e.g. 2 pairs).
+>   **Available = qty_on_hand − reserved**, where *reserved* = Σ `qty` of stock items in
+>   **in-progress orders**. Cancelling an order naturally drops out of the sum — nothing to "return", no
+>   concurrency repon logic. Physical stock stays 2; the grid shows 1.
+> - **Reservation lifecycle (confirmed 2026-06-10):** STOCK orders have **no `draft` state** — they
+>   reserve **on submit**. They keep counting as *reserved* until the physical stock is decremented
+>   **externally** (manual / XLS update / future ERP); at that point the order moves to a terminal
+>   state and stops being counted, so `qty_on_hand` drop + reserved drop happen together and available
+>   stays consistent (no double-count). `cancelled` also stops reserving.
+> - **Access: logged-in only** (like the order form) — STOCK grid is NOT public.
+
+**Data model**
+```
+product_stock                stock_orders                 stock_order_items
+─────────────                ────────────                 ─────────────────
+product_id  ┐                id                           id
+size        ├ qty_on_hand    user_id / company_id         stock_order_id ──→ stock_orders
+qty_on_hand ┘                status (reuse enum)          product_id     ──→ products
+updated_at                   comments                     size
+(PK: product_id+size)        created_at / updated_at      qty
+```
+
+**Grid / order flow**
+1. Server fetches `OUT/STOCK` products, joins `product_stock`, subtracts reserved → **available per size**.
+2. Hide sizes with `available ≤ 0`; hide models with no available size at all.
+3. Click size → increments right-hand counter; at `available` the chip disables + tooltip
+   *"limited to X pairs"* (user never sees raw stock, only the cap). Fully i18n EN/NL/FR/DE.
+4. Multi-`style.colour` cart → comments → submit.
+
+- [x] **23.1** ✅ Migration `017_stock_products.sql`: `products.is_stock` flag, `product_stock`
+      (PK `product_id,size`, `qty_on_hand`, `updated_at`), `stock_orders` (no draft), `stock_order_items`.
+      RLS mirrors `orders` (own-row select net; service-role writes). · 👤 **run migration 017 in Supabase**
+- [x] **23.2** ✅ Back-office `/admin/stock` (piedro_admin): search-to-add a model to stock + editable
+      per-size qty grid (`admin-stock.ts` actions; `StockAdmin.tsx`). Nav link added. XLS importer for
+      stock qty = still TODO (manual entry works now; seed `is_stock` from `all_models` = follow-up).
+- [x] **23.3** ✅ `getStockProducts()` in `actions/stock.ts`: `available = qty_on_hand − reserved`,
+      reserved = Σ qty of NON-terminal (`shipped/delivered/cancelled` excluded) stock orders. Re-checked
+      again server-side at submit so a stale grid can't oversell.
+- [x] **23.4** ✅ `/stock` grid, gated (middleware `AUTH_REQUIRED`), per-size click-to-add counter with
+      −/+ chips, cap enforcement + "limited to X pairs" tooltip, hides empty sizes/models; full i18n
+      EN/NL/FR/DE; pending-approval users blocked. Nav links (desktop+mobile). `StockGrid.tsx`.
+- [~] **23.5** ◐ Submit done: `submitStockOrderAction` (multi-line + comments, company-ownership check,
+      dispatch date reused). **TODO: email notification + PDF** for stock orders (normal orders send both).
+- [ ] **23.6** Unified `/orders` + `/admin/orders` view showing stock orders alongside configured
+      orders; admin status handling for stock orders. · 🤖 (next)

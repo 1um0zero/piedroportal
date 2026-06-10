@@ -115,7 +115,8 @@
     "unassigned": "Nicht zugeordnet",
     "settings": "Einstellungen",
     "docs": "Docs",
-    "translations": "Übersetzungen"
+    "translations": "Übersetzungen",
+    "stock": "Lager"
   },
   "gallery": {
     "kids": "Kinder",
@@ -837,6 +838,20 @@
       "insert_here": "Hier einfügen",
       "unsaved": "Nicht gespeicherte Änderungen",
       "colours_n": "{n} Farben"
+    },
+    "stock": {
+      "title": "Lagerverwaltung",
+      "intro": "Legen Sie die Lagermenge pro Größe für Lagermodelle fest. Für Kunden verfügbar = auf Lager − durch offene Bestellungen reserviert.",
+      "addTitle": "Ein Modell zum Lager hinzufügen",
+      "searchPlaceholder": "Nach Referenz oder Modell suchen…",
+      "noResults": "Keine passenden Modelle.",
+      "add": "Hinzufügen",
+      "remove": "Aus Lager entfernen",
+      "save": "Speichern",
+      "saved": "Gespeichert",
+      "saving": "Speichern…",
+      "size": "Größe",
+      "noStock": "Noch keine Modelle auf Lager. Fügen Sie oben eines hinzu."
     }
   },
   "adminTranslations": {
@@ -993,7 +1008,10 @@
   "catalogues": {
     "title": "Unsere Kataloge",
     "subtitle": "Blättern Sie durch die gesamte Piedro-Kollektion — wie im gedruckten Buch.",
-    "tabs": { "kids": "Kinder", "adults": "Erwachsene" },
+    "tabs": {
+      "kids": "Kinder",
+      "adults": "Erwachsene"
+    },
     "prev": "Vorherige Seite",
     "next": "Nächste Seite",
     "page": "{n} / {total}"
@@ -1040,5 +1058,27 @@
         "PLACEHOLDER — Ein zweiter Absatz setzt die Geschichte fort, ergänzt Details und verbindet die Bilder mit der Kernaussage."
       ]
     }
+  },
+  "stock": {
+    "title": "Lager",
+    "heading": "Aus dem Lager bestellen",
+    "intro": "Diese Modelle sind auf Lager und werden wie besehen geliefert. Wählen Sie die benötigten Größen und Mengen.",
+    "pending": "Ihr Konto wartet auf Freigabe. Sie können noch keine Bestellungen aufgeben.",
+    "noProducts": "Derzeit sind keine Lagerprodukte verfügbar.",
+    "limited": "Begrenzt auf {max} Paar",
+    "pairs": "Paar",
+    "lineTotal": "{count} Paar",
+    "company": "Firma",
+    "selectCompany": "Firma auswählen",
+    "comments": "Anmerkungen",
+    "commentsPlaceholder": "Gibt es etwas, das wir zu dieser Bestellung wissen sollten?",
+    "totalPairs": "Gesamt: {count} Paar",
+    "clear": "Löschen",
+    "submit": "Bestellung aufgeben",
+    "submitting": "Bestellung wird aufgegeben…",
+    "success": "Bestellung erfolgreich aufgegeben.",
+    "emptyCart": "Wählen Sie mindestens ein Paar zum Bestellen.",
+    "size": "Größe",
+    "remove": "Ein Paar entfernen"
   }
 }

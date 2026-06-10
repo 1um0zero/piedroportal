@@ -63,6 +63,9 @@ export default async function Navbar({ locale }: Props) {
           </Link>
           {user && !isBackoffice && (
             <>
+              <Link href="/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                {t('stock')}
+              </Link>
               <Link href="/orders/dashboard" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('dashboard')}
               </Link>
@@ -89,6 +92,9 @@ export default async function Navbar({ locale }: Props) {
               </Link>
               {isAdmin && (
                 <>
+                  <Link href="/admin/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                    {t('stock')}
+                  </Link>
                   <Link href="/admin/companies" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('companies')}
                   </Link>

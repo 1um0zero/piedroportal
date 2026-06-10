@@ -115,7 +115,8 @@
     "unassigned": "Non attribuées",
     "settings": "Paramètres",
     "docs": "Docs",
-    "translations": "Traductions"
+    "translations": "Traductions",
+    "stock": "Stock"
   },
   "gallery": {
     "kids": "Enfants",
@@ -837,6 +838,20 @@
       "insert_here": "Insérer ici",
       "unsaved": "Modifications non enregistrées",
       "colours_n": "{n} couleurs"
+    },
+    "stock": {
+      "title": "Gestion du stock",
+      "intro": "Définissez la quantité en stock par pointure pour les modèles en stock. Disponible pour les clients = en stock − réservé par les commandes en cours.",
+      "addTitle": "Ajouter un modèle au stock",
+      "searchPlaceholder": "Rechercher par référence ou modèle…",
+      "noResults": "Aucun modèle correspondant.",
+      "add": "Ajouter",
+      "remove": "Retirer du stock",
+      "save": "Enregistrer",
+      "saved": "Enregistré",
+      "saving": "Enregistrement…",
+      "size": "Pointure",
+      "noStock": "Aucun modèle en stock pour le moment. Ajoutez-en un ci-dessus."
     }
   },
   "adminTranslations": {
@@ -993,7 +1008,10 @@
   "catalogues": {
     "title": "Nos catalogues",
     "subtitle": "Feuilletez toute la collection Piedro — comme dans le livre imprimé.",
-    "tabs": { "kids": "Enfants", "adults": "Adultes" },
+    "tabs": {
+      "kids": "Enfants",
+      "adults": "Adultes"
+    },
     "prev": "Page précédente",
     "next": "Page suivante",
     "page": "{n} / {total}"
@@ -1040,5 +1058,27 @@
         "PLACEHOLDER — Un second paragraphe poursuit le propos, ajoute des détails et relie les images au message principal."
       ]
     }
+  },
+  "stock": {
+    "title": "Stock",
+    "heading": "Commander depuis le stock",
+    "intro": "Ces modèles sont en stock et livrés tels quels. Choisissez les pointures et quantités souhaitées.",
+    "pending": "Votre compte est en attente d’approbation. Vous ne pouvez pas encore passer de commande.",
+    "noProducts": "Aucun produit en stock n’est disponible pour le moment.",
+    "limited": "Limité à {max} paires",
+    "pairs": "paires",
+    "lineTotal": "{count} paires",
+    "company": "Société",
+    "selectCompany": "Sélectionnez une société",
+    "comments": "Commentaires",
+    "commentsPlaceholder": "Quelque chose à signaler concernant cette commande ?",
+    "totalPairs": "Total : {count} paires",
+    "clear": "Effacer",
+    "submit": "Passer la commande",
+    "submitting": "Envoi de la commande…",
+    "success": "Commande passée avec succès.",
+    "emptyCart": "Sélectionnez au moins une paire à commander.",
+    "size": "Pointure",
+    "remove": "Retirer une paire"
   }
 }
