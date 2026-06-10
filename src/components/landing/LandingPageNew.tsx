@@ -11,7 +11,7 @@ const IMG = {
   hero: '/landing/hero.jpg',
   osbWomen: '/landing/osb-dames.jpg',
   osbMen: '/landing/osb-heren.jpg',
-  osbKids: '/landing/osb_kinderen.jpg', // unchanged — no new kids photo supplied
+  osbKids: '/landing/osb-kinderen.jpg', // lifestyle kids shot from the client e-mail
   orthoSoft: '/landing/ortho-soft.jpg',
   evo: '/landing/evo-stock.jpg',
 }
