@@ -24,12 +24,16 @@ const keyOf = (productId: string, size: number) => `${productId}:${size}`
 
 export default function StockGrid({ products, companies, userCompany, isAdmin }: Props) {
   const t = useTranslations('stock')
+  const to = useTranslations('order')
   const locale = useLocale() as Locale
   const router = useRouter()
 
   // cart: "<productId>:<size>" → qty
   const [cart, setCart] = useState<Record<string, number>>({})
   const [companyId, setCompanyId] = useState<string>(userCompany?.id ?? '')
+  const [clinician, setClinician] = useState('')
+  const [patient, setPatient] = useState('')
+  const [reference, setReference] = useState('')
   const [comments, setComments] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,6 +77,7 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
     if (totalPairs === 0) { setError(t('emptyCart')); return }
     const company = userCompany?.id ?? companyId
     if (!isAdmin && !company) { setError(t('selectCompany')); return }
+    if (!reference.trim()) { setError(to('reference')); return }
 
     const items = Object.entries(cart)
       .filter(([, qty]) => qty > 0)
@@ -85,6 +90,9 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
     const res = await submitStockOrderAction({
       company_id: company || null,
       locale,
+      clinician: clinician.trim() || null,
+      patient_name: patient.trim() || null,
+      reference_customer: reference.trim(),
       comments: comments.trim() || null,
       items,
     })
@@ -181,9 +189,10 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
             {t('totalPairs', { count: totalPairs })}
           </div>
 
-          {(isAdmin || needsCompanyPick) && (
+          {/* Client: dropdown when there's a choice, otherwise the fixed name. */}
+          {(isAdmin || needsCompanyPick) ? (
             <label className="mt-4 block">
-              <span className="text-sm text-gray-600">{t('company')}</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{to('customer')}</span>
               <select
                 value={companyId}
                 onChange={(e) => setCompanyId(e.target.value)}
@@ -195,10 +204,44 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
                 ))}
               </select>
             </label>
-          )}
+          ) : userCompany ? (
+            <div className="mt-4">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{to('customer')}</span>
+              <p className="mt-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">{userCompany.name}</p>
+            </div>
+          ) : null}
 
           <label className="mt-4 block">
-            <span className="text-sm text-gray-600">{t('comments')}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{to('clinician')}</span>
+            <input
+              value={clinician}
+              onChange={(e) => setClinician(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="mt-4 block">
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{to('patient')}</span>
+            <input
+              value={patient}
+              onChange={(e) => setPatient(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="mt-4 block">
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              {to('reference')} <span className="text-gold">*</span>
+            </span>
+            <input
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="mt-4 block">
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t('comments')}</span>
             <textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}

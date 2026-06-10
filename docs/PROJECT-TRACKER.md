@@ -450,11 +450,17 @@ updated_at                   comments                     size
 - [x] **23.4** ✅ `/stock` grid, gated (middleware `AUTH_REQUIRED`), per-size click-to-add counter with
       −/+ chips, cap enforcement + "limited to X pairs" tooltip, hides empty sizes/models; full i18n
       EN/NL/FR/DE; pending-approval users blocked. Nav links (desktop+mobile). `StockGrid.tsx`.
-- [~] **23.5** ◐ Submit done: `submitStockOrderAction` (multi-line + comments, company-ownership check,
-      dispatch date reused). **TODO: email notification + PDF** for stock orders (normal orders send both).
+- [x] **23.5** ✅ Submit + customer fields + PDF + email. `submitStockOrderAction` now also takes the
+      Tab-1 customer fields (clinician, patient_name, **reference_customer required**) — added to
+      migration 017's `stock_orders`. On submit it renders `StockOrderPdf` (multi-line items table,
+      same header/footer as OrderPdf) to the private `order-pdfs` bucket at `${id}.pdf` (so the shared
+      `signOrderPdfs` works for both kinds) and sends the 3 emails (internal desk + client Cc/Bcc +
+      branch copies = union of branches in scope for ANY model in the order). Detail page shows the
+      customer block + signed PDF link.
 - [x] **23.6** ✅ Unified list: `getStockOrderRows()` normalizes stock orders into the orders-table
       row shape (`kind:'stock'`); merged + date-sorted into both `/orders` (user/company-admin) and
-      `/admin/orders` (full-catalogue back-office; branch-scoped staff = follow-up). Table shows a STOCK
-      badge + "N models · M pairs"; no patient/additions/repeat for stock rows. Detail pages
+      `/admin/orders`. Branch staff see a stock order if ANY of its models is in scope (same rule as
+      configured orders). Table shows a STOCK
+      badge + "N models · M pairs"; no additions/repeat for stock rows. Detail pages
       `/orders/stock/[id]` (read-only) + `/admin/orders/stock/[id]` (status editor →
       `updateStockOrderStatusAction`, terminal states free reserved stock). i18n EN/NL/FR/DE.

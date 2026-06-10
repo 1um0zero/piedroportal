@@ -14,6 +14,7 @@ const STATUSES = ['submitted', 'approved', 'in_production', 'shipped', 'delivere
 
 export default function StockOrderDetailView({ order, isAdmin }: { order: StockOrderDetail; isAdmin: boolean }) {
   const t = useTranslations('stock')
+  const to = useTranslations('order')
   const ts = useTranslations('dashboard.status')
   const locale = useLocale()
   const router = useRouter()
@@ -49,11 +50,37 @@ export default function StockOrderDetailView({ order, isAdmin }: { order: StockO
             <p className="text-sm text-stone-500">{t('dispatchExpected')}: {fmtDate(order.expected_dispatch_date)}</p>
           )}
         </div>
-        {!isAdmin && (
-          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
-            {ts.has(order.status) ? ts(order.status) : order.status}
-          </span>
-        )}
+        <div className="flex flex-col items-end gap-2">
+          {!isAdmin && (
+            <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
+              {ts.has(order.status) ? ts(order.status) : order.status}
+            </span>
+          )}
+          {order.pdf_url && (
+            <a href={order.pdf_url} target="_blank" rel="noopener noreferrer"
+              className="text-sm font-medium text-gold hover:text-gold-dark">PDF ↗</a>
+          )}
+        </div>
+      </div>
+
+      {/* Customer */}
+      <div className="rounded-[14px] border border-stone-200 bg-white p-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-stone-400">{to('customer')}</p>
+          <p className="text-stone-800">{order.company?.name ?? '—'}</p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-wide text-stone-400">{to('clinician')}</p>
+          <p className="text-stone-800">{order.clinician || '—'}</p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-wide text-stone-400">{to('patient')}</p>
+          <p className="text-stone-800">{order.patient_name || '—'}</p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-wide text-stone-400">{to('reference')}</p>
+          <p className="text-stone-800">{order.reference_customer || '—'}</p>
+        </div>
       </div>
 
       {isAdmin && (

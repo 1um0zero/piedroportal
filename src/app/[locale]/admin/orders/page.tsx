@@ -57,16 +57,17 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     ? allOrders
     : allOrders.filter(o => scope.canModel(o.products?.style_name))
 
-  // STOCK orders (separate table). Stock orders span multiple models, so for now
-  // only full-catalogue back-office staff see them (branch scoping = follow-up).
+  // STOCK orders (separate table), under the same scoping as configured orders:
+  // a stock order is in scope if ANY of its models is in the staff member's scope.
+  const allStock = await getStockOrderRows({
+    all: true,
+    fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
+    toISO: useRange ? `${sp.to}T23:59:59` : undefined,
+    cutoffISO: cutoff,
+  })
   const stockRows = scope.allModels
-    ? await getStockOrderRows({
-        all: true,
-        fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
-        toISO: useRange ? `${sp.to}T23:59:59` : undefined,
-        cutoffISO: cutoff,
-      })
-    : []
+    ? allStock
+    : allStock.filter(o => o.styleNames.some(sn => scope.canModel(sn)))
 
   const all = [...scopedOrders, ...stockRows].sort(
     (a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''),

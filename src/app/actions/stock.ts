@@ -9,7 +9,19 @@ import { getUserCompanyIds, getUserExclusiveLabels } from '@/lib/user-companies'
 import { isExclusiveVisible } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
 import { addWorkingDays } from '@/lib/dispatch'
-import type { Product, StockProduct, StockSize } from '@/types'
+import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
+import { signOrderPdf } from '@/lib/order-pdf'
+import { escapeHtml } from '@/lib/escape-html'
+import { getTranslations } from 'next-intl/server'
+import { renderToBuffer } from '@react-pdf/renderer'
+import { Resend } from 'resend'
+import React from 'react'
+import { StockOrderPdf, type StockOrderPdfProps } from '@/components/order/StockOrderPdf'
+import type { Locale, Product, StockProduct, StockSize } from '@/types'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const productImageUrl = (name: string | null | undefined) =>
+  name && SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/products/${name}` : undefined
 
 // Same product fields the gallery/catalogue use, + exclusive for visibility.
 const FIELDS = [
@@ -103,6 +115,9 @@ export async function getStockProducts(): Promise<StockProduct[]> {
 export type StockOrderInput = {
   company_id: string | null
   locale: string
+  clinician: string | null
+  patient_name: string | null
+  reference_customer: string | null
   comments: string | null
   items: Array<{ product_id: string; size: number; qty: number }>
 }
@@ -125,13 +140,17 @@ async function computeStockDispatchDate(
  */
 export async function submitStockOrderAction(
   input: StockOrderInput,
-): Promise<{ id?: string; error?: string }> {
+): Promise<{ id?: string; error?: string; pdfError?: string; emailError?: string }> {
   const sb = await createClient()
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
   const items = (input.items ?? []).filter((i) => i.qty > 0)
   if (items.length === 0) return { error: 'Empty order' }
+
+  // Reference is required (same as a configured order).
+  const reference = (input.reference_customer ?? '').trim()
+  if (!reference) return { error: 'Reference is required' }
 
   // Company ownership: non-admins may only order for a company they belong to.
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
@@ -164,6 +183,9 @@ export async function submitStockOrderAction(
       company_id: input.company_id,
       status:     'submitted',
       locale:     input.locale,
+      clinician:          input.clinician?.trim() || null,
+      patient_name:       input.patient_name?.trim() || null,
+      reference_customer: reference,
       comments:   input.comments,
       expected_dispatch_date,
     })
@@ -184,7 +206,167 @@ export async function submitStockOrderAction(
     return { error: `${itemsError.message} [${itemsError.code}]` }
   }
 
-  return { id: orderId }
+  // PDF + notification emails — failure here never invalidates the saved order
+  // (it's already committed), it's just surfaced as a soft warning.
+  const extra = await generateStockPdfAndEmail(orderId, service, user.id, user.email)
+  return { id: orderId, ...extra }
+}
+
+// ── PDF + notification emails (mirrors the configured-order flow) ────────────
+
+const splitEmails = (s?: string | null) =>
+  (s ?? '').split(/[,;\s]+/).map((e) => e.trim()).filter(Boolean)
+const uniq = (arr: string[]) => [...new Set(arr.map((e) => e.toLowerCase()))]
+
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  return key ? new Resend(key) : null
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function stockEmailHtml(t: any, heading: string, ref: string, company: string, patient: string, summary: string, intro?: string) {
+  return `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
+    <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
+    <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 ${intro ? '12' : '20'}px">${escapeHtml(heading)}</h2>
+    ${intro ? `<p style="font-size:14px;color:#44403C;margin:0 0 20px">${escapeHtml(intro)}</p>` : ''}
+    <table style="width:100%;border-collapse:collapse;font-size:14px;color:#44403C">
+      <tr><td style="padding:8px 0;color:#78716C;width:120px">${escapeHtml(t('label_reference'))}</td><td style="padding:8px 0;font-weight:500">${escapeHtml(ref)}</td></tr>
+      <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_company'))}</td><td style="padding:8px 0;font-weight:500">${escapeHtml(company)}</td></tr>
+      <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_patient'))}</td><td style="padding:8px 0">${escapeHtml(patient)}</td></tr>
+      <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_model'))}</td><td style="padding:8px 0">${escapeHtml(summary)}</td></tr>
+    </table>
+    <p style="font-size:12px;color:#A8A29E;margin-top:24px">${escapeHtml(t('pdf_attached'))}</p>
+  </div>`
+}
+
+async function generateStockPdfAndEmail(
+  orderId: string,
+  service: ReturnType<typeof createServiceClient>,
+  userId: string,
+  userEmail?: string,
+): Promise<{ pdfError?: string; emailError?: string }> {
+  try {
+    const { data } = await service
+      .from('stock_orders')
+      .select(`
+        status, locale, reference_customer, clinician, patient_name, comments, created_at,
+        companies(name),
+        stock_order_items(size, qty, products(style_name, colour_id, color_name, picture_name))
+      `)
+      .eq('id', orderId)
+      .single()
+    if (!data) return { pdfError: 'Order not found after insert' }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const d = data as any
+    const company = (Array.isArray(d.companies) ? d.companies[0] : d.companies)?.name ?? '—'
+    const locale = (d.locale ?? 'en') as Locale
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const items = (d.stock_order_items ?? []).map((i: any) => {
+      const p = Array.isArray(i.products) ? i.products[0] : i.products
+      return {
+        size: Number(i.size), qty: i.qty,
+        colourId: p ? `${p.style_name}.${p.colour_id}` : '—',
+        colorName: p?.color_name ?? '',
+        imageUrl: productImageUrl(p?.picture_name),
+        styleName: p?.style_name as string | undefined,
+      }
+    }).sort((a: { size: number }, b: { size: number }) => a.size - b.size)
+
+    const ref = d.reference_customer ?? orderId.slice(0, 8)
+    const totalPairs = items.reduce((s: number, i: { qty: number }) => s + i.qty, 0)
+    const summary = `${items.length} × ${totalPairs} pr`
+
+    const pdfProps: StockOrderPdfProps = {
+      reference: d.reference_customer, status: d.status, created_at: d.created_at,
+      companyName: company, clinician: d.clinician, patientName: d.patient_name,
+      comments: d.comments, locale,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items: items.map((i: any) => ({ size: i.size, qty: i.qty, colourId: i.colourId, colorName: i.colorName, imageUrl: i.imageUrl })),
+    }
+    const element = React.createElement(StockOrderPdf, pdfProps) as unknown as Parameters<typeof renderToBuffer>[0]
+    const pdfBytes = Buffer.from(await renderToBuffer(element))
+
+    // Same private bucket + `${id}.pdf` path the configured orders use, so the
+    // shared signOrderPdfs() works for both kinds in the lists.
+    const { error: uploadErr } = await service.storage
+      .from('order-pdfs')
+      .upload(`${orderId}.pdf`, pdfBytes, { contentType: 'application/pdf', upsert: true })
+    if (uploadErr) return { pdfError: `Storage: ${uploadErr.message}` }
+    await service.from('stock_orders').update({ pdf_url: `${orderId}.pdf` }).eq('id', orderId)
+
+    // ── Emails ──
+    const resend = getResend()
+    if (!resend) return { emailError: 'Email service not configured (RESEND_API_KEY missing)' }
+    const cfg = await getSettings(['order_notify_email', 'email_from', 'notify_locale'])
+    const toEmail = cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL
+    const emailFrom = cfg.email_from ?? process.env.EMAIL_FROM
+    if (!emailFrom || (!toEmail && !userEmail)) {
+      return { emailError: 'Email not sent: set sender/recipient in Admin → Settings' }
+    }
+
+    const attachment = { filename: `stock-order-${ref}.pdf`, content: pdfBytes.toString('base64') }
+    const patient = d.patient_name ?? '—'
+    const internalLocale = (cfg.notify_locale ?? 'en') as Locale
+    const errors: string[] = []
+
+    // (1) Internal notification to the order desk.
+    if (toEmail) {
+      const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
+      const { error } = await resend.emails.send({
+        from: emailFrom, to: [toEmail],
+        subject: t('subject_internal', { ref }),
+        html: stockEmailHtml(t, t('heading_internal'), ref, company, patient, summary),
+        attachments: [attachment],
+      })
+      if (error) errors.push(`internal: ${error.message}`)
+    }
+
+    // (2) Confirmation to the ordering user (+ Cc/Bcc).
+    if (userEmail) {
+      const { data: prof } = await service.from('profiles').select('notify_cc, notify_bcc').eq('id', userId).single()
+      const cc = uniq(splitEmails(prof?.notify_cc)).filter((e) => e !== userEmail.toLowerCase())
+      const bcc = uniq(splitEmails(prof?.notify_bcc))
+      const t = await getTranslations({ locale, namespace: 'emails' })
+      const { error } = await resend.emails.send({
+        from: emailFrom, to: [userEmail],
+        cc: cc.length ? cc : undefined, bcc: bcc.length ? bcc : undefined,
+        subject: t('subject_client', { ref }),
+        html: stockEmailHtml(t, t('heading_client'), ref, company, patient, summary, t('client_intro')),
+        attachments: [attachment],
+      })
+      if (error) errors.push(`client: ${error.message}`)
+    }
+
+    // (3) Branch copies — union of branches in scope for any model in the order.
+    const styleNames = [...new Set(items.map((i: { styleName?: string }) => i.styleName).filter(Boolean))] as string[]
+    const branchMap = new Map<string, Locale>()
+    for (const sn of styleNames) {
+      for (const bt of await getBranchNotifyTargets(sn)) {
+        if (bt.email.toLowerCase() !== (toEmail ?? '').toLowerCase()) branchMap.set(bt.email, bt.locale)
+      }
+    }
+    for (const [email, bl] of branchMap) {
+      const t = await getTranslations({ locale: bl, namespace: 'emails' })
+      const { error } = await resend.emails.send({
+        from: emailFrom, to: [email],
+        subject: t('subject_internal', { ref }),
+        html: stockEmailHtml(t, t('heading_internal'), ref, company, patient, summary),
+        attachments: [attachment],
+      })
+      if (error) errors.push(`branch ${email}: ${error.message}`)
+    }
+
+    if (errors.length) {
+      console.error('Stock email error:', errors.join(' | '))
+      return { emailError: errors.join(' | ') }
+    }
+    return {}
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('Stock PDF error:', msg)
+    return { pdfError: msg }
+  }
 }
 
 // ── Listing & detail (unified /orders + /admin/orders) ───────────────────────
@@ -199,15 +381,20 @@ export type StockOrderListRow = {
   status: string
   approval_state: string | null
   production_state: string | null
+  patient_name: string | null
+  reference_customer: string | null
   created_at: string
   updated_at: string
   expected_dispatch_date: string | null
   comments: string | null
+  pdf_url: string | null
   companies: { id: string; name: string; erp_code: string } | null
   // Synthetic summary for the product cell.
   products: { style_name: string; colour_id: string; closure: string; picture_name: string } | null
   stock_models: number
   stock_pairs: number
+  // All distinct model style names in the order — for back-office branch scoping.
+  styleNames: string[]
 }
 
 type ListOpts = {
@@ -220,8 +407,8 @@ type ListOpts = {
 }
 
 const STOCK_LIST_SELECT = `
-  id, user_id, status, approval_state, production_state, created_at, updated_at,
-  expected_dispatch_date, comments,
+  id, user_id, status, approval_state, production_state, patient_name, reference_customer,
+  created_at, updated_at, expected_dispatch_date, comments, pdf_url,
   companies(id, name, erp_code),
   stock_order_items(qty, products(style_name, colour_id, closure, picture_name))
 `
@@ -247,6 +434,8 @@ export async function getStockOrderRows(opts: ListOpts): Promise<StockOrderListR
     const items = (o.stock_order_items ?? []) as Array<{ qty: number; products: { style_name: string; colour_id: string; closure: string; picture_name: string } | null }>
     const pairs = items.reduce((s, i) => s + (i.qty ?? 0), 0)
     const first = items[0]?.products ?? null
+    const styleNames = [...new Set(items.map((i) => i.products?.style_name).filter((v): v is string => !!v))]
+    const company = Array.isArray(o.companies) ? o.companies[0] : o.companies
     return {
       kind: 'stock' as const,
       id: o.id,
@@ -254,14 +443,18 @@ export async function getStockOrderRows(opts: ListOpts): Promise<StockOrderListR
       status: o.status,
       approval_state: o.approval_state ?? null,
       production_state: o.production_state ?? null,
+      patient_name: o.patient_name ?? null,
+      reference_customer: o.reference_customer ?? null,
       created_at: o.created_at,
       updated_at: o.updated_at,
       expected_dispatch_date: o.expected_dispatch_date ?? null,
       comments: o.comments ?? null,
-      companies: o.companies ?? null,
+      pdf_url: o.pdf_url ?? null,
+      companies: company ?? null,
       products: first,
       stock_models: items.length,
       stock_pairs: pairs,
+      styleNames,
     }
   })
 }
@@ -271,7 +464,11 @@ export type StockOrderDetail = {
   user_id: string
   status: string
   locale: string
+  clinician: string | null
+  patient_name: string | null
+  reference_customer: string | null
   comments: string | null
+  pdf_url: string | null
   expected_dispatch_date: string | null
   created_at: string
   company: { name: string; erp_code: string } | null
@@ -291,7 +488,8 @@ export async function getStockOrderDetail(id: string): Promise<StockOrderDetail 
   const { data } = await service
     .from('stock_orders')
     .select(`
-      id, user_id, status, locale, comments, expected_dispatch_date, created_at, company_id,
+      id, user_id, status, locale, clinician, patient_name, reference_customer, comments,
+      pdf_url, expected_dispatch_date, created_at, company_id,
       companies(name, erp_code),
       stock_order_items(id, size, qty, products(style_name, colour_id, color_name, closure, picture_name))
     `)
@@ -315,7 +513,12 @@ export async function getStockOrderDetail(id: string): Promise<StockOrderDetail 
     user_id: d.user_id,
     status: d.status,
     locale: d.locale,
+    clinician: d.clinician ?? null,
+    patient_name: d.patient_name ?? null,
+    reference_customer: d.reference_customer ?? null,
     comments: d.comments,
+    // Private bucket → hand back a short-lived signed URL, not the stored path.
+    pdf_url: d.pdf_url ? await signOrderPdf(d.id) : null,
     expected_dispatch_date: d.expected_dispatch_date,
     created_at: d.created_at,
     company: company ?? null,

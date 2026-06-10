@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS stock_orders (
   -- No 'draft': stock orders reserve on submit. Default reflects that.
   status           text NOT NULL DEFAULT 'submitted',
   locale           text NOT NULL DEFAULT 'en',
+  -- Customer/order fields (same as a configured order's Tab 1). reference_customer
+  -- is required at the app level; kept nullable here for forward-compat.
+  clinician          text,
+  patient_name       text,
+  reference_customer text,
   comments         text,
   -- Back-office columns mirror `orders` so the unified /orders view + admin
   -- workflow can treat both alike.
