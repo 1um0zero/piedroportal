@@ -179,12 +179,64 @@ export function countFilled(
   return count
 }
 
-/** Filter fields that are excluded for this product (adds_exclude string from product) */
-export function filterExcluded(fields: AdditionField[], addsExclude: string): AdditionField[] {
-  if (!addsExclude) return fields
-  return fields.filter(f => {
-    if (!f.dataverseKey && !f.dataverse) return true
-    const key = f.dataverseKey ?? f.dataverse ?? ''
-    return !addsExclude.includes(`#${key}`)
-  })
+// ── adds_exclude (Power Pages parity) ──────────────────────────────────────────
+// The product's `adds_exclude` column is a single string of Dataverse field ids,
+// each prefixed with `#`, separated by `,`, and some carrying a trailing `=value`
+// (e.g. `#cr56f_zipper,#cr56f_checkboxsection6,#cr56f_2heeldepthonly=1`).
+// In Power Pages the match was a raw substring `indexOf("#<id>")`; we tokenise and
+// match exactly to avoid prefix collisions (e.g. `cr56f_2heel` ⊂ `cr56f_2heeldepthonly`).
+
+// Section-collapse triggers from the Power Pages form → our section keys, by the
+// index order of `array_sections_trigger` / `array_fields_by_section` there.
+const SECTION_EXCLUDE_TRIGGER: Record<string, string> = {
+  cr56f_checkboxsection4: 'additions',
+  cr56f_checkboxsection5: 'upper',
+  cr56f_checkboxsection6: 'sole',
+  cr56f_checkboxsection7: 'others',
+}
+
+/** Parse an adds_exclude string into a set of excluded Dataverse ids (lowercased, no `#`, no `=value`). */
+export function parseAddsExclude(addsExclude: string | null | undefined): Set<string> {
+  const out = new Set<string>()
+  if (!addsExclude) return out
+  for (const raw of addsExclude.split(',')) {
+    const m = raw.trim().match(/^#?([a-z0-9_]+)/i)   // grab the id, drop leading # and any =value
+    if (m) out.add(m[1].toLowerCase())
+  }
+  return out
+}
+
+/** Whether an entire section is excluded for this product (e.g. `#cr56f_checkboxsection6`). */
+export function isSectionExcluded(sectionKey: string, addsExclude: string | null | undefined): boolean {
+  const ids = parseAddsExclude(addsExclude)
+  if (ids.size === 0) return false
+  return Object.entries(SECTION_EXCLUDE_TRIGGER)
+    .some(([trigger, sk]) => sk === sectionKey && ids.has(trigger))
+}
+
+/** Filter fields that are excluded for this product, cascading to conditional children. */
+export function filterExcluded(fields: AdditionField[], addsExclude: string | null | undefined): AdditionField[] {
+  const ids = parseAddsExclude(addsExclude)
+  if (ids.size === 0) return fields
+
+  // First pass: fields whose own Dataverse id is excluded.
+  const excludedKeys = new Set<string>()
+  for (const f of fields) {
+    const dv = (f.dataverseKey ?? f.dataverse ?? '').toLowerCase()
+    if (dv && ids.has(dv)) excludedKeys.add(f.key)
+  }
+
+  // Cascade: a conditional child whose parent is excluded is excluded too.
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const f of fields) {
+      if (f.conditionalOn && excludedKeys.has(f.conditionalOn) && !excludedKeys.has(f.key)) {
+        excludedKeys.add(f.key)
+        changed = true
+      }
+    }
+  }
+
+  return fields.filter(f => !excludedKeys.has(f.key))
 }

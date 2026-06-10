@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { SECTIONS, filterExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
+import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
 import { GlbViewer } from './GlbViewer'
 import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
 
@@ -662,11 +662,15 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   return (
     <div className="space-y-3">
         {SECTIONS.map((section) => {
+        // Whole section excluded for this product (e.g. #cr56f_checkboxsection6)
+        if (isSectionExcluded(section.key, addsExclude)) return null
         const fields = filterExcluded(section.fields, addsExclude).filter(f => {
           // Hide closure-specific fields that don't match product closure
           if (f.closureOnly && f.closureOnly !== closure) return false
           return true
         })
+        // Nothing left to show (every field excluded) → drop the section header too
+        if (fields.length === 0) return null
         const filled = countFilled(additions, section.key)
         const open   = expanded.has(section.key)
 
