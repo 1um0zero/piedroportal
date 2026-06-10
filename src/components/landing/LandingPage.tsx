@@ -1,12 +1,16 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
-// Landing imagery. Drop real photos here (e.g. Supabase `__brand` bucket paths);
-// until then these resolve to elegant gradient placeholders (see <Img/> below).
+// Landing imagery — served from /public/landing. Empty string falls back to an
+// elegant gradient placeholder (see <Img/> below).
 const IMG = {
-  heroA: '', heroB: '', heroC: '',
-  osbWomen: '', osbMen: '', osbKids: '',
-  newsCircle: '', didCustom: '', didCatalogs: '',
+  hero: '/landing/hero.png',
+  osbWomen: '/landing/osb_dames.png',
+  osbMen: '/landing/osb_heren.png',
+  osbKids: '/landing/osb_kinderen.png',
+  newsCircle: '/landing/whats_new.png',
+  didCustom: '/landing/balloon.png',
+  didCatalogs: '/landing/boy_upsidedown.png',
 }
 
 /** Image with a tasteful gradient fallback while real assets aren't wired up. */
@@ -49,11 +53,7 @@ export default async function LandingPage() {
           {t('hero.cta')}
         </Link>
 
-        <div className="mt-10 grid grid-cols-3 gap-3 sm:gap-4">
-          <Img src={IMG.heroA} alt={t('hero.title')} className="h-40 sm:h-64 w-full rounded-[14px]" />
-          <Img src={IMG.heroB} alt={t('hero.title')} className="h-40 sm:h-64 w-full rounded-[14px]" />
-          <Img src={IMG.heroC} alt={t('hero.title')} className="h-40 sm:h-64 w-full rounded-[14px]" />
-        </div>
+        <Img src={IMG.hero} alt={t('hero.title')} className="mt-10 h-40 sm:h-64 w-full rounded-[14px]" />
       </section>
 
       {/* ── OSB collections ────────────────────────────────────────────── */}
