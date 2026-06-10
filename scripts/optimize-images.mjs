@@ -39,6 +39,9 @@ const args = process.argv.slice(2)
 const files = (args.length ? args : listAll('public'))
   .filter((f) => exts.has(path.extname(f).toLowerCase()) && fs.existsSync(f))
 
+const PHOTO_PNG_WARN = 150 * 1024 // a flat-art PNG this big is fine; a photo isn't
+const warnings = []
+
 let saved = 0, touched = 0
 for (const file of files) {
   const before = fs.statSync(file).size
@@ -49,6 +52,9 @@ for (const file of files) {
   if (!tooBig && !tooLarge) continue // already lean — leave it alone (idempotent)
 
   const ext = path.extname(file).toLowerCase()
+  // A large PNG with no transparency is almost always a photo — it would be far
+  // smaller as JPG. We can't safely rename it (would break code refs), so warn.
+  const looksLikePhoto = (ext === '.png') && meta.hasAlpha === false
   let pipe = sharp(file).resize(MAX_DIM, MAX_DIM, { fit: 'inside', withoutEnlargement: true })
   pipe = ext === '.png'
     ? pipe.png({ compressionLevel: 9, adaptiveFiltering: true }) // lossless: safe for logos/diagrams
@@ -61,7 +67,17 @@ for (const file of files) {
     touched++
     console.log(`  ${file}  ${(before / 1024).toFixed(0)}KB → ${(buf.length / 1024).toFixed(0)}KB`)
   }
+
+  const finalSize = Math.min(buf.length, before)
+  if (looksLikePhoto && finalSize > PHOTO_PNG_WARN) {
+    warnings.push(`  ⚠ ${file} (${(finalSize / 1024).toFixed(0)}KB) looks like a photo — delivering it as .jpg would be much smaller.`)
+  }
 }
 
 if (touched) console.log(`✓ optimised ${touched} image(s), saved ${(saved / 1024 / 1024).toFixed(2)}MB`)
 else console.log('✓ images already optimised')
+
+if (warnings.length) {
+  console.log('\n⚠ Tip — these PNGs are photographic; consider supplying them as JPG (non-blocking):')
+  warnings.forEach((w) => console.log(w))
+}
