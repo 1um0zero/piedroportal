@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import type { ReactNode } from 'react'
 
-const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
+// latin-ext is required for NL/FR/DE diacritics (ë, ï, ç, ü, …).
+const inter = Inter({ subsets: ['latin', 'latin-ext'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'Piedro Portal',
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html className={geistSans.variable}>
+    <html className={inter.variable}>
       <body className="min-h-screen bg-cream text-stone-900 antialiased">
         {children}
       </body>
