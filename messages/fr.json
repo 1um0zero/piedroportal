@@ -859,7 +859,8 @@
       "saved": "Enregistré",
       "saving": "Enregistrement…",
       "size": "Pointure",
-      "noStock": "Aucun modèle en stock pour le moment. Ajoutez-en un ci-dessus."
+      "noStock": "Aucun modèle en stock pour le moment. Ajoutez-en un ci-dessus.",
+      "order_link": "Passer une commande"
     }
   },
   "adminTranslations": {

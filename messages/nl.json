@@ -859,7 +859,8 @@
       "saved": "Opgeslagen",
       "saving": "Opslaan…",
       "size": "Maat",
-      "noStock": "Nog geen modellen in voorraad. Voeg er hierboven een toe."
+      "noStock": "Nog geen modellen in voorraad. Voeg er hierboven een toe.",
+      "order_link": "Bestelling plaatsen"
     }
   },
   "adminTranslations": {

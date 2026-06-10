@@ -859,7 +859,8 @@
       "saved": "Gespeichert",
       "saving": "Speichern…",
       "size": "Größe",
-      "noStock": "Noch keine Modelle auf Lager. Fügen Sie oben eines hinzu."
+      "noStock": "Noch keine Modelle auf Lager. Fügen Sie oben eines hinzu.",
+      "order_link": "Bestellung aufgeben"
     }
   },
   "adminTranslations": {

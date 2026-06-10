@@ -859,7 +859,8 @@
       "saved": "Saved",
       "saving": "Saving…",
       "size": "Size",
-      "noStock": "No models in stock yet. Add one above."
+      "noStock": "No models in stock yet. Add one above.",
+      "order_link": "Place an order"
     }
   },
   "adminTranslations": {
