@@ -877,5 +877,52 @@
     "reprocess": "Bestellungen neu berechnen",
     "recomputing": "Neuberechnung…",
     "pending_recompute": "Schließungsänderungen gespeichert. Neu berechnen, um die voraussichtlichen Versanddaten bestehender Bestellungen zu aktualisieren (erfolgt auch automatisch beim Verlassen der Seite)."
+  },
+  "landing": {
+    "hero": {
+      "title": "Willkommen im Piedro-Portal!",
+      "body": "Die exklusive Plattform für unsere Geschäftspartner. Melden Sie sich an, um sofort Zugriff auf unser komplettes Sortiment an Qualitätsschuhen, aktuelle Bestandsinformationen und einen optimierten Bestellprozess zu erhalten. Entwickelt, um Ihren Einkauf schneller, intelligenter und effizienter zu machen.",
+      "tagline": "Always one step ahead.",
+      "cta": "Login für Partner"
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Damen",
+        "body": "Stil und Komfort für jeden Tag. Entwickelt, um Qualität und Eleganz zu verbinden."
+      },
+      "men": {
+        "title": "Herren",
+        "body": "Langlebige Qualität und zeitgemäßes Design für den modernen Profi."
+      },
+      "kids": {
+        "title": "Kinder",
+        "body": "Zuverlässige Passform und Schutz, Schritt für Schritt in jeder Entwicklungsphase."
+      }
+    },
+    "news": {
+      "title": "Was ist neu?",
+      "new": {
+        "title": "Neu im Sortiment",
+        "body": "Unser Sortiment wird alle zwei Monate mit neuen Modellen und Erweiterungen der Kollektion aktualisiert. So haben Sie immer Zugriff auf die neuesten Produkte und Ihr Angebot bleibt aktuell. Entdecken Sie hier die neuesten Ergänzungen."
+      },
+      "updates": {
+        "title": "Portal-Updates",
+        "body": "Wir optimieren das Portal kontinuierlich, um Ihren Bestellprozess so reibungslos wie möglich zu gestalten. Neue Funktionen, verbesserte Navigation und technische Updates werden regelmäßig eingeführt, sodass Sie sich stets auf eine benutzerfreundliche und effiziente Umgebung verlassen können. Bleiben Sie hier über die neuesten Verbesserungen auf dem Laufenden."
+      },
+      "cta_products": "Neue Produkte ansehen",
+      "cta_updates": "Mehr über die Updates lesen"
+    },
+    "did": {
+      "title": "Wussten Sie schon...?",
+      "custom": {
+        "title": "Anpassbare Modelle",
+        "body": "Unsere Schuhe lassen sich vollständig an die Wünsche Ihrer Kunden anpassen, von der Materialwahl bis hin zu speziellen Veredelungen."
+      },
+      "catalogs": {
+        "title": "Unsere Kataloge",
+        "body": "Wir verfügen über umfangreiche Kataloge, sodass Sie das gesamte Sortiment jederzeit bequem durchstöbern und auswählen können."
+      }
+    }
   }
 }

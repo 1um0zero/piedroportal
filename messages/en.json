@@ -877,5 +877,52 @@
     "reprocess": "Reprocess orders",
     "recomputing": "Recalculating…",
     "pending_recompute": "Closure changes saved. Reprocess to update the expected dispatch dates of existing orders (also done automatically when you leave this page)."
+  },
+  "landing": {
+    "hero": {
+      "title": "Welcome to the Piedro Portal!",
+      "body": "The exclusive platform for our business partners. Log in for instant access to our full range of quality footwear, up-to-date stock information and a streamlined ordering process. Designed to make your purchasing faster, smarter and more efficient.",
+      "tagline": "Always one step ahead.",
+      "cta": "Login for partners"
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Women",
+        "body": "Style and comfort for every day. Designed to combine quality and elegance."
+      },
+      "men": {
+        "title": "Men",
+        "body": "Durable quality and contemporary design for the modern professional."
+      },
+      "kids": {
+        "title": "Children",
+        "body": "Reliable fit and protection, step by step through every stage of development."
+      }
+    },
+    "news": {
+      "title": "What's new?",
+      "new": {
+        "title": "New in our collection",
+        "body": "Our range is refreshed every two months with new models and additions to the collection. So you always have access to the latest products and your offering stays current. View the latest additions here."
+      },
+      "updates": {
+        "title": "Portal updates",
+        "body": "We continuously optimise the portal to make your ordering process as smooth as possible. New features, improved navigation and technical updates are rolled out regularly, so you can always count on a user-friendly and efficient environment. Stay up to date with the latest improvements here."
+      },
+      "cta_products": "View new products",
+      "cta_updates": "Read about the updates"
+    },
+    "did": {
+      "title": "Did you know...?",
+      "custom": {
+        "title": "Customisable models",
+        "body": "Our shoes can be fully tailored to your clients' wishes, from material choice to special finishes."
+      },
+      "catalogs": {
+        "title": "Our catalogues",
+        "body": "We have extensive catalogues, so you can always easily browse and select from the full range."
+      }
+    }
   }
 }

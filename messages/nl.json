@@ -877,5 +877,52 @@
     "reprocess": "Bestellingen herberekenen",
     "recomputing": "Herberekenen…",
     "pending_recompute": "Sluitingswijzigingen opgeslagen. Herbereken om de verwachte verzenddatums van bestaande bestellingen bij te werken (gebeurt ook automatisch wanneer u deze pagina verlaat)."
+  },
+  "landing": {
+    "hero": {
+      "title": "Welkom bij het Piedro Portaal!",
+      "body": "Het exclusieve platform voor onze zakelijke partners. Log in om direct toegang te krijgen tot ons volledige assortiment kwaliteitsschoenen, actuele voorraadinformatie en een gestroomlijnd bestelproces. Ontworpen om uw inkoop sneller, slimmer en efficiënter te maken.",
+      "tagline": "Always one step ahead.",
+      "cta": "Login voor partners"
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Dames",
+        "body": "Stijl en comfort voor elke dag. Ontworpen om kwaliteit en elegantie te combineren."
+      },
+      "men": {
+        "title": "Heren",
+        "body": "Duurzame kwaliteit en eigentijds design voor de moderne professional."
+      },
+      "kids": {
+        "title": "Kinderen",
+        "body": "Betrouwbare pasvorm en bescherming, stap voor stap in ontwikkeling."
+      }
+    },
+    "news": {
+      "title": "Wat is er nieuw?",
+      "new": {
+        "title": "Nieuw in ons assortiment",
+        "body": "Ons assortiment wordt iedere twee maanden vernieuwd met nieuwe modellen en uitbreidingen binnen de collectie. Zo heeft u altijd toegang tot de nieuwste producten en blijft uw aanbod actueel. Bekijk de laatste toevoegingen hier."
+      },
+      "updates": {
+        "title": "Portaalupdates",
+        "body": "We blijven het portaal continu optimaliseren om uw bestelproces zo soepel mogelijk te maken. Nieuwe functies, verbeterde navigatie en technische updates worden regelmatig doorgevoerd, zodat u altijd kunt rekenen op een gebruiksvriendelijke en efficiënte omgeving. Blijf op de hoogte van de laatste verbeteringen hier."
+      },
+      "cta_products": "Bekijk nieuwe producten",
+      "cta_updates": "Lees over de updates"
+    },
+    "did": {
+      "title": "Wist u dat...?",
+      "custom": {
+        "title": "Aanpasbare modellen",
+        "body": "Onze schoenen kunnen volledig worden aangepast aan de wensen van uw klanten, van materiaalkeuze tot speciale afwerkingen."
+      },
+      "catalogs": {
+        "title": "Onze catalogi",
+        "body": "We beschikken over uitgebreide catalogi, zodat u altijd gemakkelijk het volledige assortiment kunt bekijken en selecteren."
+      }
+    }
   }
 }

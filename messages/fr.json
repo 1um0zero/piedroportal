@@ -877,5 +877,52 @@
     "reprocess": "Recalculer les commandes",
     "recomputing": "Recalcul…",
     "pending_recompute": "Modifications enregistrées. Recalculez pour mettre à jour les dates d’expédition prévues des commandes existantes (effectué aussi automatiquement en quittant cette page)."
+  },
+  "landing": {
+    "hero": {
+      "title": "Bienvenue sur le Portail Piedro !",
+      "body": "La plateforme exclusive pour nos partenaires professionnels. Connectez-vous pour accéder immédiatement à notre gamme complète de chaussures de qualité, aux informations de stock en temps réel et à un processus de commande simplifié. Conçu pour rendre vos achats plus rapides, plus intelligents et plus efficaces.",
+      "tagline": "Always one step ahead.",
+      "cta": "Connexion partenaires"
+    },
+    "osb": {
+      "title": "OSB",
+      "women": {
+        "title": "Femmes",
+        "body": "Style et confort au quotidien. Conçu pour allier qualité et élégance."
+      },
+      "men": {
+        "title": "Hommes",
+        "body": "Qualité durable et design contemporain pour le professionnel moderne."
+      },
+      "kids": {
+        "title": "Enfants",
+        "body": "Un maintien fiable et une protection, pas à pas, à chaque étape du développement."
+      }
+    },
+    "news": {
+      "title": "Quoi de neuf ?",
+      "new": {
+        "title": "Nouveautés de la collection",
+        "body": "Notre gamme est renouvelée tous les deux mois avec de nouveaux modèles et des ajouts à la collection. Vous avez ainsi toujours accès aux derniers produits et votre offre reste actuelle. Découvrez les dernières nouveautés ici."
+      },
+      "updates": {
+        "title": "Mises à jour du portail",
+        "body": "Nous optimisons en permanence le portail pour rendre votre processus de commande aussi fluide que possible. De nouvelles fonctionnalités, une navigation améliorée et des mises à jour techniques sont déployées régulièrement, afin que vous puissiez toujours compter sur un environnement convivial et efficace. Restez informé des dernières améliorations ici."
+      },
+      "cta_products": "Voir les nouveaux produits",
+      "cta_updates": "En savoir plus sur les mises à jour"
+    },
+    "did": {
+      "title": "Le saviez-vous... ?",
+      "custom": {
+        "title": "Modèles personnalisables",
+        "body": "Nos chaussures peuvent être entièrement adaptées aux souhaits de vos clients, du choix des matériaux aux finitions spéciales."
+      },
+      "catalogs": {
+        "title": "Nos catalogues",
+        "body": "Nous disposons de catalogues complets, pour que vous puissiez toujours parcourir et sélectionner facilement l'ensemble de la gamme."
+      }
+    }
   }
 }
