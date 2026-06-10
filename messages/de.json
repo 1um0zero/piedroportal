@@ -924,5 +924,46 @@
         "body": "Wir verfügen über umfangreiche Kataloge, sodass Sie das gesamte Sortiment jederzeit bequem durchstöbern und auswählen können."
       }
     }
+  },
+  "articles": {
+    "_ui": {
+      "related": "Verwandte Artikel"
+    },
+    "aanpasbare-modellen": {
+      "title": "Anpassbare Modelle",
+      "subtitle": "Intelligente Materialien, modulares Design und reaktive Unterstützung vereinen sich in einem Schuh, der sich mit Ihnen bewegt. Entwickelt für alle, die Komfort, Funktionalität und Stil ohne Kompromisse verbinden möchten.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Durch den echten Artikeltext ersetzen. Dieser erste Absatz führt in das Thema ein und schafft den Kontext.",
+        "PLACEHOLDER — Ein zweiter Absatz setzt die Geschichte fort, ergänzt Details und verbindet die Bilder mit der Kernaussage."
+      ]
+    },
+    "innovatie-pasvormoptimalisatie": {
+      "title": "Innovation in der Passformoptimierung",
+      "subtitle": "PLACEHOLDER — kurze Einleitung für diesen Artikel.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Durch den echten Artikeltext ersetzen. Dieser erste Absatz führt in das Thema ein und schafft den Kontext.",
+        "PLACEHOLDER — Ein zweiter Absatz setzt die Geschichte fort, ergänzt Details und verbindet die Bilder mit der Kernaussage."
+      ]
+    },
+    "responsieve-zolen": {
+      "title": "Reaktive Sohlen in Aktion",
+      "subtitle": "PLACEHOLDER — kurze Einleitung für diesen Artikel.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Durch den echten Artikeltext ersetzen. Dieser erste Absatz führt in das Thema ein und schafft den Kontext.",
+        "PLACEHOLDER — Ein zweiter Absatz setzt die Geschichte fort, ergänzt Details und verbindet die Bilder mit der Kernaussage."
+      ]
+    },
+    "precisie-ondersteuning": {
+      "title": "Präzise Unterstützung in Bewegung",
+      "subtitle": "PLACEHOLDER — kurze Einleitung für diesen Artikel.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Durch den echten Artikeltext ersetzen. Dieser erste Absatz führt in das Thema ein und schafft den Kontext.",
+        "PLACEHOLDER — Ein zweiter Absatz setzt die Geschichte fort, ergänzt Details und verbindet die Bilder mit der Kernaussage."
+      ]
+    }
   }
 }

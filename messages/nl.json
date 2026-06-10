@@ -924,5 +924,46 @@
         "body": "We beschikken over uitgebreide catalogi, zodat u altijd gemakkelijk het volledige assortiment kunt bekijken en selecteren."
       }
     }
+  },
+  "articles": {
+    "_ui": {
+      "related": "Gerelateerde artikelen"
+    },
+    "aanpasbare-modellen": {
+      "title": "Aanpasbare modellen",
+      "subtitle": "Slim materiaal, modulair design en responsieve ondersteuning komen samen in een schoen die met je meebeweegt. Ontworpen voor gebruikers die comfort, functionaliteit en stijl willen combineren zonder concessies.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Vervang door de echte artikeltekst. Deze eerste paragraaf introduceert het onderwerp en schetst de context.",
+        "PLACEHOLDER — Een tweede paragraaf vervolgt het verhaal, voegt details en uitleg toe en verbindt de afbeeldingen met de kernboodschap."
+      ]
+    },
+    "innovatie-pasvormoptimalisatie": {
+      "title": "Innovatie in pasvormoptimalisatie",
+      "subtitle": "PLACEHOLDER — korte intro voor dit artikel.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Vervang door de echte artikeltekst. Deze eerste paragraaf introduceert het onderwerp en schetst de context.",
+        "PLACEHOLDER — Een tweede paragraaf vervolgt het verhaal, voegt details en uitleg toe en verbindt de afbeeldingen met de kernboodschap."
+      ]
+    },
+    "responsieve-zolen": {
+      "title": "Responsieve zolen in actie",
+      "subtitle": "PLACEHOLDER — korte intro voor dit artikel.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Vervang door de echte artikeltekst. Deze eerste paragraaf introduceert het onderwerp en schetst de context.",
+        "PLACEHOLDER — Een tweede paragraaf vervolgt het verhaal, voegt details en uitleg toe en verbindt de afbeeldingen met de kernboodschap."
+      ]
+    },
+    "precisie-ondersteuning": {
+      "title": "Precisie-ondersteuning bij beweging",
+      "subtitle": "PLACEHOLDER — korte intro voor dit artikel.",
+      "category": "Piedro Orthopedie",
+      "body": [
+        "PLACEHOLDER — Vervang door de echte artikeltekst. Deze eerste paragraaf introduceert het onderwerp en schetst de context.",
+        "PLACEHOLDER — Een tweede paragraaf vervolgt het verhaal, voegt details en uitleg toe en verbindt de afbeeldingen met de kernboodschap."
+      ]
+    }
   }
 }

@@ -123,15 +123,23 @@ export default async function LandingPage() {
         <h2 className={heading}>{t('did.title')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {([
-            { key: 'custom', img: IMG.didCustom },
-            { key: 'catalogs', img: IMG.didCatalogs },
-          ] as const).map(({ key, img }) => (
-            <div key={key}>
-              <Img src={img} alt={t(`did.${key}.title`)} className="h-64 w-full rounded-[14px] mb-5" />
-              <h3 className="text-xl font-medium text-stone-900">{t(`did.${key}.title`)}</h3>
-              <p className="mt-1.5 text-base text-stone-600 leading-relaxed">{t(`did.${key}.body`)}</p>
-            </div>
-          ))}
+            { key: 'custom', img: IMG.didCustom, href: '/articles/aanpasbare-modellen' },
+            { key: 'catalogs', img: IMG.didCatalogs, href: undefined },
+          ] as const).map(({ key, img, href }) => {
+            const inner = (
+              <>
+                <Img src={img} alt={t(`did.${key}.title`)}
+                  className={`h-64 w-full rounded-[14px] mb-5${href ? ' group-hover:opacity-90 transition-opacity' : ''}`} />
+                <h3 className={`text-xl font-medium text-stone-900${href ? ' group-hover:text-gold transition-colors' : ''}`}>
+                  {t(`did.${key}.title`)}
+                </h3>
+                <p className="mt-1.5 text-base text-stone-600 leading-relaxed">{t(`did.${key}.body`)}</p>
+              </>
+            )
+            return href
+              ? <Link key={key} href={href} className="group block">{inner}</Link>
+              : <div key={key}>{inner}</div>
+          })}
         </div>
       </section>
     </div>
