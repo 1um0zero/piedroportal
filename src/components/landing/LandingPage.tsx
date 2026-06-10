@@ -124,7 +124,7 @@ export default async function LandingPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {([
             { key: 'custom', img: IMG.didCustom, href: '/articles/aanpasbare-modellen' },
-            { key: 'catalogs', img: IMG.didCatalogs, href: undefined },
+            { key: 'catalogs', img: IMG.didCatalogs, href: '/catalogues' },
           ] as const).map(({ key, img, href }) => {
             const inner = (
               <>

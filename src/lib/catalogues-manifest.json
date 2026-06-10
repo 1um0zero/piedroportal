@@ -1,0 +1,29 @@
+{
+  "baseUrl": "https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/catalogues",
+  "catalogues": [
+    {
+      "slug": "kids-en",
+      "type": "kids",
+      "lang": "en",
+      "leaves": 132
+    },
+    {
+      "slug": "kids-nl",
+      "type": "kids",
+      "lang": "nl",
+      "leaves": 132
+    },
+    {
+      "slug": "adults-en",
+      "type": "adults",
+      "lang": "en",
+      "leaves": 134
+    },
+    {
+      "slug": "adults-nl",
+      "type": "adults",
+      "lang": "nl",
+      "leaves": 134
+    }
+  ]
+}

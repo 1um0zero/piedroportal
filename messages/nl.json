@@ -925,6 +925,14 @@
       }
     }
   },
+  "catalogues": {
+    "title": "Onze catalogi",
+    "subtitle": "Blader door de volledige Piedro-collectie — net als in het gedrukte boek.",
+    "tabs": { "kids": "Kinderen", "adults": "Volwassenen" },
+    "prev": "Vorige pagina",
+    "next": "Volgende pagina",
+    "page": "{n} / {total}"
+  },
   "articles": {
     "_ui": {
       "related": "Gerelateerde artikelen"

@@ -925,6 +925,14 @@
       }
     }
   },
+  "catalogues": {
+    "title": "Unsere Kataloge",
+    "subtitle": "Blättern Sie durch die gesamte Piedro-Kollektion — wie im gedruckten Buch.",
+    "tabs": { "kids": "Kinder", "adults": "Erwachsene" },
+    "prev": "Vorherige Seite",
+    "next": "Nächste Seite",
+    "page": "{n} / {total}"
+  },
   "articles": {
     "_ui": {
       "related": "Verwandte Artikel"

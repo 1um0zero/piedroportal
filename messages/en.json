@@ -925,6 +925,14 @@
       }
     }
   },
+  "catalogues": {
+    "title": "Our catalogues",
+    "subtitle": "Leaf through the full Piedro collection — just like the printed book.",
+    "tabs": { "kids": "Kids", "adults": "Adults" },
+    "prev": "Previous page",
+    "next": "Next page",
+    "page": "{n} / {total}"
+  },
   "articles": {
     "_ui": {
       "related": "Related articles"

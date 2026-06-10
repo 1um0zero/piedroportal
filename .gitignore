@@ -46,3 +46,4 @@ xls-divergences.tsv
 # local image normalization artifacts
 image-backup/
 scripts/_out/
+_catalogues_src/

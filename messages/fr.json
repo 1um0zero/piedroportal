@@ -925,6 +925,14 @@
       }
     }
   },
+  "catalogues": {
+    "title": "Nos catalogues",
+    "subtitle": "Feuilletez toute la collection Piedro — comme dans le livre imprimé.",
+    "tabs": { "kids": "Enfants", "adults": "Adultes" },
+    "prev": "Page précédente",
+    "next": "Page suivante",
+    "page": "{n} / {total}"
+  },
   "articles": {
     "_ui": {
       "related": "Articles liés"
