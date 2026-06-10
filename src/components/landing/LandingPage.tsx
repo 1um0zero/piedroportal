@@ -9,13 +9,13 @@ const OSB_SECTION = { women: 'WOMEN', men: 'MEN', kids: 'KIDS' } as const
 // Landing imagery — served from /public/landing. Empty string falls back to an
 // elegant gradient placeholder (see <Img/> below).
 const IMG = {
-  hero: '/landing/hero.png',
-  osbWomen: '/landing/osb_dames.png',
-  osbMen: '/landing/osb_heren.png',
-  osbKids: '/landing/osb_kinderen.png',
-  newsCircle: '/landing/whats_new.png',
-  didCustom: '/landing/balloon.png',
-  didCatalogs: '/landing/boy_upsidedown.png',
+  hero: '/landing/hero.jpg',
+  osbWomen: '/landing/osb_dames.jpg',
+  osbMen: '/landing/osb_heren.jpg',
+  osbKids: '/landing/osb_kinderen.jpg',
+  newsCircle: '/landing/whats_new.jpg',
+  didCustom: '/landing/balloon.jpg',
+  didCatalogs: '/landing/boy_upsidedown.jpg',
 }
 
 /**
