@@ -19,30 +19,30 @@ export type Article = {
 export const ARTICLES: Article[] = [
   {
     slug: 'aanpasbare-modellen',
-    hero: '',
-    images: ['', ''],
-    cardImage: '',
+    hero: '/articles/aanpasbare-hero.jpg',
+    images: ['/articles/aanpasbare-detail-1.jpg', '/articles/aanpasbare-detail-2.jpg'],
+    cardImage: '/articles/aanpasbare-hero.jpg',
     related: ['innovatie-pasvormoptimalisatie', 'responsieve-zolen', 'precisie-ondersteuning'],
   },
   {
     slug: 'innovatie-pasvormoptimalisatie',
     hero: '',
     images: ['', ''],
-    cardImage: '',
+    cardImage: '/articles/innovatie-card.jpg',
     related: ['responsieve-zolen', 'precisie-ondersteuning', 'aanpasbare-modellen'],
   },
   {
     slug: 'responsieve-zolen',
     hero: '',
     images: ['', ''],
-    cardImage: '',
+    cardImage: '/articles/responsieve-card.jpg',
     related: ['precisie-ondersteuning', 'aanpasbare-modellen', 'innovatie-pasvormoptimalisatie'],
   },
   {
     slug: 'precisie-ondersteuning',
     hero: '',
     images: ['', ''],
-    cardImage: '',
+    cardImage: '/articles/precisie-card.jpg',
     related: ['aanpasbare-modellen', 'innovatie-pasvormoptimalisatie', 'responsieve-zolen'],
   },
 ]

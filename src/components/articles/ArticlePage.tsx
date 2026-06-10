@@ -45,21 +45,36 @@ export default async function ArticlePage({ slug }: { slug: string }) {
       {/* Hero image */}
       <Img src={article.hero} alt={t(a('title'))} className="mt-10 h-72 sm:h-[26rem] w-full rounded-[14px]" />
 
-      {/* Body — first paragraph, then the two images, then the rest */}
-      <div className="mx-auto max-w-3xl">
-        {body[0] && <p className="mt-12 text-lg text-stone-800 leading-relaxed">{body[0]}</p>}
-      </div>
+      {/* Body — first half of the paragraphs, then the two images, then the
+          rest (mirrors the Figma flow: intro → imagery → close). */}
+      {(() => {
+        const mid = Math.ceil(body.length / 2)
+        const before = body.slice(0, mid)
+        const after = body.slice(mid)
+        const hasImages = article.images.some(Boolean)
+        return (
+          <>
+            <div className="mx-auto max-w-3xl">
+              {before.map((p, i) => (
+                <p key={i} className="mt-8 first:mt-12 text-lg text-stone-800 leading-relaxed">{p}</p>
+              ))}
+            </div>
 
-      <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-8">
-        <Img src={article.images[0]} alt={t(a('title'))} className="h-72 w-full rounded-[14px]" />
-        <Img src={article.images[1]} alt={t(a('title'))} className="h-72 w-full rounded-[14px]" />
-      </div>
+            {hasImages && (
+              <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <Img src={article.images[0]} alt={t(a('title'))} className="h-72 w-full rounded-[14px]" />
+                <Img src={article.images[1]} alt={t(a('title'))} className="h-72 w-full rounded-[14px]" />
+              </div>
+            )}
 
-      <div className="mx-auto max-w-3xl">
-        {body.slice(1).map((p, i) => (
-          <p key={i} className="mt-8 text-lg text-stone-800 leading-relaxed">{p}</p>
-        ))}
-      </div>
+            <div className="mx-auto max-w-3xl">
+              {after.map((p, i) => (
+                <p key={i} className="mt-8 text-lg text-stone-800 leading-relaxed">{p}</p>
+              ))}
+            </div>
+          </>
+        )
+      })()}
 
       {/* Related articles */}
       {related.length > 0 && (
