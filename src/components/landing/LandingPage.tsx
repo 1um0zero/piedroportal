@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import LoginCard from '@/components/auth/LoginCard'
+import { encodeQuery } from '@/lib/query-cipher'
 
 // Maps an OSB collection card to the gallery section (tab) it opens.
 const OSB_SECTION = { women: 'WOMEN', men: 'MEN', kids: 'KIDS' } as const
@@ -79,7 +80,7 @@ export default async function LandingPage() {
             { key: 'men', img: IMG.osbMen },
             { key: 'kids', img: IMG.osbKids },
           ] as const).map(({ key, img }) => (
-            <Link key={key} href={{ pathname: '/gallery', query: { section: OSB_SECTION[key] } }} className="group block">
+            <Link key={key} href={{ pathname: '/gallery', query: { q: encodeQuery({ section: OSB_SECTION[key] }) } }} className="group block">
               <Img
                 src={img}
                 fit="contain"
