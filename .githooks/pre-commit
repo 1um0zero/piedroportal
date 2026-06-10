@@ -3,6 +3,19 @@
 # errors in the files being committed. Set up automatically via the package.json
 # "prepare" script (git config core.hooksPath .githooks), or run that once manually.
 
+# Auto-optimise any staged images under public/ (resize + compress in place),
+# then re-stage them. Keeps huge PNG/JPGs out of commits with zero manual effort.
+imgs=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '^public/.*\.(png|jpe?g)$' || true)
+if [ -n "$imgs" ]; then
+  echo "▶ pre-commit: optimising staged images…"
+  if node scripts/optimize-images.mjs $imgs; then
+    git add $imgs
+  else
+    echo "✖ image optimisation failed — commit blocked."
+    exit 1
+  fi
+fi
+
 echo "▶ pre-commit: TypeScript type-check…"
 if ! npx tsc --noEmit -p tsconfig.json; then
   echo "✖ TypeScript errors — commit blocked. Fix them and try again."

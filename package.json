@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
+    "optimize-images": "node scripts/optimize-images.mjs",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
