@@ -740,7 +740,9 @@
       "col_type": "Typ",
       "col_exclusive": "Exklusiv",
       "all_exclusive": "Alle exklusiven",
-      "gallery_order": "Galerie-Reihenfolge"
+      "gallery_order": "Galerie-Reihenfolge",
+      "import_selected": "{n} von {total} zum Import ausgewählt",
+      "import_exclude_hint": "Modelle abwählen, die nicht importiert werden sollen."
     },
     "branches": {
       "title": "Niederlassungen",

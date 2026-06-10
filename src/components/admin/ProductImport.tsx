@@ -40,6 +40,8 @@ export default function ProductImport() {
   const [applying, setApplying] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
+  // colour_ids unticked in the preview grid → excluded from the import.
+  const [excluded, setExcluded] = useState<Set<string>>(new Set())
 
   async function analyze(useModes?: Record<string, SheetMode>) {
     if (!file) return
@@ -53,6 +55,7 @@ export default function ProductImport() {
       if (!res.ok) { setError(json.error ?? 'Preview failed'); setPreview(null); return }
       setPreview(json)
       setModes(json.modesUsed)
+      setExcluded(new Set())  // fresh preview → everything selected by default
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Preview failed')
     } finally {
@@ -71,6 +74,7 @@ export default function ProductImport() {
       const fd = new FormData()
       fd.append('file', file)
       fd.append('sheetModes', JSON.stringify(modes))
+      fd.append('exclude', JSON.stringify([...excluded]))
       const res = await applyProductImport(fd)
       if (res.error) { setError(res.error); return }
       const parts = [t('result_created', { n: res.created })]
@@ -156,18 +160,34 @@ export default function ProductImport() {
             </div>
           )}
 
-          {/* Counts — the import only CREATES new + VALIDATES existing */}
+          {/* Counts — the import only CREATES new + VALIDATES existing.
+              "New" reflects the current selection (after exclusions). */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <Stat label={t('stat_new')} value={preview.counts.create} color="text-emerald-600" />
+            <Stat label={t('stat_new')} value={preview.counts.create - excluded.size} color="text-emerald-600" />
             <Stat label={t('stat_discrepancies')} value={preview.counts.update} color="text-amber-600" />
             <Stat label={t('stat_unchanged')} value={preview.counts.unchanged} color="text-stone-400" />
             <Stat label={t('stat_pending')} value={preview.counts.pending} color="text-stone-500" />
             <Stat label={t('stat_rejected')} value={preview.counts.rejected} color="text-red-600" />
           </div>
 
+          {/* New products — each row selectable so the admin can exclude any model */}
+          <CreateTable
+            title={t('sample_new')}
+            hint={t('import_exclude_hint')}
+            selectedLabel={t('import_selected', { n: preview.samples.create.length - excluded.size, total: preview.samples.create.length })}
+            cols={['colour_id', t('col_style_colour'), t('col_section')]}
+            rows={preview.samples.create}
+            excluded={excluded}
+            onToggle={(id) => setExcluded(prev => {
+              const next = new Set(prev)
+              if (next.has(id)) next.delete(id); else next.add(id)
+              return next
+            })}
+            onToggleAll={(all) => setExcluded(all ? new Set() : new Set(preview.samples.create.map(r => r.colour_id)))}
+          />
+
           {/* Samples */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SampleTable title={t('sample_new')} rows={preview.samples.create.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.section])} cols={['colour_id', t('col_style_colour'), t('col_section')]} />
             <SampleTable title={t('sample_discrepancies')} rows={preview.samples.update.map(r => [r.colour_id, `${r.style_name} · ${r.color_name}`, r.changedFields.join(', ')])} cols={['colour_id', t('col_style_colour'), t('col_diff')]} />
             {preview.samples.pending.length > 0 && (
               <SampleTable title={t('sample_pending')} rows={preview.samples.pending.map(r => [r.colour_id, r.stretch ?? '', r.last ?? '', r.outStock ?? ''])} cols={['colour_id', 'STRETCH', 'LAST', 'OUT/STOCK']} />
@@ -181,7 +201,7 @@ export default function ProductImport() {
           <div className="flex items-center gap-3">
             <button
               onClick={confirm}
-              disabled={applying || preview.counts.create === 0}
+              disabled={applying || preview.counts.create - excluded.size === 0}
               className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
             >
               {applying ? t('importing') : t('confirm_import')}
@@ -190,6 +210,73 @@ export default function ProductImport() {
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+type CreateRow = { colour_id: string; style_name: string; color_name: string; section: string }
+
+function CreateTable({
+  title, hint, selectedLabel, cols, rows, excluded, onToggle, onToggleAll,
+}: {
+  title: string
+  hint: string
+  selectedLabel: string
+  cols: string[]
+  rows: CreateRow[]
+  excluded: Set<string>
+  onToggle: (colourId: string) => void
+  onToggleAll: (selectAll: boolean) => void
+}) {
+  if (rows.length === 0) return null
+  const allSelected = excluded.size === 0
+
+  return (
+    <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <div className="px-5 py-3 border-b border-stone-100 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{title}</h3>
+          <p className="text-[11px] text-stone-400 mt-0.5">{hint}</p>
+        </div>
+        <span className="text-xs font-medium text-stone-500 shrink-0">{selectedLabel}</span>
+      </div>
+      <div className="max-h-96 overflow-auto">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-stone-50">
+            <tr>
+              <th className="px-4 py-2 w-10">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={() => onToggleAll(!allSelected)}
+                  className="accent-gold"
+                />
+              </th>
+              {cols.map(c => <th key={c} className="px-4 py-2 text-left text-[11px] font-semibold text-stone-400 uppercase">{c}</th>)}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-50">
+            {rows.map((r) => {
+              const included = !excluded.has(r.colour_id)
+              return (
+                <tr key={r.colour_id} className={included ? '' : 'opacity-40'}>
+                  <td className="px-4 py-1.5">
+                    <input
+                      type="checkbox"
+                      checked={included}
+                      onChange={() => onToggle(r.colour_id)}
+                      className="accent-gold"
+                    />
+                  </td>
+                  <td className="px-4 py-1.5 text-stone-600">{r.colour_id}</td>
+                  <td className="px-4 py-1.5 text-stone-600 truncate max-w-[220px]">{r.style_name} · {r.color_name}</td>
+                  <td className="px-4 py-1.5 text-stone-600">{r.section}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

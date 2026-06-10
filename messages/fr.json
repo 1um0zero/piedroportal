@@ -740,7 +740,9 @@
       "col_type": "Type",
       "col_exclusive": "Exclusif",
       "all_exclusive": "Tous les exclusifs",
-      "gallery_order": "Ordre de la galerie"
+      "gallery_order": "Ordre de la galerie",
+      "import_selected": "{n} sur {total} sélectionnés à importer",
+      "import_exclude_hint": "Décochez les modèles que vous ne voulez pas importer."
     },
     "branches": {
       "title": "Filiales",

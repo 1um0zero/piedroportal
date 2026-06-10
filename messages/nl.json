@@ -740,7 +740,9 @@
       "col_type": "Type",
       "col_exclusive": "Exclusief",
       "all_exclusive": "Alle exclusieve",
-      "gallery_order": "Galerijvolgorde"
+      "gallery_order": "Galerijvolgorde",
+      "import_selected": "{n} van {total} geselecteerd om te importeren",
+      "import_exclude_hint": "Vink modellen uit die u niet wilt importeren."
     },
     "branches": {
       "title": "Filialen",

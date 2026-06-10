@@ -740,7 +740,9 @@
       "col_type": "Type",
       "col_exclusive": "Exclusive",
       "all_exclusive": "All exclusives",
-      "gallery_order": "Gallery order"
+      "gallery_order": "Gallery order",
+      "import_selected": "{n} of {total} selected to import",
+      "import_exclude_hint": "Untick any model you do not want to import."
     },
     "branches": {
       "title": "Branch offices",

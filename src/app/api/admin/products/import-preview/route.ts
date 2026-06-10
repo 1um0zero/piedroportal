@@ -60,7 +60,9 @@ export async function POST(request: NextRequest) {
       rejected: preview.withEmptyConstructions.length,
     },
     samples: {
-      create: preview.toCreate.slice(0, SAMPLE)
+      // Full list (not sliced): every new product is individually selectable in
+      // the preview grid so the admin can exclude rows before confirming.
+      create: preview.toCreate
         .map(p => ({ colour_id: p.colour_id, style_name: p.style_name, color_name: p.color_name, section: p.section })),
       update: preview.toUpdate.slice(0, SAMPLE)
         .map(u => ({ colour_id: u.product.colour_id, style_name: u.product.style_name, color_name: u.product.color_name, changedFields: u.changedFields })),

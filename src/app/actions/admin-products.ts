@@ -102,6 +102,13 @@ export async function applyProductImport(
     return { created: 0, error: 'Invalid sheet selection' }
   }
 
+  // colour_ids the admin unticked in the preview grid — never inserted.
+  let exclude = new Set<string>()
+  const excludeRaw = formData.get('exclude')
+  if (excludeRaw) {
+    try { exclude = new Set(JSON.parse(String(excludeRaw)) as string[]) } catch { /* ignore */ }
+  }
+
   const buffer = Buffer.from(await file.arrayBuffer())
   const imported = parseProducts(buffer, sheetModes)
   const existing = await fetchAllExisting()
@@ -113,9 +120,12 @@ export async function applyProductImport(
   const rejected = preview.withEmptyConstructions.length
   const rejectedRefs = preview.withEmptyConstructions.map(e => e.colour_id)
 
-  // Restrict every change to models within the caller's scope.
+  // Restrict every change to models within the caller's scope, and drop any
+  // colour_id the admin excluded in the preview.
   let skipped = 0
-  const inCreate = preview.toCreate.filter(p => scope.canModel(p.style_name) || (skipped++, false))
+  const inCreate = preview.toCreate
+    .filter(p => !exclude.has(p.colour_id))
+    .filter(p => scope.canModel(p.style_name) || (skipped++, false))
   const inUpdate = preview.toUpdate.filter(u => scope.canModel(u.product.style_name))
   const discrepancies = inUpdate.length
   const discrepancyRefs = inUpdate.map(u => u.product.colour_id)
