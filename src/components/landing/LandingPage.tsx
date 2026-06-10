@@ -13,8 +13,12 @@ const IMG = {
   didCatalogs: '/landing/boy_upsidedown.png',
 }
 
-/** Image with a tasteful gradient fallback while real assets aren't wired up. */
-function Img({ src, alt, className }: { src: string; alt: string; className?: string }) {
+/**
+ * Image with a tasteful gradient fallback while real assets aren't wired up.
+ * `fit="contain"` shows the whole image (no cropping) on a neutral backdrop —
+ * use it for landscape product shots that `cover` would crop awkwardly.
+ */
+function Img({ src, alt, className, fit = 'cover' }: { src: string; alt: string; className?: string; fit?: 'cover' | 'contain' }) {
   if (!src) {
     return (
       <div
@@ -28,8 +32,9 @@ function Img({ src, alt, className }: { src: string; alt: string; className?: st
       </div>
     )
   }
+  const fitClass = fit === 'contain' ? 'object-contain bg-stone-50' : 'object-cover'
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} className={`object-cover ${className ?? ''}`} />
+  return <img src={src} alt={alt} className={`${fitClass} ${className ?? ''}`} />
 }
 
 export default async function LandingPage() {
@@ -68,6 +73,7 @@ export default async function LandingPage() {
             <Link key={key} href="/gallery" className="group block">
               <Img
                 src={img}
+                fit="contain"
                 alt={t(`osb.${key}.title`)}
                 className="h-52 w-full rounded-[14px] mb-4 group-hover:opacity-90 transition-opacity"
               />
