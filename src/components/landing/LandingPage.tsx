@@ -37,34 +37,37 @@ function Img({ src, alt, className, fit = 'cover' }: { src: string; alt: string;
   return <img src={src} alt={alt} className={`${fitClass} ${className ?? ''}`} />
 }
 
+// Shared styles — section headings + buttons, matched to the Figma spec
+// (48px/600 headings with -0.02em tracking; black primary / grey #E6E6E6 secondary).
+const heading = 'text-3xl sm:text-4xl font-semibold text-stone-900 tracking-[-0.02em] mb-8'
+const btnPrimary = 'inline-flex h-12 items-center rounded-lg bg-stone-900 px-7 text-base font-medium text-white shadow-sm hover:bg-stone-800 transition-colors'
+const btnSecondary = 'inline-flex h-12 items-center rounded-lg bg-[#E6E6E6] px-7 text-base font-medium text-stone-900 shadow-sm hover:bg-stone-300 transition-colors'
+
 export default async function LandingPage() {
   const t = await getTranslations('landing')
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 sm:py-14">
+    <div className="max-w-7xl mx-auto px-6 py-12 sm:py-20">
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="mb-14">
-        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight max-w-xl">
+      <section className="mb-20">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-stone-900 tracking-[-0.02em] leading-[1.05] max-w-3xl">
           {t('hero.title')}
         </h1>
-        <p className="mt-5 text-stone-500 leading-relaxed max-w-2xl">
+        <p className="mt-6 text-lg text-stone-600 leading-relaxed max-w-3xl">
           {t('hero.body')}{' '}
           <span className="italic">{t('hero.tagline')}</span>
         </p>
-        <Link
-          href="/login"
-          className="inline-flex mt-7 h-11 items-center rounded-lg bg-stone-900 px-6 text-sm font-semibold text-white hover:bg-stone-800 transition-colors"
-        >
+        <Link href="/login" className={btnPrimary + ' mt-8'}>
           {t('hero.cta')}
         </Link>
 
-        <Img src={IMG.hero} alt={t('hero.title')} className="mt-10 h-40 sm:h-64 w-full rounded-[14px]" />
+        <Img src={IMG.hero} alt={t('hero.title')} className="mt-12 h-44 sm:h-72 w-full rounded-[14px]" />
       </section>
 
       {/* ── OSB collections ────────────────────────────────────────────── */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-bold text-stone-900 mb-6">{t('osb.title')}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <section className="mb-20">
+        <h2 className={heading}>{t('osb.title')}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           {([
             { key: 'women', img: IMG.osbWomen },
             { key: 'men', img: IMG.osbMen },
@@ -75,55 +78,51 @@ export default async function LandingPage() {
                 src={img}
                 fit="contain"
                 alt={t(`osb.${key}.title`)}
-                className="h-52 w-full rounded-[14px] mb-4 group-hover:opacity-90 transition-opacity"
+                className="h-56 w-full rounded-[14px] mb-5 group-hover:opacity-90 transition-opacity"
               />
-              <h3 className="text-sm font-semibold text-stone-900 group-hover:text-gold transition-colors">
+              <h3 className="text-xl font-medium text-stone-900 group-hover:text-gold transition-colors">
                 {t(`osb.${key}.title`)}
               </h3>
-              <p className="mt-1 text-sm text-stone-500 leading-relaxed">{t(`osb.${key}.body`)}</p>
+              <p className="mt-1.5 text-base text-stone-600 leading-relaxed">{t(`osb.${key}.body`)}</p>
             </Link>
           ))}
         </div>
       </section>
 
       {/* ── What's new ─────────────────────────────────────────────────── */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-bold text-stone-900 mb-6">{t('news.title')}</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <div className="space-y-6">
+      <section className="mb-20">
+        <h2 className={heading}>{t('news.title')}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+          <div className="space-y-8">
             <div>
-              <h3 className="text-sm font-semibold text-stone-900">{t('news.new.title')}</h3>
-              <p className="mt-1.5 text-sm text-stone-500 leading-relaxed">{t('news.new.body')}</p>
+              <h3 className="text-xl font-medium text-stone-900">{t('news.new.title')}</h3>
+              <p className="mt-2 text-base text-stone-600 leading-relaxed">{t('news.new.body')}</p>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-stone-900">{t('news.updates.title')}</h3>
-              <p className="mt-1.5 text-sm text-stone-500 leading-relaxed">{t('news.updates.body')}</p>
+              <h3 className="text-xl font-medium text-stone-900">{t('news.updates.title')}</h3>
+              <p className="mt-2 text-base text-stone-600 leading-relaxed">{t('news.updates.body')}</p>
             </div>
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Link href="/gallery" className="inline-flex h-10 items-center rounded-lg bg-stone-900 px-5 text-sm font-medium text-white hover:bg-stone-800 transition-colors">
-                {t('news.cta_products')}
-              </Link>
-              <Link href="/gallery" className="inline-flex h-10 items-center rounded-lg border border-stone-300 px-5 text-sm font-medium text-stone-700 hover:border-gold hover:text-gold transition-colors">
-                {t('news.cta_updates')}
-              </Link>
+            <div className="flex flex-wrap gap-4 pt-1">
+              <Link href="/gallery" className={btnPrimary}>{t('news.cta_products')}</Link>
+              <Link href="/gallery" className={btnSecondary}>{t('news.cta_updates')}</Link>
             </div>
           </div>
-          <Img src={IMG.newsCircle} alt={t('news.title')} className="h-72 w-full rounded-[14px]" />
+          <Img src={IMG.newsCircle} alt={t('news.title')} className="h-80 w-full rounded-[14px]" />
         </div>
       </section>
 
       {/* ── Did you know ───────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-2xl font-bold text-stone-900 mb-6">{t('did.title')}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <h2 className={heading}>{t('did.title')}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {([
             { key: 'custom', img: IMG.didCustom },
             { key: 'catalogs', img: IMG.didCatalogs },
           ] as const).map(({ key, img }) => (
             <div key={key}>
-              <Img src={img} alt={t(`did.${key}.title`)} className="h-56 w-full rounded-[14px] mb-4" />
-              <h3 className="text-sm font-semibold text-stone-900">{t(`did.${key}.title`)}</h3>
-              <p className="mt-1 text-sm text-stone-500 leading-relaxed">{t(`did.${key}.body`)}</p>
+              <Img src={img} alt={t(`did.${key}.title`)} className="h-64 w-full rounded-[14px] mb-5" />
+              <h3 className="text-xl font-medium text-stone-900">{t(`did.${key}.title`)}</h3>
+              <p className="mt-1.5 text-base text-stone-600 leading-relaxed">{t(`did.${key}.body`)}</p>
             </div>
           ))}
         </div>
