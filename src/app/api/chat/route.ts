@@ -19,6 +19,7 @@ A portal for orthopaedic clinicians and distributors to order custom Piedro foot
 
 ## Navigation
 - **Gallery** — browse Piedro models by section (Kids / Men / Women). Filters: Construction, Closure, Type, Colour, Width, Size. Click a model to see details. Click "Order this model" to start an order.
+  - **Search box** matches the model number (style_name). It is a "contains" match: typing "27" finds any model whose number contains 27 (anywhere), NOT only those starting with 27. Use "*" as a wildcard to anchor: "2*" = starts with 2, "*K" = ends with K (the VELCRO variants), "27*9" = starts 27 and ends 9. Do NOT tell the user that typing "2" filters to "starts with 2" — that is false; they must type "2*".
 - **My Orders (users)** — list of all orders placed by the company. Shows status, PDF link, repeat button.
 - **Dashboard (users)** — KPIs: total, pending, in production, delivered. Top models, monthly trend.
 - **Dashboard (admins)** — all companies: best clients, top models, additions heatmap, country chart.

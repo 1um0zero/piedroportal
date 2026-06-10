@@ -131,6 +131,7 @@
       "width": "Breite",
       "size": "Größe",
       "search": "Modelle suchen...",
+      "searchHint": "Suche nach Modellnummer. * als Platzhalter: 2* = beginnt mit 2, *K = endet auf K.",
       "all": "Filter löschen",
       "new": "Neu"
     },

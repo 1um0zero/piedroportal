@@ -39,6 +39,19 @@ const EMPTY: Filters = {
 // Not sensitive (no patient data), so sessionStorage is fine.
 const STATE_KEY = 'gallery-browse-state'
 
+// ── Search matcher ─────────────────────────────────────────────────────────
+// `*` is a wildcard. With a `*` the term is anchored, so `2*` = starts with 2,
+// `*K` = ends with K, `27*9` = 2…7…9. Without any `*` it stays a plain
+// "contains" match (typing `2729` still finds it anywhere in the name).
+export function matchesSearch(name: string, term: string): boolean {
+  const t = term.trim().toLowerCase()
+  if (!t) return true
+  const hay = name.toLowerCase()
+  if (!t.includes('*')) return hay.includes(t)
+  const rx = new RegExp('^' + t.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$')
+  return rx.test(hay)
+}
+
 // ── Core filter fn (exclude one dimension for cascading options) ───────────────
 export function applyFilters(
   products: Product[],
@@ -59,7 +72,7 @@ export function applyFilters(
     }
     if (exclude !== 'sizes'         && f.sizes.length > 0
       && !f.sizes.some((s) => s >= p.size_first && s <= p.size_last))                                     return false
-    if (f.search && !p.style_name.toLowerCase().includes(f.search.toLowerCase()))                         return false
+    if (f.search && !matchesSearch(p.style_name, f.search))                                                return false
     if (exclude !== 'onlyNew'       && f.onlyNew && !isNew(p))                                            return false
     // onlyWishlist is applied in the component (needs access to wishlist ids context)
     return true
@@ -366,6 +379,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
             onFocus={(e) => e.currentTarget.select()}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
             placeholder={t('filters.search')}
+            title={t('filters.searchHint')}
             className="h-8 pl-8 pr-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                        text-stone-700 w-40 transition-all duration-200
                        hover:border-stone-300 focus:outline-none focus:ring-2

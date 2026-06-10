@@ -1,0 +1,9 @@
+Gallery search: * wildcard + fix chat's wrong "type 2 = starts with 2" claim
+
+matchesSearch(): no * keeps the "contains" match; with * the term is
+anchored, so 2* = starts with 2, *K = ends with K (VELCRO variants),
+27*9 = 2...9. Added a title hint on the search box (EN/NL/FR/DE).
+Documented the real search behaviour in the chat system prompt so it
+stops telling users that typing "2" filters to starts-with.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
