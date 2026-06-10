@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { revalidatePath } from 'next/cache'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
+import type { OrderStatus } from '@/types'
 import { getUserCompanyIds, getUserExclusiveLabels } from '@/lib/user-companies'
 import { isExclusiveVisible } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
@@ -183,4 +185,169 @@ export async function submitStockOrderAction(
   }
 
   return { id: orderId }
+}
+
+// ── Listing & detail (unified /orders + /admin/orders) ───────────────────────
+
+// A stock order normalized to the same shape the orders list/table consumes, so
+// both order kinds render in one list. `kind: 'stock'` lets the table branch on
+// the few cells that differ (no patient/additions/unit; multi-product summary).
+export type StockOrderListRow = {
+  kind: 'stock'
+  id: string
+  user_id: string
+  status: string
+  approval_state: string | null
+  production_state: string | null
+  created_at: string
+  updated_at: string
+  expected_dispatch_date: string | null
+  comments: string | null
+  companies: { id: string; name: string; erp_code: string } | null
+  // Synthetic summary for the product cell.
+  products: { style_name: string; colour_id: string; closure: string; picture_name: string } | null
+  stock_models: number
+  stock_pairs: number
+}
+
+type ListOpts = {
+  userId?: string
+  companyIds?: string[]   // when set, fetch orders for these companies (company-admin)
+  all?: boolean           // back-office: every stock order
+  fromISO?: string
+  toISO?: string
+  cutoffISO?: string | null
+}
+
+const STOCK_LIST_SELECT = `
+  id, user_id, status, approval_state, production_state, created_at, updated_at,
+  expected_dispatch_date, comments,
+  companies(id, name, erp_code),
+  stock_order_items(qty, products(style_name, colour_id, closure, picture_name))
+`
+
+/** Stock orders for the unified list, normalized to StockOrderListRow[]. */
+export async function getStockOrderRows(opts: ListOpts): Promise<StockOrderListRow[]> {
+  const service = createServiceClient()
+  let q = service.from('stock_orders').select(STOCK_LIST_SELECT).order('created_at', { ascending: false })
+
+  if (opts.all) { /* no owner filter */ }
+  else if (opts.companyIds && opts.companyIds.length > 0) q = q.in('company_id', opts.companyIds)
+  else if (opts.userId) q = q.eq('user_id', opts.userId)
+  else return []
+
+  if (opts.fromISO && opts.toISO) q = q.gte('created_at', opts.fromISO).lte('created_at', opts.toISO)
+  else if (opts.cutoffISO) q = q.gte('created_at', opts.cutoffISO)
+
+  const { data, error } = await q
+  if (error || !data) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data as any[]).map((o) => {
+    const items = (o.stock_order_items ?? []) as Array<{ qty: number; products: { style_name: string; colour_id: string; closure: string; picture_name: string } | null }>
+    const pairs = items.reduce((s, i) => s + (i.qty ?? 0), 0)
+    const first = items[0]?.products ?? null
+    return {
+      kind: 'stock' as const,
+      id: o.id,
+      user_id: o.user_id,
+      status: o.status,
+      approval_state: o.approval_state ?? null,
+      production_state: o.production_state ?? null,
+      created_at: o.created_at,
+      updated_at: o.updated_at,
+      expected_dispatch_date: o.expected_dispatch_date ?? null,
+      comments: o.comments ?? null,
+      companies: o.companies ?? null,
+      products: first,
+      stock_models: items.length,
+      stock_pairs: pairs,
+    }
+  })
+}
+
+export type StockOrderDetail = {
+  id: string
+  user_id: string
+  status: string
+  locale: string
+  comments: string | null
+  expected_dispatch_date: string | null
+  created_at: string
+  company: { name: string; erp_code: string } | null
+  items: Array<{ id: string; size: number; qty: number; product: { style_name: string; colour_id: string; color_name: string; closure: string; picture_name: string } | null }>
+}
+
+/** Full stock order for the detail page. Returns null if not found or (for a
+ *  non-admin) not owned by the requester. */
+export async function getStockOrderDetail(id: string): Promise<StockOrderDetail | null> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return null
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  const isAdmin = isPiedroAdminRole(profile?.role)
+
+  const service = createServiceClient()
+  const { data } = await service
+    .from('stock_orders')
+    .select(`
+      id, user_id, status, locale, comments, expected_dispatch_date, created_at, company_id,
+      companies(name, erp_code),
+      stock_order_items(id, size, qty, products(style_name, colour_id, color_name, closure, picture_name))
+    `)
+    .eq('id', id)
+    .single()
+  if (!data) return null
+
+  // Ownership: a non-admin may only see their own order (or one for a company
+  // they administer — checked via company membership).
+  if (!isAdmin && data.user_id !== user.id) {
+    const ids = await getUserCompanyIds(user.id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(data as any).company_id || !ids.includes((data as any).company_id)) return null
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const d = data as any
+  const company = Array.isArray(d.companies) ? d.companies[0] : d.companies
+  return {
+    id: d.id,
+    user_id: d.user_id,
+    status: d.status,
+    locale: d.locale,
+    comments: d.comments,
+    expected_dispatch_date: d.expected_dispatch_date,
+    created_at: d.created_at,
+    company: company ?? null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    items: (d.stock_order_items ?? []).map((i: any) => ({
+      id: i.id,
+      size: Number(i.size),
+      qty: i.qty,
+      product: Array.isArray(i.products) ? i.products[0] : i.products,
+    })).sort((a: { size: number }, b: { size: number }) => a.size - b.size),
+  }
+}
+
+const VALID_STATUSES: OrderStatus[] = ['submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled']
+
+/** Admin-only: set a stock order's status. Terminal states (shipped/delivered/
+ *  cancelled) stop the order reserving stock (see getStockProducts). */
+export async function updateStockOrderStatusAction(id: string, status: string): Promise<{ error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (!isPiedroAdminRole(profile?.role)) return { error: 'Forbidden' }
+  if (!VALID_STATUSES.includes(status as OrderStatus)) return { error: 'Invalid status' }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('stock_orders')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/orders')
+  revalidatePath(`/admin/orders/stock/${id}`)
+  return {}
 }

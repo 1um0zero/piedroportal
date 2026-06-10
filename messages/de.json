@@ -606,7 +606,9 @@
       "processing": "Verarbeiten…",
       "dispatch_in": "Versand in {n} Tagen",
       "dispatch_overdue": "{n} Tage über dem Versandtermin",
-      "dispatch_done": "Geliefert"
+      "dispatch_done": "Geliefert",
+      "stock_tag": "Lager",
+      "stock_line": "{models} Modelle · {pairs} Paar"
     },
     "users": {
       "title": "Benutzerverwaltung",
@@ -1079,6 +1081,17 @@
     "success": "Bestellung erfolgreich aufgegeben.",
     "emptyCart": "Wählen Sie mindestens ein Paar zum Bestellen.",
     "size": "Größe",
-    "remove": "Ein Paar entfernen"
+    "remove": "Ein Paar entfernen",
+    "detailTitle": "Lagerbestellung",
+    "placed": "Aufgegeben",
+    "dispatchExpected": "Voraussichtlicher Versand",
+    "model": "Modell",
+    "sizeCol": "Größe",
+    "qtyCol": "Paar",
+    "totalPairs2": "Paare gesamt",
+    "status": "Status",
+    "updateStatus": "Status aktualisieren",
+    "statusSaved": "Status aktualisiert",
+    "back": "Zurück zu den Bestellungen"
   }
 }

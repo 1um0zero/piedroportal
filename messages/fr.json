@@ -606,7 +606,9 @@
       "processing": "Traitement…",
       "dispatch_in": "Expédition dans {n} jours",
       "dispatch_overdue": "{n} jours de retard sur l’expédition",
-      "dispatch_done": "Livré"
+      "dispatch_done": "Livré",
+      "stock_tag": "Stock",
+      "stock_line": "{models} modèles · {pairs} paires"
     },
     "users": {
       "title": "Gestion des utilisateurs",
@@ -1079,6 +1081,17 @@
     "success": "Commande passée avec succès.",
     "emptyCart": "Sélectionnez au moins une paire à commander.",
     "size": "Pointure",
-    "remove": "Retirer une paire"
+    "remove": "Retirer une paire",
+    "detailTitle": "Commande de stock",
+    "placed": "Passée le",
+    "dispatchExpected": "Expédition prévue",
+    "model": "Modèle",
+    "sizeCol": "Pointure",
+    "qtyCol": "Paires",
+    "totalPairs2": "Total paires",
+    "status": "Statut",
+    "updateStatus": "Mettre à jour le statut",
+    "statusSaved": "Statut mis à jour",
+    "back": "Retour aux commandes"
   }
 }

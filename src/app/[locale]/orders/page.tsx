@@ -7,6 +7,7 @@ import { signOrderPdfs } from '@/lib/order-pdf'
 import { attachOrderExtras } from '@/lib/order-tracking'
 import { getSettings } from '@/lib/settings'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
+import { getStockOrderRows } from '@/app/actions/stock'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const AGE_MONTHS: Record<string, number> = { '3m': 3, '6m': 6, '12m': 12 }
@@ -102,7 +103,17 @@ export default async function OrdersRoute({ searchParams }: Props) {
     offset += PAGE
   }
 
-  const orders = allOrders
+  // Merge in STOCK orders (separate table) for the unified list.
+  const stockRows = await getStockOrderRows({
+    userId: isCompanyAdmin ? undefined : user.id,
+    companyIds: isCompanyAdmin ? adminCompanyIds : undefined,
+    fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
+    toISO: useRange ? `${sp.to}T23:59:59` : undefined,
+    cutoffISO: cutoff,
+  })
+  const orders = [...allOrders, ...stockRows].sort(
+    (a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''),
+  )
   await attachOrderExtras(orders, service)
   // Users see the dispatch counter only if Piedro turned it on for everyone.
   const showDispatch = (await getSettings(['dispatch_show_all'])).dispatch_show_all === '1'

@@ -606,7 +606,9 @@
       "processing": "Processing…",
       "dispatch_in": "Dispatch in {n} days",
       "dispatch_overdue": "{n} days past expected dispatch",
-      "dispatch_done": "Delivered"
+      "dispatch_done": "Delivered",
+      "stock_tag": "Stock",
+      "stock_line": "{models} models · {pairs} pairs"
     },
     "users": {
       "title": "User Management",
@@ -1079,6 +1081,17 @@
     "success": "Order placed successfully.",
     "emptyCart": "Select at least one pair to order.",
     "size": "Size",
-    "remove": "Remove a pair"
+    "remove": "Remove a pair",
+    "detailTitle": "Stock order",
+    "placed": "Placed",
+    "dispatchExpected": "Expected dispatch",
+    "model": "Model",
+    "sizeCol": "Size",
+    "qtyCol": "Pairs",
+    "totalPairs2": "Total pairs",
+    "status": "Status",
+    "updateStatus": "Update status",
+    "statusSaved": "Status updated",
+    "back": "Back to orders"
   }
 }

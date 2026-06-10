@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import { attachOrderExtras } from '@/lib/order-tracking'
+import { getStockOrderRows } from '@/app/actions/stock'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const SELECT = `
@@ -52,9 +53,24 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   }
 
   // Branch staff only see orders whose product model is within their scope.
-  const all = scope.allModels
+  const scopedOrders = scope.allModels
     ? allOrders
     : allOrders.filter(o => scope.canModel(o.products?.style_name))
+
+  // STOCK orders (separate table). Stock orders span multiple models, so for now
+  // only full-catalogue back-office staff see them (branch scoping = follow-up).
+  const stockRows = scope.allModels
+    ? await getStockOrderRows({
+        all: true,
+        fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
+        toISO: useRange ? `${sp.to}T23:59:59` : undefined,
+        cutoffISO: cutoff,
+      })
+    : []
+
+  const all = [...scopedOrders, ...stockRows].sort(
+    (a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''),
+  )
 
   await attachOrderExtras(all, service)
 

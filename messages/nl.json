@@ -606,7 +606,9 @@
       "processing": "Bezig…",
       "dispatch_in": "Verzending over {n} dagen",
       "dispatch_overdue": "{n} dagen over verwachte verzending",
-      "dispatch_done": "Geleverd"
+      "dispatch_done": "Geleverd",
+      "stock_tag": "Voorraad",
+      "stock_line": "{models} modellen · {pairs} paar"
     },
     "users": {
       "title": "Gebruikersbeheer",
@@ -1079,6 +1081,17 @@
     "success": "Bestelling succesvol geplaatst.",
     "emptyCart": "Selecteer minstens één paar om te bestellen.",
     "size": "Maat",
-    "remove": "Een paar verwijderen"
+    "remove": "Een paar verwijderen",
+    "detailTitle": "Voorraadbestelling",
+    "placed": "Geplaatst",
+    "dispatchExpected": "Verwachte verzending",
+    "model": "Model",
+    "sizeCol": "Maat",
+    "qtyCol": "Paar",
+    "totalPairs2": "Totaal paar",
+    "status": "Status",
+    "updateStatus": "Status bijwerken",
+    "statusSaved": "Status bijgewerkt",
+    "back": "Terug naar bestellingen"
   }
 }

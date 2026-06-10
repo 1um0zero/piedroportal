@@ -452,5 +452,9 @@ updated_at                   comments                     size
       EN/NL/FR/DE; pending-approval users blocked. Nav links (desktop+mobile). `StockGrid.tsx`.
 - [~] **23.5** ◐ Submit done: `submitStockOrderAction` (multi-line + comments, company-ownership check,
       dispatch date reused). **TODO: email notification + PDF** for stock orders (normal orders send both).
-- [ ] **23.6** Unified `/orders` + `/admin/orders` view showing stock orders alongside configured
-      orders; admin status handling for stock orders. · 🤖 (next)
+- [x] **23.6** ✅ Unified list: `getStockOrderRows()` normalizes stock orders into the orders-table
+      row shape (`kind:'stock'`); merged + date-sorted into both `/orders` (user/company-admin) and
+      `/admin/orders` (full-catalogue back-office; branch-scoped staff = follow-up). Table shows a STOCK
+      badge + "N models · M pairs"; no patient/additions/repeat for stock rows. Detail pages
+      `/orders/stock/[id]` (read-only) + `/admin/orders/stock/[id]` (status editor →
+      `updateStockOrderStatusAction`, terminal states free reserved stock). i18n EN/NL/FR/DE.

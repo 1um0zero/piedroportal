@@ -384,9 +384,13 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                 const product = o.products
                 const company = o.companies
                 const isUrgent = o.additions?.urgent === true
+                const isStock = o.kind === 'stock'
+                const detailHref = isStock
+                  ? (isAdminPath ? `/admin/orders/stock/${o.id}` : `/orders/stock/${o.id}`)
+                  : (isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`)
                 return (
                   <tr key={o.id} className="hover:bg-stone-50 transition-colors cursor-pointer"
-                    onClick={() => router.push((isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`) as Parameters<typeof router.push>[0])}>
+                    onClick={() => router.push(detailHref as Parameters<typeof router.push>[0])}>
 
                     {/* Product */}
                     <td className="px-4 py-3">
@@ -406,12 +410,26 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="font-medium text-stone-800 truncate">
-                            {product?.style_name ?? '—'}
-                          </p>
-                          <p className="text-xs text-stone-400 truncate">
-                            {product?.colour_id} · {product?.closure}
-                          </p>
+                          {isStock ? (
+                            <>
+                              <p className="font-medium text-stone-800 truncate flex items-center gap-1.5">
+                                <span className="inline-flex px-1.5 py-0.5 text-[10px] font-bold rounded bg-gold/15 text-gold-dark uppercase tracking-wide">{t('stock_tag')}</span>
+                                {product?.style_name ?? ''}
+                              </p>
+                              <p className="text-xs text-stone-400 truncate">
+                                {t('stock_line', { models: o.stock_models, pairs: o.stock_pairs })}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-medium text-stone-800 truncate">
+                                {product?.style_name ?? '—'}
+                              </p>
+                              <p className="text-xs text-stone-400 truncate">
+                                {product?.colour_id} · {product?.closure}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -509,7 +527,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                     </td>
                     {/* Actions — only on the requester's own orders (server also enforces this) */}
                     <td className="px-2 py-3">
-                      {currentUserId && o.user_id === currentUserId ? (
+                      {!isStock && currentUserId && o.user_id === currentUserId ? (
                       <div className="flex items-center gap-0.5">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRepeat(o.id, o.products?.id) }}
