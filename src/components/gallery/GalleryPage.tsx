@@ -148,6 +148,25 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   useEffect(() => {
     if (didRestore.current) return
     didRestore.current = true
+
+    // A deep link like /gallery?section=women (e.g. the landing OSB cards) wins
+    // over any saved browse state — the user explicitly asked for that tab.
+    // Read from location (client-only) to avoid a useSearchParams Suspense deopt.
+    const urlSection = (new URLSearchParams(window.location.search).get('section') || '').toUpperCase() as Section
+    if (SECTIONS.includes(urlSection)) {
+      if (urlSection !== section) {
+        setSection(urlSection)
+        if (!cache[urlSection]) {
+          setLoading(true)
+          fetchSection(urlSection)
+            .then((data) => setCache((prev) => ({ ...prev, [urlSection]: data })))
+            .catch((err) => console.error('[Gallery] section deep-link fetch error:', err))
+            .finally(() => setLoading(false))
+        }
+      }
+      return
+    }
+
     let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
     try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
     if (!saved) return

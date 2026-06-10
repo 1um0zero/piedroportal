@@ -1,5 +1,9 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
+import LoginCard from '@/components/auth/LoginCard'
+
+// Maps an OSB collection card to the gallery section (tab) it opens.
+const OSB_SECTION = { women: 'WOMEN', men: 'MEN', kids: 'KIDS' } as const
 
 // Landing imagery — served from /public/landing. Empty string falls back to an
 // elegant gradient placeholder (see <Img/> below).
@@ -48,18 +52,20 @@ export default async function LandingPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 sm:py-20">
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
+      {/* ── Hero — marketing copy + embedded login ─────────────────────── */}
       <section className="mb-20">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-stone-900 tracking-[-0.02em] leading-[1.05] max-w-3xl">
-          {t('hero.title')}
-        </h1>
-        <p className="mt-6 text-lg text-stone-600 leading-relaxed max-w-3xl">
-          {t('hero.body')}{' '}
-          <span className="italic">{t('hero.tagline')}</span>
-        </p>
-        <Link href="/login" className={btnPrimary + ' mt-8'}>
-          {t('hero.cta')}
-        </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,400px)] gap-10 lg:gap-16 items-center">
+          <div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-stone-900 tracking-[-0.02em] leading-[1.05]">
+              {t('hero.title')}
+            </h1>
+            <p className="mt-6 text-lg text-stone-600 leading-relaxed">
+              {t('hero.body')}{' '}
+              <span className="italic">{t('hero.tagline')}</span>
+            </p>
+          </div>
+          <LoginCard />
+        </div>
 
         <Img src={IMG.hero} alt={t('hero.title')} className="mt-12 h-44 sm:h-72 w-full rounded-[14px]" />
       </section>
@@ -73,7 +79,7 @@ export default async function LandingPage() {
             { key: 'men', img: IMG.osbMen },
             { key: 'kids', img: IMG.osbKids },
           ] as const).map(({ key, img }) => (
-            <Link key={key} href="/gallery" className="group block">
+            <Link key={key} href={{ pathname: '/gallery', query: { section: OSB_SECTION[key] } }} className="group block">
               <Img
                 src={img}
                 fit="contain"
