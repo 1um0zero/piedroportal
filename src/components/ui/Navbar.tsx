@@ -67,7 +67,7 @@ export default async function Navbar({ locale }: Props) {
         <Link href="/" className="flex items-center shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
+            src="/brand/piedro-logo.svg"
             alt="Piedro International"
             className="logo-normal h-12 w-auto"
           />
