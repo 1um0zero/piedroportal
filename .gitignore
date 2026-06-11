@@ -47,3 +47,6 @@ xls-divergences.tsv
 image-backup/
 scripts/_out/
 _catalogues_src/
+
+# Excel/Office temporary lock files (e.g. ~$All models….xlsx)
+~$*
