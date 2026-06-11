@@ -55,6 +55,15 @@ export default async function LandingPageNew({ hasError }: { hasError?: boolean 
       <section className="mb-24">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,400px)] gap-10 lg:gap-16 items-center">
           <div>
+            {/* Full brand lockup (feet + PIEDRO + strapline) — shown large here,
+                where the strapline is actually readable; the navbar carries the
+                compact box mark. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/piedro-logo.svg"
+              alt="Piedro International — always one step ahead"
+              className="h-32 sm:h-40 w-auto mb-10"
+            />
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-stone-900 tracking-[-0.02em] leading-[1.05]">
               {t('hero.title')}
             </h1>

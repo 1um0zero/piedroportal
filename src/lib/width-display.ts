@@ -1,44 +1,26 @@
 /**
- * Width display translation.
+ * Width display.
  *
- * Widths are stored in their BASE notation. The only width set with a localised
- * form today is S,M,L → (NL) N,R,W. We must NOT translate globally because "M"
- * is overloaded: it's "Medium" in the S,M,L system but also a letter-code width
- * in the adult system (E,G,I,K,M). So we only translate when the surrounding set
- * is the S,M,L family — detected by the presence of "S" or "L", which the adult
- * letter codes never contain. Unknown locales / sets fall back to the base.
+ * Widths are shown in their BASE notation (S, M, L, adult letter codes, numbers)
+ * in ALL locales — client decision 2026-06-11: there is NO localisation of widths
+ * (the earlier S,M,L → N,R,W Dutch mapping was wrong and has been removed).
+ *
+ * The helpers are kept as identity functions so call sites stay stable and a
+ * future localisation (if ever) plugs back in here. The S→M→L size ordering of
+ * width chips is handled by the callers (e.g. GalleryPage rank), not here.
  */
 
-const WIDTH_I18N: Record<string, Record<string, string>> = {
-  nl: { S: 'N', M: 'R', L: 'W' },
-  // fr/de: no localised form supplied → base notation (S,M,L)
+/** Display one width, disambiguated by construction. (Identity — no translation.) */
+export function displayWidthByConstruction(w: string, _construction: string | null | undefined, _locale: string): string {
+  return w
 }
 
-const isSmlFamily = (widths: string[]) => widths.some((w) => w === 'S' || w === 'L')
-
-// The S,M,L width system is used only by the AFO construction; everything else
-// (numeric, adult letter codes E,G,I,K,M…) is not. So when we only have a single
-// width value (an order line, the PDF) we disambiguate the otherwise shared "M"
-// by the construction. (AGO is not a construction — it lives in the info field.)
-const SML_CONSTRUCTIONS = new Set(['AFO'])
-
-/** Translate one width, disambiguating S,M,L by the construction it belongs to. */
-export function displayWidthByConstruction(w: string, construction: string | null | undefined, locale: string): string {
-  const map = WIDTH_I18N[locale]
-  if (!map || !construction || !SML_CONSTRUCTIONS.has(construction)) return w
-  return map[w] ?? w
+/** Display a single width given the full set it belongs to. (Identity — no translation.) */
+export function displayWidth(w: string, _widths: string[], _locale: string): string {
+  return w
 }
 
-/** Translate a single width for display, given the full set it belongs to. */
-export function displayWidth(w: string, widths: string[], locale: string): string {
-  const map = WIDTH_I18N[locale]
-  if (!map || !isSmlFamily(widths)) return w
-  return map[w] ?? w
-}
-
-/** Translate a list of widths for display. */
-export function displayWidths(widths: string[], locale: string): string[] {
-  const map = WIDTH_I18N[locale]
-  if (!map || !isSmlFamily(widths)) return widths
-  return widths.map((w) => map[w] ?? w)
+/** Display a list of widths. (Identity — no translation.) */
+export function displayWidths(widths: string[], _locale: string): string[] {
+  return widths
 }

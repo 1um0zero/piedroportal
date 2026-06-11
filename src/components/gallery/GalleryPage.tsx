@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
@@ -19,7 +19,7 @@ const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
   KIDS: 'kids', MEN: 'men', WOMEN: 'women',
 }
 
-// â”€â”€ Filter state type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Filter state type ─────────────────────────────────────────────────────────
 export type Filters = {
   closures: string[]
   types: string[]
@@ -43,7 +43,7 @@ const EMPTY: Filters = {
 // Not sensitive (no patient data), so sessionStorage is fine.
 const STATE_KEY = 'gallery-browse-state'
 
-// â”€â”€ Core filter fn (exclude one dimension for cascading options) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Core filter fn (exclude one dimension for cascading options) ───────────────
 export function applyFilters(
   products: Product[],
   f: Filters,
@@ -70,8 +70,8 @@ export function applyFilters(
   })
 }
 
-// â”€â”€ Available sizes helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Kids scales have whole sizes only (no half sizes) â†’ pass wholeOnly.
+// ── Available sizes helper ────────────────────────────────────────────────────
+// Kids scales have whole sizes only (no half sizes) → pass wholeOnly.
 function availableSizes(products: Product[], wholeOnly = false): number[] {
   if (!products.length) return []
   const min = Math.min(...products.map((p) => p.size_first))
@@ -85,12 +85,13 @@ function availableSizes(products: Product[], wholeOnly = false): number[] {
   return out
 }
 
-// â”€â”€ Width sort: numerics first â†’ L,M,N,R â†’ rest (S,Wâ€¦) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// S,M,L (and its NL display N,R,W) read naturally as Smallâ†’Mediumâ†’Large, not
-// alphabetically (L,M,S). Rank them by size so chips show S M L â†’ N R W.
-const SIZE_RANK: Record<string, number> = { S: 1, M: 2, L: 3, N: 1, R: 2, W: 3 }
+// ── Width sort: numerics first → letters ───────────────────────────────────
+// S,M,L read naturally as Small→Medium→Large, not alphabetically (L,M,S).
+// Rank them by size so chips always show S M L. (No locale translation —
+// widths are S,M,L in all languages, client decision 2026-06-11.)
+const SIZE_RANK: Record<string, number> = { S: 1, M: 2, L: 3 }
 function parseWidthNum(s: string) {
-  return parseFloat(s.replace('Â½', '.5').replace(/(\d)1\/2/, '$1.5'))
+  return parseFloat(s.replace('½', '.5').replace(/(\d)1\/2/, '$1.5'))
 }
 function sortWidths(a: string, b: string): number {
   const numA = /^\d/.test(a), numB = /^\d/.test(b)
@@ -103,17 +104,17 @@ function sortWidths(a: string, b: string): number {
   return a.localeCompare(b)
 }
 
-// â”€â”€ "NEW" helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// new_until = null  â†’ new with no expiry (unlimited)
-// new_until = date  â†’ new until that date
-// new_until absent  â†’ not a new product (column not set)
+// ── "NEW" helper ──────────────────────────────────────────────────────────────
+// new_until = null  → new with no expiry (unlimited)
+// new_until = date  → new until that date
+// new_until absent  → not a new product (column not set)
 export function isNew(p: Product): boolean {
   if (!p.new_until) return false                 // NULL = not a new product
   return new Date(p.new_until) > new Date()      // future date = still new
 }
 
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 type Props = { initialSection?: Section; initialProducts?: Product[]; showHero?: boolean }
 
@@ -127,7 +128,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   ].join(',')
   const FIELDS_NO_UNIT = FIELDS.replace(',size_unit', '')
 
-  // â”€â”€ Per-section cache â€” seed with server-rendered initial data â”€â”€
+  // ── Per-section cache — seed with server-rendered initial data ──
   const [cache, setCache] = useState<Partial<Record<Section, Product[]>>>(
     initialProducts.length ? { [initialSection]: initialProducts } : {}
   )
@@ -140,7 +141,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const { ids: wishlistIds }  = useWishlist()
 
-  // â”€â”€ Customer-exclusive overlay â”€â”€
+  // ── Customer-exclusive overlay ──
   // The cached public set never contains exclusive models. For the signed-in
   // user we fetch the exclusive products their companies own and overlay them.
   const [exclusives, setExclusives] = useState<Product[]>([])
@@ -148,7 +149,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     getMyExclusiveProducts().then(setExclusives).catch(() => {})
   }, [])
 
-  // â”€â”€ Restore browse state on mount (after returning from a product page) â”€â”€
+  // ── Restore browse state on mount (after returning from a product page) ──
   // Done in an effect (not in useState initialisers) to avoid an SSR/hydration
   // mismatch: the server always renders the default section.
   const pendingScroll = useRef<number | null>(null)
@@ -159,7 +160,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     didRestore.current = true
 
     // A deep link like /gallery?q=<token> (e.g. the landing OSB cards) wins over
-    // any saved browse state â€” the user explicitly asked for that tab. The query
+    // any saved browse state — the user explicitly asked for that tab. The query
     // is opaque-encoded (see query-cipher); decode it client-side (also avoids a
     // useSearchParams Suspense deopt on this CDN-cached route).
     // Resolve the section to show: deep link (?q=) wins, else saved browse state.
@@ -193,12 +194,12 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       }
     }
 
-    // Exclusive collection deep link (e.g. Livingston â†’ ?q={exclusive:'LIV'}).
+    // Exclusive collection deep link (e.g. Livingston → ?q={exclusive:'LIV'}).
     // Adopt it (or clear a stale one) so a fresh /gallery entry resets it.
     const urlExclusive = (decodeQuery(q).exclusive || '').toUpperCase()
 
     // Adopt the resolved section as the header's baseline, then enable the
-    // contextâ†’page bridge (so a stale persisted context can't override it).
+    // context→page bridge (so a stale persisted context can't override it).
     if (showHero) {
       setCtxSection(resolved)
       setCtxExclusive(urlExclusive)
@@ -212,21 +213,21 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     const seen = new Set(base.map((p) => p.id))
     let merged = extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
     // Exclusive collection view (e.g. Livingston): keep only products whose
-    // `exclusive` field carries the token â€” a product can be LIV *and* others.
+    // `exclusive` field carries the token — a product can be LIV *and* others.
     if (exclusiveFilter) merged = merged.filter((p) => exclusiveTokens(p.exclusive).includes(exclusiveFilter))
     return merged
   }, [cache, section, exclusives, exclusiveFilter])
 
-  // â”€â”€ Options for each dimension (apply all OTHER active filters) â”€â”€
+  // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
   const forType         = useMemo(() => applyFilters(sectionProducts, filters, 'types'),         [sectionProducts, filters])
   const forColour       = useMemo(() => applyFilters(sectionProducts, filters, 'colours'),       [sectionProducts, filters])
-  // Constructions shown independently of size filter â€” selecting a size shouldn't hide the construction row
+  // Constructions shown independently of size filter — selecting a size shouldn't hide the construction row
   const forConstructions= useMemo(() => applyFilters(sectionProducts, { ...filters, sizes: [] }, 'constructions'), [sectionProducts, filters])
   const forWidths       = useMemo(() => applyFilters(sectionProducts, filters, 'widths'),        [sectionProducts, filters])
   const forSizes        = useMemo(() => applyFilters(sectionProducts, filters, 'sizes'),         [sectionProducts, filters])
 
-  // â”€â”€ Derived option lists â”€â”€
+  // ── Derived option lists ──
   const optClosures      = useMemo(() => [...new Set(forClosure.map((p) => p.closure).filter(Boolean))].sort() as string[], [forClosure])
   const optTypes         = useMemo(() => [...new Set(forType.map((p) => p.type).filter(Boolean))].sort() as string[], [forType])
   const optColours       = useMemo(() => [...new Set(forColour.map((p) => p.color_basic).filter(Boolean))].sort(), [forColour])
@@ -242,14 +243,14 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     .sort(sortWidths), [forWidths, filters.constructions])
   const optSizes         = useMemo(() => availableSizes(forSizes, section === 'KIDS'), [forSizes, section])
 
-  // â”€â”€ Final filtered list (wishlist filter applied here, needs context) â”€â”€
+  // ── Final filtered list (wishlist filter applied here, needs context) ──
   const filtered = useMemo(() => {
     const base = applyFilters(sectionProducts, filters)
     if (filters.onlyWishlist) return base.filter((p) => wishlistIds.has(p.id))
     return base
   }, [sectionProducts, filters, wishlistIds])
 
-  // â”€â”€ Persist browse state (section + filters) whenever it changes â”€â”€
+  // ── Persist browse state (section + filters) whenever it changes ──
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
@@ -257,9 +258,9 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     } catch { /* ignore */ }
   }, [section, filters])
 
-  // â”€â”€ Persist browse state at the moment of leaving for a product page â”€â”€
+  // ── Persist browse state at the moment of leaving for a product page ──
   // Called from the ProductCard click (a client-side nav), so it runs while the
-  // page is still scrolled where the user left it â€” far more reliable than a
+  // page is still scrolled where the user left it — far more reliable than a
   // scroll listener, which a fast click can outrun. `anchorId` lets us scroll
   // the exact card back into view on return (robust against layout/timing).
   const saveBrowse = (anchorId: string) => {
@@ -268,7 +269,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     } catch { /* ignore */ }
   }
 
-  // â”€â”€ Restore position once the target section has rendered its cards â”€â”€
+  // ── Restore position once the target section has rendered its cards ──
   // Prefer scrolling the clicked card into view (anchor); fall back to scrollY.
   useEffect(() => {
     if (loading || filtered.length === 0) return
@@ -290,7 +291,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     }
   }, [loading, filtered.length])
 
-  // â”€â”€ Auto-clear values that are no longer available â”€â”€
+  // ── Auto-clear values that are no longer available ──
   function autoClean<T>(key: keyof Filters, current: T[], avail: T[]) {
     const availSet = new Set(avail)
     const valid = current.filter((v) => availSet.has(v))
@@ -310,7 +311,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     const urlFor = (order: string, fields: string) =>
       `${base}/rest/v1/products?select=${encodeURIComponent(fields)}&active=eq.true&section=eq.${s}&or=(exclusive.is.null,exclusive.eq.)&order=${encodeURIComponent(order)}`
     // Prefer the manual gallery order; degrade gracefully if a migration isn't
-    // applied yet â€” drop gallery_position order (014) and/or size_unit (015).
+    // applied yet — drop gallery_position order (014) and/or size_unit (015).
     let res = await fetch(urlFor('gallery_position.asc.nullslast,style_name.asc,colour_id.asc', FIELDS), { headers })
     if (!res.ok) res = await fetch(urlFor('style_name.asc,colour_id.asc', FIELDS), { headers })
     if (!res.ok) res = await fetch(urlFor('style_name.asc,colour_id.asc', FIELDS_NO_UNIT), { headers })
@@ -333,7 +334,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     }
   }
 
-  // Bridge the header section switch (context) â†’ this page, in hero mode only.
+  // Bridge the header section switch (context) → this page, in hero mode only.
   // ONE direction: the header (context) drives the page. The page never writes
   // back via an effect (that two-way binding caused the button flicker). The
   // page's own initial section is adopted into the context once, in the restore
@@ -360,7 +361,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   // Preload filter translations on mount, then bump state so the filter chips
   // (which read the synchronous cache during render) re-render with the
-  // translated values â€” otherwise they keep showing the raw English value.
+  // translated values — otherwise they keep showing the raw English value.
   const [, setI18nReady] = useState(0)
   useEffect(() => {
     preloadFilterTranslations().then(() => setI18nReady(n => n + 1))
@@ -390,7 +391,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
             </button>
           ))}
         </div>
-        {/* Search â€” top right, aligned with section tabs */}
+        {/* Search — top right, aligned with section tabs */}
         <div className="relative flex items-center pb-1.5">
           <svg className="absolute left-2.5 w-3.5 h-3.5 text-stone-400 pointer-events-none"
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -412,7 +413,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       </div>
       )}
 
-      {/* Filters â€” sticky below the header (top-20) in hero mode so the toolbar
+      {/* Filters — sticky below the header (top-20) in hero mode so the toolbar
           stays put once the photo has scrolled away. */}
       <div className={showHero ? 'sticky top-20 z-20 -mx-6 px-6 py-3 bg-[var(--background)]' : ''}>
       <GalleryFilters
