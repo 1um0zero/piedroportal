@@ -46,8 +46,8 @@ export default async function Navbar({ locale }: Props) {
     <header className="bg-white border-b border-stone-100 relative" style={{ boxShadow: 'var(--shadow-nav)' }}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
 
-        {/* Logo */}
-        <Link href="/gallery" className="flex items-center shrink-0">
+        {/* Logo → homepage */}
+        <Link href="/" className="flex items-center shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
