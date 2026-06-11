@@ -11,6 +11,7 @@ import GalleryHero from './GalleryHero'
 import { preloadFilterTranslations } from '@/lib/filter-translations'
 import { decodeQuery } from '@/lib/query-cipher'
 import { matchesSearch } from '@/lib/search'
+import { useGallerySection } from '@/contexts/GallerySectionContext'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -131,6 +132,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   )
   const [loading, setLoading] = useState(!initialProducts.length)
   const [section, setSection] = useState<Section>(initialSection)
+  // In hero/preview mode the KIDS/MEN/WOMEN switch lives in the header; bridge it.
+  const { section: ctxSection, setSection: setCtxSection } = useGallerySection()
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const { ids: wishlistIds }  = useWishlist()
 
@@ -315,6 +318,14 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     }
   }
 
+  // Bridge the header section switch (context) ↔ this page, only in hero mode.
+  useEffect(() => {
+    if (showHero && ctxSection !== section) switchSection(ctxSection)
+  }, [showHero, ctxSection]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (showHero && section !== ctxSection) setCtxSection(section)
+  }, [showHero, section]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
     || filters.search || filters.onlyNew || filters.onlyWishlist
@@ -340,9 +351,10 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     <>
       {showHero && <GalleryHero section={section} />}
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-      {/* Section tabs + search aligned right */}
+      {/* Section tabs + search aligned right. In hero mode the section switch
+          moves to the header, so the in-page tabs are hidden (keep search). */}
       <div className="flex items-end justify-between border-b border-stone-200">
-        <div className="flex items-end gap-0">
+        <div className={`flex items-end gap-0 ${showHero ? 'invisible' : ''}`}>
           {SECTIONS.map((s) => (
             <button
               key={s}

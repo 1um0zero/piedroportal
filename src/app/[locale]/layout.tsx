@@ -10,6 +10,7 @@ import Footer from '@/components/ui/Footer'
 import CookieNotice from '@/components/ui/CookieNotice'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { GallerySectionProvider } from '@/contexts/GallerySectionContext'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import type { Profile } from '@/types'
 
@@ -52,13 +53,15 @@ export default async function LocaleLayout({ children, params }: Props) {
     <NextIntlClientProvider messages={messages} locale={locale}>
       <AuthProvider initialProfile={profile} initialLoggedIn={!!user} initialHasCompany={hasCompany}>
         <WishlistProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navbar locale={locale} />
-            <div className="flex-1">{children}</div>
-            <Footer />
-            {user && <ChatWidget />}
-            <CookieNotice />
-          </div>
+          <GallerySectionProvider>
+            <div className="flex flex-col min-h-screen">
+              <Navbar locale={locale} />
+              <div className="flex-1">{children}</div>
+              <Footer />
+              {user && <ChatWidget />}
+              <CookieNotice />
+            </div>
+          </GallerySectionProvider>
         </WishlistProvider>
       </AuthProvider>
     </NextIntlClientProvider>

@@ -45,9 +45,6 @@ export default function GalleryHero({ section }: { section: Section }) {
         <h1 className="text-3xl sm:text-5xl font-bold tracking-[-0.02em] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
           {t(`hero.${key}.title`)}
         </h1>
-        <p className="mt-3 max-w-xl text-base sm:text-lg text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
-          {t(`hero.${key}.subtitle`)}
-        </p>
       </div>
     </section>
   )

@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
 import NavbarShell from './NavbarShell'
+import HeaderSectionSwitch from './HeaderSectionSwitch'
 import { NavbarLocale } from './NavbarLocale'
 import { NavbarMobile } from './NavbarMobile'
 
@@ -63,6 +64,9 @@ export default async function Navbar({ locale }: Props) {
             className="logo-white h-12 w-auto"
           />
         </Link>
+
+        {/* Section switcher — only on the gallery hero route (preview) */}
+        <HeaderSectionSwitch />
 
         {/* Nav links — hidden on mobile */}
         <nav className="hidden lg:flex items-center gap-6 flex-1">
