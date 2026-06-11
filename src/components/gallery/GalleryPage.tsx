@@ -12,6 +12,7 @@ import { preloadFilterTranslations } from '@/lib/filter-translations'
 import { decodeQuery } from '@/lib/query-cipher'
 import { matchesSearch } from '@/lib/search'
 import { useGallerySection } from '@/contexts/GallerySectionContext'
+import { exclusiveTokens } from '@/lib/exclusive'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -133,7 +134,9 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const [loading, setLoading] = useState(!initialProducts.length)
   const [section, setSection] = useState<Section>(initialSection)
   // In hero/preview mode the KIDS/MEN/WOMEN switch lives in the header; bridge it.
-  const { section: ctxSection, setSection: setCtxSection } = useGallerySection()
+  const { section: ctxSection, setSection: setCtxSection, exclusive: ctxExclusive, setExclusive: setCtxExclusive } = useGallerySection()
+  // Active exclusive-collection token (e.g. Livingston/LIV). Only in hero mode.
+  const exclusiveFilter = showHero ? ctxExclusive : ''
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const { ids: wishlistIds }  = useWishlist()
 
@@ -190,19 +193,29 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       }
     }
 
+    // Exclusive collection deep link (e.g. Livingston → ?q={exclusive:'LIV'}).
+    // Adopt it (or clear a stale one) so a fresh /gallery entry resets it.
+    const urlExclusive = (decodeQuery(q).exclusive || '').toUpperCase()
+
     // Adopt the resolved section as the header's baseline, then enable the
     // context→page bridge (so a stale persisted context can't override it).
-    if (showHero) setCtxSection(resolved)
+    if (showHero) {
+      setCtxSection(resolved)
+      setCtxExclusive(urlExclusive)
+    }
     headerReady.current = true
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sectionProducts = useMemo(() => {
     const base = cache[section] ?? []
     const extra = exclusives.filter((p) => p.section === section)
-    if (extra.length === 0) return base
     const seen = new Set(base.map((p) => p.id))
-    return [...base, ...extra.filter((p) => !seen.has(p.id))]
-  }, [cache, section, exclusives])
+    let merged = extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
+    // Exclusive collection view (e.g. Livingston): keep only products whose
+    // `exclusive` field carries the token — a product can be LIV *and* others.
+    if (exclusiveFilter) merged = merged.filter((p) => exclusiveTokens(p.exclusive).includes(exclusiveFilter))
+    return merged
+  }, [cache, section, exclusives, exclusiveFilter])
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
@@ -334,7 +347,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
-    || filters.search || filters.onlyNew || filters.onlyWishlist
+    || filters.search || filters.onlyNew || filters.onlyWishlist || !!exclusiveFilter
 
   const [showWishlist, setShowWishlist] = useState(false)
 
@@ -399,6 +412,25 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       </div>
       )}
 
+      {/* Active exclusive collection (e.g. Livingston) — a removable chip so the
+          user can see they're in that collection and step back out. */}
+      {exclusiveFilter && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/10 text-gold-dark
+                           px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+            Livingston
+            <button
+              type="button"
+              onClick={() => setCtxExclusive('')}
+              aria-label="Clear Livingston"
+              className="ml-0.5 text-gold-dark/70 hover:text-gold-dark"
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
+
       {/* Filters — sticky below the header (top-16) in hero mode so the toolbar
           stays put once the photo has scrolled away. */}
       <div className={showHero ? 'sticky top-16 z-20 -mx-6 px-6 py-3 bg-[var(--background)]' : ''}>
@@ -414,7 +446,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         optSizes={optSizes}
         hasNew={hasNew}
         hasFilters={!!hasFilters}
-        onClear={() => setFilters(EMPTY)}
+        onClear={() => { setFilters(EMPTY); setCtxExclusive('') }}
         resultCount={filtered.length}
         showWishlist={showWishlist}
         onToggleBuildWishlist={() => setShowWishlist(s => !s)}

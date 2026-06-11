@@ -9,6 +9,8 @@ import NavbarClient from './NavbarClient'
 import NavbarShell from './NavbarShell'
 import HeaderSectionSwitch from './HeaderSectionSwitch'
 import NavGalleryLink from './NavGalleryLink'
+import HeaderLivingstonLink from './HeaderLivingstonLink'
+import { getUserExclusiveLabels } from '@/lib/user-companies'
 import { NavbarLocale } from './NavbarLocale'
 import { NavbarMobile } from './NavbarMobile'
 
@@ -30,6 +32,17 @@ export default async function Navbar({ locale }: Props) {
     isAdmin = isPiedroAdmin(profile?.role)
     isSuper = isSuperAdmin(profile?.role)
     isBackoffice = isAdmin || profile?.role === 'branch_staff'
+  }
+
+  // Livingston (LIV) entry: visible to admin/staff or users whose company owns
+  // the LIV sigla. `exclusive_label` is an UPPERCASE sigla; match the token.
+  let canSeeLiv = false
+  if (user) {
+    if (isBackoffice) canSeeLiv = true
+    else {
+      const labels = await getUserExclusiveLabels(user.id)
+      canSeeLiv = labels.some((l) => l.toUpperCase() === 'LIV')
+    }
   }
 
   // Count of portal-origin orders awaiting staff validation (badge on Orders).
@@ -72,6 +85,7 @@ export default async function Navbar({ locale }: Props) {
         {/* Nav links — hidden on mobile */}
         <nav className="hidden lg:flex items-center gap-6 flex-1">
           <NavGalleryLink />
+          <HeaderLivingstonLink visible={canSeeLiv} />
           {user && !isBackoffice && (
             <>
               <Link href="/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
