@@ -21,6 +21,7 @@ export type ProductRow = {
   active: boolean
   picture_name: string | null
   exclusive: string | null
+  is_stock: boolean
 }
 
 // Categorical select filter (matches the /orders pattern).
@@ -51,6 +52,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const [fClosure, setFClosure] = useState('')
   const [fType, setFType] = useState('')
   const [fExclusive, setFExclusive] = useState('')
+  const [fStock, setFStock] = useState('')   // '' all | 'yes' | 'no'
   const [onlyInactive, setOnlyInactive] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
   const [page, setPage] = useState(0)
@@ -73,12 +75,14 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
       if (fClosure && p.closure !== fClosure) return false
       if (fType && p.type !== fType) return false
       if (fExclusive && p.exclusive !== fExclusive) return false
+      if (fStock === 'yes' && !p.is_stock) return false
+      if (fStock === 'no'  &&  p.is_stock) return false
       if (!needle) return true
       return matchesAny([p.colour_id, p.style_name, p.color_name, p.closure, p.type, companyName(p)], needle)
     })
     return [...out].sort((a, b) =>
       compareValues((a as Record<string, unknown>)[sort.key], (b as Record<string, unknown>)[sort.key], sort.dir))
-  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, sort]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSort = (key: string) => setSort(s => nextSort(s, key))
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE)
@@ -107,6 +111,13 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
         {exclusiveOpts.length > 0 && (
           <FilterSelect value={fExclusive} onChange={v => { setFExclusive(v); setPage(0) }} allLabel={t('all_exclusive')} options={exclusiveOpts} labels={companyByLabel} />
         )}
+        <FilterSelect
+          value={fStock}
+          onChange={v => { setFStock(v); setPage(0) }}
+          allLabel={t('all_stock')}
+          options={['yes', 'no']}
+          labels={{ yes: t('stock_yes'), no: t('stock_no') }}
+        />
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" checked={onlyInactive} onChange={e => { setOnlyInactive(e.target.checked); setPage(0) }} />
           {t('inactive_only')}
@@ -126,6 +137,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
               <SortableTh label={t('col_closure')} sortKey="closure" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_type')} sortKey="type" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_exclusive')} sortKey="exclusive" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_stock')} sortKey="is_stock" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_active')} sortKey="active" sort={sort} onSort={onSort} />
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
             </tr>
@@ -150,6 +162,11 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                 <td className="px-4 py-2">
                   {p.exclusive
                     ? <span className="rounded-full bg-gold/10 px-2 py-0.5 text-xs font-medium text-gold" title={p.exclusive}>{companyName(p)}</span>
+                    : <span className="text-stone-300">—</span>}
+                </td>
+                <td className="px-4 py-2">
+                  {p.is_stock
+                    ? <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-dark">{t('stock_badge')}</span>
                     : <span className="text-stone-300">—</span>}
                 </td>
                 <td className="px-4 py-2">

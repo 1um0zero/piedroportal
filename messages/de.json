@@ -748,7 +748,13 @@
       "col_missing": "Fehlt",
       "result_stock_flagged": "{n} als Lager markiert",
       "out_excluded_note": "{n} mit OUT markierte Modelle wurden vorab ausgeschlossen — ankreuzen, um sie dennoch zu importieren.",
-      "stock_flag_note": "{n} vorhandene Modelle werden als Lager markiert."
+      "stock_flag_note": "{n} vorhandene Modelle werden als Lager markiert.",
+      "col_stock": "Lager",
+      "stock_badge": "lager",
+      "all_stock": "Alle (Lager)",
+      "stock_yes": "Nur Lager",
+      "stock_no": "Kein Lager",
+      "sample_stock_flag": "Als Lager markieren"
     },
     "branches": {
       "title": "Niederlassungen",

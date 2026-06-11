@@ -79,6 +79,8 @@ export async function POST(request: NextRequest) {
       delist: preview.toDelist.slice(0, SAMPLE),
       pending: preview.withPending.slice(0, SAMPLE),
       rejected: rejected.slice(0, SAMPLE),
+      // Existing products the sheet marks STOCK (col F) whose is_stock isn't set yet.
+      stockFlag: preview.stockToFlag.slice(0, SAMPLE),
     },
   })
 }

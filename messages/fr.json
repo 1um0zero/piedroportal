@@ -748,7 +748,13 @@
       "col_missing": "Manquant",
       "result_stock_flagged": "{n} marqués comme stock",
       "out_excluded_note": "{n} modèle(s) marqué(s) OUT ont été pré-exclus — cochez pour importer quand même.",
-      "stock_flag_note": "{n} modèle(s) existant(s) seront marqués comme stock."
+      "stock_flag_note": "{n} modèle(s) existant(s) seront marqués comme stock.",
+      "col_stock": "Stock",
+      "stock_badge": "stock",
+      "all_stock": "Tous (stock)",
+      "stock_yes": "Stock uniquement",
+      "stock_no": "Hors stock",
+      "sample_stock_flag": "À marquer comme stock"
     },
     "branches": {
       "title": "Filiales",

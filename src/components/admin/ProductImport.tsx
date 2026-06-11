@@ -19,6 +19,7 @@ type Preview = {
     delist: { colour_id: string; existingId: string; style_name: string }[]
     pending: { colour_id: string; stretch: string | null; last: string | null; outStock: string | null }[]
     rejected: { colour_id: string; style_name: string; missing: string[] }[]
+    stockFlag: { colour_id: string; existingId: string }[]
   }
 }
 
@@ -206,13 +207,17 @@ export default function ProductImport() {
             {preview.samples.rejected.length > 0 && (
               <SampleTable title={t('sample_rejected')} rows={preview.samples.rejected.map(r => [r.colour_id, r.style_name, r.missing.join(', ')])} cols={['colour_id', t('col_style'), t('col_missing')]} />
             )}
+            {preview.samples.stockFlag.length > 0 && (
+              <SampleTable title={t('sample_stock_flag')} rows={preview.samples.stockFlag.map(r => [r.colour_id])} cols={['colour_id']} />
+            )}
           </div>
 
           {/* Confirm */}
           <div className="flex items-center gap-3">
             <button
               onClick={confirm}
-              disabled={applying || preview.counts.create - excluded.size === 0}
+              // Actionable when there are new products to create OR existing ones to flag STOCK.
+              disabled={applying || (preview.counts.create - excluded.size === 0 && preview.counts.stockFlag === 0)}
               className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
             >
               {applying ? t('importing') : t('confirm_import')}

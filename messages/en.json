@@ -748,7 +748,13 @@
       "col_missing": "Missing",
       "result_stock_flagged": "{n} flagged as stock",
       "out_excluded_note": "{n} model(s) marked OUT were pre-excluded — tick to import anyway.",
-      "stock_flag_note": "{n} existing model(s) will be flagged as stock."
+      "stock_flag_note": "{n} existing model(s) will be flagged as stock.",
+      "col_stock": "Stock",
+      "stock_badge": "stock",
+      "all_stock": "All (stock)",
+      "stock_yes": "Stock only",
+      "stock_no": "Non-stock",
+      "sample_stock_flag": "To flag as stock"
     },
     "branches": {
       "title": "Branch offices",

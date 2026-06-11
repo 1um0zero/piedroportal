@@ -748,7 +748,13 @@
       "col_missing": "Ontbreekt",
       "result_stock_flagged": "{n} gemarkeerd als voorraad",
       "out_excluded_note": "{n} model(len) met OUG werden vooraf uitgesloten — aanvinken om toch te importeren.",
-      "stock_flag_note": "{n} bestaand(e) model(len) worden als voorraad gemarkeerd."
+      "stock_flag_note": "{n} bestaand(e) model(len) worden als voorraad gemarkeerd.",
+      "col_stock": "Voorraad",
+      "stock_badge": "voorraad",
+      "all_stock": "Alle (voorraad)",
+      "stock_yes": "Alleen voorraad",
+      "stock_no": "Geen voorraad",
+      "sample_stock_flag": "Als voorraad markeren"
     },
     "branches": {
       "title": "Filialen",
