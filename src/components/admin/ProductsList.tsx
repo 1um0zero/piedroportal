@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { setProductActive } from '@/app/actions/admin-products'
 import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
+import { matchesAny } from '@/lib/search'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 const PAGE = 50
@@ -65,7 +66,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const companyName = (p: ProductRow) => p.exclusive ? (companyByLabel[p.exclusive] ?? p.exclusive) : ''
 
   const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase()
+    const needle = q.trim()
     const out = rows.filter(p => {
       if (onlyInactive && p.active) return false
       if (fSection && p.section !== fSection) return false
@@ -73,8 +74,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
       if (fType && p.type !== fType) return false
       if (fExclusive && p.exclusive !== fExclusive) return false
       if (!needle) return true
-      return [p.colour_id, p.style_name, p.color_name, p.closure, p.type, companyName(p)]
-        .some(v => v?.toLowerCase().includes(needle))
+      return matchesAny([p.colour_id, p.style_name, p.color_name, p.closure, p.type, companyName(p)], needle)
     })
     return [...out].sort((a, b) =>
       compareValues((a as Record<string, unknown>)[sort.key], (b as Record<string, unknown>)[sort.key], sort.dir))
@@ -98,6 +98,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           value={q}
           onChange={e => { setQ(e.target.value); setPage(0) }}
           placeholder={t('search_placeholder')}
+          title={t('search_hint')}
           className="flex-1 min-w-[220px] rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none"
         />
         <FilterSelect value={fSection} onChange={v => { setFSection(v); setPage(0) }} allLabel={t('all_sections')} options={sectionOpts} />

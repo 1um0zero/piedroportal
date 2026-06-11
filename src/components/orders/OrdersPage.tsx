@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
 import { nz } from '@/lib/format'
+import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -160,16 +161,10 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
       else if (active === 'refused') { if (o.approval_state !== 'refused') return false }
       else if (active)               { if (o.status !== active) return false }
       if (urgentFilter && !isUrgent(o)) return false
-      if (search) {
-        const q = search.toLowerCase()
-        const style = o.products?.style_name?.toLowerCase() ?? ''
-        const colour = o.products?.colour_id?.toLowerCase() ?? ''
-        const patient = (o.patient_name ?? '').toLowerCase()
-        const ref = (o.reference_customer ?? '').toLowerCase()
-        const company = (o.companies?.name ?? '').toLowerCase()
-        if (!style.includes(q) && !colour.includes(q) && !patient.includes(q)
-          && !ref.includes(q) && !company.includes(q)) return false
-      }
+      if (search && !matchesAny(
+        [o.products?.style_name, o.products?.colour_id, o.patient_name, o.reference_customer, o.companies?.name],
+        search,
+      )) return false
       return true
     })
   }, [orders, search, active, urgentFilter])
@@ -286,6 +281,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
           <input
             type="search" value={search} onChange={e => setSearch(e.target.value)}
             placeholder={t('search_placeholder')}
+            title={t('search_hint')}
             className="h-9 pl-8 pr-3 text-sm bg-white border border-stone-200 rounded-lg w-56
                        focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
                        transition-all focus:w-72"/>

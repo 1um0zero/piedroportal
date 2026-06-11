@@ -9,6 +9,7 @@ import ProductCard from './ProductCard'
 import GalleryFilters from './GalleryFilters'
 import { preloadFilterTranslations } from '@/lib/filter-translations'
 import { decodeQuery } from '@/lib/query-cipher'
+import { matchesSearch } from '@/lib/search'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -38,19 +39,6 @@ const EMPTY: Filters = {
 // product page lands back where the user left off, not at the top of KIDS.
 // Not sensitive (no patient data), so sessionStorage is fine.
 const STATE_KEY = 'gallery-browse-state'
-
-// ── Search matcher ─────────────────────────────────────────────────────────
-// `*` is a wildcard. With a `*` the term is anchored, so `2*` = starts with 2,
-// `*K` = ends with K, `27*9` = 2…7…9. Without any `*` it stays a plain
-// "contains" match (typing `2729` still finds it anywhere in the name).
-export function matchesSearch(name: string, term: string): boolean {
-  const t = term.trim().toLowerCase()
-  if (!t) return true
-  const hay = name.toLowerCase()
-  if (!t.includes('*')) return hay.includes(t)
-  const rx = new RegExp('^' + t.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$')
-  return rx.test(hay)
-}
 
 // ── Core filter fn (exclude one dimension for cascading options) ───────────────
 export function applyFilters(

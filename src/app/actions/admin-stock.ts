@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
+import { toIlikePattern } from '@/lib/search'
 
 export type StockAdminRow = {
   id: string
@@ -53,13 +54,14 @@ export async function searchProductsForStock(query: string): Promise<
   await requirePiedroAdminPage()
   const q = query.trim()
   if (q.length < 2) return []
+  const pattern = toIlikePattern(q)
   const service = createServiceClient()
   const { data } = await service
     .from('products')
     .select('id, style_name, colour_id, color_name')
     .eq('active', true)
     .eq('is_stock', false)
-    .or(`colour_id.ilike.%${q}%,style_name.ilike.%${q}%`)
+    .or(`colour_id.ilike.${pattern},style_name.ilike.${pattern}`)
     .order('colour_id')
     .limit(20)
   return (data ?? []) as Array<{ id: string; style_name: string; colour_id: string; color_name: string }>

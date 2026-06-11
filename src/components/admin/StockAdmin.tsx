@@ -44,6 +44,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
           value={query}
           onChange={(e) => runSearch(e.target.value)}
           placeholder={t('searchPlaceholder')}
+          title={t('searchHint')}
           className="mt-2 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
         />
         {query.trim().length >= 2 && (
