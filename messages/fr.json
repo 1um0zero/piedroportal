@@ -141,6 +141,7 @@
       "diabetic": "Diabétique"
     },
     "results": "{count} modèles",
+    "loading": "Chargement…",
     "hero": {
       "kids": {
         "title": "OSB Enfants",
@@ -1100,6 +1101,10 @@
         "PLACEHOLDER — Un second paragraphe poursuit le propos, ajoute des détails et relie les images au message principal."
       ]
     }
+  },
+  "wishlist": {
+    "empty": "Votre liste de souhaits est vide.",
+    "models": "{count, plural, one {# modèle} other {# modèles}}"
   },
   "stock": {
     "title": "Stock",

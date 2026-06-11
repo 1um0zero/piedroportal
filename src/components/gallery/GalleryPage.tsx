@@ -440,7 +440,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         <div className="py-24 text-center text-stone-400 text-sm">
           <div className="inline-block w-6 h-6 border-2 border-stone-200 border-t-gold
                           rounded-full animate-spin mb-3" />
-          <p>A carregar...</p>
+          <p>{t('loading')}</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-24 text-center text-stone-400 text-sm">

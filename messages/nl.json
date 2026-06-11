@@ -141,6 +141,7 @@
       "diabetic": "Diabetisch"
     },
     "results": "{count} modellen",
+    "loading": "Laden…",
     "hero": {
       "kids": {
         "title": "OSB Kinderen",
@@ -1100,6 +1101,10 @@
         "PLACEHOLDER — Een tweede paragraaf vervolgt het verhaal, voegt details en uitleg toe en verbindt de afbeeldingen met de kernboodschap."
       ]
     }
+  },
+  "wishlist": {
+    "empty": "Uw verlanglijst is leeg.",
+    "models": "{count, plural, one {# model} other {# modellen}}"
   },
   "stock": {
     "title": "Voorraad",

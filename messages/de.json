@@ -141,6 +141,7 @@
       "diabetic": "Diabetisch"
     },
     "results": "{count} Modelle",
+    "loading": "Wird geladen…",
     "hero": {
       "kids": {
         "title": "OSB Kinder",
@@ -1100,6 +1101,10 @@
         "PLACEHOLDER — Ein zweiter Absatz setzt die Geschichte fort, ergänzt Details und verbindet die Bilder mit der Kernaussage."
       ]
     }
+  },
+  "wishlist": {
+    "empty": "Ihre Wunschliste ist leer.",
+    "models": "{count, plural, one {# Modell} other {# Modelle}}"
   },
   "stock": {
     "title": "Lager",
