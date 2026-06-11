@@ -159,39 +159,41 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     // any saved browse state — the user explicitly asked for that tab. The query
     // is opaque-encoded (see query-cipher); decode it client-side (also avoids a
     // useSearchParams Suspense deopt on this CDN-cached route).
+    // Resolve the section to show: deep link (?q=) wins, else saved browse state.
+    let resolved: Section = section
+    const fetchIfNeeded = (s: Section) => {
+      if (cache[s]) return
+      setLoading(true)
+      fetchSection(s)
+        .then((data) => setCache((prev) => ({ ...prev, [s]: data })))
+        .catch((err) => console.error('[Gallery] restore fetch error:', err))
+        .finally(() => setLoading(false))
+    }
+
     const q = new URLSearchParams(window.location.search).get('q')
     const urlSection = (decodeQuery(q).section || '').toUpperCase() as Section
     if (SECTIONS.includes(urlSection)) {
-      if (urlSection !== section) {
-        setSection(urlSection)
-        if (!cache[urlSection]) {
-          setLoading(true)
-          fetchSection(urlSection)
-            .then((data) => setCache((prev) => ({ ...prev, [urlSection]: data })))
-            .catch((err) => console.error('[Gallery] section deep-link fetch error:', err))
-            .finally(() => setLoading(false))
+      resolved = urlSection
+      if (urlSection !== section) { setSection(urlSection); fetchIfNeeded(urlSection) }
+    } else {
+      let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
+      try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
+      if (saved) {
+        if (saved.filters) setFilters(saved.filters)
+        if (typeof saved.scrollY === 'number') pendingScroll.current = saved.scrollY
+        pendingAnchor.current = saved.anchorId ?? null
+        const s = saved.section
+        if (s && SECTIONS.includes(s)) {
+          resolved = s
+          if (s !== section) { setSection(s); fetchIfNeeded(s) }
         }
       }
-      return
     }
 
-    let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
-    try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
-    if (!saved) return
-    if (saved.filters) setFilters(saved.filters)
-    if (typeof saved.scrollY === 'number') pendingScroll.current = saved.scrollY
-    pendingAnchor.current = saved.anchorId ?? null
-    const s = saved.section
-    if (s && SECTIONS.includes(s) && s !== section) {
-      setSection(s)
-      if (!cache[s]) {
-        setLoading(true)
-        fetchSection(s)
-          .then((data) => setCache((prev) => ({ ...prev, [s]: data })))
-          .catch((err) => console.error('[Gallery] restore fetch error:', err))
-          .finally(() => setLoading(false))
-      }
-    }
+    // Adopt the resolved section as the header's baseline, then enable the
+    // context→page bridge (so a stale persisted context can't override it).
+    if (showHero) setCtxSection(resolved)
+    headerReady.current = true
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sectionProducts = useMemo(() => {
@@ -318,19 +320,17 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     }
   }
 
-  // Bridge the header section switch (context) ↔ this page, only in hero mode.
-  // A ref guards against the echo (ctx→page→ctx) that would flicker the buttons.
-  const sectionEcho = useRef<Section | null>(null)
+  // Bridge the header section switch (context) → this page, in hero mode only.
+  // ONE direction: the header (context) drives the page. The page never writes
+  // back via an effect (that two-way binding caused the button flicker). The
+  // page's own initial section is adopted into the context once, in the restore
+  // effect below, and `headerReady` keeps a stale persisted context from
+  // overriding a fresh deep-link before that baseline is set.
+  const headerReady = useRef(false)
   useEffect(() => {
-    if (!showHero || ctxSection === section) return
-    sectionEcho.current = ctxSection   // mark: this change came from the header
+    if (!showHero || !headerReady.current || ctxSection === section) return
     switchSection(ctxSection)
   }, [showHero, ctxSection]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!showHero) return
-    if (sectionEcho.current === section) { sectionEcho.current = null; return } // swallow echo
-    if (section !== ctxSection) setCtxSection(section)
-  }, [showHero, section]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0

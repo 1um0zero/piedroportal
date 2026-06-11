@@ -121,6 +121,22 @@ function colourCode(v: unknown): string {
   return /^\d+$/.test(s) ? s.padStart(4, '0') : s
 }
 
+// Canonical product types — merge case duplicates (Boot/BOOT) and singular vs
+// plural (SHOE→Shoes). Anything else is Title-cased. Keep the catalogue clean so
+// the filters never show "Boot" and "BOOT" (or "SHOE" and "Shoes") side by side.
+const TYPE_SYNONYM: Record<string, string> = {
+  SHOE: 'Shoes',
+  SANDALS: 'Sandal',
+  BOOTS: 'Boot',
+}
+export function normalizeType(v: unknown): string {
+  const t = String(v ?? '').trim()
+  if (!t) return ''
+  const key = t.toUpperCase()
+  if (TYPE_SYNONYM[key]) return TYPE_SYNONYM[key]
+  return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase()  // Title case → Boot, Shoes, Sandal
+}
+
 // Width base notation: N,R,W is just the Dutch display of S,M,L — always store
 // the base so the catalogue is consistent regardless of how the sheet spells it.
 const WIDTH_BASE: Record<string, string> = { N: 'S', R: 'M', W: 'L' }
@@ -226,7 +242,7 @@ export function parseProducts(
 
       const genderLabel = String(row[COL.gender] ?? '').trim().toUpperCase()
       const closure = (str(row[COL.closure]) ?? '').toUpperCase()
-      const type = str(row[COL.type]) ?? ''
+      const type = normalizeType(row[COL.type])
       const sizeFirst = parseSize(row[COL.sizefirst])
       const sizeLast = parseSize(row[COL.sizelast])
       // OUT/STOCK column (F): may be absent on some sheets → null → neither flag.
