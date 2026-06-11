@@ -44,17 +44,20 @@ const TERMINAL_STATUSES = ['shipped', 'delivered', 'cancelled']
  *   reserved  = Σ stock_order_items.qty of NON-TERMINAL stock_orders
  *
  * Only sizes with available > 0 are returned, and only products that still have
- * at least one available size. Anonymous users get [] (the grid is gated).
+ * at least one available size. Anonymous users browse like the public gallery:
+ * they see non-exclusive stock only (ordering still gates on login).
  */
 export async function getStockProducts(): Promise<StockProduct[]> {
   const sb = await createClient()
   const { data: { user } } = await sb.auth.getUser()
-  if (!user) return []
 
-  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-  const isAdmin = isPiedroAdminRole(profile?.role)
-  const labels = await getUserExclusiveLabels(user.id)
-  const labelSet = new Set(labels)
+  let isAdmin = false
+  let labelSet = new Set<string>()
+  if (user) {
+    const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+    isAdmin = isPiedroAdminRole(profile?.role)
+    labelSet = new Set(await getUserExclusiveLabels(user.id))
+  }
 
   const service = createServiceClient()
 
