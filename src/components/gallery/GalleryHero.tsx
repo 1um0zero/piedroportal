@@ -3,11 +3,14 @@
 import { useTranslations } from 'next-intl'
 import type { Section } from '@/types'
 
-// Per-section hero imagery (full-bleed banner that the transparent header sits over).
-const HERO_IMG: Record<Section, string> = {
-  KIDS:  '/landing/osb-kinderen-hero.jpg',
-  MEN:   '/landing/osb-heren.jpg',
-  WOMEN: '/landing/osb-dames.jpg',
+// Per-section hero imagery. KIDS is a studio shot on a solid tan background, so
+// it is shown in full (object-contain on the matching colour — never cropped).
+// MEN/WOMEN are environmental shots that read better filling the band (cover).
+type HeroCfg = { img: string; fit: 'cover' | 'contain'; bg: string }
+const HERO: Record<Section, HeroCfg> = {
+  KIDS:  { img: '/landing/osb-kinderen-hero.jpg', fit: 'contain', bg: '#f2ba75' },
+  MEN:   { img: '/landing/osb-heren.jpg',         fit: 'cover',   bg: '#414921' },
+  WOMEN: { img: '/landing/osb-dames.jpg',         fit: 'cover',   bg: '#2f3030' },
 }
 
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -17,37 +20,34 @@ const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
 /**
  * Full-bleed gallery hero. Sits at the very top of the page and is pulled up
  * (-mt-16) so the photo bleeds behind the transparent navbar. Switches per
- * active section (KIDS/MEN/WOMEN). Preview-only for now (see /gallery-preview).
+ * active section (KIDS/MEN/WOMEN).
  */
 export default function GalleryHero({ section }: { section: Section }) {
   const t = useTranslations('gallery')
   const key = SECTION_KEY[section]
+  const cfg = HERO[section]
 
   return (
-    <section className="relative -mt-16 w-full h-[360px] sm:h-[440px] overflow-hidden">
+    <section
+      className="relative -mt-16 w-full h-[380px] sm:h-[460px] overflow-hidden"
+      style={{ backgroundColor: cfg.bg }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={HERO_IMG[section]}
+        src={cfg.img}
         alt={t(`hero.${key}.title`)}
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className={`absolute inset-0 h-full w-full ${cfg.fit === 'contain' ? 'object-contain' : 'object-cover'} object-center`}
       />
-      {/* Scrim for legibility under the white header + hero copy */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-black/35" />
+      {/* Scrim: darker at the top (under the white header) and bottom (under the copy). */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/55" />
 
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-10 pt-16">
-        <h1 className="text-3xl sm:text-5xl font-bold tracking-[-0.02em] text-white drop-shadow-sm">
+        <h1 className="text-3xl sm:text-5xl font-bold tracking-[-0.02em] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
           {t(`hero.${key}.title`)}
         </h1>
-        <p className="mt-3 max-w-xl text-base sm:text-lg text-white/90 drop-shadow-sm">
+        <p className="mt-3 max-w-xl text-base sm:text-lg text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
           {t(`hero.${key}.subtitle`)}
         </p>
-        <a
-          href="#catalogue"
-          className="mt-6 inline-flex w-fit items-center rounded-lg bg-stone-900/90 px-6 py-3
-                     text-sm font-medium text-white shadow-sm transition-colors hover:bg-stone-900"
-        >
-          {t(`hero.${key}.cta`)}
-        </a>
       </div>
     </section>
   )

@@ -75,10 +75,11 @@ input[type="checkbox"].custom-gold:checked::after {
   color: #ffffff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
-/* Only the brand logo gets inverted to white (avatar/other imgs untouched). */
-.nav-overlay img[alt="Piedro International"] {
-  filter: brightness(0) invert(1);
-}
+/* Logo swap: the white silhouette only shows in the transparent overlay header;
+   the normal logo is used on the solid white bar. */
+.logo-white { display: none; }
+.nav-overlay .logo-white { display: block; }
+.nav-overlay .logo-normal { display: none; }
 /* Keep popovers / mobile menu / white chips readable inside the overlay header. */
 .nav-overlay .bg-white,
 .nav-overlay .bg-white a,
