@@ -134,7 +134,8 @@
       "search": "Modellen zoeken...",
       "searchHint": "Zoek op modelnummer. Gebruik * als jokerteken: 2* = begint met 2, *K = eindigt op K.",
       "all": "Filters wissen",
-      "new": "Nieuw"
+      "new": "Nieuw",
+      "searchWild": "Zoek — 2* = 2023, 2188…"
     },
     "badges": {
       "diabetic": "Diabetisch"

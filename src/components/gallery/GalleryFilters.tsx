@@ -337,7 +337,27 @@ export default function GalleryFilters({
           </button>
         )}
 
-        <p className="ml-auto text-sm text-stone-400 shrink-0">
+        {/* Model search — sits in the centre/right of the bar, left of the count.
+            Placeholder advertises the wildcard (2* = 2023, 2188…). */}
+        <div className="relative ml-auto w-full max-w-[300px] min-w-[150px]">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+          <input
+            type="search"
+            value={filters.search}
+            onFocus={(e) => e.currentTarget.select()}
+            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+            placeholder={t('searchWild')}
+            title={t('searchHint')}
+            className="h-9 w-full pl-9 pr-3 text-sm bg-white border border-stone-200 rounded-lg
+                       text-stone-700 transition-colors hover:border-stone-300
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
+          />
+        </div>
+
+        <p className="ml-3 text-sm text-stone-400 shrink-0">
           {tg('results', { count: resultCount })}
         </p>
       </div>

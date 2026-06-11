@@ -134,7 +134,8 @@
       "search": "Modelle suchen...",
       "searchHint": "Suche nach Modellnummer. * als Platzhalter: 2* = beginnt mit 2, *K = endet auf K.",
       "all": "Filter löschen",
-      "new": "Neu"
+      "new": "Neu",
+      "searchWild": "Suche — 2* = 2023, 2188…"
     },
     "badges": {
       "diabetic": "Diabetisch"

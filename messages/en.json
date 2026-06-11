@@ -134,7 +134,8 @@
       "search": "Search models...",
       "searchHint": "Search by model number. Use * as a wildcard: 2* = starts with 2, *K = ends with K.",
       "all": "Clear filters",
-      "new": "New"
+      "new": "New",
+      "searchWild": "Search — 2* = 2023, 2188…"
     },
     "badges": {
       "diabetic": "Diabetic"

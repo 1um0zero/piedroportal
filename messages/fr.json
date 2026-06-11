@@ -134,7 +134,8 @@
       "search": "Rechercher des modèles...",
       "searchHint": "Recherche par numéro de modèle. Utilisez * comme joker : 2* = commence par 2, *K = se termine par K.",
       "all": "Effacer les filtres",
-      "new": "Nouveau"
+      "new": "Nouveau",
+      "searchWild": "Recherche — 2* = 2023, 2188…"
     },
     "badges": {
       "diabetic": "Diabétique"
