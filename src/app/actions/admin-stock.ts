@@ -63,8 +63,19 @@ export async function searchProductsForStock(query: string): Promise<
     .eq('is_stock', false)
     .or(`colour_id.ilike.${pattern},style_name.ilike.${pattern}`)
     .order('colour_id')
-    .limit(20)
+    .limit(100)
   return (data ?? []) as Array<{ id: string; style_name: string; colour_id: string; color_name: string }>
+}
+
+/** Bulk-flag a selection of products as STOCK and return the refreshed admin rows. */
+export async function addProductsToStockAction(productIds: string[]): Promise<{ rows?: StockAdminRow[]; error?: string }> {
+  await requirePiedroAdminPage()
+  if (productIds.length === 0) return { rows: await getStockAdminRows() }
+  const service = createServiceClient()
+  const { error } = await service.from('products').update({ is_stock: true }).in('id', productIds)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/stock')
+  return { rows: await getStockAdminRows() }
 }
 
 export async function setStockFlagAction(productId: string, isStock: boolean): Promise<{ error?: string }> {
@@ -101,6 +112,33 @@ export async function saveProductStockAction(
   }
   if (zeros.length > 0) {
     await service.from('product_stock').delete().eq('product_id', productId).in('size', zeros)
+  }
+  revalidatePath('/admin/stock')
+  return {}
+}
+
+/** Save the whole grid in one go — only the dirty rows are sent. */
+export async function saveStockGridAction(
+  entries: Array<{ productId: string; quantities: Array<{ size: number; qty: number }> }>,
+): Promise<{ error?: string }> {
+  await requirePiedroAdminPage()
+  const service = createServiceClient()
+  const now = new Date().toISOString()
+
+  const upserts = entries.flatMap((e) =>
+    e.quantities
+      .filter((q) => q.qty > 0)
+      .map((q) => ({ product_id: e.productId, size: q.size, qty_on_hand: q.qty, updated_at: now })),
+  )
+  if (upserts.length > 0) {
+    const { error } = await service.from('product_stock').upsert(upserts, { onConflict: 'product_id,size' })
+    if (error) return { error: error.message }
+  }
+  for (const e of entries) {
+    const zeros = e.quantities.filter((q) => q.qty <= 0).map((q) => q.size)
+    if (zeros.length > 0) {
+      await service.from('product_stock').delete().eq('product_id', e.productId).in('size', zeros)
+    }
   }
   revalidatePath('/admin/stock')
   return {}
