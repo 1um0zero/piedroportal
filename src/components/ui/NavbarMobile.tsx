@@ -45,10 +45,10 @@ export function NavbarMobile({ isAdmin, isSuper = false, isBackoffice, isLoggedI
       {open && (
         <>
           {/* Dimmed overlay */}
-          <div className="fixed inset-0 top-20 bg-black/10 z-40 lg:hidden" onClick={close} />
+          <div className="fixed inset-0 top-16 bg-black/10 z-40 lg:hidden" onClick={close} />
 
           {/* Slide-down menu */}
-          <div className="absolute top-20 left-0 right-0 bg-white border-b border-stone-100 z-50 lg:hidden"
+          <div className="absolute top-16 left-0 right-0 bg-white border-b border-stone-100 z-50 lg:hidden"
             style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.10)' }}>
             <div className="max-w-7xl mx-auto px-6 py-1">
 

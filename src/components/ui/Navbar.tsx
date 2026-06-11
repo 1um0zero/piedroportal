@@ -60,22 +60,22 @@ export default async function Navbar({ locale }: Props) {
 
   return (
     <NavbarShell>
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center gap-8">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
 
         {/* Logo → homepage. Two variants: the normal one (solid header) and a
             white silhouette shown only over the transparent hero header. */}
         <Link href="/" className="flex items-center shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/piedro-logo-mark.svg"
+            src="https://ynybmsbtcmmxdabvhuny.supabase.co/storage/v1/object/public/products/__brand/piedro-logo.png"
             alt="Piedro International"
-            className="logo-normal h-14 w-auto"
+            className="logo-normal h-12 w-auto"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/brand/piedro-logo-white.png"
             alt="Piedro International"
-            className="logo-white h-16 w-auto"
+            className="logo-white h-12 w-auto"
           />
         </Link>
 

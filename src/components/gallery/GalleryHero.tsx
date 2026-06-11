@@ -19,7 +19,7 @@ const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
 
 /**
  * Full-bleed gallery hero. Sits at the very top of the page and is pulled up
- * (-mt-20, matching the navbar height) so the photo bleeds behind the
+ * (-mt-16, matching the navbar height) so the photo bleeds behind the
  * transparent navbar. Switches per
  * active section (KIDS/MEN/WOMEN).
  */
@@ -30,7 +30,7 @@ export default function GalleryHero({ section }: { section: Section }) {
 
   return (
     <section
-      className="relative -mt-20 w-full h-[380px] sm:h-[460px] overflow-hidden"
+      className="relative -mt-16 w-full h-[380px] sm:h-[460px] overflow-hidden"
       style={{ backgroundColor: cfg.bg }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}

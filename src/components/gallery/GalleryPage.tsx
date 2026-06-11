@@ -413,9 +413,9 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       </div>
       )}
 
-      {/* Filters — sticky below the header (top-20) in hero mode so the toolbar
+      {/* Filters — sticky below the header (top-16) in hero mode so the toolbar
           stays put once the photo has scrolled away. */}
-      <div className={showHero ? 'sticky top-20 z-20 -mx-6 px-6 py-3 bg-[var(--background)]' : ''}>
+      <div className={showHero ? 'sticky top-16 z-20 -mx-6 px-6 py-3 bg-[var(--background)]' : ''}>
       <GalleryFilters
         filters={filters}
         setFilters={setFilters}
