@@ -319,11 +319,17 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   }
 
   // Bridge the header section switch (context) ↔ this page, only in hero mode.
+  // A ref guards against the echo (ctx→page→ctx) that would flicker the buttons.
+  const sectionEcho = useRef<Section | null>(null)
   useEffect(() => {
-    if (showHero && ctxSection !== section) switchSection(ctxSection)
+    if (!showHero || ctxSection === section) return
+    sectionEcho.current = ctxSection   // mark: this change came from the header
+    switchSection(ctxSection)
   }, [showHero, ctxSection]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (showHero && section !== ctxSection) setCtxSection(section)
+    if (!showHero) return
+    if (sectionEcho.current === section) { sectionEcho.current = null; return } // swallow echo
+    if (section !== ctxSection) setCtxSection(section)
   }, [showHero, section]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
