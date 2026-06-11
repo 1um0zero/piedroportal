@@ -80,6 +80,15 @@ input[type="checkbox"].custom-gold:checked::after {
 .logo-white { display: none; }
 .nav-overlay .logo-white { display: block; }
 .nav-overlay .logo-normal { display: none; }
+
+/* Section switch (KIDS/MEN/WOMEN) — follows the header: dark grey on the solid
+   bar, white over the photo. Defined so it survives the transparent→solid swap. */
+.section-switch-btn { color: #78716c; }                                   /* stone-500 */
+.section-switch-btn:hover { color: #1c1917; background: rgba(0, 0, 0, 0.04); }
+.section-switch-btn.is-active { color: #1c1917; background: rgba(0, 0, 0, 0.06); }
+.nav-overlay .section-switch-btn { color: rgba(255, 255, 255, 0.82); }
+.nav-overlay .section-switch-btn:hover { color: #ffffff; background: rgba(255, 255, 255, 0.12); }
+.nav-overlay .section-switch-btn.is-active { color: #ffffff; background: rgba(255, 255, 255, 0.20); }
 /* Keep popovers / mobile menu / white chips readable inside the overlay header. */
 .nav-overlay .bg-white,
 .nav-overlay .bg-white a,

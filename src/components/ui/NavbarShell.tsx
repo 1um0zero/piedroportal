@@ -11,7 +11,7 @@ import { usePathname } from '@/i18n/navigation'
  */
 export default function NavbarShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() // locale-stripped by next-intl
-  const onHero = pathname === '/gallery-preview' || pathname.endsWith('/gallery-preview')
+  const onHero = pathname === '/gallery' || pathname.endsWith('/gallery')
 
   const [solid, setSolid] = useState(false)
   useEffect(() => {

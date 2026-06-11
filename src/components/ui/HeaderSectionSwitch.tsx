@@ -18,9 +18,11 @@ export default function HeaderSectionSwitch() {
   const t = useTranslations('gallery')
   const { section, setSection } = useGallerySection()
 
-  const onHero = pathname === '/gallery-preview' || pathname.endsWith('/gallery-preview')
+  const onHero = pathname === '/gallery' || pathname.endsWith('/gallery')
   if (!onHero) return null
 
+  // Colours are driven by CSS so they follow the header: white over the photo
+  // (under .nav-overlay) and dark grey once the bar turns solid on scroll.
   return (
     <nav className="hidden lg:flex items-center gap-1">
       {SECTIONS.map((s) => (
@@ -28,8 +30,8 @@ export default function HeaderSectionSwitch() {
           key={s}
           type="button"
           onClick={() => setSection(s)}
-          className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-colors
-            ${s === section ? 'bg-white/20 text-white' : 'text-white/80 hover:text-white hover:bg-white/10'}`}
+          className={`section-switch-btn px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-colors
+            ${s === section ? 'is-active' : ''}`}
         >
           {t(KEY[s])}
         </button>

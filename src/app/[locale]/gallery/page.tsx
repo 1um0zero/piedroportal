@@ -37,5 +37,5 @@ export default async function GalleryRoute() {
 
   const initialProducts = (res.data ?? []) as unknown as Product[]
 
-  return <GalleryPage initialSection="KIDS" initialProducts={initialProducts} />
+  return <GalleryPage initialSection="KIDS" initialProducts={initialProducts} showHero />
 }
