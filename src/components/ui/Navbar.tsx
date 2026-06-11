@@ -6,6 +6,7 @@ import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
 import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
+import NavbarShell from './NavbarShell'
 import { NavbarLocale } from './NavbarLocale'
 import { NavbarMobile } from './NavbarMobile'
 
@@ -43,7 +44,7 @@ export default async function Navbar({ locale }: Props) {
   }
 
   return (
-    <header className="bg-white border-b border-stone-100 relative" style={{ boxShadow: 'var(--shadow-nav)' }}>
+    <NavbarShell>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-8">
 
         {/* Logo → homepage */}
@@ -182,6 +183,6 @@ export default async function Navbar({ locale }: Props) {
           newOrdersCount={newOrdersCount}
         />
       </div>
-    </header>
+    </NavbarShell>
   )
 }

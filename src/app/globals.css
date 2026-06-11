@@ -59,3 +59,31 @@ input[type="checkbox"].custom-gold:checked::after {
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
+
+/* ── Gallery hero: transparent overlay header ─────────────────────────────────
+   Applied by NavbarShell only on the hero routes (/gallery-preview). The photo
+   bleeds behind the header; top-level links + the Piedro logo go white, but any
+   dropdown / mobile panel (which carry a bg-white) stay dark and readable. */
+.nav-overlay {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-bottom-color: transparent !important;
+}
+.nav-overlay a,
+.nav-overlay button,
+.nav-overlay span {
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+/* Only the brand logo gets inverted to white (avatar/other imgs untouched). */
+.nav-overlay img[alt="Piedro International"] {
+  filter: brightness(0) invert(1);
+}
+/* Keep popovers / mobile menu / white chips readable inside the overlay header. */
+.nav-overlay .bg-white,
+.nav-overlay .bg-white a,
+.nav-overlay .bg-white button,
+.nav-overlay .bg-white span {
+  color: #1c1917;
+  text-shadow: none;
+}

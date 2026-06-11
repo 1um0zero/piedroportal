@@ -139,7 +139,24 @@
     "badges": {
       "diabetic": "Diabétique"
     },
-    "results": "{count} modèles"
+    "results": "{count} modèles",
+    "hero": {
+      "kids": {
+        "title": "OSB Enfants",
+        "subtitle": "Des chaussures orthopédiques élégantes et confortables pour les petits, prêtes pour toutes les aventures.",
+        "cta": "Découvrir la collection Enfants"
+      },
+      "men": {
+        "title": "OSB Hommes",
+        "subtitle": "Chaussures orthopédiques confortables pour hommes, conçues pour un soutien quotidien.",
+        "cta": "Découvrir la collection Hommes"
+      },
+      "women": {
+        "title": "OSB Femmes",
+        "subtitle": "Chaussures orthopédiques élégantes pour femmes, conçues pour un confort toute la journée.",
+        "cta": "Découvrir la collection Femmes"
+      }
+    }
   },
   "product": {
     "info": "Info",

@@ -7,6 +7,7 @@ import { useWishlist } from '@/contexts/WishlistContext'
 import { getMyExclusiveProducts } from '@/app/actions/catalogue'
 import ProductCard from './ProductCard'
 import GalleryFilters from './GalleryFilters'
+import GalleryHero from './GalleryHero'
 import { preloadFilterTranslations } from '@/lib/filter-translations'
 import { decodeQuery } from '@/lib/query-cipher'
 import { matchesSearch } from '@/lib/search'
@@ -112,9 +113,9 @@ export function isNew(p: Product): boolean {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-type Props = { initialSection?: Section; initialProducts?: Product[] }
+type Props = { initialSection?: Section; initialProducts?: Product[]; showHero?: boolean }
 
-export default function GalleryPage({ initialSection = 'KIDS', initialProducts = [] }: Props) {
+export default function GalleryPage({ initialSection = 'KIDS', initialProducts = [], showHero = false }: Props) {
   const t = useTranslations('gallery')
 
   const FIELDS = [
@@ -336,6 +337,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   }, [])
 
   return (
+    <>
+      {showHero && <GalleryHero section={section} />}
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       {/* Section tabs + search aligned right */}
       <div className="flex items-end justify-between border-b border-stone-200">
@@ -407,12 +410,13 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
           {t('results', { count: 0 })}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+        <div id="catalogue" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 scroll-mt-20">
           {filtered.map((p) => (
             <ProductCard key={p.id} product={p} showWishlist={showWishlist} onNavigate={() => saveBrowse(p.id)} />
           ))}
         </div>
       )}
     </div>
+    </>
   )
 }

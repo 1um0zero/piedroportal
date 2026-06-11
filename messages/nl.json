@@ -139,7 +139,24 @@
     "badges": {
       "diabetic": "Diabetisch"
     },
-    "results": "{count} modellen"
+    "results": "{count} modellen",
+    "hero": {
+      "kids": {
+        "title": "OSB Kinderen",
+        "subtitle": "Stijlvolle en comfortabele schoenen voor de kleintjes, klaar voor elk avontuur.",
+        "cta": "Ontdek de Kindercollectie"
+      },
+      "men": {
+        "title": "OSB Heren",
+        "subtitle": "Comfortabel orthopedisch schoeisel voor heren, gemaakt voor dagelijkse ondersteuning.",
+        "cta": "Ontdek de Herencollectie"
+      },
+      "women": {
+        "title": "OSB Dames",
+        "subtitle": "Elegant orthopedisch schoeisel voor dames, ontworpen voor de hele dag comfort.",
+        "cta": "Ontdek de Damescollectie"
+      }
+    }
   },
   "product": {
     "info": "Info",
