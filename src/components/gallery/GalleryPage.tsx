@@ -355,12 +355,21 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   return (
     <>
-      {showHero && <GalleryHero section={section} />}
+      {showHero && (
+        <GalleryHero
+          section={section}
+          search={filters.search}
+          onSearch={(v) => setFilters((f) => ({ ...f, search: v }))}
+          searchPlaceholder={t('filters.search')}
+          searchTitle={t('filters.searchHint')}
+        />
+      )}
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-      {/* Section tabs + search aligned right. In hero mode the section switch
-          moves to the header, so the in-page tabs are hidden (keep search). */}
+      {/* Section tabs + search. In hero mode the section switch is in the header
+          and the search is in the hero, so this whole row is hidden. */}
+      {!showHero && (
       <div className="flex items-end justify-between border-b border-stone-200">
-        <div className={`flex items-end gap-0 ${showHero ? 'invisible' : ''}`}>
+        <div className="flex items-end gap-0">
           {SECTIONS.map((s) => (
             <button
               key={s}
@@ -396,8 +405,11 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
           />
         </div>
       </div>
+      )}
 
-      {/* Filters */}
+      {/* Filters — sticky below the header (top-16) in hero mode so the toolbar
+          stays put once the photo has scrolled away. */}
+      <div className={showHero ? 'sticky top-16 z-20 -mx-6 px-6 py-3 bg-[var(--background)]' : ''}>
       <GalleryFilters
         filters={filters}
         setFilters={setFilters}
@@ -415,6 +427,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         showWishlist={showWishlist}
         onToggleBuildWishlist={() => setShowWishlist(s => !s)}
       />
+      </div>
 
       {/* Grid */}
       {loading ? (

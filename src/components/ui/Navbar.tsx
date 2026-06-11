@@ -8,6 +8,7 @@ import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
 import NavbarShell from './NavbarShell'
 import HeaderSectionSwitch from './HeaderSectionSwitch'
+import NavGalleryLink from './NavGalleryLink'
 import { NavbarLocale } from './NavbarLocale'
 import { NavbarMobile } from './NavbarMobile'
 
@@ -70,9 +71,7 @@ export default async function Navbar({ locale }: Props) {
 
         {/* Nav links — hidden on mobile */}
         <nav className="hidden lg:flex items-center gap-6 flex-1">
-          <Link href="/gallery" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-            {t('gallery')}
-          </Link>
+          <NavGalleryLink />
           {user && !isBackoffice && (
             <>
               <Link href="/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
