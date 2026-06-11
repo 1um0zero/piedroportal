@@ -1113,6 +1113,8 @@
     "pending": "Ihr Konto wartet auf Freigabe. Sie können noch keine Bestellungen aufgeben.",
     "noProducts": "Derzeit sind keine Lagerprodukte verfügbar.",
     "clickToSelect": "Klicken Sie auf ein Modell, um es Ihrer Bestellung hinzuzufügen; erneut klicken entfernt es.",
+    "loginHint": "Nach der Anmeldung können Sie Modelle auswählen und eine Lagerbestellung aufgeben.",
+    "loginCta": "Zum Bestellen anmelden",
     "selectedCount": "{count, plural, one {# Modell ausgewählt} other {# Modelle ausgewählt}}",
     "noneSelected": "Noch keine Modelle ausgewählt.",
     "placeOrder": "Bestellung aufgeben",

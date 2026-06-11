@@ -1113,6 +1113,8 @@
     "pending": "Uw account wacht op goedkeuring. U kunt nog geen bestellingen plaatsen.",
     "noProducts": "Er zijn momenteel geen voorraadproducten beschikbaar.",
     "clickToSelect": "Klik op een model om het aan uw bestelling toe te voegen; klik nogmaals om het te verwijderen.",
+    "loginHint": "Na het inloggen kunt u modellen selecteren en een voorraadbestelling plaatsen.",
+    "loginCta": "Inloggen om te bestellen",
     "selectedCount": "{count, plural, one {# model geselecteerd} other {# modellen geselecteerd}}",
     "noneSelected": "Nog geen modellen geselecteerd.",
     "placeOrder": "Bestelling plaatsen",

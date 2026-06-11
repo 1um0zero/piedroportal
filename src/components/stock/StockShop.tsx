@@ -49,6 +49,7 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
   )
 
   function toggle(id: string) {
+    if (!isLoggedIn) return
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -58,8 +59,7 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
   }
 
   function placeOrder() {
-    if (selected.size === 0) return
-    if (!isLoggedIn) { router.push('/login'); return }
+    if (selected.size === 0 || !isLoggedIn) return
     if (!canOrder) { setPending(true); return }
     setOrdering(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -89,7 +89,7 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
   // ── Phase 1: gallery-style selection grid ─────────────────────────────────
   return (
     <div className="pb-24">
-      <p className="mt-1 text-sm text-stone-400">{t('clickToSelect')}</p>
+      <p className="mt-1 text-sm text-stone-400">{isLoggedIn ? t('clickToSelect') : t('loginHint')}</p>
 
       {pending && (
         <div className="mt-4 rounded-[14px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
@@ -104,13 +104,27 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
             product={p}
             locale={locale}
             selected={selected.has(p.id)}
+            selectable={isLoggedIn}
             onToggle={() => toggle(p.id)}
           />
         ))}
       </div>
 
-      {/* Sticky order bar */}
+      {/* Sticky order bar — anonymous users get an explicit login CTA instead
+          of selectable state they would lose on the login redirect. */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 backdrop-blur-sm">
+        {!isLoggedIn ? (
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+            <span className="text-sm text-stone-600">{t('loginHint')}</span>
+            <button
+              type="button"
+              onClick={() => router.push('/login')}
+              className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
+            >
+              {t('loginCta')}
+            </button>
+          </div>
+        ) : (
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <span className="text-sm text-stone-600">
             {selected.size > 0 ? t('selectedCount', { count: selected.size }) : t('noneSelected')}
@@ -135,6 +149,7 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
             </button>
           </div>
         </div>
+        )}
       </div>
     </div>
   )
@@ -144,10 +159,11 @@ function isNewProduct(p: StockProduct): boolean {
   return !!p.new_until && new Date(p.new_until) > new Date()
 }
 
-function StockCard({ product, locale, selected, onToggle }: {
+function StockCard({ product, locale, selected, selectable, onToggle }: {
   product: StockProduct
   locale: Locale
   selected: boolean
+  selectable: boolean
   onToggle: () => void
 }) {
   const [imgError, setImgError] = useState(false)
@@ -164,9 +180,10 @@ function StockCard({ product, locale, selected, onToggle }: {
     <button
       type="button"
       onClick={onToggle}
+      disabled={!selectable}
       aria-pressed={selected}
       data-product-id={product.id}
-      className="group relative flex flex-col rounded-2xl text-left transition-all"
+      className={`group relative flex flex-col rounded-2xl text-left transition-all ${selectable ? '' : 'cursor-default'}`}
       style={{
         outline: selected ? '2px solid #B8975A' : '1px solid rgba(30,27,24,0.09)',
         outlineOffset: '2px',
@@ -193,15 +210,17 @@ function StockCard({ product, locale, selected, onToggle }: {
           </div>
         )}
 
-        {/* Selection badge */}
-        <span
-          className={`absolute top-1.5 right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all duration-200
-            ${selected ? 'bg-gold text-white scale-110' : 'bg-white/85 text-stone-300 group-hover:text-gold group-hover:bg-white'}`}
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
-        </span>
+        {/* Selection badge — hidden for anonymous users (selection is disabled) */}
+        {selectable && (
+          <span
+            className={`absolute top-1.5 right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all duration-200
+              ${selected ? 'bg-gold text-white scale-110' : 'bg-white/85 text-stone-300 group-hover:text-gold group-hover:bg-white'}`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </span>
+        )}
 
         {isNewProduct(product) && (
           <span className="absolute top-2 left-2 z-10 rounded bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">NEW</span>

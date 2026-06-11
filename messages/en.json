@@ -1113,6 +1113,8 @@
     "pending": "Your account is awaiting approval. You cannot place orders yet.",
     "noProducts": "There are no stock products available right now.",
     "clickToSelect": "Click a model to add it to your order; click again to remove it.",
+    "loginHint": "After logging in you can select models and place a stock order.",
+    "loginCta": "Log in to order",
     "selectedCount": "{count, plural, one {# model selected} other {# models selected}}",
     "noneSelected": "No models selected yet.",
     "placeOrder": "Place order",
