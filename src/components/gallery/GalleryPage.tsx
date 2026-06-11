@@ -412,25 +412,6 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       </div>
       )}
 
-      {/* Active exclusive collection (e.g. Livingston) — a removable chip so the
-          user can see they're in that collection and step back out. */}
-      {exclusiveFilter && (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/10 text-gold-dark
-                           px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-            Livingston
-            <button
-              type="button"
-              onClick={() => setCtxExclusive('')}
-              aria-label="Clear Livingston"
-              className="ml-0.5 text-gold-dark/70 hover:text-gold-dark"
-            >
-              ✕
-            </button>
-          </span>
-        </div>
-      )}
-
       {/* Filters — sticky below the header (top-16) in hero mode so the toolbar
           stays put once the photo has scrolled away. */}
       <div className={showHero ? 'sticky top-16 z-20 -mx-6 px-6 py-3 bg-[var(--background)]' : ''}>
