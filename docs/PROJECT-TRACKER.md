@@ -13,7 +13,7 @@
 - Detail lives in: `docs/launch/LAUNCH-ROADMAP.md`, `LAUNCH-QUESTIONNAIRE.md`, `ERP-INTEGRATION.md`,
   `docs/compliance/*`.
 
-Last updated: 2026-06-06.
+Last updated: 2026-06-11.
 
 ---
 
@@ -131,6 +131,8 @@ Last updated: 2026-06-06.
 - [ ] **10.7** Rollback plan (revert DNS / restore snapshot) · 👥
 
 ## 11. QA / smoke test / GO–NO-GO — 🔴 / 👥
+> **Full scripted test plan: `docs/TEST-PLAN.md`** (per-role scenarios: visitor / user /
+> company_admin / branch_staff / piedro_admin / super_admin). Items below are the summary gates.
 - [ ] **11.1** Register/login + forced password reset · 👥
 - [ ] **11.2** Gallery + filters + exclusive-model visibility · 👥
 - [ ] **11.3** Full order (5 unit modes, additions, draft, submit) · 👥
@@ -139,7 +141,10 @@ Last updated: 2026-06-06.
 - [ ] **11.6** Roles see correct scope (user / company_admin / branch_staff / piedro_admin) · 👥
 - [ ] **11.7** All 4 locales render (no leftover hardcoded PT) · 👥
 - [ ] **11.8** Migrated orders display correctly · 👥
-- [ ] **11.9** **GO / NO-GO** decision · 👤
+- [ ] **11.9** STOCK flow end-to-end (grid caps, submit, reservation math, unified list, PDF/email) · 👥
+- [ ] **11.10** Dispatch counter (settings, factory calendar, /orders badge) + catalogues flip-book · 👥
+- [ ] **11.11** Chat assistant answers correctly per role (no cross-role/back-office leakage) · 👥
+- [ ] **11.12** **GO / NO-GO** decision · 👤
 
 ## 12. Post-launch backlog — 🟡 / 🤖
 - [ ] **12.1** SQL aggregation for dashboards (currently O(n) in JS)
@@ -490,3 +495,49 @@ updated_at                   comments                     size
       "never overwrite" rule). Result line reports `{n} flagged as stock`.
 - [x] **24.5** ✅ Preview UI: STOCK/OUT badges per row, OUT pre-exclusion + STOCK-flag notes, rejected
       table shows the missing fields. i18n EN/NL/FR/DE. (Header-sanity check = optional follow-up.)
+
+## 25. Built 2026-06-09 → 06-11 (recap, previously untracked) — ✅ / 🤖
+> Features shipped after the last tracker update; listed here so the launch picture is complete.
+- [x] **25.1** **Dispatch counter** — expected-dispatch countdown: `/admin/settings` lead-time config,
+      PT-holiday lib + factory calendar, compute-on-save, `/orders` badge. (06-09)
+- [x] **25.2** **Gallery style order** — `/admin/products/order` drag + multi-select orderer; gallery
+      sorts by `products.gallery_position`. **Needs migration 014.** (06-09)
+- [x] **25.3** **Size scales EU/UK** — `products.size_unit` from Dataverse scale (portal hard-coded EU
+      before). **Needs migration 015 + `sync-size-scales.mjs --apply`.** Follow-up: gallery size FILTER
+      still mixes units. (06-09)
+- [x] **25.4** **Exclusivity N:N backend** — `company_exclusives` token matching + Dataverse imports
+      live; gallery overlay; LIV (Livingston) gated nav entry + toggle; sharing preview (OpenGraph). (06-09/11)
+- [x] **25.5** **Catalogues flip-book** — `/catalogues` page-flip viewer (Kids/Adults EN/NL), JPGs in
+      Supabase `catalogues` bucket via `scripts/build-catalogues.mjs`. (06-10)
+- [x] **25.6** **Gallery hero + sticky header** — per-section hero, transparent→solid header,
+      KIDS/MEN/WOMEN switch in navbar. Pending: true-vector logo SVG from Noa. (06-10)
+- [x] **25.7** **/homenew proposal** — parallel homepage from client NL e-mail (EN/NL/FR/DE); `/`
+      untouched; awaiting Piedro approval to promote. Ortho Soft + EVO CTAs provisional. (06-10)
+- [x] **25.8** **STOCK products** — full flow (§23/§24); migration 017 RUN. QTY per size still manual. (06-10)
+- [x] **25.9** **Order-state privacy fix** — order-form sessionStorage scoped by userId + purged on
+      logout (was leaking patient data across users on a shared tab). (06-09)
+- [x] **25.10** **Chat assistant knowledge update** — stock, catalogues, dispatch, roles + role-gated
+      back-office briefing; migration 018 (product-type normalization Boot/BOOT, SHOE/Shoes). (06-11)
+- [ ] **25.11** 👤 **Migrations checklist (prod):** 001–013 ✅ run · **014 (gallery order)?** ·
+      **015 (size scales)?** · 016? · 017 ✅ run · **018 (product types)?** — confirm each in Supabase
+      before launch. Colour-translations SQL (gallery i18n) also needs a manual run.
+
+## 26. Open client items (Anabela feedback) + exclusivity follow-ups — 🟠 / 👥
+> Source: memory `project_open_client_items` + `project_exclusivity_pending` (2026-06-09).
+- [ ] **26.1** **F — confirmation email not arriving** (client report; never root-caused). Investigate
+      Resend route/from/recipients + Resend logs. 🔴-ish: overlaps 6.7 deliverability. · 🤖
+- [ ] **26.2** **H — attachment image quality** — blocked on originals from Anabela. · 👤
+- [ ] **26.3** **Dataverse ignored columns** — decide which to import (`cr56f_order_production`,
+      `cr56f_date_approval`, `cr56f_qty01..06`, `cr56f_additionsconfirmation`, `checkboxsection4..7`);
+      tracking_link already done. · 👤 decide, 🤖 backfill
+- [ ] **26.4** **One-shot dispatch recompute** for existing/migrated orders (counter null until
+      something triggers recompute). Can run autonomously. · 🤖
+- [ ] **26.5** **Real delivery date from ERP** — blocked on ERP (filters + freeze counter colour). · 👤
+- [ ] **26.6** Verify tracking shows on delivered orders (backfill ran 06-09 — quick DB check). · 🤖
+- [ ] **26.7** **Admin multi-sigla UI** — chip editor on company detail backed by N:N
+      `company_exclusives` (legacy single-label editor still in use); both-ways correspondence view. · 🤖
+- [ ] **26.8** Unowned siglas (TUR/SS/MTS/SAH) → assign titular companies when known. · 👤
+- [ ] **26.9** ~55 Dataverse contacts without portal account + ~55 contacts → companies not in DB —
+      decide import or ignore. · 👤
+- [ ] **26.10** first_name/last_name in DB but not displayed (UI uses full_name). · 🟡 🤖
+- [ ] **26.11** ZSM additions special rules (orphan zsm_* i18n keys, no code logic yet). · 🟡 👥
