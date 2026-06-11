@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useRouter } from '@/i18n/navigation'
 import type { Locale, StockProduct } from '@/types'
 import { preloadFilterTranslations, translateFilterValueSync } from '@/lib/filter-translations'
+import LoginModal from '@/components/auth/LoginModal'
 import StockGrid from './StockGrid'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -34,11 +34,11 @@ type Props = {
 export default function StockShop({ products, companies, userCompany, isAdmin, isLoggedIn, canOrder }: Props) {
   const t = useTranslations('stock')
   const locale = useLocale() as Locale
-  const router = useRouter()
 
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [ordering, setOrdering] = useState(false)
   const [pending, setPending] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
   const [, forceI18n] = useState(0)
 
   useEffect(() => { preloadFilterTranslations().then(() => forceI18n((n) => n + 1)) }, [])
@@ -118,7 +118,7 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
             <span className="text-sm text-stone-600">{t('loginHint')}</span>
             <button
               type="button"
-              onClick={() => router.push('/login')}
+              onClick={() => setShowLogin(true)}
               className="rounded-lg bg-gold px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
             >
               {t('loginCta')}
@@ -151,6 +151,8 @@ export default function StockShop({ products, companies, userCompany, isAdmin, i
         </div>
         )}
       </div>
+
+      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
     </div>
   )
 }

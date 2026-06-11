@@ -42,8 +42,9 @@ function Feature({ text }: { text: string }) {
   )
 }
 
-export default async function LandingPageNew({ hasError }: { hasError?: boolean }) {
+export default async function LandingPageNew({ hasError, loggedIn }: { hasError?: boolean; loggedIn?: boolean }) {
   const t = await getTranslations('homenew')
+  const tn = await getTranslations('nav')
   const heroBody = t.raw('hero.body') as string[]
   const orthoBody = t.raw('orthosoft.body') as string[]
   const portalFeatures = t.raw('portal.features') as string[]
@@ -72,7 +73,27 @@ export default async function LandingPageNew({ hasError }: { hasError?: boolean 
             ))}
           </div>
           <div id="login" className="scroll-mt-24">
-            <LoginCard hasError={hasError} />
+            {/* Signed-in users don't need the login card — quick links instead. */}
+            {loggedIn ? (
+              <div className="bg-white rounded-[14px] p-8 space-y-4"
+                style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08)' }}>
+                <p className="text-xs text-stone-400">Piedro International B.V.</p>
+                <Link href="/gallery"
+                  className="flex h-11 w-full items-center justify-center rounded-lg bg-[#B8975A] text-sm font-semibold text-white hover:bg-[#9A7A42] transition-colors">
+                  {tn('gallery')} →
+                </Link>
+                <Link href="/stock"
+                  className="flex h-11 w-full items-center justify-center rounded-lg border border-stone-200 text-sm font-semibold text-stone-700 hover:border-gold hover:text-gold transition-colors">
+                  {tn('stock')} →
+                </Link>
+                <Link href="/orders"
+                  className="flex h-11 w-full items-center justify-center rounded-lg border border-stone-200 text-sm font-semibold text-stone-700 hover:border-gold hover:text-gold transition-colors">
+                  {tn('orders')} →
+                </Link>
+              </div>
+            ) : (
+              <LoginCard hasError={hasError} />
+            )}
           </div>
         </div>
 

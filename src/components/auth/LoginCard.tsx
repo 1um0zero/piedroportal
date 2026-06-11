@@ -10,9 +10,10 @@ import { useActionState } from 'react'
  * reused both by the dedicated /login page and the embedded hero on the
  * marketing landing. On failure signInAction redirects to /login?error=1.
  */
-export default function LoginCard({ hasError }: { hasError?: boolean }) {
+export default function LoginCard({ hasError, redirectTo }: { hasError?: boolean; redirectTo?: string }) {
   const t = useTranslations('auth')
-  const [, action, pending] = useActionState(signInAction, null)
+  const [state, action, pending] = useActionState(signInAction, null)
+  const showError = hasError || !!state?.error
 
   return (
     <div className="bg-white rounded-[14px] p-8 space-y-5"
@@ -23,6 +24,8 @@ export default function LoginCard({ hasError }: { hasError?: boolean }) {
       </div>
 
       <form action={action} className="space-y-4">
+        {/* Where to land after sign-in (floating modal passes the current page). */}
+        {redirectTo && <input type="hidden" name="redirect_to" value={redirectTo} />}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('email')}</label>
           <input name="email" type="email" required autoComplete="email"
@@ -36,7 +39,7 @@ export default function LoginCard({ hasError }: { hasError?: boolean }) {
                        focus:outline-none focus:ring-2 focus:ring-[#B8975A]/30 focus:border-[#B8975A] transition-colors" />
         </div>
 
-        {hasError && (
+        {showError && (
           <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
             {t('error')}
           </p>

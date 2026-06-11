@@ -23,7 +23,9 @@ export async function signInAction(_: unknown, formData: FormData) {
   )
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) redirect('/login?error=1')
+  // Returned (not redirected) so the card — page or floating modal — shows the
+  // error in place without yanking the user anywhere.
+  if (error) return { error: true }
 
   // Redirect to the user's preferred locale
   const { data: profile } = await supabase
@@ -37,6 +39,11 @@ export async function signInAction(_: unknown, formData: FormData) {
 
   // Migrated users (no invite email) must set their own password first.
   if (profile?.must_set_password) redirect(`${prefix}/set-password`)
+
+  // The floating login modal passes the page it sits on so the user stays put.
+  // Same-origin paths only (no protocol-relative `//host` open redirects).
+  const redirectTo = formData.get('redirect_to') as string | null
+  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) redirect(redirectTo)
 
   redirect(`${prefix}/gallery`)
 }

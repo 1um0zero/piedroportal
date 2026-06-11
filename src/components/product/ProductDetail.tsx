@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useWishlist } from '@/contexts/WishlistContext'
+import LoginModal from '@/components/auth/LoginModal'
 import { isNew } from '@/components/gallery/GalleryPage'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
@@ -113,10 +114,12 @@ type Props = { product: Product; siblings: Product[] }
 export default function ProductDetail({ product, siblings }: Props) {
   const t  = useTranslations('product')
   const tn = useTranslations('nav')
+  const ts = useTranslations('stock')
   const locale = useLocale() as Locale
   const { hasCompany, isLoggedIn } = useAuth()
   const user = isLoggedIn
   const { ids, toggle }     = useWishlist()
+  const [showLogin, setShowLogin] = useState(false)
 
   const allVariants = useMemo(() => [product, ...siblings], [product, siblings])
   const closures    = useMemo(
@@ -220,11 +223,13 @@ export default function ProductDetail({ product, siblings }: Props) {
     ? src(allImages[activeImg]) : null
 
   const orderBtn = !user ? (
-    <Link href="/login"
+    // Explicit "log in to order" — opens the floating login panel in place
+    // instead of yanking the visitor to the homepage login.
+    <button type="button" onClick={() => setShowLogin(true)}
       className="inline-flex items-center px-8 py-3 rounded-xl border-2 border-gold
                  text-gold font-semibold text-sm hover:bg-gold hover:text-white transition-all">
-      {t('order')}
-    </Link>
+      {ts('loginCta')}
+    </button>
   ) : !hasCompany ? (
     <div className="inline-flex items-center gap-2 px-8 py-3 rounded-xl
                     bg-stone-100 text-stone-400 font-medium text-sm">
@@ -244,6 +249,7 @@ export default function ProductDetail({ product, siblings }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
       <Link href="/gallery"
         className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800
                    border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg transition-colors">
