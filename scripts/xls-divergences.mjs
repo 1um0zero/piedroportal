@@ -4,7 +4,7 @@
  * DB (empty XLS cells are "no opinion", never a divergence — rule 3). Widths are
  * compared in base notation (N,R,W normalised to S,M,L).
  */
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 import * as XLSX from 'xlsx'
 import { createClient } from '@supabase/supabase-js'
@@ -27,8 +27,18 @@ const colourCode = v => { const s = str(v); return /^\d+$/.test(s) ? s.padStart(
 const consKey = cs => JSON.stringify([...(cs ?? [])].map(c => ({ c: c.construction, w: [...(c.widths ?? [])].sort() })).sort((a, b) => a.c.localeCompare(b.c)))
 const consStr = cs => (cs ?? []).map(c => `${c.construction}:[${(c.widths ?? []).join(',')}]`).join(' ')
 
+/** Locate the catalogue workbook in docs/ regardless of exact name or extension (.xls/.xlsx). */
+function findWorkbook() {
+  const hits = readdirSync('docs')
+    .filter(f => /\.xlsx?$/i.test(f) && /all models/i.test(f))
+  // Prefer .xlsx over legacy .xls if both linger during the transition.
+  const hit = hits.find(f => /\.xlsx$/i.test(f)) ?? hits[0]
+  if (!hit) throw new Error('No "All models …" .xls/.xlsx workbook found in docs/')
+  return resolve('docs', hit)
+}
+
 function parseXls() {
-  const wb = XLSX.read(readFileSync('docs/All models for the Platform_last version.xls'), { type: 'buffer' })
+  const wb = XLSX.read(readFileSync(findWorkbook()), { type: 'buffer' })
   console.log('Sheets in workbook:', wb.SheetNames.join(', '))
   const active = wb.SheetNames.filter(n => ['KIDS', 'ADULTS', 'FASHION'].includes(n.trim().toUpperCase()))
   console.log('Treated as active:', active.join(', ') || '(none)')

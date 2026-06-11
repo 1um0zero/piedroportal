@@ -58,6 +58,16 @@ const COL = {
 
 type RawRow = Record<string, unknown>
 
+/** Case-insensitive cell lookup — tolerant to header casing (e.g. "out/stock" vs "OUT/STOCK"). */
+function ci(row: RawRow, header: string): unknown {
+  if (header in row) return row[header]
+  const target = header.toLowerCase()
+  for (const k of Object.keys(row)) {
+    if (k.toLowerCase() === target) return row[k]
+  }
+  return null
+}
+
 /** Read a worksheet into objects keyed by trimmed header name. */
 function readSheet(ws: XLSX.WorkSheet): RawRow[] {
   const matrix = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: null })
@@ -220,7 +230,8 @@ export function parseProducts(
       const sizeFirst = parseSize(row[COL.sizefirst])
       const sizeLast = parseSize(row[COL.sizelast])
       // OUT/STOCK column (F): may be absent on some sheets → null → neither flag.
-      const outStockRaw = (str(row[COL.outStock]) ?? '').toUpperCase()
+      // Header lookup is case-insensitive (tolerates "out/stock" / "OUT/STOCK").
+      const outStockRaw = (str(ci(row, COL.outStock)) ?? '').toUpperCase()
 
       groups.set(colourId, {
         style_name:   styleName,
@@ -244,9 +255,9 @@ export function parseProducts(
         out:          outStockRaw === 'OUT',
         vitalMissing: findMissingVital({ genderLabel, closure, type, sizeFirst, sizeLast }),
         pending: {
-          stretch:  str(row[COL.stretch]),
-          last:     str(row[COL.last]),
-          outStock: str(row[COL.outStock]),
+          stretch:  str(ci(row, COL.stretch)),
+          last:     str(ci(row, COL.last)),
+          outStock: str(ci(row, COL.outStock)),
         },
         sourceSheet: sheetName,
       })
