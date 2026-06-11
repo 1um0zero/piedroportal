@@ -1108,8 +1108,9 @@
   },
   "stock": {
     "title": "Stock",
-    "heading": "Commander depuis le stock",
-    "intro": "Ces modèles sont en stock et livrés tels quels. Choisissez les pointures et quantités souhaitées.",
+    "heading": "Commandez directement depuis le stock",
+    "introLead": "Commandé aujourd’hui, livré rapidement.",
+    "intro": "Ces modèles sont disponibles immédiatement en stock. Sélectionnez les pointures et quantités souhaitées pour votre commande et nous assurons une livraison rapide.",
     "pending": "Votre compte est en attente d’approbation. Vous ne pouvez pas encore passer de commande.",
     "noProducts": "Aucun produit en stock n’est disponible pour le moment.",
     "clickToSelect": "Cliquez sur un modèle pour l’ajouter à votre commande ; cliquez à nouveau pour le retirer.",

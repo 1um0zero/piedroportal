@@ -1108,8 +1108,9 @@
   },
   "stock": {
     "title": "Stock",
-    "heading": "Order from stock",
-    "intro": "These models are in stock and shipped as-is. Pick the sizes and quantities you need.",
+    "heading": "Order directly from stock",
+    "introLead": "Ordered today, delivered fast.",
+    "intro": "These models are available directly from stock. Select the sizes and quantities you need and we will take care of fast delivery.",
     "pending": "Your account is awaiting approval. You cannot place orders yet.",
     "noProducts": "There are no stock products available right now.",
     "clickToSelect": "Click a model to add it to your order; click again to remove it.",

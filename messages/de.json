@@ -1108,8 +1108,9 @@
   },
   "stock": {
     "title": "Lager",
-    "heading": "Aus dem Lager bestellen",
-    "intro": "Diese Modelle sind auf Lager und werden wie besehen geliefert. Wählen Sie die benötigten Größen und Mengen.",
+    "heading": "Direkt ab Lager bestellen",
+    "introLead": "Heute bestellt, schnell geliefert.",
+    "intro": "Diese Modelle sind direkt ab Lager verfügbar. Wählen Sie die gewünschten Größen und Mengen für Ihre Bestellung und wir sorgen für eine schnelle Lieferung.",
     "pending": "Ihr Konto wartet auf Freigabe. Sie können noch keine Bestellungen aufgeben.",
     "noProducts": "Derzeit sind keine Lagerprodukte verfügbar.",
     "clickToSelect": "Klicken Sie auf ein Modell, um es Ihrer Bestellung hinzuzufügen; erneut klicken entfernt es.",
