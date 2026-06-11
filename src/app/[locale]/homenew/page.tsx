@@ -1,7 +1,9 @@
-import LandingPageNew from '@/components/landing/LandingPageNew'
+import { redirect } from '@/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 
-// Parallel homepage proposal (client e-mail revision) for approval — the live
-// homepage at `/` is untouched. Public; shown even when logged in for review.
-export default function HomeNewRoute() {
-  return <LandingPageNew />
+// The revised landing was promoted to the live homepage at `/`. Keep the old
+// /homenew URL working by redirecting it there (locale-aware).
+export default async function HomeNewRoute() {
+  const locale = await getLocale()
+  redirect({ href: '/', locale })
 }

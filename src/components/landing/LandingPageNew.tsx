@@ -42,7 +42,7 @@ function Feature({ text }: { text: string }) {
   )
 }
 
-export default async function LandingPageNew() {
+export default async function LandingPageNew({ hasError }: { hasError?: boolean }) {
   const t = await getTranslations('homenew')
   const heroBody = t.raw('hero.body') as string[]
   const orthoBody = t.raw('orthosoft.body') as string[]
@@ -63,7 +63,7 @@ export default async function LandingPageNew() {
             ))}
           </div>
           <div id="login" className="scroll-mt-24">
-            <LoginCard />
+            <LoginCard hasError={hasError} />
           </div>
         </div>
 
