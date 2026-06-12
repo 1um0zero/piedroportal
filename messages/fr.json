@@ -811,7 +811,12 @@
       "all_stock": "Tous (stock)",
       "stock_yes": "Stock uniquement",
       "stock_no": "Hors stock",
-      "sample_stock_flag": "À marquer comme stock"
+      "sample_stock_flag": "À marquer comme stock",
+      "col_added": "Ajouté",
+      "added_all": "Ajouté (toutes dates)",
+      "added_today": "Ajouté aujourd’hui",
+      "added_7d": "7 derniers jours",
+      "added_30d": "30 derniers jours"
     },
     "branches": {
       "title": "Filiales",

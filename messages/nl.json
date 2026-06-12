@@ -811,7 +811,12 @@
       "all_stock": "Alle (voorraad)",
       "stock_yes": "Alleen voorraad",
       "stock_no": "Geen voorraad",
-      "sample_stock_flag": "Als voorraad markeren"
+      "sample_stock_flag": "Als voorraad markeren",
+      "col_added": "Toegevoegd",
+      "added_all": "Toegevoegd (alle datums)",
+      "added_today": "Vandaag toegevoegd",
+      "added_7d": "Laatste 7 dagen",
+      "added_30d": "Laatste 30 dagen"
     },
     "branches": {
       "title": "Filialen",

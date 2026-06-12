@@ -22,6 +22,17 @@ export type ProductRow = {
   picture_name: string | null
   exclusive: string | null
   is_stock: boolean
+  created_at: string
+}
+
+// Inclusive lower bound (local midnight) for each "added since" period.
+function addedSinceCutoff(period: string): number | null {
+  if (!period) return null
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  if (period === '7d') d.setDate(d.getDate() - 6)
+  if (period === '30d') d.setDate(d.getDate() - 29)
+  return d.getTime()
 }
 
 // Categorical select filter (matches the /orders pattern).
@@ -53,6 +64,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const [fType, setFType] = useState('')
   const [fExclusive, setFExclusive] = useState('')
   const [fStock, setFStock] = useState('')   // '' all | 'yes' | 'no'
+  const [fAdded, setFAdded] = useState('')   // '' all | 'today' | '7d' | '30d'
   const [onlyInactive, setOnlyInactive] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
   const [page, setPage] = useState(0)
@@ -69,8 +81,10 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
 
   const filtered = useMemo(() => {
     const needle = q.trim()
+    const cutoff = addedSinceCutoff(fAdded)
     const out = rows.filter(p => {
       if (onlyInactive && p.active) return false
+      if (cutoff != null && new Date(p.created_at).getTime() < cutoff) return false
       if (fSection && p.section !== fSection) return false
       if (fClosure && p.closure !== fClosure) return false
       if (fType && p.type !== fType) return false
@@ -82,7 +96,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
     })
     return [...out].sort((a, b) =>
       compareValues((a as Record<string, unknown>)[sort.key], (b as Record<string, unknown>)[sort.key], sort.dir))
-  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, sort]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, fAdded, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSort = (key: string) => setSort(s => nextSort(s, key))
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE)
@@ -118,6 +132,13 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           options={['yes', 'no']}
           labels={{ yes: t('stock_yes'), no: t('stock_no') }}
         />
+        <FilterSelect
+          value={fAdded}
+          onChange={v => { setFAdded(v); setPage(0) }}
+          allLabel={t('added_all')}
+          options={['today', '7d', '30d']}
+          labels={{ today: t('added_today'), '7d': t('added_7d'), '30d': t('added_30d') }}
+        />
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" checked={onlyInactive} onChange={e => { setOnlyInactive(e.target.checked); setPage(0) }} />
           {t('inactive_only')}
@@ -138,6 +159,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
               <SortableTh label={t('col_type')} sortKey="type" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_exclusive')} sortKey="exclusive" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_stock')} sortKey="is_stock" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_added')} sortKey="created_at" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_active')} sortKey="active" sort={sort} onSort={onSort} />
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
             </tr>
@@ -168,6 +190,9 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                   {p.is_stock
                     ? <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-dark">{t('stock_badge')}</span>
                     : <span className="text-stone-300">—</span>}
+                </td>
+                <td className="px-4 py-2 whitespace-nowrap text-xs text-stone-500">
+                  {p.created_at.slice(0, 10)}
                 </td>
                 <td className="px-4 py-2">
                   <button

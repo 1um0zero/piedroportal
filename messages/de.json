@@ -811,7 +811,12 @@
       "all_stock": "Alle (Lager)",
       "stock_yes": "Nur Lager",
       "stock_no": "Kein Lager",
-      "sample_stock_flag": "Als Lager markieren"
+      "sample_stock_flag": "Als Lager markieren",
+      "col_added": "Hinzugefügt",
+      "added_all": "Hinzugefügt (alle Daten)",
+      "added_today": "Heute hinzugefügt",
+      "added_7d": "Letzte 7 Tage",
+      "added_30d": "Letzte 30 Tage"
     },
     "branches": {
       "title": "Niederlassungen",

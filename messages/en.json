@@ -811,7 +811,12 @@
       "all_stock": "All (stock)",
       "stock_yes": "Stock only",
       "stock_no": "Non-stock",
-      "sample_stock_flag": "To flag as stock"
+      "sample_stock_flag": "To flag as stock",
+      "col_added": "Added",
+      "added_all": "Added (any date)",
+      "added_today": "Added today",
+      "added_7d": "Last 7 days",
+      "added_30d": "Last 30 days"
     },
     "branches": {
       "title": "Branch offices",
