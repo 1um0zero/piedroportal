@@ -1246,6 +1246,13 @@
     "greeting": "Bonjour '{{name}}',",
     "recip_edit": "Modifier À / Cc / Cci",
     "recip_placeholder": "email@exemple.fr, email2@exemple.fr…",
-    "recip_hint": "Ajouté à chaque e-mail de cette campagne. En envoi groupé, chaque destinataire est en Cci — le champ À affiche l’adresse de l’expéditeur, sauf si vous en définissez une ici. Les utilisateurs internes (admins/personnel) sont exclus des envois groupés."
+    "recip_hint": "Ajouté à chaque e-mail de cette campagne. En envoi groupé, chaque destinataire est en Cci — le champ À affiche l’adresse de l’expéditeur, sauf si vous en définissez une ici. Les utilisateurs internes (admins/personnel) sont exclus des envois groupés.",
+    "translations_title": "Traductions",
+    "original_language": "Original",
+    "btn_translate": "Proposer des traductions ({langs})",
+    "translating": "Traduction…",
+    "translations_hint": "Les destinataires reçoivent la version correspondant à leur langue du portail ; les langues sans traduction reçoivent l’original. Vérifiez et modifiez chaque onglet avant l’envoi.",
+    "translations_ready": "Traductions prêtes : {langs}. Vérifiez chaque onglet.",
+    "discard_translations": "Supprimer"
   }
 }

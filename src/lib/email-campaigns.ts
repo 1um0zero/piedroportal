@@ -128,7 +128,7 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
 
   const { data: due } = await service
     .from('email_campaigns')
-    .select('id, subject, body, body_html, audience, extra_to, extra_cc, extra_bcc, status, sent_count, failed_count')
+    .select('id, subject, body, body_html, translations, audience, extra_to, extra_cc, extra_bcc, status, sent_count, failed_count')
     .in('status', ['scheduled', 'sending'])
     .lte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
@@ -162,7 +162,13 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
           .select('id').maybeSingle()
         if (!claimed) continue
 
-        const html = renderCampaignHtml(camp.body, r.full_name, r.locale, replyTo ?? from, camp.body_html, signature)
+        // Per-locale variant when the campaign carries translations; original otherwise.
+        const variants = camp.translations as Record<string, { subject?: string; body?: string; body_html?: string }> | null
+        const variant = variants?.[r.locale]
+        const subject = variant?.subject || camp.subject
+        const html = renderCampaignHtml(
+          variant?.body || camp.body, r.full_name, r.locale, replyTo ?? from,
+          variant?.body_html || camp.body_html, signature)
 
         // Header addressing: ONE USER goes in To; bulk audiences put the
         // recipient in Bcc (To = sender address) so their address never shows.
@@ -175,7 +181,7 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
         const bcc = isBulk ? [r.email, ...extraBcc] : extraBcc
 
         const { error } = await resend.emails.send({
-          from, to, subject: camp.subject, html,
+          from, to, subject, html,
           ...(extraCc.length ? { cc: extraCc } : {}),
           ...(bcc.length ? { bcc } : {}),
           ...(replyTo ? { replyTo } : {}),

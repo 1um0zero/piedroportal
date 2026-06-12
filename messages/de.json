@@ -1246,6 +1246,13 @@
     "greeting": "Guten Tag '{{name}}',",
     "recip_edit": "An / Cc / Bcc bearbeiten",
     "recip_placeholder": "email@beispiel.de, email2@beispiel.de…",
-    "recip_hint": "Wird jeder E-Mail dieser Kampagne hinzugefügt. Beim Massenversand steht jeder Empfänger in Bcc — das An-Feld zeigt die Absenderadresse, sofern Sie hier keine festlegen. Interne Benutzer (Admins/Mitarbeiter) sind vom Massenversand ausgeschlossen."
+    "recip_hint": "Wird jeder E-Mail dieser Kampagne hinzugefügt. Beim Massenversand steht jeder Empfänger in Bcc — das An-Feld zeigt die Absenderadresse, sofern Sie hier keine festlegen. Interne Benutzer (Admins/Mitarbeiter) sind vom Massenversand ausgeschlossen.",
+    "translations_title": "Übersetzungen",
+    "original_language": "Original",
+    "btn_translate": "Übersetzungen vorschlagen ({langs})",
+    "translating": "Übersetzen…",
+    "translations_hint": "Empfänger erhalten die Version in ihrer Portalsprache; Sprachen ohne Übersetzung erhalten das Original. Prüfen und bearbeiten Sie jeden Tab vor dem Versand.",
+    "translations_ready": "Übersetzungen bereit: {langs}. Prüfen Sie jeden Tab.",
+    "discard_translations": "Verwerfen"
   }
 }

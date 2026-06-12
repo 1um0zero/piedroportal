@@ -1246,6 +1246,13 @@
     "greeting": "Beste '{{name}}',",
     "recip_edit": "Aan / Cc / Bcc bewerken",
     "recip_placeholder": "email@voorbeeld.nl, email2@voorbeeld.nl…",
-    "recip_hint": "Toegevoegd aan elke e-mail van deze campagne. Bij bulkverzending staat elke ontvanger in Bcc — het Aan-veld toont het afzenderadres, tenzij u hier een instelt. Interne gebruikers (admins/medewerkers) worden uitgesloten van bulkverzendingen."
+    "recip_hint": "Toegevoegd aan elke e-mail van deze campagne. Bij bulkverzending staat elke ontvanger in Bcc — het Aan-veld toont het afzenderadres, tenzij u hier een instelt. Interne gebruikers (admins/medewerkers) worden uitgesloten van bulkverzendingen.",
+    "translations_title": "Vertalingen",
+    "original_language": "Origineel",
+    "btn_translate": "Vertalingen voorstellen ({langs})",
+    "translating": "Vertalen…",
+    "translations_hint": "Ontvangers krijgen de versie in hun portaaltaal; talen zonder vertaling krijgen het origineel. Controleer en bewerk elk tabblad vóór verzending.",
+    "translations_ready": "Vertalingen klaar: {langs}. Controleer elk tabblad.",
+    "discard_translations": "Verwijderen"
   }
 }

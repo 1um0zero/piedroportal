@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import { previewAudience, sendTestEmail, createCampaign, cancelCampaign, processNow, saveSignature } from '@/app/actions/admin-email'
+import { previewAudience, sendTestEmail, createCampaign, cancelCampaign, processNow, saveSignature, proposeTranslations, type CampaignVariant } from '@/app/actions/admin-email'
 import RichTextEditor from '@/components/admin/RichTextEditor'
 
 export interface CampaignRow {
@@ -57,7 +57,17 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
   const [extraCc, setExtraCc] = useState('')
   const [extraBcc, setExtraBcc] = useState('')
   const [count, setCount] = useState<number | null>(null)
+  const [byLocale, setByLocale] = useState<Record<string, number>>({})
+  const [srcLocale, setSrcLocale] = useState('en')
+  const [variants, setVariants] = useState<Record<string, CampaignVariant>>({})
+  const [activeVar, setActiveVar] = useState<string | null>(null)
+  const [varKey, setVarKey] = useState(0) // bump to remount the variant editors
+  const [translating, setTranslating] = useState(false)
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+
+  const LOCALES = ['en', 'nl', 'fr', 'de']
+  // Languages actually present in the selected audience, beyond the original.
+  const targetLocales = LOCALES.filter(l => l !== srcLocale && (byLocale[l] ?? 0) > 0)
 
   const filteredUsers = useMemo(() => {
     const q = userSearch.trim().toLowerCase()
@@ -70,9 +80,9 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
     const target = audience === 'user' ? userId : audience === 'company' ? companyId : 'all'
     let stale = false
     const load = async () => {
-      if (!target) { setCount(null); return }
+      if (!target) { setCount(null); setByLocale({}); return }
       const r = await previewAudience(audience, userId || null, companyId || null)
-      if (!stale) setCount(r.count ?? null)
+      if (!stale) { setCount(r.count ?? null); setByLocale(r.byLocale ?? {}) }
     }
     void load()
     return () => { stale = true }
@@ -92,14 +102,33 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
         targetCompanyId: audience === 'company' ? companyId : null,
         scheduledAt: when === 'later' ? new Date(scheduledAt).toISOString() : null,
         extraTo, extraCc, extraBcc,
+        translations: Object.keys(variants).length ? variants : undefined,
       })
       if (r.error) setMsg({ kind: 'err', text: r.error })
       else {
         setMsg({ kind: 'ok', text: t('created', { count: r.recipients ?? 0 }) })
         setSubject(''); setBody(defaultBody); setEditorKey(k => k + 1); setScheduledAt(''); setWhen('now')
         setExtraTo(''); setExtraCc(''); setExtraBcc(''); setRecipOpen(false)
+        setVariants({}); setActiveVar(null); setVarKey(k => k + 1)
         router.refresh()
       }
+    })
+  }
+
+  function translate() {
+    setMsg(null)
+    setTranslating(true)
+    startTransition(async () => {
+      const r = await proposeTranslations(subject, body, srcLocale, targetLocales)
+      setTranslating(false)
+      if (r.error || !r.translations) {
+        setMsg({ kind: 'err', text: r.error ?? 'Translation failed' })
+        return
+      }
+      setVariants(r.translations)
+      setActiveVar(Object.keys(r.translations)[0] ?? null)
+      setVarKey(k => k + 1)
+      setMsg({ kind: 'ok', text: t('translations_ready', { langs: Object.keys(r.translations).join(', ').toUpperCase() }) })
     })
   }
 
@@ -162,8 +191,13 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
             </select>
           )}
           {count != null && (
-            <p className="text-sm text-stone-600 mt-2">
-              <span className="font-bold text-gold-dark">{count}</span> {t('recipients')}
+            <p className="flex flex-wrap items-center gap-2 text-sm text-stone-600 mt-2">
+              <span><span className="font-bold text-gold-dark">{count}</span> {t('recipients')}</span>
+              {LOCALES.filter(l => (byLocale[l] ?? 0) > 0).map(l => (
+                <span key={l} className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-500 uppercase">
+                  {l} · {byLocale[l]}
+                </span>
+              ))}
             </p>
           )}
         </div>
@@ -174,6 +208,55 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
           <RichTextEditor key={editorKey} initialHtml={defaultBody} onChange={setBody} placeholder={t('body_placeholder')} />
           <p className="text-xs text-stone-400">{t('body_hint')}</p>
         </div>
+
+        {/* ── Per-language translations ──────────────────────────────────── */}
+        {targetLocales.length > 0 && (
+          <div className="border border-dashed border-stone-200 rounded-lg p-3 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-semibold tracking-wider uppercase text-stone-400">{t('translations_title')}</p>
+              <label className="ml-auto flex items-center gap-1.5 text-xs text-stone-500">
+                {t('original_language')}
+                <select className="border border-stone-200 rounded px-1.5 py-1 text-xs uppercase"
+                  value={srcLocale} onChange={e => setSrcLocale(e.target.value)}>
+                  {LOCALES.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
+                </select>
+              </label>
+              <button type="button" disabled={!subject.trim() || !hasBody || pending || translating} onClick={translate}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold/10 text-gold-dark hover:bg-gold/20 transition-colors disabled:opacity-40">
+                {translating ? t('translating') : t('btn_translate', { langs: targetLocales.join(', ').toUpperCase() })}
+              </button>
+            </div>
+            <p className="text-[11px] text-stone-400 leading-relaxed">{t('translations_hint')}</p>
+
+            {Object.keys(variants).length > 0 && (
+              <div className="space-y-3">
+                <div className="flex gap-1">
+                  {Object.keys(variants).map(l => (
+                    <button key={l} type="button" onClick={() => setActiveVar(l)}
+                      className={`px-3 py-1.5 rounded-t-lg text-xs font-bold uppercase border-b-2 transition-colors
+                        ${activeVar === l ? 'border-gold text-gold-dark' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>
+                      {l} · {byLocale[l] ?? 0}
+                    </button>
+                  ))}
+                  <button type="button"
+                    onClick={() => { setVariants({}); setActiveVar(null); setVarKey(k => k + 1) }}
+                    className="ml-auto px-2 text-xs font-semibold text-red-400 hover:text-red-600">
+                    {t('discard_translations')}
+                  </button>
+                </div>
+                {activeVar && variants[activeVar] && (
+                  <div className="space-y-2">
+                    <input className={inputCls} value={variants[activeVar].subject}
+                      onChange={e => setVariants(v => ({ ...v, [activeVar]: { ...v[activeVar], subject: e.target.value } }))} />
+                    <RichTextEditor key={`${activeVar}-${varKey}`} minHeight={140}
+                      initialHtml={variants[activeVar].bodyHtml}
+                      onChange={html => setVariants(v => ({ ...v, [activeVar]: { ...v[activeVar], bodyHtml: html } }))} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Extra header recipients (To / Cc / Bcc) */}
         <div>

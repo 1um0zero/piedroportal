@@ -1246,6 +1246,13 @@
     "greeting": "Dear '{{name}}',",
     "recip_edit": "Edit To / Cc / Bcc",
     "recip_placeholder": "email@example.com, email2@example.com…",
-    "recip_hint": "Added to every email this campaign sends. Bulk sends put each recipient in Bcc — the To field shows the sender address unless you set one here. Internal users (admins/staff) are excluded from bulk audiences."
+    "recip_hint": "Added to every email this campaign sends. Bulk sends put each recipient in Bcc — the To field shows the sender address unless you set one here. Internal users (admins/staff) are excluded from bulk audiences.",
+    "translations_title": "Translations",
+    "original_language": "Original",
+    "btn_translate": "Propose translations ({langs})",
+    "translating": "Translating…",
+    "translations_hint": "Recipients receive the version matching their portal language; languages without a translation get the original. Review and edit each tab before sending.",
+    "translations_ready": "Translations ready: {langs}. Review each tab.",
+    "discard_translations": "Discard"
   }
 }

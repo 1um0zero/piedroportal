@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 /**
@@ -24,6 +24,19 @@ export default function RichTextEditor({ initialHtml, onChange, minHeight = 180,
   const ref = useRef<HTMLDivElement>(null)
   const [uploading, setUploading] = useState(0)
   const [empty, setEmpty] = useState(!initialHtml)
+
+  // Seed the content imperatively on mount only. Passing the HTML through
+  // React (dangerouslySetInnerHTML) on a contentEditable node lets a re-render
+  // restore the seed over what the user typed — the editor became read-only in
+  // practice. The node is fully uncontrolled; remount via `key` to reset.
+  const seeded = useRef(false)
+  useLayoutEffect(() => {
+    if (ref.current && !seeded.current) {
+      seeded.current = true
+      ref.current.innerHTML = initialHtml ?? ''
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const emit = useCallback(() => {
     const el = ref.current
@@ -145,7 +158,6 @@ export default function RichTextEditor({ initialHtml, onChange, minHeight = 180,
           onInput={emit}
           onPaste={onPaste}
           onDrop={onDrop}
-          dangerouslySetInnerHTML={{ __html: initialHtml ?? '' }}
         />
       </div>
     </div>

@@ -7,6 +7,7 @@ import { isPiedroAdmin } from '@/lib/roles'
 import { processDueCampaigns, renderCampaignHtml, htmlToPlainText, sanitizeEmailHtml } from '@/lib/email-campaigns'
 import { getSettings, setSettings } from '@/lib/settings'
 import { Resend } from 'resend'
+import Anthropic from '@anthropic-ai/sdk'
 
 /**
  * Admin email broadcast tool — compose once, send to one user, a company's
@@ -79,17 +80,75 @@ async function resolveRecipients(
   return out
 }
 
-/** Preview how many people a given audience reaches (composer live counter). */
+/** Preview how many people a given audience reaches (composer live counter + per-locale split). */
 export async function previewAudience(
   audience: Audience,
   targetUserId: string | null,
   targetCompanyId: string | null,
-): Promise<{ count?: number; error?: string }> {
+): Promise<{ count?: number; byLocale?: Record<string, number>; error?: string }> {
   const auth = await requireAdmin()
   if ('error' in auth) return { error: auth.error }
   const r = await resolveRecipients(audience, targetUserId, targetCompanyId)
   if ('error' in r) return { error: r.error }
-  return { count: r.length }
+  const byLocale: Record<string, number> = {}
+  for (const rec of r) byLocale[rec.locale] = (byLocale[rec.locale] ?? 0) + 1
+  return { count: r.length, byLocale }
+}
+
+const LOCALE_NAMES: Record<string, string> = { en: 'English', nl: 'Dutch', fr: 'French', de: 'German' }
+
+export interface CampaignVariant { subject: string; bodyHtml: string }
+
+/**
+ * AI-propose translations of the composed email (subject + rich HTML body)
+ * into the recipients' languages. The admin reviews/edits each variant in the
+ * composer before sending — nothing is sent automatically.
+ */
+export async function proposeTranslations(
+  subject: string,
+  bodyHtml: string,
+  sourceLocale: string,
+  targetLocales: string[],
+): Promise<{ translations?: Record<string, CampaignVariant>; error?: string }> {
+  const auth = await requireAdmin()
+  if ('error' in auth) return { error: auth.error }
+  if (!subject.trim() || !bodyHtml.trim()) return { error: 'Subject and body are required' }
+  const targets = [...new Set(targetLocales)].filter(l => LOCALE_NAMES[l] && l !== sourceLocale)
+  if (!targets.length) return { error: 'No target languages' }
+  if (!process.env.ANTHROPIC_API_KEY) return { error: 'ANTHROPIC_API_KEY not configured' }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const targetList = targets.map(l => `"${l}" (${LOCALE_NAMES[l]})`).join(', ')
+  try {
+    const msg = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 16000,
+      system: `You translate marketing/transactional emails for Piedro International, a Dutch orthopaedic footwear company (B2B portal for clinics).
+Translate the given email subject and HTML body from ${LOCALE_NAMES[sourceLocale] ?? sourceLocale} into each requested language.
+Rules:
+- Preserve the HTML structure, tags and attributes EXACTLY — translate only human-readable text content.
+- Keep the literal placeholder {{name}} untouched wherever it appears.
+- Do not translate URLs, email addresses, product references or the brand name "Piedro".
+- Use natural, professional business tone appropriate for healthcare professionals.
+Respond with ONLY a JSON object of the form {"<locale>": {"subject": "...", "body_html": "..."}} for the requested locales — no markdown fences, no commentary.`,
+      messages: [{
+        role: 'user',
+        content: `Target languages: ${targetList}\n\nSUBJECT:\n${subject}\n\nBODY HTML:\n${bodyHtml}`,
+      }],
+    })
+    const text = msg.content.filter(b => b.type === 'text').map(b => b.text).join('')
+    const json = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
+    const parsed = JSON.parse(json) as Record<string, { subject?: string; body_html?: string }>
+    const out: Record<string, CampaignVariant> = {}
+    for (const l of targets) {
+      const v = parsed[l]
+      if (v?.subject && v?.body_html) out[l] = { subject: v.subject, bodyHtml: sanitizeEmailHtml(v.body_html) }
+    }
+    if (!Object.keys(out).length) return { error: 'Translation returned no usable variants' }
+    return { translations: out }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Translation failed' }
+  }
 }
 
 /** Send a single test email (rendered exactly like the real one) to the admin's own address. */
@@ -134,6 +193,7 @@ export async function createCampaign(input: {
   extraTo?: string
   extraCc?: string
   extraBcc?: string
+  translations?: Record<string, CampaignVariant> // per-locale variants (admin-reviewed)
 }): Promise<{ ok?: boolean; error?: string; recipients?: number }> {
   const auth = await requireAdmin()
   if ('error' in auth) return { error: auth.error }
@@ -156,9 +216,21 @@ export async function createCampaign(input: {
   const recipients = await resolveRecipients(input.audience, input.targetUserId, input.targetCompanyId)
   if ('error' in recipients) return { error: recipients.error }
 
+  // Per-locale variants: sanitize and derive the plain-text fallback server-side.
+  let translations: Record<string, { subject: string; body: string; body_html: string }> | null = null
+  for (const [loc, v] of Object.entries(input.translations ?? {})) {
+    if (!['en', 'nl', 'fr', 'de'].includes(loc)) continue
+    const vSubject = v.subject.trim()
+    const vHtml = sanitizeEmailHtml(v.bodyHtml.trim())
+    const vBody = htmlToPlainText(vHtml)
+    if (!vSubject || (!vBody && !/<img\b/i.test(vHtml))) continue
+    translations = translations ?? {}
+    translations[loc] = { subject: vSubject, body: vBody, body_html: vHtml }
+  }
+
   const service = createServiceClient()
   const { data: camp, error: campErr } = await service.from('email_campaigns').insert({
-    subject, body, body_html: bodyHtml,
+    subject, body, body_html: bodyHtml, translations,
     extra_to: extraTo as string | null, extra_cc: extraCc as string | null, extra_bcc: extraBcc as string | null,
     audience: input.audience,
     target_user_id: input.audience === 'user' ? input.targetUserId : null,
