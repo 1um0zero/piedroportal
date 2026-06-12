@@ -13,6 +13,7 @@ import HeaderLivingstonLink from './HeaderLivingstonLink'
 import { getUserExclusiveLabels } from '@/lib/user-companies'
 import { NavbarLocale } from './NavbarLocale'
 import { NavbarMobile } from './NavbarMobile'
+import NavAdminMenu from './NavAdminMenu'
 
 type Props = { locale: string }
 
@@ -123,30 +124,8 @@ export default async function Navbar({ locale }: Props) {
                   <Link href="/admin/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                     {t('stock')}
                   </Link>
-                  <Link href="/admin/companies" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                    {t('companies')}
-                  </Link>
-                  <Link href="/admin/branches" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                    {t('branches')}
-                  </Link>
-                  <Link href="/admin/users" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                    {t('users')}
-                  </Link>
-                  {isSuper && (
-                    <Link href="/admin/orders/unassigned" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                      {t('unassigned')}
-                    </Link>
-                  )}
-                  <Link href="/admin/translations" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                    {t('translations')}
-                  </Link>
-                  <Link href="/admin/settings" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                    {t('settings')}
-                  </Link>
-                  <a href="/share/index.html" target="_blank" rel="noopener noreferrer"
-                    className="text-xs font-semibold tracking-wider text-gold hover:text-gold-dark uppercase transition-colors">
-                    {t('docs')}
-                  </a>
+                  {/* Low-frequency admin areas grouped in one dropdown to keep the bar short */}
+                  <NavAdminMenu isSuper={isSuper} />
                 </>
               )}
             </>

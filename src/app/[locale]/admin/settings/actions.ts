@@ -16,6 +16,13 @@ export async function saveSettingsAction(
 
   const entries: Record<string, string> = {}
   for (const key of ALLOWED) entries[key] = (formData.get(key) as string ?? '').trim()
+  // Notify fields accept multiple addresses — normalize separators and validate each.
+  for (const key of ['order_notify_email', 'admin_notify_email'] as const) {
+    const list = entries[key].split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
+    const bad = list.find(e => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
+    if (bad) return { error: `Invalid email address: ${bad}` }
+    entries[key] = list.join(', ')
+  }
   // Checkbox: show the dispatch counter to every user (not just staff/admin).
   entries['dispatch_show_all'] = formData.get('dispatch_show_all') ? '1' : ''
 

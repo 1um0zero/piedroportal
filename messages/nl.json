@@ -43,9 +43,9 @@
     "title": "Instellingen",
     "description": "Configureer notificatie-e-mails. Deze overschrijven de omgevingsvariabelen van de server.",
     "order_notify_email": "E-mail voor bestelmeldingen",
-    "order_notify_help": "Waarheen nieuwe ingediende bestellingen worden gemaild.",
+    "order_notify_help": "Waarheen nieuwe ingediende bestellingen worden gemaild. Meerdere adressen toegestaan, gescheiden door komma's.",
     "admin_notify_email": "E-mail voor nieuwe gebruikers",
-    "admin_notify_help": "Waarheen nieuwe gebruikersregistraties worden gemaild.",
+    "admin_notify_help": "Waarheen nieuwe gebruikersregistraties worden gemaild. Meerdere adressen toegestaan, gescheiden door komma's.",
     "email_from": "Afzender (Van)",
     "email_from_help": "Moet een Piedro-eigen, in Resend geverifieerd adres zijn, bijv. Piedro Portal <noreply@piedro.com>.",
     "notify_locale": "Taal interne e-mails",
@@ -116,7 +116,8 @@
     "settings": "Instellingen",
     "docs": "Docs",
     "translations": "Vertalingen",
-    "stock": "Voorraad"
+    "stock": "Voorraad",
+    "backoffice": "Backoffice"
   },
   "gallery": {
     "kids": "Kinderen",

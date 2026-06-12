@@ -206,9 +206,10 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const resend = getResend()
     if (!resend) return { pdf_url: pdfPath, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
     const cfg = await getSettings(['order_notify_email', 'email_from', 'notify_locale'])
-    const toEmail   = cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL
+    // The order-desk setting may hold a comma-separated list of addresses.
+    const toEmails  = splitEmails(cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL)
     const emailFrom = cfg.email_from         ?? process.env.EMAIL_FROM
-    if (!emailFrom || (!toEmail && !userEmail)) {
+    if (!emailFrom || (!toEmails.length && !userEmail)) {
       return { pdf_url: pdfPath, emailError: 'Email not sent: set sender/recipient in Admin → Settings' }
     }
 
@@ -218,10 +219,10 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const errors: string[] = []
 
     // (1) Internal notification to the order desk.
-    if (toEmail) {
+    if (toEmails.length) {
       const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
       const { error } = await resend.emails.send({
-        from: emailFrom, to: [toEmail],
+        from: emailFrom, to: toEmails,
         subject: t('subject_internal', { ref }),
         html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
         attachments: [attachment],
@@ -253,8 +254,9 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
 
     // (3) Branch-office copies — each relevant branch in its OWN language.
     const { data: prod } = await service.from('products').select('style_name').eq('id', row.product_id).single()
+    const internalSet = new Set(toEmails.map(e => e.toLowerCase()))
     const branchTargets = (await getBranchNotifyTargets(prod?.style_name))
-      .filter(bt => bt.email.toLowerCase() !== (toEmail ?? '').toLowerCase())
+      .filter(bt => !internalSet.has(bt.email.toLowerCase()))
     for (const bt of branchTargets) {
       const t = await getTranslations({ locale: bt.locale, namespace: 'emails' })
       const { error } = await resend.emails.send({

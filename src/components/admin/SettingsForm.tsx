@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { saveSettingsAction } from '@/app/[locale]/admin/settings/actions'
@@ -12,15 +12,21 @@ type Cfg = {
 
 const LOCALES = ['en', 'nl', 'fr', 'de'] as const
 
+// Notify fields accept a comma/semicolon-separated list of addresses.
 const FIELDS = [
-  { key: 'order_notify_email', labelKey: 'order_notify_email', helpKey: 'order_notify_help', type: 'email' },
-  { key: 'admin_notify_email', labelKey: 'admin_notify_email', helpKey: 'admin_notify_help', type: 'email' },
-  { key: 'email_from',         labelKey: 'email_from',         helpKey: 'email_from_help',   type: 'text'  },
+  { key: 'order_notify_email', labelKey: 'order_notify_email', helpKey: 'order_notify_help', type: 'text' },
+  { key: 'admin_notify_email', labelKey: 'admin_notify_email', helpKey: 'admin_notify_help', type: 'text' },
+  { key: 'email_from',         labelKey: 'email_from',         helpKey: 'email_from_help',   type: 'text' },
 ] as const
 
 export default function SettingsForm({ current, envFallback }: { current: Cfg; envFallback: Cfg }) {
   const t = useTranslations('adminSettings')
   const [state, action, pending] = useActionState(saveSettingsAction, null)
+  // Controlled values: React 19 resets uncontrolled inputs after a form action,
+  // which made the fields LOOK cleared right after a successful save.
+  const [values, setValues] = useState<Cfg>(current)
+  const set = (key: keyof Cfg) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setValues(v => ({ ...v, [key]: e.target.value }))
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
@@ -34,7 +40,8 @@ export default function SettingsForm({ current, envFallback }: { current: Cfg; e
             <input
               name={f.key}
               type={f.type}
-              defaultValue={current[f.key as keyof Cfg] ?? ''}
+              value={values[f.key as keyof Cfg] ?? ''}
+              onChange={set(f.key as keyof Cfg)}
               placeholder={envFallback[f.key as keyof Cfg]
                 ? t('using_env_fallback', { value: envFallback[f.key as keyof Cfg] as string })
                 : ''}
@@ -49,7 +56,8 @@ export default function SettingsForm({ current, envFallback }: { current: Cfg; e
           <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('notify_locale')}</label>
           <select
             name="notify_locale"
-            defaultValue={current.notify_locale ?? 'en'}
+            value={values.notify_locale ?? 'en'}
+            onChange={set('notify_locale')}
             className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                        text-stone-900 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
           >
@@ -64,17 +72,18 @@ export default function SettingsForm({ current, envFallback }: { current: Cfg; e
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('dispatch_days_normal')}</label>
-              <input name="dispatch_days_normal" type="number" min={0} defaultValue={current.dispatch_days_normal ?? ''}
+              <input name="dispatch_days_normal" type="number" min={0} value={values.dispatch_days_normal ?? ''} onChange={set('dispatch_days_normal')}
                 className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('dispatch_days_urgent')}</label>
-              <input name="dispatch_days_urgent" type="number" min={0} defaultValue={current.dispatch_days_urgent ?? ''}
+              <input name="dispatch_days_urgent" type="number" min={0} value={values.dispatch_days_urgent ?? ''} onChange={set('dispatch_days_urgent')}
                 className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm text-stone-600">
-            <input type="checkbox" name="dispatch_show_all" defaultChecked={current.dispatch_show_all === '1'} className="custom-gold" />
+            <input type="checkbox" name="dispatch_show_all" checked={values.dispatch_show_all === '1'}
+              onChange={e => setValues(v => ({ ...v, dispatch_show_all: e.target.checked ? '1' : '' }))} className="custom-gold" />
             {t('dispatch_show_all')}
           </label>
           <p className="text-xs text-stone-400">{t('dispatch_help')}</p>

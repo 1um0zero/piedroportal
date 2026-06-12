@@ -43,9 +43,9 @@
     "title": "Paramètres",
     "description": "Configurez les e-mails de notification. Ils remplacent les variables d'environnement du serveur.",
     "order_notify_email": "E-mail de notification de commande",
-    "order_notify_help": "Où sont envoyées les nouvelles commandes soumises.",
+    "order_notify_help": "Où sont envoyées les nouvelles commandes soumises. Plusieurs adresses possibles, séparées par des virgules.",
     "admin_notify_email": "E-mail pour nouveaux utilisateurs",
-    "admin_notify_help": "Où sont envoyées les inscriptions de nouveaux utilisateurs.",
+    "admin_notify_help": "Où sont envoyées les inscriptions de nouveaux utilisateurs. Plusieurs adresses possibles, séparées par des virgules.",
     "email_from": "Expéditeur (De)",
     "email_from_help": "Doit être une adresse Piedro vérifiée dans Resend, ex. Piedro Portal <noreply@piedro.com>.",
     "notify_locale": "Langue des e-mails internes",
@@ -116,7 +116,8 @@
     "settings": "Paramètres",
     "docs": "Docs",
     "translations": "Traductions",
-    "stock": "Stock"
+    "stock": "Stock",
+    "backoffice": "Backoffice"
   },
   "gallery": {
     "kids": "Enfants",

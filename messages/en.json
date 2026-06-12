@@ -43,9 +43,9 @@
     "title": "Settings",
     "description": "Configure notification emails. These override the server environment variables.",
     "order_notify_email": "Order notification email",
-    "order_notify_help": "Where new submitted orders are emailed.",
+    "order_notify_help": "Where new submitted orders are emailed. Multiple addresses allowed, separated by commas.",
     "admin_notify_email": "New-user notification email",
-    "admin_notify_help": "Where new user sign-ups are emailed.",
+    "admin_notify_help": "Where new user sign-ups are emailed. Multiple addresses allowed, separated by commas.",
     "email_from": "Sender (From)",
     "email_from_help": "Must be a Piedro-owned, Resend-verified address, e.g. Piedro Portal <noreply@piedro.com>.",
     "notify_locale": "Internal email language",
@@ -116,7 +116,8 @@
     "settings": "Settings",
     "docs": "Docs",
     "translations": "Translations",
-    "stock": "Stock"
+    "stock": "Stock",
+    "backoffice": "Backoffice"
   },
   "gallery": {
     "kids": "Kids",

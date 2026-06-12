@@ -302,9 +302,10 @@ async function generateStockPdfAndEmail(
     const resend = getResend()
     if (!resend) return { emailError: 'Email service not configured (RESEND_API_KEY missing)' }
     const cfg = await getSettings(['order_notify_email', 'email_from', 'notify_locale'])
-    const toEmail = cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL
+    // The order-desk setting may hold a comma-separated list of addresses.
+    const toEmails = splitEmails(cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL)
     const emailFrom = cfg.email_from ?? process.env.EMAIL_FROM
-    if (!emailFrom || (!toEmail && !userEmail)) {
+    if (!emailFrom || (!toEmails.length && !userEmail)) {
       return { emailError: 'Email not sent: set sender/recipient in Admin → Settings' }
     }
 
@@ -314,10 +315,10 @@ async function generateStockPdfAndEmail(
     const errors: string[] = []
 
     // (1) Internal notification to the order desk.
-    if (toEmail) {
+    if (toEmails.length) {
       const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
       const { error } = await resend.emails.send({
-        from: emailFrom, to: [toEmail],
+        from: emailFrom, to: toEmails,
         subject: t('subject_internal', { ref }),
         html: stockEmailHtml(t, t('heading_internal'), ref, company, patient, summary),
         attachments: [attachment],
@@ -343,10 +344,11 @@ async function generateStockPdfAndEmail(
 
     // (3) Branch copies — union of branches in scope for any model in the order.
     const styleNames = [...new Set(items.map((i: { styleName?: string }) => i.styleName).filter(Boolean))] as string[]
+    const internalSet = new Set(toEmails.map((e) => e.toLowerCase()))
     const branchMap = new Map<string, Locale>()
     for (const sn of styleNames) {
       for (const bt of await getBranchNotifyTargets(sn)) {
-        if (bt.email.toLowerCase() !== (toEmail ?? '').toLowerCase()) branchMap.set(bt.email, bt.locale)
+        if (!internalSet.has(bt.email.toLowerCase())) branchMap.set(bt.email, bt.locale)
       }
     }
     for (const [email, bl] of branchMap) {

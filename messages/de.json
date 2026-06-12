@@ -43,9 +43,9 @@
     "title": "Einstellungen",
     "description": "Benachrichtigungs-E-Mails konfigurieren. Diese überschreiben die Server-Umgebungsvariablen.",
     "order_notify_email": "E-Mail für Bestellbenachrichtigungen",
-    "order_notify_help": "Wohin neue eingereichte Bestellungen gesendet werden.",
+    "order_notify_help": "Wohin neue eingereichte Bestellungen gesendet werden. Mehrere Adressen möglich, durch Kommas getrennt.",
     "admin_notify_email": "E-Mail für neue Benutzer",
-    "admin_notify_help": "Wohin neue Benutzerregistrierungen gesendet werden.",
+    "admin_notify_help": "Wohin neue Benutzerregistrierungen gesendet werden. Mehrere Adressen möglich, durch Kommas getrennt.",
     "email_from": "Absender (Von)",
     "email_from_help": "Muss eine Piedro-eigene, in Resend verifizierte Adresse sein, z. B. Piedro Portal <noreply@piedro.com>.",
     "notify_locale": "Sprache interner E-Mails",
@@ -116,7 +116,8 @@
     "settings": "Einstellungen",
     "docs": "Docs",
     "translations": "Übersetzungen",
-    "stock": "Lager"
+    "stock": "Lager",
+    "backoffice": "Backoffice"
   },
   "gallery": {
     "kids": "Kinder",

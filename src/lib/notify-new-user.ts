@@ -11,9 +11,11 @@ export async function notifyAdminNewUser(email: string, fullName: string) {
   const apiKey = process.env.RESEND_API_KEY
   // Recipients/sender/locale from /admin/settings, env fallback. Skip if not configured.
   const cfg = await getSettings(['admin_notify_email', 'email_from', 'notify_locale'])
-  const ADMIN_EMAIL = cfg.admin_notify_email ?? process.env.ADMIN_NOTIFY_EMAIL
+  // Setting may hold a comma-separated list of addresses.
+  const ADMIN_EMAILS = (cfg.admin_notify_email ?? process.env.ADMIN_NOTIFY_EMAIL ?? '')
+    .split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
   const EMAIL_FROM  = cfg.email_from         ?? process.env.EMAIL_FROM
-  if (!apiKey || !ADMIN_EMAIL || !EMAIL_FROM) return   // skip if not fully configured
+  if (!apiKey || !ADMIN_EMAILS.length || !EMAIL_FROM) return   // skip if not fully configured
 
   const locale = (cfg.notify_locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'
   const t = await getTranslations({ locale, namespace: 'emails' })
@@ -22,7 +24,7 @@ export async function notifyAdminNewUser(email: string, fullName: string) {
 
   await resend.emails.send({
     from: EMAIL_FROM,
-    to:   ADMIN_EMAIL,
+    to:   ADMIN_EMAILS,
     subject: t('subject_new_user', { email }),
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">

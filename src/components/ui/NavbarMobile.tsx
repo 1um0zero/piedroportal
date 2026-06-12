@@ -80,6 +80,8 @@ export function NavbarMobile({ isAdmin, isSuper = false, isBackoffice, isLoggedI
                   <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
                   {isAdmin && (
                     <>
+                      <Link href="/admin/stock" onClick={close} className={linkCls}>{t('stock')}</Link>
+                      <p className="pt-4 pb-1 text-[10px] font-bold tracking-[0.2em] uppercase text-stone-400">{t('backoffice')}</p>
                       <Link href="/admin/companies" onClick={close} className={linkCls}>{t('companies')}</Link>
                       <Link href="/admin/branches"  onClick={close} className={linkCls}>{t('branches')}</Link>
                       <Link href="/admin/users"     onClick={close} className={linkCls}>{t('users')}</Link>
