@@ -34,6 +34,8 @@ type Item = {
   index: number
   storageName: string
   matched: boolean
+  /** Folder is named like a colour_id but the filename points to a different one — excluded from upload. */
+  mismatch: boolean
   status: 'queued' | 'uploading' | 'done' | 'error'
   error?: string
 }
@@ -69,13 +71,16 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
       const folder = folderOf(rel)
       const parsed = parseName(file.name, folder)
       if (!parsed) continue
+      // Folder named like a colour_id must agree with the filename; mixed folders skip this check.
+      const mismatch = !!folder && FOLDER_AS_ID.test(folder) && folder !== parsed.colourId
       next.push({
         file,
         folder,
         colourId: parsed.colourId,
         index: parsed.index,
         storageName: `${parsed.colourId}.${String(parsed.index).padStart(2, '0')}.png`,
-        matched: colourSet.has(parsed.colourId),
+        matched: !mismatch && colourSet.has(parsed.colourId),
+        mismatch,
         status: 'queued',
       })
     }
@@ -103,10 +108,10 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   // Anomalies detected during ingest — informative, nothing is blocked.
   const anomalies = useMemo(() => {
     const out: string[] = []
-    // 1. File lives in a folder named like a colour_id, but the filename points elsewhere.
+    // 1. File lives in a folder named like a colour_id, but the filename points elsewhere → excluded.
     const mismatchByFolder = new Map<string, Set<string>>()
     for (const it of items) {
-      if (it.folder && FOLDER_AS_ID.test(it.folder) && it.folder !== it.colourId) {
+      if (it.mismatch && it.folder) {
         if (!mismatchByFolder.has(it.folder)) mismatchByFolder.set(it.folder, new Set())
         mismatchByFolder.get(it.folder)!.add(it.colourId)
       }
@@ -116,14 +121,16 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
     }
     // 2. Two or more files map to the same storage target — only the last upload survives.
     const byTarget = new Map<string, number>()
-    for (const it of items) byTarget.set(it.storageName, (byTarget.get(it.storageName) ?? 0) + 1)
+    for (const it of items) {
+      if (it.matched) byTarget.set(it.storageName, (byTarget.get(it.storageName) ?? 0) + 1)
+    }
     for (const [target, count] of byTarget) {
       if (count > 1) out.push(t('anom_duplicate_target', { target, count }))
     }
-    // 3. Unmatched colour_ids (no product in the portal).
+    // 3. Unmatched colour_ids (no product in the portal); mismatches are reported above.
     const noMatch = new Map<string, number>()
     for (const it of items) {
-      if (!it.matched) noMatch.set(it.colourId, (noMatch.get(it.colourId) ?? 0) + 1)
+      if (!it.matched && !it.mismatch) noMatch.set(it.colourId, (noMatch.get(it.colourId) ?? 0) + 1)
     }
     for (const [id, count] of noMatch) out.push(t('anom_unmatched', { id, count }))
     return out
@@ -186,12 +193,14 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
               </thead>
               <tbody className="divide-y divide-stone-50">
                 {items.map((it, i) => (
-                  <tr key={i} className={it.matched ? '' : 'bg-red-50/40'}>
+                  <tr key={i} className={it.matched ? '' : it.mismatch ? 'bg-amber-50/60' : 'bg-red-50/40'}>
                     <td className="px-4 py-1.5 text-stone-500 truncate max-w-[220px]">{it.file.name}</td>
                     <td className="px-4 py-1.5 text-stone-700 font-mono text-xs">{it.storageName}</td>
                     <td className="px-4 py-1.5">{it.matched
                       ? <span className="text-emerald-600">✓ {it.colourId}</span>
-                      : <span className="text-red-500">{t('no_match')}</span>}</td>
+                      : it.mismatch
+                        ? <span className="text-amber-600" title={t('excluded_mismatch_hint', { folder: it.folder ?? '' })}>{t('excluded_mismatch')}</span>
+                        : <span className="text-red-500">{t('no_match')}</span>}</td>
                     <td className="px-4 py-1.5">
                       {it.status === 'queued' && <span className="text-stone-400">{t('st_queued')}</span>}
                       {it.status === 'uploading' && <span className="text-blue-500">{t('st_uploading')}</span>}
