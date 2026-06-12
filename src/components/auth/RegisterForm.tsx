@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ResendConfirmation from './ResendConfirmation'
 
 export default function RegisterForm() {
   const t = useTranslations('auth')
@@ -68,6 +69,9 @@ export default function RegisterForm() {
             </div>
             <h2 className="font-semibold text-stone-800">{t('register_check_email')}</h2>
             <p className="text-sm text-stone-500">{t('register_confirm_sent')} <strong>{email}</strong></p>
+            <div className="pt-2 text-left">
+              <ResendConfirmation initialEmail={email} />
+            </div>
             <Link href="/login"
               className="inline-block text-sm text-gold hover:underline mt-2">
               ← {t('back_to_login')}

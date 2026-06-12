@@ -475,6 +475,9 @@
     "confirm_cta": "Confirmer l'adresse e-mail",
     "confirm_failed_title": "Lien invalide ou expiré",
     "confirm_failed_body": "Ce lien de confirmation n'est plus valide. Veuillez vous réinscrire ou demander un nouveau lien.",
+    "resend_confirmation": "Renvoyer l'e-mail de confirmation",
+    "resend_sent": "Si un compte existe pour cette adresse, un nouveau lien de confirmation a été envoyé. Vérifiez votre boîte de réception (et les courriers indésirables).",
+    "resend_rate_limited": "Veuillez patienter une minute avant de demander un nouvel e-mail.",
     "pending_company": "Compte en attente d'approbation",
     "pending_company_desc": "Votre compte est en cours d'examen par Piedro International. Vous recevrez un e-mail lorsque votre accès aux commandes sera activé.",
     "contact": "Contact"
