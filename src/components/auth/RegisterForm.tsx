@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ResendConfirmation from './ResendConfirmation'
+import EmailDeliveryTips from './EmailDeliveryTips'
 
 export default function RegisterForm() {
   const t = useTranslations('auth')
@@ -59,23 +60,32 @@ export default function RegisterForm() {
 
         {success ? (
           /* Success state */
-          <div className="bg-white rounded-[14px] p-8 space-y-4 text-center"
+          <div className="bg-white rounded-[14px] p-8 space-y-5"
             style={{ boxShadow: 'var(--shadow-card)' }}>
-            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6 text-gold" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+              </div>
+              <h2 className="font-semibold text-stone-800">{t('register_check_email')}</h2>
+              <p className="text-sm text-stone-500">
+                {t('register_confirm_sent')} <strong className="text-stone-700">{email}</strong>.{' '}
+                {t('register_click_link')}
+              </p>
             </div>
-            <h2 className="font-semibold text-stone-800">{t('register_check_email')}</h2>
-            <p className="text-sm text-stone-500">{t('register_confirm_sent')} <strong>{email}</strong></p>
-            <div className="pt-2 text-left">
-              <ResendConfirmation initialEmail={email} />
-            </div>
-            <Link href="/login"
-              className="inline-block text-sm text-gold hover:underline mt-2">
-              ← {t('back_to_login')}
-            </Link>
+
+            <EmailDeliveryTips />
+
+            <ResendConfirmation initialEmail={email} />
+
+            <p className="text-center">
+              <Link href="/login" className="text-sm text-gold hover:underline">
+                ← {t('back_to_login')}
+              </Link>
+            </p>
           </div>
         ) : (
           /* Registration form */

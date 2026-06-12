@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { requestPasswordResetAction } from '@/app/[locale]/forgot-password/actions'
+import EmailDeliveryTips from './EmailDeliveryTips'
 
 export default function ForgotPasswordForm() {
   const t = useTranslations('forgotPassword')
@@ -18,14 +19,16 @@ export default function ForgotPasswordForm() {
         </div>
 
         {state?.ok ? (
-          <div className="bg-white rounded-[14px] p-8 space-y-3 text-center" style={{ boxShadow: 'var(--shadow-card)' }}>
-            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          <div className="bg-white rounded-[14px] p-8 space-y-4 text-center" style={{ boxShadow: 'var(--shadow-card)' }}>
+            <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
               </svg>
             </div>
             <h2 className="font-semibold text-stone-800">{t('sent_title')}</h2>
             <p className="text-sm text-stone-500">{t('sent_desc')}</p>
+            <EmailDeliveryTips />
             <Link href="/login" className="inline-block text-sm text-gold hover:underline mt-2">← {t('back_to_login')}</Link>
           </div>
         ) : (

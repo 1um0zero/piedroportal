@@ -4,6 +4,7 @@ import type { EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { notifyAdminNewUser } from '@/lib/notify-new-user'
 import ResendConfirmation from '@/components/auth/ResendConfirmation'
+import EmailDeliveryTips from '@/components/auth/EmailDeliveryTips'
 
 /**
  * Click-to-confirm landing for Supabase auth emails. The email links here
@@ -63,6 +64,7 @@ export default async function ConfirmPage({
             <>
               <h1 className="font-semibold text-stone-800">{t('confirm_failed_title')}</h1>
               <p className="text-sm text-stone-500">{t('confirm_failed_body')}</p>
+              <EmailDeliveryTips />
               <div className="pt-2 text-left">
                 <ResendConfirmation />
               </div>
