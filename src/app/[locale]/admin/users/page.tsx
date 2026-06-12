@@ -20,7 +20,7 @@ export default async function AdminUsersPage() {
   const [{ data: profiles }, { data: companies }, { data: userCompanies }, { data: branches }] = await Promise.all([
     service
       .from('profiles')
-      .select('id, email, full_name, role, company_id, branch_id, created_at')
+      .select('id, email, full_name, role, company_id, branch_id, created_at, preferred_locale')
       .order('created_at', { ascending: false }),
     service
       .from('companies')
@@ -59,6 +59,7 @@ export default async function AdminUsersPage() {
       companies:          userCompanies,  // Array of companies
       branch_id:          p.branch_id ?? null,
       created_at:         p.created_at,
+      preferred_locale:   p.preferred_locale ?? null,
     }
   })
 

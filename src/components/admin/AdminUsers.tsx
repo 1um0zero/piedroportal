@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
 import { isPiedroAdmin } from '@/lib/roles'
+import AdminUsersGrid from './AdminUsersGrid'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'super_admin'
 
@@ -22,6 +23,7 @@ type UserRow = {
   companies: UserCompany[]
   branch_id: string | null
   created_at: string
+  preferred_locale: string | null
 }
 
 type Company = { id: string; name: string }
@@ -254,6 +256,7 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
   const [saving, setSaving] = useState<string | null>(null)
   const [msg, setMsg]       = useState<{ id: string; ok: boolean; text?: string } | null>(null)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
+  const [view, setView] = useState<'cards' | 'grid'>('cards')
 
   async function changeRole(userId: string, role: UserRole) {
     setSaving(userId); setMsg(null)
@@ -357,9 +360,25 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
-      <h1 className="text-lg font-semibold text-stone-900">{t('title')}</h1>
+    <div className={`${view === 'grid' ? 'max-w-7xl' : 'max-w-3xl'} mx-auto px-6 py-8 space-y-8`}>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-lg font-semibold text-stone-900">{t('title')}</h1>
+        {/* View toggle: cards (edit) / grid (validate) */}
+        <div className="flex rounded-lg border border-stone-200 overflow-hidden text-[11px] font-semibold">
+          {(['cards', 'grid'] as const).map(v => (
+            <button key={v} onClick={() => setView(v)}
+              className={`px-3 py-1.5 transition-colors ${view === v
+                ? 'bg-gold/10 text-gold'
+                : 'bg-white text-stone-400 hover:text-stone-600'}`}>
+              {t(`view_${v}`)}
+            </button>
+          ))}
+        </div>
+      </div>
 
+      {view === 'grid' && <AdminUsersGrid users={users} branches={branches} />}
+
+      {view === 'cards' && (<>
       {/* Piedro admins */}
       {admins.length > 0 && (
         <section className="space-y-3">
@@ -402,6 +421,7 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
       {users.length === 0 && (
         <p className="text-sm text-stone-400 text-center py-12">{t('no_users')}</p>
       )}
+      </>)}
     </div>
   )
 }
