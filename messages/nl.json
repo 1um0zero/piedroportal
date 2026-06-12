@@ -114,6 +114,7 @@
     "step_5": "Open de fles. 🍾 Het portaal is nu de enige bron van waarheid.",
     "users_hint": "Testgebruikers worden één voor één veilig verwijderd in",
     "users_link": "Gebruikersbeheer",
+    "super_only": "Uitvoering is voorbehouden aan de superadmin. U kunt het plan en de aantallen bekijken, maar alleen de superadmin kan de verwijdering uitvoeren.",
     "danger_title": "Point of no return",
     "danger_text": "Dit verwijdert permanent {total} testbestelling(en) en hun PDF's. Typ {word} om te bevestigen.",
     "delete_button": "Testbestellingen verwijderen",

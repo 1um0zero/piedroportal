@@ -114,6 +114,7 @@
     "step_5": "Ouvrez la bouteille. 🍾 Le portail est désormais la seule source de vérité.",
     "users_hint": "Les utilisateurs de test se suppriment un par un, en toute sécurité, dans",
     "users_link": "la gestion des utilisateurs",
+    "super_only": "L'exécution est réservée au super admin. Vous pouvez consulter le plan et les totaux, mais seul le super admin peut lancer la suppression.",
     "danger_title": "Point de non-retour",
     "danger_text": "Ceci supprime définitivement {total} commande(s) de test et leurs PDF. Tapez {word} pour confirmer.",
     "delete_button": "Supprimer les commandes de test",

@@ -114,6 +114,7 @@
     "step_5": "Flasche öffnen. 🍾 Das Portal ist jetzt die einzige Quelle der Wahrheit.",
     "users_hint": "Testbenutzer werden einzeln und sicher gelöscht in der",
     "users_link": "Benutzerverwaltung",
+    "super_only": "Die Ausführung ist dem Super-Admin vorbehalten. Sie können den Plan und die Zahlen einsehen, aber nur der Super-Admin kann die Löschung ausführen.",
     "danger_title": "Point of no return",
     "danger_text": "Dies löscht dauerhaft {total} Testbestellung(en) und ihre PDFs. Geben Sie {word} ein, um zu bestätigen.",
     "delete_button": "Testbestellungen löschen",

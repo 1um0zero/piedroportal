@@ -33,8 +33,8 @@ function Champagne() {
   )
 }
 
-export default function GrandOpening({ portalOrders, stockOrders, migratedOrders }: {
-  portalOrders: number; stockOrders: number; migratedOrders: number
+export default function GrandOpening({ portalOrders, stockOrders, migratedOrders, canExecute }: {
+  portalOrders: number; stockOrders: number; migratedOrders: number; canExecute: boolean
 }) {
   const t = useTranslations('grandOpening')
   const [word, setWord] = useState('')
@@ -98,12 +98,22 @@ export default function GrandOpening({ portalOrders, stockOrders, migratedOrders
         </p>
       </div>
 
-      {/* Danger zone */}
+      {/* Danger zone — visible to every admin, executable only by super_admin */}
       <div className="bg-white rounded-[14px] p-8 border border-red-100" style={{ boxShadow: 'var(--shadow-card)' }}>
         <h2 className="text-sm font-bold text-red-500 uppercase tracking-wide mb-2">{t('danger_title')}</h2>
         <p className="text-sm text-stone-500 mb-5 leading-relaxed">
           {t('danger_text', { total, word: CONFIRM_WORD })}
         </p>
+        {!canExecute && (
+          <p className="text-sm text-stone-600 bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 flex items-center gap-2">
+            <svg className="w-4 h-4 text-stone-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            {t('super_only')}
+          </p>
+        )}
+        {canExecute && (
         <div className="flex gap-3">
           <input
             value={word}
@@ -119,6 +129,7 @@ export default function GrandOpening({ portalOrders, stockOrders, migratedOrders
             {t('delete_button')}
           </button>
         </div>
+        )}
 
         {result?.error && (
           <p className="mt-4 text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{result.error}</p>
