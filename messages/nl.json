@@ -100,6 +100,25 @@
     "f_reset_body": "Reset-e-mail — tekst",
     "f_reset_cta": "Reset-e-mail — knop"
   },
+  "grandOpening": {
+    "title": "Grand Opening",
+    "intro": "De eenmalige overgang van de testfase naar productie. Volg het plan hieronder, laat de kurk knallen, en vanaf dat moment is het portaal live — Dataverse wordt nooit meer geraadpleegd tenzij een inconsistentie wordt gedetecteerd.",
+    "count_portal_orders": "Testbestellingen aangemaakt in het portaal (worden verwijderd)",
+    "count_stock_orders": "Voorraad-testbestellingen (worden verwijderd)",
+    "count_migrated_kept": "Gemigreerde Dataverse-bestellingen (blijven behouden)",
+    "plan_title": "Overgangsplan",
+    "step_1": "Verwijder alle bestellingen die tijdens de testfase in het portaal zijn aangemaakt — geconfigureerde en voorraadbestellingen, inclusief hun PDF's. Gemigreerde Dataverse-bestellingen worden nooit aangeraakt.",
+    "step_2": "Verwijder de testgebruikers in Gebruikersbeheer. Verwijderen is geblokkeerd voor elke gebruiker met bestellingen, dus echte accounts zijn veilig.",
+    "step_3": "Voer de definitieve Dataverse-import lokaal uit, in deze volgorde: import-accounts → import-contacts → import-dataverse-orders → backfill-order-users (--contact-field=_cr56f_user_value) → backfill --verify.",
+    "step_4": "Valideer: bestelaantallen komen overeen met Dataverse, statussen zijn actueel en de backfill-verificatie slaagt.",
+    "step_5": "Open de fles. 🍾 Het portaal is nu de enige bron van waarheid.",
+    "users_hint": "Testgebruikers worden één voor één veilig verwijderd in",
+    "users_link": "Gebruikersbeheer",
+    "danger_title": "Point of no return",
+    "danger_text": "Dit verwijdert permanent {total} testbestelling(en) en hun PDF's. Typ {word} om te bevestigen.",
+    "delete_button": "Testbestellingen verwijderen",
+    "done": "Klaar! {orders} portaalbestelling(en), {stock} voorraadbestelling(en) en {pdfs} PDF('s) verwijderd. Tijd voor champagne."
+  },
   "nav": {
     "gallery": "OSB",
     "orders": "Bestellingen",
@@ -117,7 +136,8 @@
     "docs": "Docs",
     "translations": "Vertalingen",
     "stock": "Voorraad",
-    "backoffice": "Backoffice"
+    "backoffice": "Backoffice",
+    "grand_opening": "Grand Opening"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -670,6 +690,8 @@
       "section_pending": "Wacht op goedkeuring ({count})",
       "section_active": "Actieve gebruikers ({count})",
       "no_users": "Nog geen gebruikers geregistreerd.",
+      "delete_user": "Gebruiker verwijderen",
+      "delete_confirm": "Gebruiker {name} verwijderen? Alleen mogelijk als deze geen bestellingen heeft.",
       "role_branch_staff": "Filiaalmedewerker",
       "no_branch": "Geen filiaal"
     },

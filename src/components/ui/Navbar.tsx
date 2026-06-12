@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
 import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
@@ -23,6 +23,7 @@ export default async function Navbar({ locale }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let isAdmin = false
+  let isSuper = false
   let isBackoffice = false
   let profile: { role: string; full_name?: string; avatar_url?: string } | null = null
   if (user) {
@@ -30,6 +31,7 @@ export default async function Navbar({ locale }: Props) {
       .from('profiles').select('role, full_name, avatar_url').eq('id', user.id).single()
     profile = data
     isAdmin = isPiedroAdmin(profile?.role)
+    isSuper = isSuperAdmin(profile?.role)
     isBackoffice = isAdmin || profile?.role === 'branch_staff'
   }
 
@@ -123,7 +125,7 @@ export default async function Navbar({ locale }: Props) {
                     {t('stock')}
                   </Link>
                   {/* Low-frequency admin areas grouped in one dropdown to keep the bar short */}
-                  <NavAdminMenu />
+                  <NavAdminMenu isSuper={isSuper} />
                 </>
               )}
             </>
@@ -179,6 +181,7 @@ export default async function Navbar({ locale }: Props) {
         {/* Mobile hamburger — only on mobile */}
         <NavbarMobile
           isAdmin={isAdmin}
+          isSuper={isSuper}
           isBackoffice={isBackoffice}
           isLoggedIn={!!user}
           locale={locale}

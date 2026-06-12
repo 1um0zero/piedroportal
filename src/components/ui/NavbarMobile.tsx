@@ -8,6 +8,7 @@ import { signOutAction } from '@/app/[locale]/login/actions'
 
 type Props = {
   isAdmin:      boolean
+  isSuper?:     boolean
   isBackoffice: boolean
   isLoggedIn:   boolean
   locale:       string
@@ -15,7 +16,7 @@ type Props = {
   newOrdersCount?: number
 }
 
-export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
+export function NavbarMobile({ isAdmin, isSuper = false, isBackoffice, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('nav')
   const close = () => setOpen(false)
@@ -87,6 +88,9 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
                       <Link href="/admin/translations" onClick={close} className={linkCls}>{t('translations')}</Link>
                       <Link href="/admin/settings" onClick={close} className={linkCls}>{t('settings')}</Link>
                       <a href="/share/index.html" target="_blank" rel="noopener noreferrer" onClick={close} className={`${linkCls} !text-gold`}>{t('docs')}</a>
+                      {isSuper && (
+                        <Link href="/admin/grand-opening" onClick={close} className={`${linkCls} !text-gold`}>🍾 {t('grand_opening')}</Link>
+                      )}
                     </>
                   )}
                 </>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction } from '@/app/actions/admin-users'
+import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
 import { isPiedroAdmin } from '@/lib/roles'
 
@@ -49,9 +49,10 @@ type RowProps = {
   toggleCompanyAdmin: (userId: string, companyId: string, isAdmin: boolean) => void
   addCompany: (userId: string, companyId: string) => void
   removeCompany: (userId: string, companyId: string) => void
+  deleteUser: (userId: string, label: string) => void
 }
 
-function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany }: RowProps) {
+function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany, deleteUser }: RowProps) {
   const t = useTranslations('admin.users')
   const isExpanded = expandedUser === u.id
   const userCompanyIds = new Set(u.companies.map(c => c.company_id))
@@ -85,6 +86,19 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
           <p className="text-sm font-medium text-stone-800 truncate">{u.full_name || '—'}</p>
           <p className="text-xs text-stone-400 truncate">{u.email}</p>
         </div>
+        {/* Safe delete — server refuses if the user has any orders */}
+        {!isPiedroAdmin(u.role) && (
+          <button
+            onClick={() => deleteUser(u.id, u.full_name || u.email)}
+            disabled={saving === u.id}
+            title={t('delete_user')}
+            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-stone-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        )}
         {saving === u.id && (
           <span className="w-4 h-4 border-2 border-stone-200 border-t-gold rounded-full animate-spin shrink-0" />
         )}
@@ -311,6 +325,18 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     }
   }
 
+  async function deleteUser(userId: string, label: string) {
+    if (!window.confirm(t('delete_confirm', { name: label }))) return
+    setSaving(userId); setMsg(null)
+    const result = await deleteUserAction(userId)
+    setSaving(null)
+    if (result.ok) {
+      setUsers(prev => prev.filter(u => u.id !== userId))
+    } else {
+      setMsg({ id: userId, ok: false, text: result.error })
+    }
+  }
+
   const pending  = users.filter(u => u.companies.length === 0 && !isPiedroAdmin(u.role))
   const admins   = users.filter(u => isPiedroAdmin(u.role))
   const assigned = users.filter(u => u.companies.length > 0)
@@ -327,6 +353,7 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     toggleCompanyAdmin,
     addCompany,
     removeCompany,
+    deleteUser,
   }
 
   return (

@@ -100,6 +100,25 @@
     "f_reset_body": "E-mail de réinitialisation — texte",
     "f_reset_cta": "E-mail de réinitialisation — bouton"
   },
+  "grandOpening": {
+    "title": "Grand Opening",
+    "intro": "La bascule unique de la phase de test vers la production. Suivez le plan ci-dessous, faites sauter le bouchon, et dès cet instant le portail est en production — Dataverse ne sera plus jamais consulté sauf si une incohérence est détectée.",
+    "count_portal_orders": "Commandes de test créées dans le portail (seront supprimées)",
+    "count_stock_orders": "Commandes de test de stock (seront supprimées)",
+    "count_migrated_kept": "Commandes Dataverse migrées (conservées)",
+    "plan_title": "Plan de bascule",
+    "step_1": "Supprimer toutes les commandes créées dans le portail pendant la phase de test — commandes configurées et de stock, PDF inclus. Les commandes Dataverse migrées ne sont jamais touchées.",
+    "step_2": "Supprimer les utilisateurs de test dans la gestion des utilisateurs. La suppression est bloquée pour tout utilisateur ayant des commandes : les comptes réels sont protégés.",
+    "step_3": "Exécuter l'import Dataverse final en local, dans cet ordre : import-accounts → import-contacts → import-dataverse-orders → backfill-order-users (--contact-field=_cr56f_user_value) → backfill --verify.",
+    "step_4": "Valider : les totaux correspondent à Dataverse, les statuts sont à jour et la vérification du backfill réussit.",
+    "step_5": "Ouvrez la bouteille. 🍾 Le portail est désormais la seule source de vérité.",
+    "users_hint": "Les utilisateurs de test se suppriment un par un, en toute sécurité, dans",
+    "users_link": "la gestion des utilisateurs",
+    "danger_title": "Point de non-retour",
+    "danger_text": "Ceci supprime définitivement {total} commande(s) de test et leurs PDF. Tapez {word} pour confirmer.",
+    "delete_button": "Supprimer les commandes de test",
+    "done": "Terminé ! {orders} commande(s) portail, {stock} commande(s) de stock et {pdfs} PDF supprimés. Place au champagne."
+  },
   "nav": {
     "gallery": "Pair-by-Pair",
     "orders": "Commandes",
@@ -117,7 +136,8 @@
     "docs": "Docs",
     "translations": "Traductions",
     "stock": "Stock",
-    "backoffice": "Backoffice"
+    "backoffice": "Backoffice",
+    "grand_opening": "Grand Opening"
   },
   "gallery": {
     "kids": "Enfants",
@@ -670,6 +690,8 @@
       "section_pending": "En attente d'approbation ({count})",
       "section_active": "Utilisateurs actifs ({count})",
       "no_users": "Aucun utilisateur enregistré.",
+      "delete_user": "Supprimer l'utilisateur",
+      "delete_confirm": "Supprimer l'utilisateur {name} ? Possible uniquement s'il n'a aucune commande.",
       "role_branch_staff": "Personnel filiale",
       "no_branch": "Aucune filiale"
     },

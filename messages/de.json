@@ -100,6 +100,25 @@
     "f_reset_body": "Reset-E-Mail — Text",
     "f_reset_cta": "Reset-E-Mail — Schaltfläche"
   },
+  "grandOpening": {
+    "title": "Grand Opening",
+    "intro": "Der einmalige Übergang von der Testphase in die Produktion. Folgen Sie dem Plan unten, lassen Sie den Korken knallen — ab diesem Moment ist das Portal live. Dataverse wird nie wieder abgefragt, außer es wird eine Inkonsistenz festgestellt.",
+    "count_portal_orders": "Im Portal erstellte Testbestellungen (werden gelöscht)",
+    "count_stock_orders": "Lager-Testbestellungen (werden gelöscht)",
+    "count_migrated_kept": "Migrierte Dataverse-Bestellungen (bleiben erhalten)",
+    "plan_title": "Übergangsplan",
+    "step_1": "Alle während der Testphase im Portal erstellten Bestellungen löschen — konfigurierte und Lagerbestellungen, inklusive PDFs. Migrierte Dataverse-Bestellungen werden nie angetastet.",
+    "step_2": "Testbenutzer in der Benutzerverwaltung löschen. Das Löschen ist für Benutzer mit Bestellungen blockiert — echte Konten sind sicher.",
+    "step_3": "Den finalen Dataverse-Import lokal ausführen, in dieser Reihenfolge: import-accounts → import-contacts → import-dataverse-orders → backfill-order-users (--contact-field=_cr56f_user_value) → backfill --verify.",
+    "step_4": "Validieren: Bestellzahlen stimmen mit Dataverse überein, Status sind aktuell und die Backfill-Verifizierung besteht.",
+    "step_5": "Flasche öffnen. 🍾 Das Portal ist jetzt die einzige Quelle der Wahrheit.",
+    "users_hint": "Testbenutzer werden einzeln und sicher gelöscht in der",
+    "users_link": "Benutzerverwaltung",
+    "danger_title": "Point of no return",
+    "danger_text": "Dies löscht dauerhaft {total} Testbestellung(en) und ihre PDFs. Geben Sie {word} ein, um zu bestätigen.",
+    "delete_button": "Testbestellungen löschen",
+    "done": "Fertig! {orders} Portalbestellung(en), {stock} Lagerbestellung(en) und {pdfs} PDF(s) gelöscht. Zeit für Champagner."
+  },
   "nav": {
     "gallery": "Pair-by-Pair",
     "orders": "Bestellungen",
@@ -117,7 +136,8 @@
     "docs": "Docs",
     "translations": "Übersetzungen",
     "stock": "Lager",
-    "backoffice": "Backoffice"
+    "backoffice": "Backoffice",
+    "grand_opening": "Grand Opening"
   },
   "gallery": {
     "kids": "Kinder",
@@ -670,6 +690,8 @@
       "section_pending": "Genehmigung ausstehend ({count})",
       "section_active": "Aktive Benutzer ({count})",
       "no_users": "Noch keine Benutzer registriert.",
+      "delete_user": "Benutzer löschen",
+      "delete_confirm": "Benutzer {name} löschen? Nur möglich, wenn keine Bestellungen vorhanden sind.",
       "role_branch_staff": "Niederlassungsmitarbeiter",
       "no_branch": "Keine Niederlassung"
     },
