@@ -718,6 +718,7 @@
       "title": "Produits",
       "new_product": "Nouveau produit",
       "import_excel": "Importer Excel",
+      "export_excel": "Exporter Excel",
       "bulk_images": "Images en masse",
       "search_placeholder": "Rechercher colour_id, modèle, couleur…",
       "search_hint": "Utilisez * comme joker : 2* = commence par 2, *K = se termine par K.",

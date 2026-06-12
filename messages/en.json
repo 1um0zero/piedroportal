@@ -718,6 +718,7 @@
       "title": "Products",
       "new_product": "New product",
       "import_excel": "Import Excel",
+      "export_excel": "Export Excel",
       "bulk_images": "Bulk images",
       "search_placeholder": "Search colour_id, style, colour…",
       "search_hint": "Use * as a wildcard: 2* = starts with 2, *K = ends with K.",

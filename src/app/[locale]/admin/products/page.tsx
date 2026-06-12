@@ -43,6 +43,7 @@ export default async function AdminProductsPage() {
         <h1 className="text-xl font-bold text-stone-900">{t('title')}</h1>
         <div className="flex gap-2">
           <Link href="/admin/products/new" className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark">{t('new_product')}</Link>
+          <a href="/api/admin/products/export" download className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('export_excel')}</a>
           <Link href="/admin/products/import" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('import_excel')}</Link>
           <Link href="/admin/products/images" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('bulk_images')}</Link>
           <Link href="/admin/products/order" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('gallery_order')}</Link>
