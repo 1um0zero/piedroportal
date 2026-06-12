@@ -1198,7 +1198,7 @@
     "recipients": "ontvanger(s)",
     "subject": "Onderwerp",
     "body_placeholder": "Schrijf uw bericht…",
-    "body_hint": "Platte tekst. Lege regel = nieuwe alinea. Gebruik '{{name}}' om de naam van de ontvanger in te voegen.",
+    "body_hint": "Opmaak via de werkbalk; plak tekst, logo’s en foto’s direct (afbeeldingen worden automatisch geüpload). Gebruik '{{name}}' om de naam van de ontvanger in te voegen.",
     "footer_preview": "Voettekst (automatisch toegevoegd, in de taal van de ontvanger)",
     "footer_text": "U ontvangt deze e-mail omdat u een Piedro Portal-account heeft.",
     "schedule": "Verzendtijd",
@@ -1225,6 +1225,18 @@
     "status_sent": "Verzonden",
     "status_cancelled": "Geannuleerd",
     "cancel": "Annuleren",
-    "failed": "mislukt"
+    "failed": "mislukt",
+    "signature": "Handtekening (toegevoegd aan elke verzending — plak hier uw logo)",
+    "signature_hint": "Plak of schrijf de handtekening: naam, logo, contactgegevens…",
+    "save_signature": "Handtekening opslaan",
+    "signature_saved": "Handtekening opgeslagen.",
+    "uploading_image": "Afbeelding uploaden…",
+    "tb_bold": "Vet",
+    "tb_italic": "Cursief",
+    "tb_underline": "Onderstrepen",
+    "tb_link": "Link invoegen",
+    "tb_link_prompt": "Link-URL:",
+    "tb_image": "Afbeelding invoegen",
+    "tb_clear": "Opmaak wissen"
   }
 }

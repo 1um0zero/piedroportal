@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import { previewAudience, sendTestEmail, createCampaign, cancelCampaign, processNow } from '@/app/actions/admin-email'
+import { previewAudience, sendTestEmail, createCampaign, cancelCampaign, processNow, saveSignature } from '@/app/actions/admin-email'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 
 export interface CampaignRow {
   id: string
@@ -27,10 +28,11 @@ const STATUS_BADGE: Record<CampaignRow['status'], string> = {
   cancelled: 'bg-stone-100 text-stone-500',
 }
 
-export default function EmailComposer({ users, companies, campaigns }: {
+export default function EmailComposer({ users, companies, campaigns, signatureHtml }: {
   users: UserOpt[]
   companies: CompanyOpt[]
   campaigns: CampaignRow[]
+  signatureHtml: string
 }) {
   const t = useTranslations('adminEmail')
   const locale = useLocale()
@@ -42,7 +44,10 @@ export default function EmailComposer({ users, companies, campaigns }: {
   const [userId, setUserId] = useState<string>('')
   const [companyId, setCompanyId] = useState<string>('')
   const [subject, setSubject] = useState('')
-  const [body, setBody] = useState('')
+  const [body, setBody] = useState('') // rich HTML from the editor
+  const [editorKey, setEditorKey] = useState(0) // bump to reset the uncontrolled editor
+  const [signature, setSignature] = useState(signatureHtml)
+  const [sigOpen, setSigOpen] = useState(false)
   const [when, setWhen] = useState<'now' | 'later'>('now')
   const [scheduledAt, setScheduledAt] = useState('')
   const [count, setCount] = useState<number | null>(null)
@@ -67,7 +72,8 @@ export default function EmailComposer({ users, companies, campaigns }: {
     return () => { stale = true }
   }, [audience, userId, companyId])
 
-  const canSubmit = subject.trim() && body.trim() && !pending &&
+  const hasBody = !!body.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() || /<img\b/i.test(body)
+  const canSubmit = subject.trim() && hasBody && !pending &&
     (audience === 'all_with_company' || (audience === 'user' ? !!userId : !!companyId)) &&
     (when === 'now' || !!scheduledAt)
 
@@ -75,7 +81,7 @@ export default function EmailComposer({ users, companies, campaigns }: {
     setMsg(null)
     startTransition(async () => {
       const r = await createCampaign({
-        subject, body, audience,
+        subject, bodyHtml: body, audience,
         targetUserId: audience === 'user' ? userId : null,
         targetCompanyId: audience === 'company' ? companyId : null,
         scheduledAt: when === 'later' ? new Date(scheduledAt).toISOString() : null,
@@ -83,7 +89,7 @@ export default function EmailComposer({ users, companies, campaigns }: {
       if (r.error) setMsg({ kind: 'err', text: r.error })
       else {
         setMsg({ kind: 'ok', text: t('created', { count: r.recipients ?? 0 }) })
-        setSubject(''); setBody(''); setScheduledAt(''); setWhen('now')
+        setSubject(''); setBody(''); setEditorKey(k => k + 1); setScheduledAt(''); setWhen('now')
         router.refresh()
       }
     })
@@ -157,15 +163,35 @@ export default function EmailComposer({ users, companies, campaigns }: {
         {/* Subject + body */}
         <div className="space-y-3">
           <input className={inputCls} placeholder={t('subject')} value={subject} onChange={e => setSubject(e.target.value)} />
-          <textarea className={`${inputCls} min-h-[180px] leading-relaxed`} placeholder={t('body_placeholder')}
-            value={body} onChange={e => setBody(e.target.value)} />
+          <RichTextEditor key={editorKey} onChange={setBody} placeholder={t('body_placeholder')} />
           <p className="text-xs text-stone-400">{t('body_hint')}</p>
         </div>
 
-        {/* Footer preview */}
-        <div className="border border-dashed border-stone-200 rounded-lg p-3">
-          <p className="text-[10px] font-semibold tracking-wider uppercase text-stone-400 mb-1">{t('footer_preview')}</p>
-          <p className="text-[11px] text-stone-400 leading-relaxed">
+        {/* Signature + footer */}
+        <div className="border border-dashed border-stone-200 rounded-lg p-3 space-y-2">
+          <button type="button" onClick={() => setSigOpen(o => !o)}
+            className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-stone-400 hover:text-stone-600">
+            <span className={`inline-block transition-transform ${sigOpen ? 'rotate-90' : ''}`}>▸</span>
+            {t('signature')}
+          </button>
+          {sigOpen ? (
+            <div className="space-y-2">
+              <RichTextEditor initialHtml={signatureHtml} onChange={setSignature}
+                minHeight={90} placeholder={t('signature_hint')} />
+              <button type="button" disabled={pending}
+                onClick={() => startTransition(async () => {
+                  const r = await saveSignature(signature)
+                  setMsg(r.error ? { kind: 'err', text: r.error } : { kind: 'ok', text: t('signature_saved') })
+                })}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-600 hover:border-gold hover:text-gold-dark transition-colors disabled:opacity-40">
+                {t('save_signature')}
+              </button>
+            </div>
+          ) : signature ? (
+            <div className="text-[12px] text-stone-500 leading-relaxed [&_img]:max-h-16 [&_img]:w-auto"
+              dangerouslySetInnerHTML={{ __html: signature }} />
+          ) : null}
+          <p className="text-[11px] text-stone-400 leading-relaxed border-t border-stone-100 pt-2">
             {t('footer_text')}<br />Piedro International · piedroportal.vercel.app
           </p>
         </div>
@@ -191,7 +217,7 @@ export default function EmailComposer({ users, companies, campaigns }: {
         )}
 
         <div className="flex flex-wrap gap-3 pt-1">
-          <button type="button" disabled={!subject.trim() || !body.trim() || pending} onClick={test}
+          <button type="button" disabled={!subject.trim() || !hasBody || pending} onClick={test}
             className="px-4 py-2 rounded-lg text-sm font-semibold border border-stone-200 text-stone-600 hover:border-gold hover:text-gold-dark transition-colors disabled:opacity-40">
             {t('send_test')}
           </button>

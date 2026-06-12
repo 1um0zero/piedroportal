@@ -27,21 +27,68 @@ const FOOTER: Record<Loc, { reason: string; contact: string }> = {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
 
-/** Render the composed plain-text body + branded header/footer into the standard portal email HTML. */
-export function renderCampaignHtml(body: string, fullName: string | null, locale: string, contactEmail?: string): string {
+/**
+ * Conservative e-mail HTML sanitizer. Authors are piedro_admins (trusted), so
+ * this is a guard rail, not a security boundary: strips active content
+ * (script/style/iframe/forms), inline event handlers and javascript: URLs.
+ */
+export function sanitizeEmailHtml(html: string): string {
+  return html
+    .replace(/<\s*(script|style|iframe|object|embed|form|link|meta)\b[\s\S]*?(<\s*\/\s*\1\s*>|\/?>)/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src)\s*=\s*(["']?)\s*javascript:[^"'\s>]*\2/gi, '$1="#"')
+}
+
+/** Plain-text version of an HTML body (history list / fallback). */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<\s*(br|\/p|\/div|\/tr|\/li|\/h[1-6])\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+/**
+ * Render the composed body + optional HTML signature + branded header/footer
+ * into the standard portal email HTML. `bodyHtml` (rich editor) wins over the
+ * plain-text `body`; images in it must already be hosted URLs (the composer
+ * uploads pasted images to the public `email-assets` bucket).
+ */
+export function renderCampaignHtml(
+  body: string,
+  fullName: string | null,
+  locale: string,
+  contactEmail?: string,
+  bodyHtml?: string | null,
+  signatureHtml?: string | null,
+): string {
   const loc: Loc = LOCALES.includes(locale as Loc) ? (locale as Loc) : 'en'
-  const personalized = body.replaceAll('{{name}}', fullName?.trim() || '')
-  const paragraphs = escapeHtml(personalized)
-    .split(/\n{2,}/)
-    .map(p => `<p style="font-size:14px;color:#44403C;line-height:1.6;margin:0 0 16px">${p.replaceAll('\n', '<br/>')}</p>`)
-    .join('')
+  const name = fullName?.trim() || ''
+
+  let content: string
+  if (bodyHtml?.trim()) {
+    content = `<div style="font-size:14px;color:#44403C;line-height:1.6">${
+      sanitizeEmailHtml(bodyHtml).replaceAll('{{name}}', escapeHtml(name))
+    }</div>`
+  } else {
+    content = escapeHtml(body.replaceAll('{{name}}', name))
+      .split(/\n{2,}/)
+      .map(p => `<p style="font-size:14px;color:#44403C;line-height:1.6;margin:0 0 16px">${p.replaceAll('\n', '<br/>')}</p>`)
+      .join('')
+  }
+
+  const signature = signatureHtml?.trim()
+    ? `<div style="margin-top:24px;font-size:13px;color:#44403C;line-height:1.6">${sanitizeEmailHtml(signatureHtml)}</div>`
+    : ''
   const f = FOOTER[loc]
   const contact = contactEmail
     ? ` ${f.contact} <a href="mailto:${escapeHtml(contactEmail)}" style="color:#B8975A">${escapeHtml(contactEmail)}</a>.`
     : ''
   return `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
     <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#B8975A;margin:0 0 24px">Piedro Portal</p>
-    ${paragraphs}
+    ${content}
+    ${signature}
     <div style="border-top:1px solid #E7E5E4;margin-top:32px;padding-top:16px">
       <p style="font-size:11px;color:#A8A29E;line-height:1.6;margin:0">
         ${escapeHtml(f.reason)}${contact}<br/>
@@ -72,15 +119,16 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
   const result: ProcessResult = { campaignsTouched: 0, sent: 0, failed: 0, remaining: 0 }
 
   const key = process.env.RESEND_API_KEY
-  const cfg = await getSettings(['email_from', 'broadcast_reply_to'])
+  const cfg = await getSettings(['email_from', 'broadcast_reply_to', 'broadcast_signature_html'])
   const from = cfg.email_from ?? process.env.EMAIL_FROM
   if (!key || !from) return { ...result, error: 'Resend / EMAIL_FROM not configured' }
   const resend = new Resend(key)
   const replyTo = cfg.broadcast_reply_to || undefined
+  const signature = cfg.broadcast_signature_html || null
 
   const { data: due } = await service
     .from('email_campaigns')
-    .select('id, subject, body, status, sent_count, failed_count')
+    .select('id, subject, body, body_html, status, sent_count, failed_count')
     .in('status', ['scheduled', 'sending'])
     .lte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
@@ -114,7 +162,7 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
           .select('id').maybeSingle()
         if (!claimed) continue
 
-        const html = renderCampaignHtml(camp.body, r.full_name, r.locale, replyTo ?? from)
+        const html = renderCampaignHtml(camp.body, r.full_name, r.locale, replyTo ?? from, camp.body_html, signature)
         const { error } = await resend.emails.send({
           from, to: [r.email], subject: camp.subject, html,
           ...(replyTo ? { replyTo } : {}),

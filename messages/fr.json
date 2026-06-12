@@ -1198,7 +1198,7 @@
     "recipients": "destinataire(s)",
     "subject": "Objet",
     "body_placeholder": "Rédigez votre message…",
-    "body_hint": "Texte brut. Ligne vide = nouveau paragraphe. Utilisez '{{name}}' pour insérer le nom du destinataire.",
+    "body_hint": "Mettez en forme avec la barre d’outils ; collez texte, logos et photos directement (les images sont téléversées automatiquement). Utilisez '{{name}}' pour insérer le nom du destinataire.",
     "footer_preview": "Pied de page (ajouté automatiquement, dans la langue du destinataire)",
     "footer_text": "Vous recevez cet e-mail car vous disposez d’un compte Piedro Portal.",
     "schedule": "Heure d’envoi",
@@ -1225,6 +1225,18 @@
     "status_sent": "Envoyée",
     "status_cancelled": "Annulée",
     "cancel": "Annuler",
-    "failed": "échec(s)"
+    "failed": "échec(s)",
+    "signature": "Signature (ajoutée à chaque envoi — collez votre logo ici)",
+    "signature_hint": "Collez ou rédigez la signature : nom, logo, contacts…",
+    "save_signature": "Enregistrer la signature",
+    "signature_saved": "Signature enregistrée.",
+    "uploading_image": "Téléversement de l’image…",
+    "tb_bold": "Gras",
+    "tb_italic": "Italique",
+    "tb_underline": "Souligné",
+    "tb_link": "Insérer un lien",
+    "tb_link_prompt": "URL du lien :",
+    "tb_image": "Insérer une image",
+    "tb_clear": "Effacer la mise en forme"
   }
 }

@@ -1198,7 +1198,7 @@
     "recipients": "Empfänger",
     "subject": "Betreff",
     "body_placeholder": "Schreiben Sie Ihre Nachricht…",
-    "body_hint": "Reiner Text. Leerzeile = neuer Absatz. Verwenden Sie '{{name}}', um den Namen des Empfängers einzufügen.",
+    "body_hint": "Formatieren Sie über die Symbolleiste; fügen Sie Text, Logos und Fotos direkt ein (Bilder werden automatisch hochgeladen). Verwenden Sie '{{name}}', um den Namen des Empfängers einzufügen.",
     "footer_preview": "Fußzeile (automatisch hinzugefügt, in der Sprache des Empfängers)",
     "footer_text": "Sie erhalten diese E-Mail, weil Sie ein Piedro Portal-Konto haben.",
     "schedule": "Versandzeit",
@@ -1225,6 +1225,18 @@
     "status_sent": "Gesendet",
     "status_cancelled": "Abgebrochen",
     "cancel": "Abbrechen",
-    "failed": "fehlgeschlagen"
+    "failed": "fehlgeschlagen",
+    "signature": "Signatur (wird jedem Versand hinzugefügt — fügen Sie hier Ihr Logo ein)",
+    "signature_hint": "Signatur einfügen oder schreiben: Name, Logo, Kontaktdaten…",
+    "save_signature": "Signatur speichern",
+    "signature_saved": "Signatur gespeichert.",
+    "uploading_image": "Bild wird hochgeladen…",
+    "tb_bold": "Fett",
+    "tb_italic": "Kursiv",
+    "tb_underline": "Unterstrichen",
+    "tb_link": "Link einfügen",
+    "tb_link_prompt": "Link-URL:",
+    "tb_image": "Bild einfügen",
+    "tb_clear": "Formatierung entfernen"
   }
 }

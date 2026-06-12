@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
-import { processDueCampaigns, renderCampaignHtml } from '@/lib/email-campaigns'
-import { getSettings } from '@/lib/settings'
+import { processDueCampaigns, renderCampaignHtml, htmlToPlainText, sanitizeEmailHtml } from '@/lib/email-campaigns'
+import { getSettings, setSettings } from '@/lib/settings'
 import { Resend } from 'resend'
 
 /**
@@ -79,10 +79,12 @@ export async function previewAudience(
 }
 
 /** Send a single test email (rendered exactly like the real one) to the admin's own address. */
-export async function sendTestEmail(subject: string, body: string): Promise<{ ok?: boolean; error?: string }> {
+export async function sendTestEmail(subject: string, bodyHtml: string): Promise<{ ok?: boolean; error?: string }> {
   const auth = await requireAdmin()
   if ('error' in auth) return { error: auth.error }
-  if (!subject.trim() || !body.trim()) return { error: 'Subject and body are required' }
+  const body = htmlToPlainText(bodyHtml)
+  // An image-only body (e.g. a pasted flyer) is valid content too.
+  if (!subject.trim() || (!body.trim() && !/<img\b/i.test(bodyHtml))) return { error: 'Subject and body are required' }
 
   const service = createServiceClient()
   const { data: me } = await service
@@ -90,11 +92,12 @@ export async function sendTestEmail(subject: string, body: string): Promise<{ ok
   if (!me?.email) return { error: 'Your profile has no email address' }
 
   const key = process.env.RESEND_API_KEY
-  const cfg = await getSettings(['email_from', 'broadcast_reply_to'])
+  const cfg = await getSettings(['email_from', 'broadcast_reply_to', 'broadcast_signature_html'])
   const from = cfg.email_from ?? process.env.EMAIL_FROM
   if (!key || !from) return { error: 'Resend / EMAIL_FROM not configured' }
 
-  const html = renderCampaignHtml(body, me.full_name, me.preferred_locale ?? 'en', cfg.broadcast_reply_to || from)
+  const html = renderCampaignHtml(body, me.full_name, me.preferred_locale ?? 'en',
+    cfg.broadcast_reply_to || from, bodyHtml, cfg.broadcast_signature_html || null)
   const { error } = await new Resend(key).emails.send({
     from, to: [me.email], subject: `[TEST] ${subject}`, html,
     ...(cfg.broadcast_reply_to ? { replyTo: cfg.broadcast_reply_to } : {}),
@@ -109,7 +112,7 @@ export async function sendTestEmail(subject: string, body: string): Promise<{ ok
  */
 export async function createCampaign(input: {
   subject: string
-  body: string
+  bodyHtml: string // rich-editor HTML; plain-text version is derived server-side
   audience: Audience
   targetUserId: string | null
   targetCompanyId: string | null
@@ -119,8 +122,9 @@ export async function createCampaign(input: {
   if ('error' in auth) return { error: auth.error }
 
   const subject = input.subject.trim()
-  const body = input.body.trim()
-  if (!subject || !body) return { error: 'Subject and body are required' }
+  const bodyHtml = input.bodyHtml.trim()
+  const body = htmlToPlainText(bodyHtml)
+  if (!subject || (!body && !/<img\b/i.test(bodyHtml))) return { error: 'Subject and body are required' }
 
   const scheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : new Date()
   if (isNaN(scheduledAt.getTime())) return { error: 'Invalid schedule time' }
@@ -130,7 +134,7 @@ export async function createCampaign(input: {
 
   const service = createServiceClient()
   const { data: camp, error: campErr } = await service.from('email_campaigns').insert({
-    subject, body,
+    subject, body, body_html: bodyHtml,
     audience: input.audience,
     target_user_id: input.audience === 'user' ? input.targetUserId : null,
     target_company_id: input.audience === 'company' ? input.targetCompanyId : null,
@@ -158,6 +162,16 @@ export async function createCampaign(input: {
 
   revalidatePath('/admin/email')
   return { ok: true, recipients: recipients.length }
+}
+
+/** Save the shared HTML signature appended to every broadcast (app_settings). */
+export async function saveSignature(html: string): Promise<{ ok?: boolean; error?: string }> {
+  const auth = await requireAdmin()
+  if ('error' in auth) return { error: auth.error }
+  const { error } = await setSettings({ broadcast_signature_html: sanitizeEmailHtml(html.trim()) }, auth.userId)
+  if (error) return { error }
+  revalidatePath('/admin/email')
+  return { ok: true }
 }
 
 /** Cancel a campaign that hasn't finished — pending recipients are simply never sent. */

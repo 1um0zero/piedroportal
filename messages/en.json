@@ -1198,7 +1198,7 @@
     "recipients": "recipient(s)",
     "subject": "Subject",
     "body_placeholder": "Write your message…",
-    "body_hint": "Plain text. Blank line = new paragraph. Use '{{name}}' to insert the recipient’s name.",
+    "body_hint": "Format with the toolbar; paste text, logos and photos directly (images are uploaded automatically). Use '{{name}}' to insert the recipient’s name.",
     "footer_preview": "Footer (added automatically, in the recipient’s language)",
     "footer_text": "You are receiving this email because you have a Piedro Portal account.",
     "schedule": "Send time",
@@ -1225,6 +1225,18 @@
     "status_sent": "Sent",
     "status_cancelled": "Cancelled",
     "cancel": "Cancel",
-    "failed": "failed"
+    "failed": "failed",
+    "signature": "Signature (added to every broadcast — paste your logo here)",
+    "signature_hint": "Paste or write the signature: name, logo, contacts…",
+    "save_signature": "Save signature",
+    "signature_saved": "Signature saved.",
+    "uploading_image": "Uploading image…",
+    "tb_bold": "Bold",
+    "tb_italic": "Italic",
+    "tb_underline": "Underline",
+    "tb_link": "Insert link",
+    "tb_link_prompt": "Link URL:",
+    "tb_image": "Insert image",
+    "tb_clear": "Clear formatting"
   }
 }
