@@ -102,22 +102,35 @@ dimx $portal'production, ordmap(varstr; varstr)
       $portal'production("979580008") = "fitting"
 
 
+!------------------------------------------------------------
+! Os valores podem ser atribuidos directamente no programa
+! (pp0001.bas faz cfg'portal'url$ = "https://..."). O portal.cfg
+! e apenas fallback quando vierem vazios.
+!------------------------------------------------------------
 FUNCTION FN'portal'config() as b1
 ++pragma auto_extern
-STATIC map1 loaded,b,1
 
-      if loaded=0 then
+      if (cfg'portal'url$="" OR cfg'portal'token$="") then
          xcall INIX, "portal.cfg", INIX_READ, "PORTAL", "url", cfg'portal'url$
          xcall INIX, "portal.cfg", INIX_READ, "PORTAL", "token", cfg'portal'token$
-         loaded = 1
       endif
 
       if (cfg'portal'url$="" OR cfg'portal'token$="") then
-         trace.pause "portal.cfg incompleto: falta [PORTAL] url e/ou token"
+         trace.pause "Portal nao configurado: falta cfg'portal'url$ e/ou cfg'portal'token$"
          EXITFUNCTION
       endif
 
       .FN = 1
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+! O modo Portal esta ativo? (url + token preenchidos)
+! Quando devolve 0, todo o circuito antigo Dataverse mantem-se.
+!------------------------------------------------------------
+FUNCTION FN'claude'ativo() as b1
+++pragma auto_extern
+      .FN = (cfg'portal'url$#"" AND cfg'portal'token$#"")
 ENDFUNCTION
 
 
@@ -131,7 +144,8 @@ FUNCTION FN'portal'approval$(value$ as s0) as s25
       if NOT .isnull($portal'approval(value$)) then
          .FN = $portal'approval(value$)
       else
-         .FN = value$
+         ! texto vindo da grelha ("under analysis") -> formato do portal
+         .FN = xfunc$("repstr", lcs(value$), " ", "_")
       endif
 ENDFUNCTION
 
@@ -142,7 +156,7 @@ FUNCTION FN'portal'production$(value$ as s0) as s25
       if NOT .isnull($portal'production(value$)) then
          .FN = $portal'production(value$)
       else
-         .FN = value$
+         .FN = xfunc$("repstr", lcs(value$), " ", "_")
       endif
 ENDFUNCTION
 

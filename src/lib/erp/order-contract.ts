@@ -32,6 +32,7 @@ export interface ErpOrder {
   reference_customer: string | null
   quantity: number | null
   size: { left: number | null; right: number | null }
+  sizes_pairs: Array<{ size: number; qty: number }> | null   // DIFF_SIZES breakdown
   construction: { left: string | null; right: string | null }
   width: { left: string | null; right: string | null }
   comments: string | null
@@ -72,6 +73,8 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     reference_customer: row.reference_customer ?? null,
     quantity: row.quantity ?? null,
     size: { left: row.size_left ?? null, right: row.size_right ?? null },
+    sizes_pairs: Array.isArray(row.diff_sizes_pairs) && row.diff_sizes_pairs.length
+      ? row.diff_sizes_pairs : null,
     // Pass through if the columns exist; null otherwise (defensive — schema may vary).
     construction: { left: row.construction_left ?? null, right: row.construction_right ?? null },
     width: { left: row.width_left ?? null, right: row.width_right ?? null },
