@@ -18,6 +18,8 @@ export interface ErpOrder {
   order_id: string                 // portal UUID (idempotency key for the ERP)
   dataverse_id: string | null      // legacy cross-reference during the transition
   piedro_order_id: string | null   // the ERP's own order number, if already set
+  erp_order_ref: string | null     // a-shell console order nº(s), written back by the ERP
+  approval_date: string | null
   status: string | null
   approval_state: string | null
   production_state: string | null
@@ -48,6 +50,8 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     order_id: row.id,
     dataverse_id: row.dataverse_id ?? null,
     piedro_order_id: row.piedro_order_id ?? null,
+    erp_order_ref: row.erp_order_ref ?? null,
+    approval_date: row.approval_date ?? null,
     status: row.status ?? null,
     approval_state: row.approval_state ?? null,
     production_state: row.production_state ?? null,

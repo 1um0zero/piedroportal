@@ -1,0 +1,435 @@
+!------------------------------------------------------------
+!EDIT HISTORY
+! [100] 12-Jun-26 / jt+claude / created - REST Piedro Portal (substitui dataverse1.bpi)
+!------------------------------------------------------------
+!Notes:
+!   Chamadas REST ao Piedro Portal (Next.js + Supabase, Vercel), substituindo
+!   o Dataverse/Power Pages. SEM OAuth2: token fixo de servico, lido do
+!   portal.cfg (mesma pasta dos .cfg da consola):
+!
+!      [PORTAL]
+!      url=https://piedroportal.vercel.app
+!      token=<ERP_API_TOKEN definido no Vercel>
+!
+!   Endpoints:
+!   GET  {url}/api/erp/orders            - encomendas para importar
+!        ?pending=1 (default)            so as ainda nao exportadas
+!        ?all=1                          todas
+!        ?status=submitted,approved      filtro de estados (default)
+!        ?piedro_order=65032,65*         filtro por Order Piedro (* = wildcard;
+!                                        quando presente, larga os defaults,
+!                                        tal como o $filter antigo)
+!        ?created_from=2026-01-01&created_to=2026-06-30
+!        ?since=<ISO>                    modificadas desde
+!        ?limit=n                        max linhas (default 200, max 1000)
+!   POST {url}/api/erp/orders/ack       {"order_ids":["uuid",...]}
+!        confirmar SO depois de importar com sucesso (substitui o teste
+!        "productionstate vazio = nova" - e a prova de crash a meio)
+!   POST {url}/api/erp/orders/status    escrita de estados no portal
+!        {"order_id":"uuid", "piedro_order_id":"65032",
+!         "approval_state":"approved", "production_state":"cutting",
+!         "erp_order_ref":"24000123/24000124", "piedro_notes":"...",
+!         "tracking_code":"...", "tracking_link":"https://..."}
+!        so os campos enviados sao atualizados (PATCH semantics).
+!
+!   Resposta do GET (contract_version 2):
+!   { "contract_version":2, "count":n, "orders":[ {...}, ... ] }
+!   Com xcall JSON as chaves planas ficam:
+!      /orders[n]/order_id               (UUID - chave de idempotencia, ex dataverse'order'key$)
+!      /orders[n]/piedro_order_id
+!      /orders[n]/erp_order_ref          (n? da consola ja associado, se houver)
+!      /orders[n]/status                 (draft|submitted|approved|in_production|delivered|cancelled)
+!      /orders[n]/approval_state         (registered|under_analysis|approved|refused|need_attention|awaiting_payment)
+!      /orders[n]/production_state       (order_received|in_preparation|cutting|stitching|mounting|finishing|fitting|delivered)
+!      /orders[n]/urgent                 (true|false)
+!      /orders[n]/company/erp_code       (codigo de cliente da consola - JA RESOLVIDO,
+!                                         morre o FN'get'dataverse'cliente$/accounts)
+!      /orders[n]/company/name
+!      /orders[n]/product/style_name     /orders[n]/product/colour_id (= style.color)
+!      /orders[n]/unit                   (PAIR|LEFT|RIGHT|LEFT_RIGHT|DIFF_SIZES)
+!      /orders[n]/clinician              /orders[n]/patient_name
+!      /orders[n]/reference_customer     /orders[n]/quantity
+!      /orders[n]/size/left              /orders[n]/size/right       (numericos, 37.5)
+!      /orders[n]/construction/left      /orders[n]/construction/right
+!      /orders[n]/width/left             /orders[n]/width/right
+!      /orders[n]/comments
+!      /orders[n]/tracking/code          /orders[n]/tracking/link
+!      /orders[n]/created_at             /orders[n]/approval_date    (ISO)
+!      /orders[n]/additions[m]/section   (additions|upper|sole|others)
+!      /orders[n]/additions[m]/field     (chave estavel, ex. hammer_toe)
+!      /orders[n]/additions[m]/parent    (campo pai p/ condicionais, ou null)
+!      /orders[n]/additions[m]/side      (l|r|g)
+!      /orders[n]/additions[m]/type      (mm|option|text|toggle|image)
+!      /orders[n]/additions[m]/value
+!   SO vem o que esta preenchido (lista 1:N) - acabou o varrimento dos ~80
+!   campos cr56f_*lf/rf. Correspondencia chave portal -> n? campo icecadd /
+!   slot icecadd2: docs/erp-additions-map.csv no repo do portal.
+!
+!   NOTA boolean: true/false do JSON chegam como "true"/"false" - mesma
+!   normalizacao que ja se fazia no FN'get'online'values.
+!------------------------------------------------------------
+significance 11
+
+++include'once ashinc:ashell.def
+++include'once ashinc:types.def
+++include'once ashinc:http.def
+
+map1 portal'fields$
+   map2 cfg'portal'url$,s,200
+   map2 cfg'portal'token$,s,500
+
+!------------------------------------------------------------
+! Conversao dos codigos optionset antigos (Dataverse) para os
+! textos do portal - para o codigo existente que ainda guarda
+! 9795800xx poder chamar o portal sem mexer em mais nada.
+!------------------------------------------------------------
+dimx $portal'approval, ordmap(varstr; varstr)
+      $portal'approval("0")         = "registered"
+      $portal'approval("979580001") = "under_analysis"
+      $portal'approval("979580002") = "approved"
+      $portal'approval("979580003") = "refused"
+      $portal'approval("979580004") = "need_attention"
+      $portal'approval("979580005") = "awaiting_payment"
+
+dimx $portal'production, ordmap(varstr; varstr)
+      $portal'production("979580000") = "order_received"
+      $portal'production("979580001") = "in_preparation"
+      $portal'production("979580005") = "cutting"
+      $portal'production("979580015") = "stitching"
+      $portal'production("979580025") = "mounting"
+      $portal'production("979580035") = "finishing"
+      $portal'production("979580007") = "delivered"
+      $portal'production("979580008") = "fitting"
+
+
+FUNCTION FN'portal'config() as b1
+++pragma auto_extern
+STATIC map1 loaded,b,1
+
+      if loaded=0 then
+         xcall INIX, "portal.cfg", INIX_READ, "PORTAL", "url", cfg'portal'url$
+         xcall INIX, "portal.cfg", INIX_READ, "PORTAL", "token", cfg'portal'token$
+         loaded = 1
+      endif
+
+      if (cfg'portal'url$="" OR cfg'portal'token$="") then
+         trace.pause "portal.cfg incompleto: falta [PORTAL] url e/ou token"
+         EXITFUNCTION
+      endif
+
+      .FN = 1
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+! Converte codigo optionset OU texto para o texto do portal.
+! Passa-through se ja vier em texto (ex. "approved").
+!------------------------------------------------------------
+FUNCTION FN'portal'approval$(value$ as s0) as s25
+++pragma auto_extern
+      xcall strip, value$
+      if NOT .isnull($portal'approval(value$)) then
+         .FN = $portal'approval(value$)
+      else
+         .FN = value$
+      endif
+ENDFUNCTION
+
+
+FUNCTION FN'portal'production$(value$ as s0) as s25
+++pragma auto_extern
+      xcall strip, value$
+      if NOT .isnull($portal'production(value$)) then
+         .FN = $portal'production(value$)
+      else
+         .FN = value$
+      endif
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+! Escapa um valor para dentro de JSON e envolve em aspas.
+!------------------------------------------------------------
+FUNCTION FN'jstr$(value$ as s0) as s0
+++pragma auto_extern
+      value$ = xfunc$("repstr", value$, "\", "\\")
+      value$ = xfunc$("repstr", value$, chr(34), "\"+chr(34))
+      value$ = xfunc$("repstr", value$, chr(13), "\r")
+      value$ = xfunc$("repstr", value$, chr(10), "\n")
+      .FN = chr(34) + value$ + chr(34)
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+!Function:
+!   GET generico ao portal. Resposta vai para ficheiro (FILERESP),
+!   tal como o Fn'Http'REST'Get antigo - o resto do circuito
+!   (Fn'FileToStr$ + xcall JSON) fica igual.
+!Params:
+!   path'query$ [in]  - ex. "/api/erp/orders?pending=1"
+!   debug$      [in]  - "Y" para debug
+!   response$   [out] - ficheiro com o corpo da resposta ("" em erro)
+!Returns:
+!   status http da xcall HTTP (<0 erro de transporte)
+!------------------------------------------------------------
+FUNCTION FN'portal'rest'get(path'query$ as s0, debug$="" as s1:inputonly, response$ as s0) as i4
+++pragma auto_extern
+map1 locals
+   map2 flags,b,4
+   map2 url$,s,0
+   map2 request$,s,0
+   map2 status,i,4
+   map2 properties$,s,0
+
+      response$ = ""
+      if FN'portal'config()=0 then
+         .FN = -1
+         EXITFUNCTION
+      endif
+
+      url$ = cfg'portal'url$ + path'query$
+debug.Print "FN'portal'rest'get() url$=["+url$+"]"
+
+      request$ = "Authorization: Bearer " + cfg'portal'token$
+      request$ += chr(13) + chr(10) + "Content-Type: application/json"
+      request$ += chr(13) + chr(10) + "Accept: application/json"
+
+      properties$ = "ResponseCharset=ANSI"
+
+      flags = 0
+      flags |= XHTTPF_SSL
+      flags |= XHTTPF_REQGETX
+      flags |= XHTTPF_HDRBODY
+      flags |= XHTTPF_FILERESP
+      if debug$ # "" then
+         flags |= XHTTPF_DEBUG
+      endif
+
+      response$ = FN'file'jobname$(GET_FILENAME, 0, "", "", ".txt")
+
+      xcall HTTP, 1, status, flags, url$, request$, response$, properties$
+      if debug$#"" then
+         trace.print "FN'portal'rest'get() status = ",status
+         if lookup(response$) then
+            xcall miamex, 96, 0, response$
+         endif
+      endif
+
+      if status<0 then
+         trace.print Fn'Print'Http'Error'Msg$(status)
+         if lookup(response$) then
+            kill response$
+         endif
+         response$ = ""
+      endif
+
+      .FN = status
+      xputarg 3, response$
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+!Function:
+!   POST generico ao portal (corpo JSON). Mesma mecanica do
+!   Fn'Http'REST'Post antigo (headers+corpo via ficheiro), mas
+!   sem OData nem Verb: PATCH - os endpoints do portal sao POST.
+!Params:
+!   path$      [in] - ex. "/api/erp/orders/status"
+!   json'body$ [in] - corpo JSON ja montado
+!   debug$     [in] - "Y" para debug
+!Returns:
+!   status http (200 = ok; 4xx = erro de dados - ver uzportal.rsp)
+!------------------------------------------------------------
+FUNCTION FN'portal'rest'post(path$ as s0, json'body$ as s0, debug$="" as s1:inputonly) as i4
+++pragma auto_extern
+map1 locals
+   map2 flags,b,4
+   map2 url$,s,0
+   map2 request$,s,0
+   map2 status,i,4
+   map2 response$,s,100,"uzportal.rsp"
+   map2 properties$,s,0
+
+      if FN'portal'config()=0 then
+         .FN = -1
+         EXITFUNCTION
+      endif
+
+      url$ = cfg'portal'url$ + path$
+debug.Print "FN'portal'rest'post() url$=["+url$+"] body=["+json'body$+"]"
+
+      request$ = "Authorization: Bearer " + cfg'portal'token$
+      request$ += chr(13) + chr(10) + "Content-Type: application/json"
+      request$ += chr(13) + chr(10) + "Accept: application/json"
+      request$ += chr(13) + chr(10) + chr(13) + chr(10)
+      request$ += json'body$
+
+      open #1234, "headjson.txt", output
+      print #1234, request$
+      close #1234
+      request$ = "headjson.txt"
+
+      properties$ = "ResponseCharset=ANSI"
+
+      flags = 0
+      flags |= XHTTPF_SSL
+      flags |= XHTTPF_REQPOST
+      flags |= XHTTPF_HDRBODY
+      flags |= XHTTPF_FILEREQ
+      flags |= XHTTPF_FILERESP
+      if debug$ # "" then
+         flags |= XHTTPF_DEBUG
+      endif
+
+      if lookup(response$) then
+         kill response$
+      endif
+
+      xcall HTTP, 1, status, flags, url$, request$, response$, properties$
+      if debug$#"" then
+         trace.print "FN'portal'rest'post() status = ",status
+         if lookup(response$) then
+            xcall miamex, 96, 0, response$
+         endif
+      endif
+
+      if status<0 then
+         trace.print Fn'Print'Http'Error'Msg$(status)
+      endif
+
+      .FN = status
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+!Function:
+!   Busca encomendas ao portal. Substitui o circuito
+!   FN'rest'action(1) + FN'rest'action(2) - nao ha token a pedir.
+!Params:
+!   query$    [in]  - querystring opcional, ex. "?piedro_order=65*"
+!                     ("" = ?pending=1, as novas por exportar)
+!   response$ [out] - ficheiro JSON para o FN'get'online'values
+!------------------------------------------------------------
+FUNCTION FN'portal'get'orders(query$ as s0, response$ as s0) as i4
+++pragma auto_extern
+
+      if query$="" then
+         query$ = "?pending=1"
+      endif
+
+      .FN = FN'portal'rest'get("/api/erp/orders" + query$, "", response$)
+      xputarg 2, response$
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+!Function:
+!   Confirma a importacao de encomendas (marca erp_exported_at
+!   no portal - deixam de vir no GET pending). Chamar DEPOIS do
+!   CREATE'RECORD com sucesso, nunca antes.
+!Params:
+!   order'ids$ [in] - UUIDs separados por virgula
+!------------------------------------------------------------
+FUNCTION FN'portal'orders'ack(order'ids$ as s0) as i4
+++pragma auto_extern
+map1 json$,s,0
+map1 id$,s,50
+
+      if order'ids$="" then
+         EXITFUNCTION
+      endif
+
+      json$ = "{" + chr(34) + "order_ids" + chr(34) + ":["
+      do
+         %pos = instr(1, order'ids$, ",")
+         if %pos=0 then
+            id$ = strip(order'ids$)
+            order'ids$ = ""
+         else
+            id$ = strip(order'ids$[1, %pos-1])
+            order'ids$ = order'ids$[%pos+1, -1]
+         endif
+
+         if id$#"" then
+            json$ += FN'jstr$(id$) + ","
+         endif
+      loop while order'ids$#""
+
+      if json$[-1; 1]="," then
+         json$ = json$[1, -2]
+      endif
+      json$ += "]}"
+
+      .FN = FN'portal'rest'post("/api/erp/orders/ack", json$)
+ENDFUNCTION
+
+
+!------------------------------------------------------------
+!Function:
+!   Substituto drop-in do FN'dataverse'order'update() - recebe a
+!   MESMA ST_dataverse'order'update e as MESMAS actions 1-6, e
+!   traduz para um unico POST /api/erp/orders/status.
+!   Aceita os codigos optionset antigos (9795800xx) ou texto.
+!Actions (iguais ao dataverse1.bpi):
+!   1 - production state + n? encomenda(s) da consola (apos importar)
+!   2 - Order Piedro (=> under_analysis se preenchida)
+!   3 - approval state
+!   4 - production state
+!   5/6 - tracking code + link
+!------------------------------------------------------------
+FUNCTION FN'portal'order'update(order'update as ST_dataverse'order'update) as b1
+++pragma auto_extern
+map1 avi'id,b,4
+map1 json$,s,0
+map1 status,i,4
+
+      if order'update.online'id$="" then
+         EXITFUNCTION
+      endif
+
+      call FN'emprocessamento(1, avi'id)
+
+      xcall strip, order'update.online'id$
+
+      json$ = "{" + chr(34) + "order_id" + chr(34) + ":" + FN'jstr$(order'update.online'id$)
+
+      SWITCH order'update.action
+      CASE 1
+         json$ += "," + chr(34) + "production_state" + chr(34) + ":" + FN'jstr$(FN'portal'production$(order'update.state'production$))
+         json$ += "," + chr(34) + "erp_order_ref" + chr(34) + ":" + FN'jstr$(strip(order'update.order'pof$))
+         exit
+      CASE 2
+         if order'update.order'piedro$#"" then
+            order'update.state'approval$ = "979580001"
+            json$ += "," + chr(34) + "approval_state" + chr(34) + ":" + FN'jstr$(FN'portal'approval$(order'update.state'approval$))
+         endif
+         json$ += "," + chr(34) + "piedro_order_id" + chr(34) + ":" + FN'jstr$(strip(order'update.order'piedro$))
+         exit
+      CASE 3
+         json$ += "," + chr(34) + "approval_state" + chr(34) + ":" + FN'jstr$(FN'portal'approval$(order'update.state'approval$))
+         exit
+      CASE 4
+         json$ += "," + chr(34) + "production_state" + chr(34) + ":" + FN'jstr$(FN'portal'production$(order'update.state'production$))
+         exit
+      CASE 5
+      CASE 6
+         json$ += "," + chr(34) + "tracking_code" + chr(34) + ":" + FN'jstr$(strip(order'update.tracking'code$))
+         json$ += "," + chr(34) + "tracking_link" + chr(34) + ":" + FN'jstr$(strip(order'update.tracking'link$))
+         exit
+      ENDSWITCH
+
+      json$ += "}"
+
+      if pe'debug$="" then
+         status = FN'portal'rest'post("/api/erp/orders/status", json$)
+         .FN = (status=200)
+         if .FN=0 then
+            trace.print "FN'portal'order'update() FALHOU: status=["+status+"] ver uzportal.rsp"
+         endif
+      else
+         trace.print "MODO DEBUG, nao enviei: " + json$
+         .FN = 1
+      endif
+
+      call FN'emprocessamento(0, avi'id)
+ENDFUNCTION

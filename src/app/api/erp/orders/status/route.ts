@@ -16,6 +16,7 @@ export const dynamic = 'force-dynamic'
  *   approval_state?: string,     // optional
  *   piedro_order_id?: string,    // the ERP's own order number
  *   piedro_notes?: string,
+ *   erp_order_ref?: string,      // a-shell console order nº(s), e.g. "24000123/24000124"
  *   tracking_code?: string,      // carrier tracking code (a-shell actions 5/6)
  *   tracking_link?: string       // full tracking URL (built ERP-side)
  * }
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
   if (typeof body.approval_state === 'string')   update.approval_state   = body.approval_state
   if (typeof body.piedro_order_id === 'string')  update.piedro_order_id  = body.piedro_order_id
   if (typeof body.piedro_notes === 'string')     update.piedro_notes     = body.piedro_notes
+  if (typeof body.erp_order_ref === 'string')    update.erp_order_ref    = body.erp_order_ref
   if (typeof body.tracking_code === 'string')    update.tracking_code    = body.tracking_code
   if (typeof body.tracking_link === 'string')    update.tracking_link    = body.tracking_link
   if (Object.keys(update).length === 0) {
