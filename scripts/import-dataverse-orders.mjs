@@ -254,7 +254,9 @@ const rows = kept.map(o => {
   dataverse_id:       o.cr56f_wpp_ordersid,
   // Piedro Order = the NL/UK ERP order nº (staff-filled), gates approval + VSI import.
   piedro_order_id:    o.cr56f_order_piedro ?? null,
-  user_id:            null,   // no direct mapping to Supabase auth users
+  // user_id intentionally OMITTED: it defaults to null on insert and, on
+  // re-import (upsert), an absent column is left untouched — so owners set by
+  // backfill-order-users.mjs survive re-runs.
   company_id:         o['_cr56f_customer_value'] ?? null,
   product_id:         o['_cr56f_style_color_value'] ?? null,
   status:             states.status,
