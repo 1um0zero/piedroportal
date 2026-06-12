@@ -1191,7 +1191,7 @@
     "audience": "Empfänger",
     "audience_user": "Ein Benutzer",
     "audience_company": "Ein Unternehmen",
-    "audience_all": "Alle Benutzer mit Unternehmen",
+    "audience_all": "Alle Benutzer (mit zugewiesenem Unternehmen)",
     "search_user": "Name oder E-Mail suchen…",
     "select_user": "Benutzer wählen…",
     "select_company": "Unternehmen wählen…",
@@ -1237,6 +1237,10 @@
     "tb_link": "Link einfügen",
     "tb_link_prompt": "Link-URL:",
     "tb_image": "Bild einfügen",
-    "tb_clear": "Formatierung entfernen"
+    "tb_clear": "Formatierung entfernen",
+    "greeting": "Guten Tag '{{name}}',",
+    "recip_edit": "An / Cc / Bcc bearbeiten",
+    "recip_placeholder": "email@beispiel.de, email2@beispiel.de…",
+    "recip_hint": "Wird jeder E-Mail dieser Kampagne hinzugefügt. Beim Massenversand steht jeder Empfänger in Bcc — das An-Feld zeigt die Absenderadresse, sofern Sie hier keine festlegen. Interne Benutzer (Admins/Mitarbeiter) sind vom Massenversand ausgeschlossen."
   }
 }

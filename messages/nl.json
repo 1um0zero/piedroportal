@@ -1191,7 +1191,7 @@
     "audience": "Doelgroep",
     "audience_user": "Eén gebruiker",
     "audience_company": "Eén bedrijf",
-    "audience_all": "Alle gebruikers met bedrijf",
+    "audience_all": "Alle gebruikers (met toegewezen bedrijf)",
     "search_user": "Zoek naam of e-mail…",
     "select_user": "Kies een gebruiker…",
     "select_company": "Kies een bedrijf…",
@@ -1237,6 +1237,10 @@
     "tb_link": "Link invoegen",
     "tb_link_prompt": "Link-URL:",
     "tb_image": "Afbeelding invoegen",
-    "tb_clear": "Opmaak wissen"
+    "tb_clear": "Opmaak wissen",
+    "greeting": "Beste '{{name}}',",
+    "recip_edit": "Aan / Cc / Bcc bewerken",
+    "recip_placeholder": "email@voorbeeld.nl, email2@voorbeeld.nl…",
+    "recip_hint": "Toegevoegd aan elke e-mail van deze campagne. Bij bulkverzending staat elke ontvanger in Bcc — het Aan-veld toont het afzenderadres, tenzij u hier een instelt. Interne gebruikers (admins/medewerkers) worden uitgesloten van bulkverzendingen."
   }
 }

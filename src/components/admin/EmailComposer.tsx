@@ -43,13 +43,19 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
   const [userSearch, setUserSearch] = useState('')
   const [userId, setUserId] = useState<string>('')
   const [companyId, setCompanyId] = useState<string>('')
+  // Seed the editor with a localized greeting so the {{name}} placeholder is discoverable.
+  const defaultBody = `<p>${t('greeting')}</p><p><br/></p>`
   const [subject, setSubject] = useState('')
-  const [body, setBody] = useState('') // rich HTML from the editor
+  const [body, setBody] = useState(defaultBody) // rich HTML from the editor
   const [editorKey, setEditorKey] = useState(0) // bump to reset the uncontrolled editor
   const [signature, setSignature] = useState(signatureHtml)
   const [sigOpen, setSigOpen] = useState(false)
   const [when, setWhen] = useState<'now' | 'later'>('now')
   const [scheduledAt, setScheduledAt] = useState('')
+  const [recipOpen, setRecipOpen] = useState(false)
+  const [extraTo, setExtraTo] = useState('')
+  const [extraCc, setExtraCc] = useState('')
+  const [extraBcc, setExtraBcc] = useState('')
   const [count, setCount] = useState<number | null>(null)
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
 
@@ -85,11 +91,13 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
         targetUserId: audience === 'user' ? userId : null,
         targetCompanyId: audience === 'company' ? companyId : null,
         scheduledAt: when === 'later' ? new Date(scheduledAt).toISOString() : null,
+        extraTo, extraCc, extraBcc,
       })
       if (r.error) setMsg({ kind: 'err', text: r.error })
       else {
         setMsg({ kind: 'ok', text: t('created', { count: r.recipients ?? 0 }) })
-        setSubject(''); setBody(''); setEditorKey(k => k + 1); setScheduledAt(''); setWhen('now')
+        setSubject(''); setBody(defaultBody); setEditorKey(k => k + 1); setScheduledAt(''); setWhen('now')
+        setExtraTo(''); setExtraCc(''); setExtraBcc(''); setRecipOpen(false)
         router.refresh()
       }
     })
@@ -163,8 +171,31 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
         {/* Subject + body */}
         <div className="space-y-3">
           <input className={inputCls} placeholder={t('subject')} value={subject} onChange={e => setSubject(e.target.value)} />
-          <RichTextEditor key={editorKey} onChange={setBody} placeholder={t('body_placeholder')} />
+          <RichTextEditor key={editorKey} initialHtml={defaultBody} onChange={setBody} placeholder={t('body_placeholder')} />
           <p className="text-xs text-stone-400">{t('body_hint')}</p>
+        </div>
+
+        {/* Extra header recipients (To / Cc / Bcc) */}
+        <div>
+          <button type="button" onClick={() => setRecipOpen(o => !o)}
+            className="flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-stone-400 hover:text-stone-600">
+            <span className={`inline-block transition-transform ${recipOpen ? 'rotate-90' : ''}`}>▸</span>
+            {t('recip_edit')}
+            {(extraTo || extraCc || extraBcc) && <span className="text-gold">●</span>}
+          </button>
+          {recipOpen && (
+            <div className="mt-3 space-y-2">
+              {([['To', extraTo, setExtraTo], ['Cc', extraCc, setExtraCc], ['Bcc', extraBcc, setExtraBcc]] as const)
+                .map(([label, value, set]) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="w-10 text-xs font-semibold text-stone-500">{label}</span>
+                    <input className={inputCls} placeholder={t('recip_placeholder')} value={value}
+                      onChange={e => set(e.target.value)} />
+                  </div>
+                ))}
+              <p className="text-xs text-stone-400">{t('recip_hint')}</p>
+            </div>
+          )}
         </div>
 
         {/* Signature + footer */}

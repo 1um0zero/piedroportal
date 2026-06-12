@@ -16,6 +16,16 @@ import { Resend } from 'resend'
 
 type Audience = 'user' | 'company' | 'all_with_company'
 
+/** Normalize a free-typed address list ("a@b.c, d@e.f") → comma string or null. */
+function parseEmailList(raw: string | null | undefined): string | null | { error: string } {
+  const items = (raw ?? '').split(/[,;\s]+/).map(s => s.trim()).filter(Boolean)
+  if (!items.length) return null
+  for (const e of items) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return { error: `Invalid email address: ${e}` }
+  }
+  return [...new Set(items.map(e => e.toLowerCase()))].join(', ')
+}
+
 async function requireAdmin(): Promise<{ userId: string } | { error: string }> {
   const scope = await getAdminScope()
   if (!scope || !isPiedroAdmin(scope.role)) return { error: 'Not authorized' }
@@ -52,9 +62,13 @@ async function resolveRecipients(
   const out: RecipientRow[] = []
   // Chunked .in() — Supabase URLs choke on very long id lists.
   for (let i = 0; i < userIds.length; i += 200) {
-    const { data, error } = await service
+    let q = service
       .from('profiles').select('id, email, full_name, preferred_locale')
       .in('id', userIds.slice(i, i + 200))
+    // Bulk audiences are customer-facing: exclude internal roles (admins/staff)
+    // even when they have a company assigned. Picking ONE user stays unrestricted.
+    if (audience !== 'user') q = q.in('role', ['user', 'company_admin'])
+    const { data, error } = await q
     if (error) return { error: error.message }
     for (const p of data ?? []) {
       if (!p.email) continue
@@ -117,6 +131,9 @@ export async function createCampaign(input: {
   targetUserId: string | null
   targetCompanyId: string | null
   scheduledAt: string | null // ISO; null = now
+  extraTo?: string
+  extraCc?: string
+  extraBcc?: string
 }): Promise<{ ok?: boolean; error?: string; recipients?: number }> {
   const auth = await requireAdmin()
   if ('error' in auth) return { error: auth.error }
@@ -125,6 +142,13 @@ export async function createCampaign(input: {
   const bodyHtml = input.bodyHtml.trim()
   const body = htmlToPlainText(bodyHtml)
   if (!subject || (!body && !/<img\b/i.test(bodyHtml))) return { error: 'Subject and body are required' }
+
+  const extraTo = parseEmailList(input.extraTo)
+  const extraCc = parseEmailList(input.extraCc)
+  const extraBcc = parseEmailList(input.extraBcc)
+  for (const v of [extraTo, extraCc, extraBcc]) {
+    if (v && typeof v === 'object') return { error: v.error }
+  }
 
   const scheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : new Date()
   if (isNaN(scheduledAt.getTime())) return { error: 'Invalid schedule time' }
@@ -135,6 +159,7 @@ export async function createCampaign(input: {
   const service = createServiceClient()
   const { data: camp, error: campErr } = await service.from('email_campaigns').insert({
     subject, body, body_html: bodyHtml,
+    extra_to: extraTo as string | null, extra_cc: extraCc as string | null, extra_bcc: extraBcc as string | null,
     audience: input.audience,
     target_user_id: input.audience === 'user' ? input.targetUserId : null,
     target_company_id: input.audience === 'company' ? input.targetCompanyId : null,

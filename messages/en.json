@@ -1191,7 +1191,7 @@
     "audience": "Audience",
     "audience_user": "One user",
     "audience_company": "One company",
-    "audience_all": "All users with a company",
+    "audience_all": "All users (with Company assigned)",
     "search_user": "Search name or email…",
     "select_user": "Select a user…",
     "select_company": "Select a company…",
@@ -1237,6 +1237,10 @@
     "tb_link": "Insert link",
     "tb_link_prompt": "Link URL:",
     "tb_image": "Insert image",
-    "tb_clear": "Clear formatting"
+    "tb_clear": "Clear formatting",
+    "greeting": "Dear '{{name}}',",
+    "recip_edit": "Edit To / Cc / Bcc",
+    "recip_placeholder": "email@example.com, email2@example.com…",
+    "recip_hint": "Added to every email this campaign sends. Bulk sends put each recipient in Bcc — the To field shows the sender address unless you set one here. Internal users (admins/staff) are excluded from bulk audiences."
   }
 }

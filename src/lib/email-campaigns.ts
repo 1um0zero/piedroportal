@@ -128,7 +128,7 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
 
   const { data: due } = await service
     .from('email_campaigns')
-    .select('id, subject, body, body_html, status, sent_count, failed_count')
+    .select('id, subject, body, body_html, audience, extra_to, extra_cc, extra_bcc, status, sent_count, failed_count')
     .in('status', ['scheduled', 'sending'])
     .lte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
@@ -163,8 +163,21 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
         if (!claimed) continue
 
         const html = renderCampaignHtml(camp.body, r.full_name, r.locale, replyTo ?? from, camp.body_html, signature)
+
+        // Header addressing: ONE USER goes in To; bulk audiences put the
+        // recipient in Bcc (To = sender address) so their address never shows.
+        // Campaign-level extra To/Cc/Bcc are added to every message.
+        const split = (s: string | null) => (s ?? '').split(',').map(x => x.trim()).filter(Boolean)
+        const extraTo = split(camp.extra_to), extraCc = split(camp.extra_cc), extraBcc = split(camp.extra_bcc)
+        const fromAddr = from.match(/<([^>]+)>/)?.[1] ?? from
+        const isBulk = camp.audience !== 'user'
+        const to  = isBulk ? (extraTo.length ? extraTo : [replyTo ?? fromAddr]) : [r.email, ...extraTo]
+        const bcc = isBulk ? [r.email, ...extraBcc] : extraBcc
+
         const { error } = await resend.emails.send({
-          from, to: [r.email], subject: camp.subject, html,
+          from, to, subject: camp.subject, html,
+          ...(extraCc.length ? { cc: extraCc } : {}),
+          ...(bcc.length ? { bcc } : {}),
           ...(replyTo ? { replyTo } : {}),
         }).catch((e: Error) => ({ error: { message: e.message } }))
 
