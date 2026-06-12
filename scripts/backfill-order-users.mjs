@@ -158,9 +158,10 @@ console.log(`✓ ${nullOrders.length} orders with user_id = null`)
 const targets = Number.isFinite(LIMIT) ? nullOrders.slice(0, LIMIT) : nullOrders
 
 // ── 2. Dataverse order → contactId ────────────────────────────────────────────
+// Lookups are selected by their `_<name>_value` form — stripping it makes the
+// $select fail (and a silent id-only fallback made every order look contactless).
 const dvOrders = await dvFetchAll(
-  `/cr56f_wpp_orderses?$select=cr56f_wpp_ordersid,${CONTACT_FIELD.replace(/^_|_value$/g, '')}`, token)
-  .catch(async () => dvFetchAll(`/cr56f_wpp_orderses?$select=cr56f_wpp_ordersid`, token))
+  `/cr56f_wpp_orderses?$select=cr56f_wpp_ordersid,${CONTACT_FIELD}`, token)
 const orderToContact = new Map()
 for (const o of dvOrders) {
   const c = o[CONTACT_FIELD]

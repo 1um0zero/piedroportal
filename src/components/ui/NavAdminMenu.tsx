@@ -9,7 +9,7 @@ import { Link } from '@/i18n/navigation'
  * areas (companies, branches, users, translations, settings, docs) so the top
  * bar keeps only the daily-use links and never pushes the profile out of view.
  */
-export default function NavAdminMenu({ isSuper }: { isSuper: boolean }) {
+export default function NavAdminMenu() {
   const t = useTranslations('nav')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -32,7 +32,6 @@ export default function NavAdminMenu({ isSuper }: { isSuper: boolean }) {
     { href: '/admin/companies',    label: t('companies') },
     { href: '/admin/branches',     label: t('branches') },
     { href: '/admin/users',        label: t('users') },
-    ...(isSuper ? [{ href: '/admin/orders/unassigned', label: t('unassigned') }] : []),
     { href: '/admin/translations', label: t('translations') },
     { href: '/admin/settings',     label: t('settings') },
   ]

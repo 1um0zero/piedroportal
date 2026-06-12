@@ -8,7 +8,6 @@ import { signOutAction } from '@/app/[locale]/login/actions'
 
 type Props = {
   isAdmin:      boolean
-  isSuper?:     boolean
   isBackoffice: boolean
   isLoggedIn:   boolean
   locale:       string
@@ -16,7 +15,7 @@ type Props = {
   newOrdersCount?: number
 }
 
-export function NavbarMobile({ isAdmin, isSuper = false, isBackoffice, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
+export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('nav')
   const close = () => setOpen(false)
@@ -85,7 +84,6 @@ export function NavbarMobile({ isAdmin, isSuper = false, isBackoffice, isLoggedI
                       <Link href="/admin/companies" onClick={close} className={linkCls}>{t('companies')}</Link>
                       <Link href="/admin/branches"  onClick={close} className={linkCls}>{t('branches')}</Link>
                       <Link href="/admin/users"     onClick={close} className={linkCls}>{t('users')}</Link>
-                      {isSuper && <Link href="/admin/orders/unassigned" onClick={close} className={linkCls}>{t('unassigned')}</Link>}
                       <Link href="/admin/translations" onClick={close} className={linkCls}>{t('translations')}</Link>
                       <Link href="/admin/settings" onClick={close} className={linkCls}>{t('settings')}</Link>
                       <a href="/share/index.html" target="_blank" rel="noopener noreferrer" onClick={close} className={`${linkCls} !text-gold`}>{t('docs')}</a>
