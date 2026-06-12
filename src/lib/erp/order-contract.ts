@@ -33,6 +33,7 @@ export interface ErpOrder {
   construction: { left: string | null; right: string | null }
   width: { left: string | null; right: string | null }
   comments: string | null
+  tracking: { code: string | null; link: string | null }   // written by the ERP, echoed back
   additions: ErpAddition[]          // normalized 1:N list (only present items)
   created_at: string | null
   updated_at: string | null
@@ -71,6 +72,7 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     construction: { left: row.construction_left ?? null, right: row.construction_right ?? null },
     width: { left: row.width_left ?? null, right: row.width_right ?? null },
     comments: row.comments ?? null,
+    tracking: { code: row.tracking_code ?? null, link: row.tracking_link ?? null },
     additions: explodeAdditions(additions),
     created_at: row.created_at ?? null,
     updated_at: row.updated_at ?? null,

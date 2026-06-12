@@ -1,0 +1,84 @@
+portal_section;portal_key;type;side;parent;dataverse_key;ashell_add1_field;ashell_add1_no;ashell_add3_slot;notes
+additions;lat_joint_w;mm;l/r;;cr56f_lateraljointwidth;add02_lateral'joint'width;015;;
+additions;med_joint_w;mm;l/r;;cr56f_medialjointwidth;add02_medial'joint'width;016;;
+additions;lat_heel_w;mm;l/r;;cr56f_lateralheelwidth;add02_lateral'heel'width;017;;
+additions;med_heel_w;mm;l/r;;cr56f_medialheelwidth;add02_medial'heel'width;018;;
+additions;hammer_toe;mm;l/r;;cr56f_2hammertoe;add02_hammer'toe;019;;
+additions;toe_box;mm;l/r;;cr56f_2toebox;add01_toe'depth;008;;DIVERGENCIA: pp001 grava 2toebox em add01_toe'depth (!008) e forca add02_toe'box (!020) vazio
+additions;bunionette;mm;l/r;;cr56f_2bunionette;add02_bunionette;021;;
+additions;hallux_v;mm;l/r;;cr56f_2halluxvalgus;add02_hallux'valgus;022;;
+additions;depth_fore;mm;l/r;;cr56f_2depthtoforepart;add02_depth'to'forepart;024;;
+additions;depth_toe;mm;l/r;;cr56f_2depthtotoeheel;add02_depth'to'toe'heel;025;;
+additions;xw_cone;mm;l/r;;cr56f_2extrawidthoncone;add02_extra'width'on'cone;026;;
+additions;str_heel;mm;l/r;;cr56f_2straightenheelclip;add02_straighten'heel'clip;027;;
+additions;heel_depth;mm;l/r;;cr56f_2heeldepthonly;add02_heel'depth'only;028;;
+additions;haglund;mm;l/r;;cr56f_2haglundheelexostosis;add02_haglund'heel'exostosis;029;;
+additions;haglund_h;mm;l/r;haglund;cr56f_3haglund_height_conditional;add02_height'from'the'base'to'the'haglund'position;030;;
+additions;haglund_p;mm;l/r;haglund;cr56f_3haglund_position_conditional;add02_position'haglund'measured'from'achiles;031;;
+additions;xs_med_ank;text;l/r;;cr56f_3extraspacemedialankle;add02_extra'space'medial'ankle;032;;
+additions;med_ank_h;text;l/r;xs_med_ank;cr56f_3mankle_height_conditional;add0201_height'to'the'centre'ankle;033;;
+additions;xs_lat_ank;text;l/r;;cr56f_3extraspacelateralankle;add02_extra'space'lateral'ankle;034;;
+additions;lat_ank_h;text;l/r;xs_lat_ank;cr56f_3ankle_height_conditional;add0202_height'to'the'centre'ankle;035;;
+upper;lining;option;l/r;;cr56f_lining;add03_lining;037;01;valor longo: add1=#50=01, conteudo no icecadd2
+upper;cl_laces;option;l/r;;cr56f_closurelaces;add03_closure'laces;038;02;
+upper;cl_velcro;option;l/r;;cr56f_closurevelcrostraps;add03_closure'velcro'straps;039;03;
+upper;stiff_hard;option;l/r;;cr56f_stiffenerhardness;add03_stiffener'hardness;040;04;
+upper;toe_puffs;option;l/r;;cr56f_toepuffs;add03_toe'puffs;041;05;
+upper;toe_puffs_rim;toggle;l/r;;cr56f_toepuffsrim;add03_toe'puffs'rim;086;;
+upper;str_leather;toggle;l/r;;cr56f_stretchleather;add03_stretch'leather;042;;
+upper;instep_front;text;l/r;;cr56f_instepmoretothefront;add03_instep'more'to'the'front;076;06;
+upper;colour_mod;text;l/r;;cr56f_colourmodifications;add03_colour'modifications;077;07;
+upper;pad_tongue;mm;l/r;;cr56f_extrapaddingontongue;add04_extra'padding'on'tongue;084;;
+upper;zipper;option;l/r;;cr56f_zipper;add04_zipper;085;08;
+sole;rocker;image;l/r;;cr56f_2rockersoletypes;add04_rocker'sole'types;048;09;
+sole;rocker_toes;mm;l/r;rocker;cr56f_2toes;add0402_toes;049;;
+sole;rocker_joint;mm;l/r;rocker;cr56f_2joint;add0402_joint;050;;
+sole;rocker_heel;mm;l/r;rocker;cr56f_2heel;add0402_heel;051;;
+sole;pu_bumper;toggle;l/r;;cr56f_6soleamendement2;add04_sole'amendement;078;;DIVERGENCIA: portal separou 6soleamendement em 1/2; a-shell so tem cr56f_6soleamendement (!078)
+sole;pu_type;option;l/r;pu_bumper;cr56f_6puevabumper;add0407_pu'eva'bumper;082;13;
+sole;amend_sole;toggle;l/r;;cr56f_6soleamendement1;add04_sole'amendement;078;;DIVERGENCIA: idem — decidir se a-shell ganha 2 campos ou se mapeiam ambos a !078
+sole;sole_type;option;l/r;amend_sole;cr56f_6evawedgecolour;add0407_eva'wedge'colour;081;12;
+sole;spoiler;option;l/r;amend_sole;cr56f_6spoiler;add0407_spoiler;080;11;DIVERGENCIA: a-shell le cr56f_6runnersolematerial; portal usa cr56f_6spoiler
+sole;runner_sole;option;l/r;amend_sole;cr56f_6runnersole;add0407_runner'sole;079;10;
+sole;sole_float;toggle;l/r;;cr56f_3solefloat;add04_sole'float;052;;
+sole;sf_medial;mm;l/r;sole_float;cr56f_3sf_medial;add0403_sf'medial;053;;
+sole;sf_lateral;mm;l/r;sole_float;cr56f_3sf_lateral;add0403_sf'lateral;054;;
+sole;heel_float;toggle;l/r;;cr56f_3heelfloat;add04_heel'float;055;;
+sole;hf_medial;mm;l/r;heel_float;cr56f_3hf_medial;add0404_hf'medial;056;;
+sole;hf_lateral;mm;l/r;heel_float;cr56f_3hf_lateral;add0404_hf'lateral;057;;
+sole;sole_wedge;toggle;l/r;;cr56f_4solewedge;add04_sole'wegde;058;;
+sole;sw_medial;mm;l/r;sole_wedge;cr56f_4sw_medial;add0405_sw'medial;059;;
+sole;sw_lateral;mm;l/r;sole_wedge;cr56f_4sw_lateral;add0405_sw'lateral;060;;
+sole;heel_wedge;toggle;l/r;;cr56f_4heelwedge;add04_heel'wegde;061;;
+sole;hw_medial;mm;l/r;heel_wedge;cr56f_4hw_medial;add0406_hw'medial;062;;
+sole;hw_lateral;mm;l/r;heel_wedge;cr56f_4hw_lateral;add0406_hw'lateral;063;;
+sole;carb_insole;toggle;l/r;;cr56f_6removablecarboninsole;add04_removable'carbon'insole;064;;
+sole;carb_sole;toggle;l/r;;cr56f_6fullcarbonsoleplate;add04_full'carbon'sole'plate;065;;
+sole;sach_heel;toggle;l/r;;cr56f_6sachheel;add04_sach'heel;067;;
+sole;sep_soles;toggle;l/r;;cr56f_6separatesoles;add04_separate'soles;068;;
+sole;sep_sheets;toggle;l/r;;cr56f_6separatesheets;add04_separate'sheets;083;;
+sole;thomas_med;toggle;l/r;;cr56f_6thomasheelmedial;add04_thomas'heel'medial;069;;
+sole;thomas_lat;toggle;l/r;;cr56f_6thomasheellateral;add04_thomas'heel'lateral;070;;
+others;welt_prot;toggle;l/r;;cr56f_7weltprotector;add05_welt'protector;072;;
+others;prot_toe;toggle;l/r;;cr56f_7protectivetoecap;add05_protective'toe'cap;073;;
+others;xtra_laces;toggle;global;;cr56f_7extrapairoflaces;extra'fields.extra'pair'of'laces$;;;extra'fields (sem numero)
+others;no_logo;toggle;global;;cr56f_nopiedrologo;extra'fields.no'piedro'logo$;;;extra'fields
+others;plastic_fit;toggle;global;;cr56f_7plasticfittingshoes;extra'fields.plastic'fitting'shoes$;;;extra'fields
+others;urgent;toggle;global;;cr56f_7urgent;extra'fields.urgent$;;;extra'fields; tambem vem como urgent:bool no topo do JSON do portal
+;;;;;cr56f_comments;extra'fields.comments$;;;comments vem no campo comments do contrato (nivel da order, nao das additions)
+;SO-ASHELL (sem campo no portal);;;;cr56f_footsize;add01_foot'size;002;;medidas do pe: nao existem no formulario do portal
+;SO-ASHELL;;;;cr56f_jointwidth;add01_joint'width;003;;
+;SO-ASHELL;;;;cr56f_jointcircumference;add01_joint'circumference;004;;
+;SO-ASHELL;;;;cr56f_instepcircumference;add01_instep'circumference;005;;
+;SO-ASHELL;;;;cr56f_longheelgirth;add01_long'heel'girth;006;;
+;SO-ASHELL;;;;cr56f_shortheelgirth;add01_short'heel'girth;007;;
+;SO-ASHELL;;;;cr56f_circumferenceadaption;add01_circumference'adaption;009;;
+;SO-ASHELL;;;;cr56f_circumferenceadaption01..04;add01_height'10/15/20/25;010-013;;
+;SO-ASHELL;;;;cr56f_2pesplanusaddaption;add02_pes'planus'addaption;023;;
+;SO-ASHELL;;;;cr56f_1customraise;add04_custom'raise;044;;custom raise + toes/joint/heel
+;SO-ASHELL;;;;cr56f_1toes/1joint/1heel;add0401_toes/joint/heel;045-047;;
+;SO-ASHELL;;;;cr56f_6bufferheel;add04_buffer'heel;066;;
+;SO-ASHELL;;;;cr56f_7fittingstage;extra'fields.fitting'stage$;;;
+;SO-ASHELL (ZSM, portal ainda sem logica);;;;cr56f_7zsmprefabsole;add0408_zsm'prefabsole;088;14;
+;SO-ASHELL (ZSM);;;;cr56f_7zsmsolesheet;add0409_zsm'sole;090;15;
+;SO-ASHELL (ZSM);;;;cr56f_7zsmsolesheetcolour;add0409_zsm'sole'colour;091;16;

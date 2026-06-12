@@ -15,6 +15,11 @@ export const dynamic = 'force-dynamic'
  *   all=1                include already-exported orders (overrides pending)
  *   status=submitted     CSV of statuses to include (default: submitted,approved)
  *   since=<ISO>          only orders updated at/after this timestamp
+ *   piedro_order=<csv>   CSV of Piedro Order numbers; * = wildcard (e.g. 65*).
+ *                        Mirrors the a-shell console filter: when present, the
+ *                        pending/status defaults are dropped (search everything).
+ *   created_from=<date>  only orders created at/after this date (YYYY-MM-DD or ISO)
+ *   created_to=<date>    only orders created at/before this date (inclusive)
  *   limit=<n>            max rows (default 200, max 1000)
  *
  * Returns { contract_version, count, orders[] }. The ERP should POST the
@@ -27,11 +32,19 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url)
+  // An explicit piedro_order search behaves like the old Dataverse console filter:
+  // it looks across ALL orders unless pending/status are explicitly given too.
+  const piedroTerms = (url.searchParams.get('piedro_order') ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  const hasOrderFilter = piedroTerms.length > 0
   const all = url.searchParams.get('all') === '1'
-  const pending = !all && url.searchParams.get('pending') !== '0'
+  const pendingParam = url.searchParams.get('pending')
+  const pending = !all && (hasOrderFilter ? pendingParam === '1' : pendingParam !== '0')
   const since = url.searchParams.get('since')
-  const statusCsv = url.searchParams.get('status') ?? 'submitted,approved'
+  const statusCsv = url.searchParams.get('status') ?? (hasOrderFilter ? '' : 'submitted,approved')
   const statuses = statusCsv.split(',').map(s => s.trim()).filter(Boolean)
+  const createdFrom = url.searchParams.get('created_from')
+  const createdTo = url.searchParams.get('created_to')
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '200', 10) || 200, 1000)
 
   const service = createServiceClient()
@@ -45,6 +58,15 @@ export async function GET(req: Request) {
   if (statuses.length) query = query.in('status', statuses)
   if (pending) query = query.is('erp_exported_at', null)
   if (since) query = query.gte('updated_at', since)
+  if (hasOrderFilter) {
+    query = query.or(piedroTerms.map(t =>
+      t.includes('*')
+        ? `piedro_order_id.ilike.${t.replace(/\*/g, '%')}`
+        : `piedro_order_id.eq.${t}`
+    ).join(','))
+  }
+  if (createdFrom) query = query.gte('created_at', createdFrom)
+  if (createdTo) query = query.lte('created_at', createdTo.length === 10 ? `${createdTo}T23:59:59.999Z` : createdTo)
 
   const { data: orders, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
