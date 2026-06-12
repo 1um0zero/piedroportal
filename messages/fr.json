@@ -470,6 +470,11 @@
     "no_account": "Pas encore de compte?",
     "forgot_password": "Mot de passe oublié ? / Première visite ?",
     "back_to_login": "Retour à la connexion",
+    "confirm_title": "Confirmez votre adresse e-mail",
+    "confirm_body": "Cliquez sur le bouton ci-dessous pour activer votre compte Piedro Portal.",
+    "confirm_cta": "Confirmer l'adresse e-mail",
+    "confirm_failed_title": "Lien invalide ou expiré",
+    "confirm_failed_body": "Ce lien de confirmation n'est plus valide. Veuillez vous réinscrire ou demander un nouveau lien.",
     "pending_company": "Compte en attente d'approbation",
     "pending_company_desc": "Votre compte est en cours d'examen par Piedro International. Vous recevrez un e-mail lorsque votre accès aux commandes sera activé.",
     "contact": "Contact"

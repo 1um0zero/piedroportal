@@ -470,6 +470,11 @@
     "no_account": "Nog geen account?",
     "forgot_password": "Wachtwoord vergeten? / Eerste keer hier?",
     "back_to_login": "Terug naar inloggen",
+    "confirm_title": "Bevestig uw e-mailadres",
+    "confirm_body": "Klik op de knop hieronder om uw Piedro Portal-account te activeren.",
+    "confirm_cta": "E-mailadres bevestigen",
+    "confirm_failed_title": "Link ongeldig of verlopen",
+    "confirm_failed_body": "Deze bevestigingslink is niet meer geldig. Registreer opnieuw of vraag een nieuwe link aan.",
     "pending_company": "Account in afwachting van goedkeuring",
     "pending_company_desc": "Uw account wordt beoordeeld door Piedro International. U ontvangt een e-mail wanneer uw toegang tot bestellingen is geactiveerd.",
     "contact": "Contact"

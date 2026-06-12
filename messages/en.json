@@ -470,6 +470,11 @@
     "no_account": "Don't have an account?",
     "forgot_password": "Forgot your password? / First time here?",
     "back_to_login": "Back to login",
+    "confirm_title": "Confirm your email",
+    "confirm_body": "Click the button below to activate your Piedro Portal account.",
+    "confirm_cta": "Confirm email address",
+    "confirm_failed_title": "Link invalid or expired",
+    "confirm_failed_body": "This confirmation link is no longer valid. Please register again or request a new link.",
     "pending_company": "Account pending approval",
     "pending_company_desc": "Your account is being reviewed by Piedro International. You will receive an email when your access to orders is activated.",
     "contact": "Contact"

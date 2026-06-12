@@ -470,6 +470,11 @@
     "no_account": "Noch kein Konto?",
     "forgot_password": "Passwort vergessen? / Zum ersten Mal hier?",
     "back_to_login": "Zurück zur Anmeldung",
+    "confirm_title": "Bestätigen Sie Ihre E-Mail-Adresse",
+    "confirm_body": "Klicken Sie auf die Schaltfläche unten, um Ihr Piedro-Portal-Konto zu aktivieren.",
+    "confirm_cta": "E-Mail-Adresse bestätigen",
+    "confirm_failed_title": "Link ungültig oder abgelaufen",
+    "confirm_failed_body": "Dieser Bestätigungslink ist nicht mehr gültig. Bitte registrieren Sie sich erneut oder fordern Sie einen neuen Link an.",
     "pending_company": "Konto wartet auf Genehmigung",
     "pending_company_desc": "Ihr Konto wird von Piedro International geprüft. Sie erhalten eine E-Mail, wenn Ihr Zugang zu Bestellungen aktiviert wurde.",
     "contact": "Kontakt"
