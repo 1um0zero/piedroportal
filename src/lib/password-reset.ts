@@ -73,7 +73,6 @@ export async function requestPasswordReset(email: string, fallbackLocale: string
     <div style="margin:0 0 28px">
       <a href="${link}" style="background:#B8975A;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;display:inline-block">${escapeHtml(cta)}</a>
     </div>
-    <p style="font-size:12px;color:#A8A29E;word-break:break-all">${escapeHtml(link)}</p>
   </div>`
 
   await resend.emails.send({ from, to: [profile.email ?? clean], subject, html })
