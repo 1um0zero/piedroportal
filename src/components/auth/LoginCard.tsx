@@ -58,6 +58,13 @@ export default function LoginCard({ hasError, redirectTo }: { hasError?: boolean
             {t('forgot_password')}
           </Link>
         </p>
+
+        <p className="text-center text-xs text-stone-400 border-t border-stone-100 pt-4">
+          {t('no_account')}{' '}
+          <Link href="/register" className="font-medium text-[#B8975A] hover:text-[#9A7A42] hover:underline">
+            {t('register')}
+          </Link>
+        </p>
       </form>
     </div>
   )
