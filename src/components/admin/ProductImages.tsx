@@ -29,6 +29,7 @@ function folderOf(relPath?: string): string | undefined {
 
 type Item = {
   file: File
+  folder?: string
   colourId: string
   index: number
   storageName: string
@@ -36,6 +37,9 @@ type Item = {
   status: 'queued' | 'uploading' | 'done' | 'error'
   error?: string
 }
+
+/** Does a folder name look like a colour_id (e.g. "4904.4336")? */
+const FOLDER_AS_ID = /^[\w-]+\.\d+$/
 
 async function uploadOne(file: File, colourId: string, index: number): Promise<{ ok: boolean; error?: string }> {
   const fd = new FormData()
@@ -62,10 +66,12 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
     for (const file of Array.from(fileList)) {
       // webkitRelativePath exists for directory picks
       const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath
-      const parsed = parseName(file.name, folderOf(rel))
+      const folder = folderOf(rel)
+      const parsed = parseName(file.name, folder)
       if (!parsed) continue
       next.push({
         file,
+        folder,
         colourId: parsed.colourId,
         index: parsed.index,
         storageName: `${parsed.colourId}.${String(parsed.index).padStart(2, '0')}.png`,
@@ -93,6 +99,35 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   const matched = items.filter(i => i.matched).length
   const unmatched = items.length - matched
   const done = items.filter(i => i.status === 'done').length
+
+  // Anomalies detected during ingest — informative, nothing is blocked.
+  const anomalies = useMemo(() => {
+    const out: string[] = []
+    // 1. File lives in a folder named like a colour_id, but the filename points elsewhere.
+    const mismatchByFolder = new Map<string, Set<string>>()
+    for (const it of items) {
+      if (it.folder && FOLDER_AS_ID.test(it.folder) && it.folder !== it.colourId) {
+        if (!mismatchByFolder.has(it.folder)) mismatchByFolder.set(it.folder, new Set())
+        mismatchByFolder.get(it.folder)!.add(it.colourId)
+      }
+    }
+    for (const [folder, ids] of mismatchByFolder) {
+      out.push(t('anom_folder_mismatch', { folder, ids: [...ids].join(', ') }))
+    }
+    // 2. Two or more files map to the same storage target — only the last upload survives.
+    const byTarget = new Map<string, number>()
+    for (const it of items) byTarget.set(it.storageName, (byTarget.get(it.storageName) ?? 0) + 1)
+    for (const [target, count] of byTarget) {
+      if (count > 1) out.push(t('anom_duplicate_target', { target, count }))
+    }
+    // 3. Unmatched colour_ids (no product in the portal).
+    const noMatch = new Map<string, number>()
+    for (const it of items) {
+      if (!it.matched) noMatch.set(it.colourId, (noMatch.get(it.colourId) ?? 0) + 1)
+    }
+    for (const [id, count] of noMatch) out.push(t('anom_unmatched', { id, count }))
+    return out
+  }, [items, t])
 
   return (
     <div className="space-y-4">
@@ -129,6 +164,15 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
           </p>
         )}
       </div>
+
+      {anomalies.length > 0 && (
+        <div className="rounded-[14px] border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-800 mb-2">{t('anomalies_title', { count: anomalies.length })}</p>
+          <ul className="space-y-1 text-xs text-amber-700 list-disc pl-4">
+            {anomalies.map((a, i) => <li key={i}>{a}</li>)}
+          </ul>
+        </div>
+      )}
 
       {items.length > 0 && (
         <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>

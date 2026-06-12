@@ -202,7 +202,8 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                     {p.active ? tc('active') : tc('inactive')}
                   </button>
                 </td>
-                <td className="px-4 py-2 text-right">
+                <td className="px-4 py-2 text-right whitespace-nowrap">
+                  <Link href={`/gallery/${p.id}`} target="_blank" className="mr-3 text-sm font-medium text-stone-400 hover:text-stone-700" title={t('view_gallery_hint')}>{t('view_gallery')}</Link>
                   <Link href={`/admin/products/${p.id}/edit`} className="text-sm font-medium text-gold hover:text-gold-dark">{tc('edit')}</Link>
                 </td>
               </tr>
