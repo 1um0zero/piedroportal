@@ -28,6 +28,28 @@ export async function updateUserRoleAction(
   return { ok: true }
 }
 
+/** Set a user's preferred portal language (null clears it). */
+export async function updateUserLocaleAction(
+  userId: string,
+  locale: 'en' | 'nl' | 'fr' | 'de' | null,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
+
+  if (locale !== null && !['en', 'nl', 'fr', 'de'].includes(locale)) {
+    return { error: 'Invalid locale' }
+  }
+
+  const service = createServiceClient()
+  const { error } = await service.from('profiles').update({ preferred_locale: locale }).eq('id', userId)
+  if (error) return { error: error.message }
+  return { ok: true }
+}
+
 /**
  * Safely delete a user (test/junk registrations). Refuses when the user has any
  * orders or stock orders — those users are real history and must be kept.
