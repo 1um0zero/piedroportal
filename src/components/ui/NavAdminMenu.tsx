@@ -33,6 +33,7 @@ export default function NavAdminMenu() {
     { href: '/admin/branches',     label: t('branches') },
     { href: '/admin/users',        label: t('users') },
     { href: '/admin/translations', label: t('translations') },
+    { href: '/admin/email',        label: t('email') },
     { href: '/admin/settings',     label: t('settings') },
   ]
 
