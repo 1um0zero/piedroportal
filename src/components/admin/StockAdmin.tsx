@@ -184,7 +184,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                     className="pointer-events-none h-4 w-4 accent-[#B8975A]"
                     tabIndex={-1}
                   />
-                  <span>{h.style_name}.{h.colour_id} <span className="text-stone-400">· {h.color_name}</span></span>
+                  <span>{h.colour_id} <span className="text-stone-400">· {h.color_name}</span></span>
                 </li>
               ))}
             </ul>
@@ -230,7 +230,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                         </div>
                         <div>
                           <div className="font-semibold text-stone-900">
-                            {row.style_name}.{row.colour_id}
+                            {row.colour_id}
                             {dirty.has(row.id) && <span className="ml-1 text-gold">•</span>}
                           </div>
                           <div className="text-[11px] text-stone-400">{row.color_name} · {row.size_unit ?? 'EU'}</div>

@@ -123,7 +123,7 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="font-semibold text-gray-900">
-                      {p.style_name}.{p.colour_id}
+                      {p.colour_id}
                     </div>
                     <div className="text-sm text-gray-500">
                       {p.color_name}
