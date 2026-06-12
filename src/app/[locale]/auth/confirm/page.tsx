@@ -29,9 +29,11 @@ async function confirmAction(formData: FormData) {
 
   if (error || !data.user) redirect(`${prefix}/auth/confirm?error=1`)
 
+  // A signup/email token can only be confirmed once, so this fires exactly
+  // once per new account — no time-window heuristic needed (unlike the PKCE
+  // callback, where the code is generic).
   const user = data.user
-  const isNewUser = Date.now() - new Date(user.created_at).getTime() < 60 * 60 * 1000
-  if (isNewUser) {
+  if (type === 'signup' || type === 'email') {
     await notifyAdminNewUser(user.email ?? '', (user.user_metadata?.full_name as string) ?? '')
   }
 
