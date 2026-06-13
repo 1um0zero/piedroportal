@@ -50,6 +50,10 @@ const appVersion = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev'
 const buildTime = new Date().toISOString()
 
 const nextConfig: NextConfig = {
+  // sharp is a native module; keep it external so its prebuilt binary is loaded
+  // at runtime instead of being bundled (bundling breaks it on Vercel — was the
+  // cause of all product-image uploads failing with "fout").
+  serverExternalPackages: ['sharp'],
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_BUILD_TIME: buildTime,

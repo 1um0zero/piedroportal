@@ -286,7 +286,12 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
                       {it.status === 'queued' && <span className="text-stone-400">{t('st_queued')}</span>}
                       {it.status === 'uploading' && <span className="text-blue-500">{t('st_uploading')}</span>}
                       {it.status === 'done' && <span className="text-emerald-600">{t('st_done')}</span>}
-                      {it.status === 'error' && <span className="text-red-500" title={it.error}>{t('st_error')}</span>}
+                      {it.status === 'error' && (
+                        <span className="text-red-500" title={it.error}>
+                          {t('st_error')}
+                          {it.error && <span className="ml-1 text-[11px] text-red-400">— {it.error}</span>}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

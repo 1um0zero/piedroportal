@@ -3,6 +3,9 @@ import { requireBackoffice } from '@/lib/admin/guard'
 import { createServiceClient } from '@/lib/supabase/service'
 import { normalizeToPng, resizeToPng } from '@/lib/products/normalize-image'
 
+export const runtime = 'nodejs'
+export const maxDuration = 30
+
 const BUCKET = 'products'
 
 /**
@@ -48,8 +51,13 @@ export async function POST(request: NextRequest) {
   let png: Buffer
   try {
     png = normalize ? await normalizeToPng(source) : await resizeToPng(source)
-  } catch {
-    return NextResponse.json({ error: `Could not process image "${file.name}"` }, { status: 400 })
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e)
+    console.error('[upload-image] processing failed', { file: file.name, normalize, detail })
+    return NextResponse.json(
+      { error: `Could not process image "${file.name}": ${detail}` },
+      { status: 400 },
+    )
   }
 
   const service = createServiceClient()
