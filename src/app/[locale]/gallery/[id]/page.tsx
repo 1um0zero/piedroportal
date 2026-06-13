@@ -7,7 +7,7 @@ import { isExclusiveVisible } from '@/lib/exclusive'
 import ProductDetail from '@/components/product/ProductDetail'
 import type { Product } from '@/types'
 
-const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,color_name_i18n,size_first,size_last,size_unit,diabetics,new_until,constructions,info,sibling,exclusive'
+const FIELDS = 'id,style_name,colour_id,picture_name,section,closure,type,color_basic,color_name,color_name_i18n,size_first,size_last,size_unit,diabetics,new_until,constructions,info,sibling,exclusive,is_stock'
 
 async function getProduct(id: string): Promise<Product | null> {
   const sb = createClient(

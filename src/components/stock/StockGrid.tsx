@@ -8,6 +8,7 @@ import type { Locale, StockProduct } from '@/types'
 import { preloadFilterTranslations, translateFilterValueSync } from '@/lib/filter-translations'
 import { submitStockOrderAction } from '@/app/actions/stock'
 import { productImageUrl as imageUrl } from '@/lib/products/image-url'
+import NvosNotice from './NvosNotice'
 
 type Company = { id: string; name: string; erp_code: string }
 type Props = {
@@ -180,7 +181,9 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
       </div>
 
       {/* Cart / submit */}
-      <aside className="lg:sticky lg:top-6 lg:self-start">
+      <aside className="lg:sticky lg:top-6 lg:self-start space-y-4">
+        {/* NVOS approval status — these are stock (EVO) orders */}
+        <NvosNotice />
         <div className="rounded-[14px] border border-gray-200 bg-white p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
           <div className="text-lg font-semibold text-gray-900">
             {t('totalPairs', { count: totalPairs })}

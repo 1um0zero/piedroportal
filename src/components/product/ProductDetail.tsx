@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import LoginModal from '@/components/auth/LoginModal'
+import NvosNotice from '@/components/stock/NvosNotice'
 import { isNew } from '@/components/gallery/GalleryPage'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
@@ -342,8 +343,11 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
           )}
 
-          {/* ORDER button */}
-          <div className="pt-2">{orderBtn}</div>
+          {/* ORDER button — stock (EVO) models carry the NVOS approval notice */}
+          <div className="pt-2 flex flex-wrap items-start gap-4">
+            {orderBtn}
+            {product.is_stock && <NvosNotice className="flex-1 min-w-[260px]" />}
+          </div>
         </div>
 
         {/* ── RIGHT: info + constructions + available colours ──────── */}
