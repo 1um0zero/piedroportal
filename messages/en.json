@@ -782,7 +782,7 @@
       "untouched_hint": "Products not in the sheet are left untouched.",
       "result": "Created {created} · Updated {updated} · Delisted {delisted}",
       "bulk_images_title": "Bulk image upload",
-      "images_intro": "Pick a folder (the whole tree is scanned) or individual files. Names are normalised to colour_id.NN.png — indices without a leading zero (.1) become .01, and any format is converted to PNG.",
+      "images_intro": "Pick a folder (the whole tree is scanned) or individual files. Names are normalised to colour_id.NN.png. Every image is auto-processed on upload: background removed (plain white only), trimmed and re-centred at the same scale, converted to PNG.",
       "pick_folder": "Pick folder…",
       "pick_files": "Pick files…",
       "upload_matched": "Upload {count} matched",
@@ -807,7 +807,7 @@
       "st_done": "done",
       "st_error": "error",
       "slot_main": "main",
-      "slots_hint": "Slot 1 is the main image (sets picture_name). Any format is converted to PNG and resized.",
+      "slots_hint": "Slot 1 is the main image (sets picture_name). Every image is auto-processed: background removed (plain white only), trimmed and re-centred at the same scale, converted to PNG.",
       "result_skipped": "{n} skipped (out of scope)",
       "stat_rejected": "Rejected",
       "sample_rejected": "Rejected — no construction",
@@ -844,9 +844,7 @@
       "added_7d": "Last 7 days",
       "added_30d": "Last 30 days",
       "orphan_pending": "⏳ no product yet",
-      "accept_orphans": "Also upload {count} image(s) that follow the naming convention but have no product yet — they will link automatically once the product is created or imported.",
-      "normalize_label": "Remove background & centre",
-      "normalize_hint": "(plain white only — check the result)"
+      "accept_orphans": "Also upload {count} image(s) that follow the naming convention but have no product yet — they will link automatically once the product is created or imported."
     },
     "branches": {
       "title": "Branch offices",

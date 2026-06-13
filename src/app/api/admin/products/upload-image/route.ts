@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { requireBackoffice } from '@/lib/admin/guard'
 import { createServiceClient } from '@/lib/supabase/service'
-import { normalizeToPng, resizeToPng } from '@/lib/products/normalize-image'
+import { normalizeToPng } from '@/lib/products/normalize-image'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -9,17 +9,14 @@ export const maxDuration = 30
 const BUCKET = 'products'
 
 /**
- * Upload one product image. Accepts any common raster format and converts it to
- * PNG following the `<colour_id>.<NN>.png` rule. If the index is 01, the
- * product's picture_name is pointed at this file.
+ * Upload one product image. Accepts any common raster format and ALWAYS
+ * normalises it (remove a plain white background, trim to the shoe, re-centre on
+ * a fixed transparent square at a constant scale) following the
+ * `<colour_id>.<NN>.png` rule. Normalisation is unconditional so every image in
+ * the gallery renders at the SAME scale — it cannot be turned off. If the index
+ * is 01, the product's picture_name is pointed at this file.
  *
- * FormData:
- *   file       — the image
- *   colourId   — target product colour_id
- *   index      — 1..99
- *   normalize  — 'true' to also remove a plain white background, trim and centre
- *                (must be visually checked); otherwise the image is only
- *                resized (background kept as-is).
+ * FormData: file, colourId, index (1..99)
  */
 export async function POST(request: NextRequest) {
   const auth = await requireBackoffice()
@@ -29,7 +26,6 @@ export async function POST(request: NextRequest) {
   const file = form.get('file')
   const colourId = String(form.get('colourId') ?? '').trim()
   const index = parseInt(String(form.get('index') ?? ''), 10)
-  const normalize = String(form.get('normalize') ?? '') === 'true'
 
   if (!(file instanceof File)) return NextResponse.json({ error: 'No file' }, { status: 400 })
   if (!colourId) return NextResponse.json({ error: 'colourId required' }, { status: 400 })
@@ -50,10 +46,10 @@ export async function POST(request: NextRequest) {
   const source = Buffer.from(await file.arrayBuffer())
   let png: Buffer
   try {
-    png = normalize ? await normalizeToPng(source) : await resizeToPng(source)
+    png = await normalizeToPng(source)
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e)
-    console.error('[upload-image] processing failed', { file: file.name, normalize, detail })
+    console.error('[upload-image] processing failed', { file: file.name, detail })
     return NextResponse.json(
       { error: `Could not process image "${file.name}": ${detail}` },
       { status: 400 },

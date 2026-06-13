@@ -782,7 +782,7 @@
       "untouched_hint": "Produkte, die nicht im Blatt stehen, bleiben unverändert.",
       "result": "Erstellt {created} · Aktualisiert {updated} · Deaktiviert {delisted}",
       "bulk_images_title": "Bilder-Massen-Upload",
-      "images_intro": "Wählen Sie einen Ordner (der ganze Baum wird durchsucht) oder einzelne Dateien. Namen werden zu colour_id.NN.png normalisiert — Indizes ohne führende Null (.1) werden zu .01, und jedes Format wird in PNG umgewandelt.",
+      "images_intro": "Wählen Sie einen Ordner (der ganze Baum wird durchsucht) oder einzelne Dateien. Namen werden zu colour_id.NN.png normalisiert. Jedes Bild wird beim Hochladen automatisch verarbeitet: Hintergrund entfernt (nur einfarbig weiß), zugeschnitten und im gleichen Maßstab zentriert, in PNG umgewandelt.",
       "pick_folder": "Ordner wählen…",
       "pick_files": "Dateien wählen…",
       "upload_matched": "{count} zugeordnete hochladen",
@@ -807,7 +807,7 @@
       "st_done": "fertig",
       "st_error": "Fehler",
       "slot_main": "Haupt",
-      "slots_hint": "Slot 1 ist das Hauptbild (setzt picture_name). Jedes Format wird in PNG umgewandelt und skaliert.",
+      "slots_hint": "Slot 1 ist das Hauptbild (setzt picture_name). Jedes Bild wird automatisch verarbeitet: Hintergrund entfernt (nur einfarbig weiß), zugeschnitten und im gleichen Maßstab zentriert, in PNG umgewandelt.",
       "result_skipped": "{n} übersprungen (außerhalb des Bereichs)",
       "stat_rejected": "Abgelehnt",
       "sample_rejected": "Abgelehnt — keine Konstruktion",
@@ -844,9 +844,7 @@
       "added_7d": "Letzte 7 Tage",
       "added_30d": "Letzte 30 Tage",
       "orphan_pending": "⏳ noch kein Produkt",
-      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird.",
-      "normalize_label": "Hintergrund entfernen & zentrieren",
-      "normalize_hint": "(nur einfarbig weiß — Ergebnis prüfen)"
+      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird."
     },
     "branches": {
       "title": "Niederlassungen",

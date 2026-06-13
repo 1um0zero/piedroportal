@@ -782,7 +782,7 @@
       "untouched_hint": "Les produits absents de la feuille restent inchangés.",
       "result": "Créés {created} · Mis à jour {updated} · Désactivés {delisted}",
       "bulk_images_title": "Téléversement d'images en masse",
-      "images_intro": "Choisissez un dossier (toute l'arborescence est analysée) ou des fichiers individuels. Les noms sont normalisés en colour_id.NN.png — les indices sans zéro initial (.1) deviennent .01, et tout format est converti en PNG.",
+      "images_intro": "Choisissez un dossier (toute l’arborescence est analysée) ou des fichiers individuels. Les noms sont normalisés en colour_id.NN.png. Chaque image est traitée automatiquement à l’envoi : fond supprimé (blanc uni uniquement), rognée et recentrée à la même échelle, convertie en PNG.",
       "pick_folder": "Choisir un dossier…",
       "pick_files": "Choisir des fichiers…",
       "upload_matched": "Téléverser {count} correspondants",
@@ -807,7 +807,7 @@
       "st_done": "terminé",
       "st_error": "erreur",
       "slot_main": "principal",
-      "slots_hint": "Le slot 1 est l'image principale (définit picture_name). Tout format est converti en PNG et redimensionné.",
+      "slots_hint": "Le slot 1 est l’image principale (définit picture_name). Chaque image est traitée automatiquement : fond supprimé (blanc uni uniquement), rognée et recentrée à la même échelle, convertie en PNG.",
       "result_skipped": "{n} ignoré(s) (hors périmètre)",
       "stat_rejected": "Rejetés",
       "sample_rejected": "Rejetés — sans construction",
@@ -844,9 +844,7 @@
       "added_7d": "7 derniers jours",
       "added_30d": "30 derniers jours",
       "orphan_pending": "⏳ pas encore de produit",
-      "accept_orphans": "Téléverser aussi {count} image(s) conformes à la convention de nommage mais sans produit — elles seront liées automatiquement dès que le produit sera créé ou importé.",
-      "normalize_label": "Supprimer le fond & centrer",
-      "normalize_hint": "(fond blanc uni uniquement — vérifiez le résultat)"
+      "accept_orphans": "Téléverser aussi {count} image(s) conformes à la convention de nommage mais sans produit — elles seront liées automatiquement dès que le produit sera créé ou importé."
     },
     "branches": {
       "title": "Filiales",

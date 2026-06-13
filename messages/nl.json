@@ -782,7 +782,7 @@
       "untouched_hint": "Producten die niet in het werkblad staan, blijven ongewijzigd.",
       "result": "Aangemaakt {created} · Bijgewerkt {updated} · Gedeactiveerd {delisted}",
       "bulk_images_title": "Bulk afbeeldingen uploaden",
-      "images_intro": "Kies een map (de hele boom wordt doorzocht) of losse bestanden. Namen worden genormaliseerd naar colour_id.NN.png — indexen zonder voorloopnul (.1) worden .01, en elk formaat wordt naar PNG omgezet.",
+      "images_intro": "Kies een map (de hele boom wordt doorzocht) of losse bestanden. Namen worden genormaliseerd naar colour_id.NN.png. Elke afbeelding wordt bij het uploaden automatisch verwerkt: achtergrond verwijderd (alleen effen wit), bijgesneden en op dezelfde schaal gecentreerd, omgezet naar PNG.",
       "pick_folder": "Map kiezen…",
       "pick_files": "Bestanden kiezen…",
       "upload_matched": "{count} gematchte uploaden",
@@ -807,7 +807,7 @@
       "st_done": "klaar",
       "st_error": "fout",
       "slot_main": "hoofd",
-      "slots_hint": "Slot 1 is de hoofdafbeelding (stelt picture_name in). Elk formaat wordt naar PNG omgezet en geschaald.",
+      "slots_hint": "Slot 1 is de hoofdafbeelding (stelt picture_name in). Elke afbeelding wordt automatisch verwerkt: achtergrond verwijderd (alleen effen wit), bijgesneden en op dezelfde schaal gecentreerd, omgezet naar PNG.",
       "result_skipped": "{n} overgeslagen (buiten bereik)",
       "stat_rejected": "Geweigerd",
       "sample_rejected": "Geweigerd — geen constructie",
@@ -844,9 +844,7 @@
       "added_7d": "Laatste 7 dagen",
       "added_30d": "Laatste 30 dagen",
       "orphan_pending": "⏳ nog geen product",
-      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd.",
-      "normalize_label": "Achtergrond verwijderen & centreren",
-      "normalize_hint": "(alleen effen wit — controleer het resultaat)"
+      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd."
     },
     "branches": {
       "title": "Filialen",

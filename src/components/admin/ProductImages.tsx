@@ -86,18 +86,18 @@ async function prepareForUpload(file: File): Promise<File> {
   }
 }
 
+// The server ALWAYS normalises (trim + centre + constant scale), so every image
+// lands in the gallery at the same scale regardless of the original framing.
 async function uploadOne(
   file: File,
   colourId: string,
   index: number,
-  normalize = false,
 ): Promise<{ ok: boolean; error?: string }> {
   const prepared = await prepareForUpload(file)
   const fd = new FormData()
   fd.append('file', prepared)
   fd.append('colourId', colourId)
   fd.append('index', String(index))
-  if (normalize) fd.append('normalize', 'true')
   const res = await fetch('/api/admin/products/upload-image', { method: 'POST', body: fd })
   const json = await res.json().catch(() => ({}))
   return res.ok ? { ok: true } : { ok: false, error: json.error ?? `HTTP ${res.status}` }
@@ -111,7 +111,6 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   const [items, setItems] = useState<Item[]>([])
   const [running, setRunning] = useState(false)
   const [acceptOrphans, setAcceptOrphans] = useState(false)
-  const [normalize, setNormalize] = useState(false)
   const folderRef = useRef<HTMLInputElement>(null)
 
   function ingest(fileList: FileList | null) {
@@ -153,7 +152,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
     for (let i = 0; i < queue.length; i++) {
       if (!willUpload(queue[i])) continue
       setItems(prev => prev.map((it, idx) => idx === i ? { ...it, status: 'uploading' } : it))
-      const r = await uploadOne(queue[i].file, queue[i].colourId, queue[i].index, normalize)
+      const r = await uploadOne(queue[i].file, queue[i].colourId, queue[i].index)
       setItems(prev => prev.map((it, idx) => idx === i
         ? { ...it, status: r.ok ? 'done' : 'error', error: r.error } : it))
     }
@@ -228,12 +227,6 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
             {running ? t('uploading_progress', { done, total: uploadable }) : t('upload_matched', { count: uploadable })}
           </button>
         </div>
-        <label className="mt-3 flex items-start gap-2 text-sm text-stone-600 cursor-pointer">
-          <input type="checkbox" checked={normalize}
-            onChange={e => setNormalize(e.target.checked)}
-            className="mt-0.5 h-4 w-4 accent-gold" />
-          <span>{t('normalize_label')} <span className="text-stone-400">{t('normalize_hint')}</span></span>
-        </label>
         {items.length > 0 && (
           <p className="mt-3 text-xs text-stone-400">
             {t('summary_images', { total: items.length, matched })}
@@ -312,14 +305,13 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
   const [status, setStatus] = useState<Record<number, 'idle' | 'uploading' | 'done' | 'error'>>({})
   const [bust, setBust] = useState(0) // cache-buster after upload
   const [err, setErr] = useState<string | null>(null)
-  const [normalize, setNormalize] = useState(false)
 
   async function pick(index: number, files: FileList | null) {
     const file = files?.[0]
     if (!file) return
     setErr(null)
     setStatus(s => ({ ...s, [index]: 'uploading' }))
-    const r = await uploadOne(file, colourId, index, normalize)
+    const r = await uploadOne(file, colourId, index)
     setStatus(s => ({ ...s, [index]: r.ok ? 'done' : 'error' }))
     if (r.ok) setBust(b => b + 1)
     else setErr(r.error ?? 'Upload failed')
@@ -327,12 +319,6 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
 
   return (
     <div>
-      <label className="mb-3 flex items-start gap-2 text-sm text-stone-600 cursor-pointer">
-        <input type="checkbox" checked={normalize}
-          onChange={e => setNormalize(e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-gold" />
-        <span>{t('normalize_label')} <span className="text-stone-400">{t('normalize_hint')}</span></span>
-      </label>
       {err && <p className="mb-2 text-xs text-red-500">{err}</p>}
       <div className="grid grid-cols-4 gap-3">
         {slots.map(n => {
