@@ -58,11 +58,46 @@ const COLOUR_ID_CONVENTION = [
 ]
 const followsConvention = (id: string) => COLOUR_ID_CONVENTION.some(re => re.test(id))
 
-async function uploadOne(file: File, colourId: string, index: number): Promise<{ ok: boolean; error?: string }> {
+// Vercel rejects request bodies over ~4.5 MB before they reach the handler, so
+// large photos are downscaled in the browser first (the server only needs ≤1200/
+// 700 px anyway). PNG output preserves transparency; EXIF orientation is baked in.
+const MAX_UPLOAD_DIM = 1600
+const SIZE_THRESHOLD = 3_500_000 // bytes; below this, send the file untouched
+
+async function prepareForUpload(file: File): Promise<File> {
+  if (file.size <= SIZE_THRESHOLD) return file
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const scale = Math.min(1, MAX_UPLOAD_DIM / Math.max(bmp.width, bmp.height))
+    const w = Math.round(bmp.width * scale)
+    const h = Math.round(bmp.height * scale)
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(bmp, 0, 0, w, h)
+    bmp.close?.()
+    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'))
+    if (!blob) return file
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.png', { type: 'image/png' })
+  } catch {
+    return file // fall back to the original; the server may still accept it
+  }
+}
+
+async function uploadOne(
+  file: File,
+  colourId: string,
+  index: number,
+  normalize = false,
+): Promise<{ ok: boolean; error?: string }> {
+  const prepared = await prepareForUpload(file)
   const fd = new FormData()
-  fd.append('file', file)
+  fd.append('file', prepared)
   fd.append('colourId', colourId)
   fd.append('index', String(index))
+  if (normalize) fd.append('normalize', 'true')
   const res = await fetch('/api/admin/products/upload-image', { method: 'POST', body: fd })
   const json = await res.json().catch(() => ({}))
   return res.ok ? { ok: true } : { ok: false, error: json.error ?? `HTTP ${res.status}` }
@@ -76,6 +111,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   const [items, setItems] = useState<Item[]>([])
   const [running, setRunning] = useState(false)
   const [acceptOrphans, setAcceptOrphans] = useState(false)
+  const [normalize, setNormalize] = useState(false)
   const folderRef = useRef<HTMLInputElement>(null)
 
   function ingest(fileList: FileList | null) {
@@ -117,7 +153,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
     for (let i = 0; i < queue.length; i++) {
       if (!willUpload(queue[i])) continue
       setItems(prev => prev.map((it, idx) => idx === i ? { ...it, status: 'uploading' } : it))
-      const r = await uploadOne(queue[i].file, queue[i].colourId, queue[i].index)
+      const r = await uploadOne(queue[i].file, queue[i].colourId, queue[i].index, normalize)
       setItems(prev => prev.map((it, idx) => idx === i
         ? { ...it, status: r.ok ? 'done' : 'error', error: r.error } : it))
     }
@@ -192,6 +228,12 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
             {running ? t('uploading_progress', { done, total: uploadable }) : t('upload_matched', { count: uploadable })}
           </button>
         </div>
+        <label className="mt-3 flex items-start gap-2 text-sm text-stone-600 cursor-pointer">
+          <input type="checkbox" checked={normalize}
+            onChange={e => setNormalize(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-gold" />
+          <span>{t('normalize_label')} <span className="text-stone-400">{t('normalize_hint')}</span></span>
+        </label>
         {items.length > 0 && (
           <p className="mt-3 text-xs text-stone-400">
             {t('summary_images', { total: items.length, matched })}
@@ -265,13 +307,14 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
   const [status, setStatus] = useState<Record<number, 'idle' | 'uploading' | 'done' | 'error'>>({})
   const [bust, setBust] = useState(0) // cache-buster after upload
   const [err, setErr] = useState<string | null>(null)
+  const [normalize, setNormalize] = useState(false)
 
   async function pick(index: number, files: FileList | null) {
     const file = files?.[0]
     if (!file) return
     setErr(null)
     setStatus(s => ({ ...s, [index]: 'uploading' }))
-    const r = await uploadOne(file, colourId, index)
+    const r = await uploadOne(file, colourId, index, normalize)
     setStatus(s => ({ ...s, [index]: r.ok ? 'done' : 'error' }))
     if (r.ok) setBust(b => b + 1)
     else setErr(r.error ?? 'Upload failed')
@@ -279,6 +322,12 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
 
   return (
     <div>
+      <label className="mb-3 flex items-start gap-2 text-sm text-stone-600 cursor-pointer">
+        <input type="checkbox" checked={normalize}
+          onChange={e => setNormalize(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-gold" />
+        <span>{t('normalize_label')} <span className="text-stone-400">{t('normalize_hint')}</span></span>
+      </label>
       {err && <p className="mb-2 text-xs text-red-500">{err}</p>}
       <div className="grid grid-cols-4 gap-3">
         {slots.map(n => {

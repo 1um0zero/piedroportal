@@ -1,17 +1,22 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import sharp from 'sharp'
 import { requireBackoffice } from '@/lib/admin/guard'
 import { createServiceClient } from '@/lib/supabase/service'
+import { normalizeToPng, resizeToPng } from '@/lib/products/normalize-image'
 
 const BUCKET = 'products'
-const MAX_DIM = 1200 // max width/height; images are fit:'inside' without enlargement
 
 /**
- * Upload one product image. Accepts any common raster format and normalises it
- * to PNG (max 1200×1200, no upscale) following the `<colour_id>.<NN>.png` rule.
- * If the index is 01, the product's picture_name is pointed at this file.
+ * Upload one product image. Accepts any common raster format and converts it to
+ * PNG following the `<colour_id>.<NN>.png` rule. If the index is 01, the
+ * product's picture_name is pointed at this file.
  *
- * FormData: file, colourId, index (1..n)
+ * FormData:
+ *   file       — the image
+ *   colourId   — target product colour_id
+ *   index      — 1..99
+ *   normalize  — 'true' to also remove a plain white background, trim and centre
+ *                (must be visually checked); otherwise the image is only
+ *                resized (background kept as-is).
  */
 export async function POST(request: NextRequest) {
   const auth = await requireBackoffice()
@@ -21,6 +26,7 @@ export async function POST(request: NextRequest) {
   const file = form.get('file')
   const colourId = String(form.get('colourId') ?? '').trim()
   const index = parseInt(String(form.get('index') ?? ''), 10)
+  const normalize = String(form.get('normalize') ?? '') === 'true'
 
   if (!(file instanceof File)) return NextResponse.json({ error: 'No file' }, { status: 400 })
   if (!colourId) return NextResponse.json({ error: 'colourId required' }, { status: 400 })
@@ -38,14 +44,10 @@ export async function POST(request: NextRequest) {
 
   const storageName = `${colourId}.${String(index).padStart(2, '0')}.png`
 
-  // Normalise: decode → resize (inside, no enlargement) → PNG.
+  const source = Buffer.from(await file.arrayBuffer())
   let png: Buffer
   try {
-    png = await sharp(Buffer.from(await file.arrayBuffer()))
-      .rotate() // honour EXIF orientation
-      .resize(MAX_DIM, MAX_DIM, { fit: 'inside', withoutEnlargement: true })
-      .png()
-      .toBuffer()
+    png = normalize ? await normalizeToPng(source) : await resizeToPng(source)
   } catch {
     return NextResponse.json({ error: `Could not process image "${file.name}"` }, { status: 400 })
   }

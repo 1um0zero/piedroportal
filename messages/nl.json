@@ -844,7 +844,9 @@
       "added_7d": "Laatste 7 dagen",
       "added_30d": "Laatste 30 dagen",
       "orphan_pending": "⏳ nog geen product",
-      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd."
+      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd.",
+      "normalize_label": "Achtergrond verwijderen & centreren",
+      "normalize_hint": "(alleen effen wit — controleer het resultaat)"
     },
     "branches": {
       "title": "Filialen",

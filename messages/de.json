@@ -844,7 +844,9 @@
       "added_7d": "Letzte 7 Tage",
       "added_30d": "Letzte 30 Tage",
       "orphan_pending": "⏳ noch kein Produkt",
-      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird."
+      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird.",
+      "normalize_label": "Hintergrund entfernen & zentrieren",
+      "normalize_hint": "(nur einfarbig weiß — Ergebnis prüfen)"
     },
     "branches": {
       "title": "Niederlassungen",

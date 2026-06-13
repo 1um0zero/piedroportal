@@ -844,7 +844,9 @@
       "added_7d": "Last 7 days",
       "added_30d": "Last 30 days",
       "orphan_pending": "⏳ no product yet",
-      "accept_orphans": "Also upload {count} image(s) that follow the naming convention but have no product yet — they will link automatically once the product is created or imported."
+      "accept_orphans": "Also upload {count} image(s) that follow the naming convention but have no product yet — they will link automatically once the product is created or imported.",
+      "normalize_label": "Remove background & centre",
+      "normalize_hint": "(plain white only — check the result)"
     },
     "branches": {
       "title": "Branch offices",

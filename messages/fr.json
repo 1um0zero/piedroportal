@@ -844,7 +844,9 @@
       "added_7d": "7 derniers jours",
       "added_30d": "30 derniers jours",
       "orphan_pending": "⏳ pas encore de produit",
-      "accept_orphans": "Téléverser aussi {count} image(s) conformes à la convention de nommage mais sans produit — elles seront liées automatiquement dès que le produit sera créé ou importé."
+      "accept_orphans": "Téléverser aussi {count} image(s) conformes à la convention de nommage mais sans produit — elles seront liées automatiquement dès que le produit sera créé ou importé.",
+      "normalize_label": "Supprimer le fond & centrer",
+      "normalize_hint": "(fond blanc uni uniquement — vérifiez le résultat)"
     },
     "branches": {
       "title": "Filiales",
