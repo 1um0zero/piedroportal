@@ -6,7 +6,9 @@ import { timingSafeEqual } from 'crypto'
  * Returns true only on a constant-time match.
  */
 export function isErpAuthorized(req: Request): boolean {
-  const expected = process.env.ERP_API_TOKEN
+  // .trim() guards against a trailing newline/space pasted into the env var —
+  // a common copy-paste trap that would otherwise fail every (correct) token.
+  const expected = process.env.ERP_API_TOKEN?.trim()
   if (!expected) return false // fail closed if not configured
 
   const header = req.headers.get('authorization') ?? ''
