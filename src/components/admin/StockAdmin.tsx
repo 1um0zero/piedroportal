@@ -10,9 +10,7 @@ import {
   setStockFlagAction,
   searchProductsForStock,
 } from '@/app/actions/admin-stock'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=2`
+import { productImageUrl as imageUrl } from '@/lib/products/image-url'
 
 type SearchHit = { id: string; style_name: string; colour_id: string; color_name: string }
 

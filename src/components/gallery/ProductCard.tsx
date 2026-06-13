@@ -9,13 +9,7 @@ import { isNew } from './GalleryPage'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { translateFilterValueSync } from '@/lib/filter-translations'
 import { displayWidths } from '@/lib/width-display'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-// `v` busts the Next/Image optimizer cache after a bulk image reprocess (the
-// source path is unchanged, so without a new query key Vercel keeps serving the
-// previously-optimised version). Bump it whenever product images are re-baked.
-const IMG_VERSION = '2'
-const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=${IMG_VERSION}`
+import { productImageUrl as imageUrl } from '@/lib/products/image-url'
 
 const SHADOW     = 'drop-shadow(0 8px 20px rgba(0,0,0,0.11)) drop-shadow(0 2px 5px rgba(0,0,0,0.06))'
 const SHADOW_HOV = 'drop-shadow(0 16px 32px rgba(0,0,0,0.16)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))'

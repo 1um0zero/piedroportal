@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useRef, useMemo } from 'react'
+import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations } from 'next-intl'
 import type { Section } from '@/types'
 import { saveStyleOrder } from '@/app/actions/admin-products'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 export type StyleItem = {
   style: string
@@ -211,7 +211,7 @@ export default function StyleOrderer({ initial }: Props) {
                   <div className="aspect-square">
                     {it.picture ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`${BUCKET}/${it.picture}`} alt={it.style}
+                      <img src={productImageUrl(it.picture)} alt={it.style}
                         className="w-full h-full object-contain" draggable={false} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-stone-300 text-xs">

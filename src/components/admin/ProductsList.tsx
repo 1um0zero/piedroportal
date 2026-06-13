@@ -1,13 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { setProductActive } from '@/app/actions/admin-products'
 import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
 import { matchesAny } from '@/lib/search'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 const PAGE = 50
 
 export type ProductRow = {
@@ -171,7 +171,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                   <div className="h-10 w-10 rounded-lg bg-stone-100 overflow-hidden">
                     {p.picture_name && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`${BUCKET}/${p.picture_name}`} alt="" className="h-full w-full object-contain" />
+                      <img src={productImageUrl(p.picture_name)} alt="" className="h-full w-full object-contain" />
                     )}
                   </div>
                 </td>

@@ -7,10 +7,7 @@ import { useRouter } from '@/i18n/navigation'
 import type { Locale, StockProduct } from '@/types'
 import { preloadFilterTranslations, translateFilterValueSync } from '@/lib/filter-translations'
 import { submitStockOrderAction } from '@/app/actions/stock'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const IMG_VERSION = '2'
-const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=${IMG_VERSION}`
+import { productImageUrl as imageUrl } from '@/lib/products/image-url'
 
 type Company = { id: string; name: string; erp_code: string }
 type Props = {

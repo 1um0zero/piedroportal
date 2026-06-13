@@ -9,10 +9,12 @@ import LoginModal from '@/components/auth/LoginModal'
 import { isNew } from '@/components/gallery/GalleryPage'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
+import { productImageUrl } from '@/lib/products/image-url'
 import type { Product, Locale } from '@/types'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
-const src = (name: string) => `${BUCKET}/${name}`
+// All product image URLs go through productImageUrl so they carry the shared
+// cache-busting version (re-processed images keep the same object name).
+const src = (name: string) => productImageUrl(name)
 
 const LENS = 160   // lens diameter px
 const ZOOM = 2.5   // magnification
@@ -432,7 +434,7 @@ function ColourCard({ product, isSelected }: { product: Product; isSelected: boo
       <div className="relative aspect-square">
         {product.picture_name && !failed ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`${BUCKET}/${product.picture_name}`} alt={colorName ?? ''}
+          <img src={src(product.picture_name)} alt={colorName ?? ''}
             className="w-full h-full object-contain p-2"
             onError={() => setFailed(true)} />
         ) : (

@@ -6,9 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { Link, useRouter } from '@/i18n/navigation'
 import type { StockOrderDetail } from '@/app/actions/stock'
 import { updateStockOrderStatusAction } from '@/app/actions/stock'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=2`
+import { productImageUrl as imageUrl } from '@/lib/products/image-url'
 
 const STATUSES = ['submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 

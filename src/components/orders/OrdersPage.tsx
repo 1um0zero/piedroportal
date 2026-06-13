@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useTransition } from 'react'
+import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
@@ -10,9 +11,6 @@ import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
 import { nz } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/products`
 
 const STATUS_STYLES: Record<string, string> = {
   draft:         'bg-stone-100 text-stone-500',
@@ -394,7 +392,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                         {product?.picture_name ? (
                           <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-stone-50 shrink-0">
                             <Image
-                              src={`${BUCKET}/${product.picture_name}`}
+                              src={productImageUrl(product.picture_name)}
                               alt={product.style_name ?? ''}
                               fill sizes="40px" className="object-contain p-0.5"
                             />

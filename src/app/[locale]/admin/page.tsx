@@ -1,9 +1,9 @@
 import { getLocale, getTranslations } from 'next-intl/server'
+import { productImageUrl } from '@/lib/products/image-url'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { nz } from '@/lib/format'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 const STATUS_COLOR: Record<string, string> = {
   draft: 'bg-stone-300', submitted: 'bg-blue-400', approved: 'bg-emerald-400',
@@ -260,7 +260,7 @@ export default async function AdminDashboard() {
                     title={`${c.colour_id} — ${c.color_name}`}>
                     {c.picture_name ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`${BUCKET}/${c.picture_name}`} alt={c.colour_id}
+                      <img src={productImageUrl(c.picture_name)} alt={c.colour_id}
                         className="w-full h-full object-contain p-1" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

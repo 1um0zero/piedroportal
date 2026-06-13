@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations, useLocale } from 'next-intl'
 import { SECTIONS } from './additions-config'
 import { getFieldLabel, getSectionLabel, translateOptionValue, groupImageBlocks } from '@/lib/additions-helpers'
@@ -8,7 +9,6 @@ import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filte
 import { displayWidthByConstruction } from '@/lib/width-display'
 import type { Locale } from '@/types'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 /**
  * Shared order summary — the body of the registration "Confirmation" step,
@@ -222,7 +222,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
           {product.picture_name && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={`${BUCKET}/${product.picture_name}`}
+              src={productImageUrl(product.picture_name)}
               alt={product.style_name ?? ''}
               className="w-full max-w-[280px] object-contain"
               style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}

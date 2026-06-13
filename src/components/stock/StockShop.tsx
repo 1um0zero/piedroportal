@@ -7,10 +7,7 @@ import type { Locale, StockProduct } from '@/types'
 import { preloadFilterTranslations, translateFilterValueSync } from '@/lib/filter-translations'
 import LoginModal from '@/components/auth/LoginModal'
 import StockGrid from './StockGrid'
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const IMG_VERSION = '2'
-const imageUrl = (name: string) => `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=${IMG_VERSION}`
+import { productImageUrl as imageUrl } from '@/lib/products/image-url'
 
 const SHADOW     = 'drop-shadow(0 8px 20px rgba(0,0,0,0.11)) drop-shadow(0 2px 5px rgba(0,0,0,0.06))'
 const SHADOW_HOV = 'drop-shadow(0 16px 32px rgba(0,0,0,0.16)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))'

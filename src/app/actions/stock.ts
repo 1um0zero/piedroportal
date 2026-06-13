@@ -18,10 +18,13 @@ import { Resend } from 'resend'
 import React from 'react'
 import { StockOrderPdf, type StockOrderPdfProps } from '@/components/order/StockOrderPdf'
 import type { Locale, Product, StockProduct, StockSize } from '@/types'
+import { PRODUCT_IMG_VERSION } from '@/lib/products/image-url'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const productImageUrl = (name: string | null | undefined) =>
-  name && SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/products/${name}` : undefined
+  name && SUPABASE_URL
+    ? `${SUPABASE_URL}/storage/v1/object/public/products/${name}?v=${PRODUCT_IMG_VERSION}`
+    : undefined
 
 // Same product fields the gallery/catalogue use, + exclusive for visibility.
 const FIELDS = [

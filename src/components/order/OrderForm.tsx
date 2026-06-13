@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
@@ -11,7 +12,6 @@ import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filte
 import { displayWidth } from '@/lib/width-display'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 type Unit    = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT' | 'DIFF_SIZES'
 type Company = { id: string; name: string; erp_code: string }
@@ -355,7 +355,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         productColorName: product.color_name,
         productClosure:   product.closure,
         productImageUrl:  product.picture_name
-          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${product.picture_name}`
+          ? productImageUrl(product.picture_name)
           : undefined,
         companyName,
       } : undefined
@@ -445,7 +445,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         productColorName: product.color_name,
         productClosure: product.closure,
         productImageUrl: product.picture_name
-          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${product.picture_name}`
+          ? productImageUrl(product.picture_name)
           : undefined,
         diff_sizes_pairs: unit === 'DIFF_SIZES'
           ? diffSizesPairs.map(p => ({ qty: p.qty, size: parseFloat(p.size) }))
@@ -1001,7 +1001,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                 style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`${BUCKET}/${product.picture_name}`}
+                  src={productImageUrl(product.picture_name)}
                   alt={product.style_name}
                   className="w-full h-full object-contain p-2"
                 />

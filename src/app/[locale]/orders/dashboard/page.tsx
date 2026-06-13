@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { productImageUrl } from '@/lib/products/image-url'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -8,7 +9,6 @@ import { Link } from '@/i18n/navigation'
 import { nz } from '@/lib/format'
 import { isPiedroAdmin } from '@/lib/roles'
 
-const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
 const STATUS_DOT: Record<string, string> = {
   draft: 'bg-stone-300', submitted: 'bg-blue-400', approved: 'bg-emerald-400',
@@ -308,7 +308,7 @@ export default async function ClientDashboard() {
                 <div className="relative w-full aspect-square rounded-xl bg-stone-50 border border-stone-100 overflow-hidden">
                   {m.picture_name ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`${BUCKET}/${m.picture_name}`} alt={m.id} className="w-full h-full object-contain p-2" />
+                    <img src={productImageUrl(m.picture_name)} alt={m.id} className="w-full h-full object-contain p-2" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-[10px] text-stone-400">{m.id}</span>
@@ -403,7 +403,7 @@ export default async function ClientDashboard() {
                 {p?.picture_name && (
                   <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-100 shrink-0 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`${BUCKET}/${p.picture_name}`} alt="" className="w-full h-full object-contain p-1" />
+                    <img src={productImageUrl(p.picture_name)} alt="" className="w-full h-full object-contain p-1" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
