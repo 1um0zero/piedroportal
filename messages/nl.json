@@ -842,7 +842,9 @@
       "added_all": "Toegevoegd (alle datums)",
       "added_today": "Vandaag toegevoegd",
       "added_7d": "Laatste 7 dagen",
-      "added_30d": "Laatste 30 dagen"
+      "added_30d": "Laatste 30 dagen",
+      "orphan_pending": "⏳ nog geen product",
+      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd."
     },
     "branches": {
       "title": "Filialen",

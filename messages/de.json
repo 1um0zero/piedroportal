@@ -842,7 +842,9 @@
       "added_all": "Hinzugefügt (alle Daten)",
       "added_today": "Heute hinzugefügt",
       "added_7d": "Letzte 7 Tage",
-      "added_30d": "Letzte 30 Tage"
+      "added_30d": "Letzte 30 Tage",
+      "orphan_pending": "⏳ noch kein Produkt",
+      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird."
     },
     "branches": {
       "title": "Niederlassungen",

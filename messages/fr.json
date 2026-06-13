@@ -842,7 +842,9 @@
       "added_all": "Ajouté (toutes dates)",
       "added_today": "Ajouté aujourd’hui",
       "added_7d": "7 derniers jours",
-      "added_30d": "30 derniers jours"
+      "added_30d": "30 derniers jours",
+      "orphan_pending": "⏳ pas encore de produit",
+      "accept_orphans": "Téléverser aussi {count} image(s) conformes à la convention de nommage mais sans produit — elles seront liées automatiquement dès que le produit sera créé ou importé."
     },
     "branches": {
       "title": "Filiales",

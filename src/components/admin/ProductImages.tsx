@@ -36,12 +36,27 @@ type Item = {
   matched: boolean
   /** Folder is named like a colour_id but the filename points to a different one — excluded from upload. */
   mismatch: boolean
+  /** colour_id follows a canonical Piedro format (normal / fashion / ZSM). */
+  convention: boolean
   status: 'queued' | 'uploading' | 'done' | 'error'
   error?: string
 }
 
 /** Does a folder name look like a colour_id (e.g. "4904.4336")? */
 const FOLDER_AS_ID = /^[\w-]+\.\d+$/
+
+/**
+ * A colour_id that follows one of the three canonical Piedro formats
+ * (see reference_style_nomenclature). Used to decide whether an image with no
+ * product yet may still be uploaded as an "orphan" — it will link automatically
+ * once a product with that colour_id is created/imported.
+ */
+const COLOUR_ID_CONVENTION = [
+  /^[0-9]+[A-Z]?\.[0-9]+$/,                 // normal   e.g. 1700.0393 / 2034K.0336
+  /^7[0-9]{2}\.[0-9]+\.[0-9]{2}\.[0-9]+$/,  // fashion  e.g. 711.03620.54.1620
+  /^B[0-9]+\.[0-9]+$/,                      // ZSM      e.g. B5713.2500
+]
+const followsConvention = (id: string) => COLOUR_ID_CONVENTION.some(re => re.test(id))
 
 async function uploadOne(file: File, colourId: string, index: number): Promise<{ ok: boolean; error?: string }> {
   const fd = new FormData()
@@ -60,6 +75,7 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   const colourSet = useMemo(() => new Set(colourIds), [colourIds])
   const [items, setItems] = useState<Item[]>([])
   const [running, setRunning] = useState(false)
+  const [acceptOrphans, setAcceptOrphans] = useState(false)
   const folderRef = useRef<HTMLInputElement>(null)
 
   function ingest(fileList: FileList | null) {
@@ -81,18 +97,25 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
         storageName: `${parsed.colourId}.${String(parsed.index).padStart(2, '0')}.png`,
         matched: !mismatch && colourSet.has(parsed.colourId),
         mismatch,
+        convention: followsConvention(parsed.colourId),
         status: 'queued',
       })
     }
     next.sort((a, b) => a.colourId.localeCompare(b.colourId) || a.index - b.index)
     setItems(next)
+    setAcceptOrphans(false)
   }
+
+  /** An image with no product yet, but a valid colour_id — may be uploaded on confirmation. */
+  const isOrphan = (it: Item) => !it.matched && !it.mismatch && it.convention
+  /** Will this item actually be uploaded given the current confirmation state? */
+  const willUpload = (it: Item) => it.matched || (acceptOrphans && isOrphan(it))
 
   async function run() {
     setRunning(true)
     const queue = [...items]
     for (let i = 0; i < queue.length; i++) {
-      if (!queue[i].matched) continue
+      if (!willUpload(queue[i])) continue
       setItems(prev => prev.map((it, idx) => idx === i ? { ...it, status: 'uploading' } : it))
       const r = await uploadOne(queue[i].file, queue[i].colourId, queue[i].index)
       setItems(prev => prev.map((it, idx) => idx === i
@@ -102,7 +125,9 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
   }
 
   const matched = items.filter(i => i.matched).length
+  const orphans = items.filter(isOrphan).length
   const unmatched = items.length - matched
+  const uploadable = matched + (acceptOrphans ? orphans : 0)
   const done = items.filter(i => i.status === 'done').length
 
   // Anomalies detected during ingest — informative, nothing is blocked.
@@ -127,10 +152,13 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
     for (const [target, count] of byTarget) {
       if (count > 1) out.push(t('anom_duplicate_target', { target, count }))
     }
-    // 3. Unmatched colour_ids (no product in the portal); mismatches are reported above.
+    // 3. Unmatched colour_ids that ALSO break the naming convention — these can never
+    //    auto-link, so they are genuine anomalies. Convention-valid orphans are handled
+    //    by the dedicated confirmation panel instead.
     const noMatch = new Map<string, number>()
     for (const it of items) {
-      if (!it.matched && !it.mismatch) noMatch.set(it.colourId, (noMatch.get(it.colourId) ?? 0) + 1)
+      if (!it.matched && !it.mismatch && !it.convention)
+        noMatch.set(it.colourId, (noMatch.get(it.colourId) ?? 0) + 1)
     }
     for (const [id, count] of noMatch) out.push(t('anom_unmatched', { id, count }))
     return out
@@ -159,9 +187,9 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
             {t('pick_files')}
             <input type="file" accept="image/*" multiple className="hidden" onChange={e => ingest(e.target.files)} />
           </label>
-          <button onClick={run} disabled={running || matched === 0}
+          <button onClick={run} disabled={running || uploadable === 0}
             className="rounded-lg bg-gold px-5 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">
-            {running ? t('uploading_progress', { done, total: matched }) : t('upload_matched', { count: matched })}
+            {running ? t('uploading_progress', { done, total: uploadable }) : t('upload_matched', { count: uploadable })}
           </button>
         </div>
         {items.length > 0 && (
@@ -171,6 +199,15 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
           </p>
         )}
       </div>
+
+      {orphans > 0 && (
+        <label className="flex items-start gap-3 rounded-[14px] border border-sky-200 bg-sky-50 p-4 cursor-pointer">
+          <input type="checkbox" checked={acceptOrphans}
+            onChange={e => setAcceptOrphans(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-gold" />
+          <span className="text-sm text-sky-800">{t('accept_orphans', { count: orphans })}</span>
+        </label>
+      )}
 
       {anomalies.length > 0 && (
         <div className="rounded-[14px] border border-amber-200 bg-amber-50 p-4">
@@ -193,14 +230,16 @@ export function BulkImageUpload({ colourIds }: { colourIds: string[] }) {
               </thead>
               <tbody className="divide-y divide-stone-50">
                 {items.map((it, i) => (
-                  <tr key={i} className={it.matched ? '' : it.mismatch ? 'bg-amber-50/60' : 'bg-red-50/40'}>
+                  <tr key={i} className={it.matched ? '' : isOrphan(it) ? 'bg-sky-50/50' : it.mismatch ? 'bg-amber-50/60' : 'bg-red-50/40'}>
                     <td className="px-4 py-1.5 text-stone-500 truncate max-w-[220px]">{it.file.name}</td>
                     <td className="px-4 py-1.5 text-stone-700 font-mono text-xs">{it.storageName}</td>
                     <td className="px-4 py-1.5">{it.matched
                       ? <span className="text-emerald-600">✓ {it.colourId}</span>
-                      : it.mismatch
-                        ? <span className="text-amber-600" title={t('excluded_mismatch_hint', { folder: it.folder ?? '' })}>{t('excluded_mismatch')}</span>
-                        : <span className="text-red-500">{t('no_match')}</span>}</td>
+                      : isOrphan(it)
+                        ? <span className={acceptOrphans ? 'text-sky-600' : 'text-sky-400'} title={it.colourId}>{t('orphan_pending')}</span>
+                        : it.mismatch
+                          ? <span className="text-amber-600" title={t('excluded_mismatch_hint', { folder: it.folder ?? '' })}>{t('excluded_mismatch')}</span>
+                          : <span className="text-red-500">{t('no_match')}</span>}</td>
                     <td className="px-4 py-1.5">
                       {it.status === 'queued' && <span className="text-stone-400">{t('st_queued')}</span>}
                       {it.status === 'uploading' && <span className="text-blue-500">{t('st_uploading')}</span>}
