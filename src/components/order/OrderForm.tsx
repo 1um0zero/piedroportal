@@ -178,7 +178,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   }
 
   // ── Form state — pre-filled from draftData or sessionStorage ──
-  const [selectedCompanyId, setCompanyId] = useState(getInitialState('selectedCompanyId', d?.company_id ?? userCompany?.id ?? userProfile.company_id ?? ''))
+  // Membership is authoritative via user_companies (userCompany); do NOT fall back
+  // to the deprecated profiles.company_id — pre-selecting a company the server
+  // can't validate (no user_companies row) makes the submit fail only for users.
+  const [selectedCompanyId, setCompanyId] = useState(getInitialState('selectedCompanyId', d?.company_id ?? userCompany?.id ?? ''))
   const [unit,        setUnit]      = useState<Unit>(getInitialState('unit', (d?.unit as Unit) ?? 'PAIR'))
   const [clinician,   setClinician] = useState(getInitialState('clinician', d?.clinician ?? ''))
   const [patientName, setPatient]   = useState(getInitialState('patientName', d?.patient_name ?? ''))
