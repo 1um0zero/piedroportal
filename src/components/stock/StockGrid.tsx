@@ -8,7 +8,6 @@ import type { Locale, StockProduct } from '@/types'
 import { preloadFilterTranslations, translateFilterValueSync } from '@/lib/filter-translations'
 import { submitStockOrderAction } from '@/app/actions/stock'
 import { productImageUrl as imageUrl } from '@/lib/products/image-url'
-import NvosNotice from './NvosNotice'
 
 type Company = { id: string; name: string; erp_code: string }
 type Props = {
@@ -100,11 +99,7 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
   }
 
   return (
-    <div className="mt-6 space-y-4">
-      {/* NVOS approval status — full-width banner at the top (these are stock/EVO orders) */}
-      <NvosNotice />
-
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
       {/* Product list */}
       <div className="space-y-4">
         {products.map((p) => {
@@ -276,7 +271,6 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
           </div>
         </div>
       </aside>
-      </div>
     </div>
   )
 }

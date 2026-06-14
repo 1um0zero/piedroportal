@@ -4,6 +4,7 @@ import { getUserCompanies } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
 import { getStockProducts } from '@/app/actions/stock'
 import StockShop from '@/components/stock/StockShop'
+import NvosNotice from '@/components/stock/NvosNotice'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,10 +42,16 @@ export default async function StockPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-gray-900">{t('heading')}</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        <strong className="font-semibold text-gray-700">{t('introLead')}</strong> {t('intro')}
-      </p>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">{t('heading')}</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            <strong className="font-semibold text-gray-700">{t('introLead')}</strong> {t('intro')}
+          </p>
+        </div>
+        {/* NVOS approval status — top-right, beside the header (stock = EVO range) */}
+        <NvosNotice className="w-full lg:w-[460px] lg:shrink-0" />
+      </div>
 
       {products.length === 0 ? (
         <div className="mt-8 rounded-[14px] border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-500">
