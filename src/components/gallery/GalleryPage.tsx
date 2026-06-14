@@ -105,9 +105,11 @@ function sortWidths(a: string, b: string): number {
 }
 
 // ── "NEW" helper ──────────────────────────────────────────────────────────────
-// new_until = null  → new with no expiry (unlimited)
-// new_until = date  → new until that date
-// new_until absent  → not a new product (column not set)
+// new_until = future date → still NEW (badge shows)
+// new_until = past date   → NEW expired (no badge)
+// new_until = null/absent → not a NEW product
+// (Seeded from Dataverse style createdon by scripts/import-new-from-createdon.mjs;
+//  admin-editable per product in ProductForm.)
 export function isNew(p: Product): boolean {
   if (!p.new_until) return false                 // NULL = not a new product
   return new Date(p.new_until) > new Date()      // future date = still new
