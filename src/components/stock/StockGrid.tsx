@@ -181,7 +181,7 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
       </div>
 
       {/* Cart / submit */}
-      <aside className="lg:sticky lg:top-6 lg:self-start space-y-4">
+      <aside className="lg:sticky lg:top-6 lg:self-start space-y-3">
         {/* NVOS approval status — these are stock (EVO) orders */}
         <NvosNotice />
         <div className="rounded-[14px] border border-gray-200 bg-white p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
