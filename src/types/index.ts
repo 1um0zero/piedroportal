@@ -78,6 +78,11 @@ export interface Company {
   erp_code: string
   default_locale: Locale
   exclusive_label: string | null  // UPPERCASE sigla; models with products.exclusive == this are exclusive to this company
+  country_code?: string | null    // ISO 3166-1 alpha-2 (normalised from Dataverse), e.g. 'NL'
+  country?: string | null         // canonical English country name
+  country_raw?: string | null     // original Dataverse country value (audit)
+  city?: string | null
+  address_line1?: string | null
 }
 
 export interface OrderLine {
