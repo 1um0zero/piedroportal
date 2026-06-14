@@ -1,37 +1,36 @@
 <!--
   ============================================================================
-  OLD PORTAL — "Grand Opening" countdown + lockout overlay  (HEAD-SAFE)
+  OLD PORTAL — "Grand Opening" countdown → thank-you page  (HEAD-SAFE)
   ============================================================================
-  This version builds the overlay entirely from JavaScript, so it is safe to
-  drop into a snippet that renders inside <head> — e.g. APPEND it directly
-  BELOW the Google tag in the existing `headbottom.html` content snippet.
-  (A single snippet that loads on every page is the simplest, most reliable
-  option; a separate snippet only helps if you want to toggle it on its own.)
+  Built entirely from JavaScript, so it is safe to APPEND directly BELOW the
+  Google tag in the existing `headbottom.html` content snippet (renders in
+  <head> on every page).
 
-  What it does
-  ------------
-  • Immediately covers the whole portal with a full-screen overlay and blocks
-    all interaction (scroll + clicks + keys) — nobody can use the old portal
-    during the cut-over window.
-  • Shows a live countdown to the opening instant.
-  • At the opening instant it redirects to the NEW portal (also redirects right
-    away if the page is opened AFTER that time, so it is safe to leave in place).
+  Two phases, no DNS dependency:
+    • BEFORE opening — full-screen overlay + live countdown; blocks all
+      interaction (scroll/clicks/keys) so nobody uses the old portal.
+    • AT / AFTER opening — the overlay morphs into a thank-you / info screen
+      with a single button to the NEW portal (no auto-redirect, so the user
+      chooses when to go — and it never loops while DNS is still propagating).
 
-  Configure OPENING and NEW_PORTAL_URL below.
+  Configure the four constants at the top of the <script>.
   ============================================================================
 -->
 <script>
 (function () {
   // ── CONFIGURE ─────────────────────────────────────────────────────────────
   // Opening instant. Amsterdam is CEST (UTC+02:00) in June — keep the offset.
-  var OPENING = new Date('2026-06-15T00:00:00+02:00').getTime();
-  var NEW_PORTAL_URL = 'https://piedroportal.vercel.app/';  // ← set the real launch URL
+  var OPENING        = new Date('2026-06-15T00:00:00+02:00').getTime();
+  // Where "go to the portal" leads. Use the real piedro.pt domain — never *.vercel.app.
+  var NEW_PORTAL_URL = 'https://portal2.piedro.pt/';
+  // Button label. Jorge's "Vamos!" or a neutral NL label — your call.
+  var BUTTON_LABEL   = 'Naar het portaal →';
   // ──────────────────────────────────────────────────────────────────────────
 
-  // If we are already past opening, go straight to the new portal.
-  if (Date.now() >= OPENING) { window.location.replace(NEW_PORTAL_URL); return; }
+  function pad(n){ return (n<10?'0':'')+n; }
+  function isOpen(){ return Date.now() >= OPENING; }
 
-  // Inject styles.
+  // Inject styles once.
   var css = document.createElement('style');
   css.textContent =
     'html.po-locked,body.po-locked{overflow:hidden !important;}' +
@@ -47,16 +46,20 @@
       'box-shadow:0 2px 4px rgba(0,0,0,.04),0 8px 16px rgba(0,0,0,.08);}' +
     '#po-overlay .po-clock span{display:block;font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;color:#B8975A;}' +
     '#po-overlay .po-clock small{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#a8a29e;}' +
+    '#po-overlay .po-cta{display:inline-block;margin-top:.5rem;padding:.85rem 2rem;border-radius:12px;' +
+      'background:#B8975A;color:#fff;font-size:1rem;font-weight:600;text-decoration:none;' +
+      'box-shadow:0 2px 4px rgba(0,0,0,.06),0 8px 16px rgba(0,0,0,.10);}' +
+    '#po-overlay .po-cta:hover{background:#9A7A42;}' +
     '#po-overlay .po-foot{margin-top:2.5rem;font-size:.8rem;color:#a8a29e;}';
 
-  // Build the overlay DOM.
   var overlay = document.createElement('div');
   overlay.id = 'po-overlay';
   overlay.setAttribute('aria-live', 'polite');
-  overlay.innerHTML =
-    '<div class="po-card">' +
-      '<img class="po-logo" src="/brand/piedro-logo.svg" alt="Piedro International" ' +
-        'onerror="this.style.display=\'none\'">' +
+
+  // ── Phase 1: countdown markup ──────────────────────────────────────────────
+  function countdownHTML(){
+    return '<div class="po-card">' +
+      '<img class="po-logo" src="/brand/piedro-logo.svg" alt="Piedro International" onerror="this.style.display=\'none\'">' +
       '<h1>We are getting ready</h1>' +
       '<p class="po-sub">Het nieuwe Piedro-portaal opent zo meteen.<br>' +
         'The new Piedro portal opens shortly.</p>' +
@@ -68,35 +71,67 @@
       '</div>' +
       '<p class="po-foot">Piedro International B.V. — always one step ahead</p>' +
     '</div>';
+  }
 
-  function mount() {
+  // ── Phase 2: thank-you / info markup ───────────────────────────────────────
+  function thankYouHTML(){
+    return '<div class="po-card">' +
+      '<img class="po-logo" src="/brand/piedro-logo.svg" alt="Piedro International" onerror="this.style.display=\'none\'">' +
+      '<h1>Welkom in het nieuwe portaal</h1>' +
+      '<p class="po-sub">' +
+        'Het nieuwe Piedro-portaal is open. Uw account en bestelgeschiedenis ' +
+        'zijn bewaard gebleven — bij uw <strong>eerste aanmelding</strong> vragen ' +
+        'wij u eenmalig een nieuw wachtwoord in te stellen.' +
+        '<br><br>' +
+        '<span style="color:#78716c">The new Piedro portal is open. Your account and ' +
+        'order history have been preserved — on your <strong>first sign-in</strong> ' +
+        'you will be asked to set a new password.</span>' +
+      '</p>' +
+      '<a class="po-cta" href="' + NEW_PORTAL_URL + '">' + BUTTON_LABEL + '</a>' +
+      '<p class="po-foot">Piedro International B.V. — always one step ahead</p>' +
+    '</div>';
+  }
+
+  var timer = null;
+
+  function startCountdown(){
+    overlay.innerHTML = countdownHTML();
+    var d=document.getElementById('po-d'), h=document.getElementById('po-h'),
+        m=document.getElementById('po-m'), s=document.getElementById('po-s');
+    function tick(){
+      if (isOpen()){ clearInterval(timer); showThankYou(); return; }
+      var sec = Math.floor((OPENING - Date.now())/1000);
+      d.textContent = pad(Math.floor(sec/86400));
+      h.textContent = pad(Math.floor(sec%86400/3600));
+      m.textContent = pad(Math.floor(sec%3600/60));
+      s.textContent = pad(sec%60);
+    }
+    tick();
+    timer = setInterval(tick, 1000);
+  }
+
+  function showThankYou(){
+    overlay.innerHTML = thankYouHTML();
+  }
+
+  function mount(){
     document.head.appendChild(css);
     document.documentElement.classList.add('po-locked');
     document.body.classList.add('po-locked');
     document.body.appendChild(overlay);
 
-    // Block interaction behind the overlay.
-    ['keydown', 'wheel', 'touchmove'].forEach(function (ev) {
-      document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false, capture: true });
+    // Block interaction behind the overlay (the CTA link still works).
+    ['keydown','wheel','touchmove'].forEach(function(ev){
+      document.addEventListener(ev, function(e){
+        if (overlay.contains(e.target)) return; // allow interaction inside the card
+        e.preventDefault();
+      }, { passive:false, capture:true });
     });
 
-    var d = document.getElementById('po-d'), h = document.getElementById('po-h'),
-        m = document.getElementById('po-m'), s = document.getElementById('po-s');
-    function pad(n) { return (n < 10 ? '0' : '') + n; }
-    function tick() {
-      var diff = OPENING - Date.now();
-      if (diff <= 0) { window.location.replace(NEW_PORTAL_URL); return; }
-      var sec = Math.floor(diff / 1000);
-      d.textContent = pad(Math.floor(sec / 86400));
-      h.textContent = pad(Math.floor(sec % 86400 / 3600));
-      m.textContent = pad(Math.floor(sec % 3600 / 60));
-      s.textContent = pad(sec % 60);
-    }
-    tick();
-    setInterval(tick, 1000);
+    if (isOpen()) showThankYou();
+    else startCountdown();
   }
 
-  // The snippet runs inside <head>, so wait for <body> to exist.
   if (document.body) mount();
   else document.addEventListener('DOMContentLoaded', mount);
 })();
