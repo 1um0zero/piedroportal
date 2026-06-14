@@ -16,6 +16,8 @@ type Props = {
   optConstructions: string[]
   optWidths: string[]
   optSizes: number[]
+  optSizesEU: number[]
+  optSizesUK: number[]
   hasNew: boolean
   hasFilters: boolean
   onClear: () => void
@@ -249,7 +251,7 @@ function MultiDropdown({
 
 export default function GalleryFilters({
   filters, setFilters,
-  optClosures, optTypes, optColours, optConstructions, optWidths, optSizes,
+  optClosures, optTypes, optColours, optConstructions, optWidths, optSizes, optSizesEU, optSizesUK,
   hasNew, hasFilters, onClear, resultCount, wishlistCount,
   showWishlist, onToggleBuildWishlist,
 }: Props) {
@@ -408,11 +410,18 @@ export default function GalleryFilters({
               renderLabel={(v) => displayWidth(v, optWidths, locale)} />
           )}
 
-          {/* Size chips + input */}
-          {optSizes.length > 1 && (
+          {/* Size chips — split by scale so EU and UK never mix in one row */}
+          {optSizesEU.length > 1 && optSizesUK.length > 1 ? (
+            <>
+              <SizeChips label={`${t('size')} · EU`} sizes={optSizesEU}
+                selected={filters.sizes} onToggleBucket={toggleSizeBucket} />
+              <SizeChips label={`${t('size')} · UK`} sizes={optSizesUK}
+                selected={filters.sizes} onToggleBucket={toggleSizeBucket} />
+            </>
+          ) : optSizes.length > 1 ? (
             <SizeChips label={t('size')} sizes={optSizes}
               selected={filters.sizes} onToggleBucket={toggleSizeBucket} />
-          )}
+          ) : null}
         </div>
       )}
     </div>

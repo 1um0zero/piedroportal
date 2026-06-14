@@ -242,6 +242,10 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     .filter(w => w && w !== '--' && w !== '-')
     .sort(sortWidths), [forWidths, filters.constructions])
   const optSizes         = useMemo(() => availableSizes(forSizes, section === 'KIDS'), [forSizes, section])
+  // EU and UK scales are numerically different (UK 3–13.5, EU 15–48) — split the
+  // size chips by unit so the filter never mixes them (size_unit, migration 015).
+  const optSizesUK       = useMemo(() => availableSizes(forSizes.filter(p => p.size_unit === 'UK'), section === 'KIDS'), [forSizes, section])
+  const optSizesEU       = useMemo(() => availableSizes(forSizes.filter(p => p.size_unit !== 'UK'), section === 'KIDS'), [forSizes, section])
 
   // ── Final filtered list (wishlist filter applied here, needs context) ──
   const filtered = useMemo(() => {
@@ -426,6 +430,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         optConstructions={optConstructions}
         optWidths={optWidths}
         optSizes={optSizes}
+        optSizesEU={optSizesEU}
+        optSizesUK={optSizesUK}
         hasNew={hasNew}
         hasFilters={!!hasFilters}
         onClear={() => { setFilters(EMPTY); setCtxExclusive('') }}
