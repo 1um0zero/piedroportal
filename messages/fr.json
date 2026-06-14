@@ -1305,5 +1305,19 @@
     "prompt": "Cette réponse doit-elle être améliorée ?",
     "flag": "Oui, signaler",
     "thanks": "Merci — transmis à notre équipe."
+  },
+  "welcome": {
+    "title": "Bienvenue, {name}",
+    "lead": "Voici votre portail de commande Piedro renouvelé — plus rapide, multilingue et toujours une longueur d’avance.",
+    "badge": "Bienvenue sur le nouveau portail",
+    "h_gallery_t": "Parcourir & commander",
+    "h_gallery_d": "Explorez tout le catalogue et configurez les commandes pour chaque pied.",
+    "h_orders_t": "Vos commandes",
+    "h_orders_d": "Suivez le statut, l’expédition prévue et répétez vos commandes en un clic.",
+    "h_stock_t": "Stock, paire par paire",
+    "h_stock_d": "Commandez immédiatement les modèles en stock, sans configuration.",
+    "h_assistant_t": "Demandez à l’assistant",
+    "h_assistant_d": "Des questions sur le portail ou vos commandes ? Demandez, dans votre langue.",
+    "cta": "Commencer à explorer"
   }
 }

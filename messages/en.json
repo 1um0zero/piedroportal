@@ -1305,5 +1305,19 @@
     "prompt": "Should this answer be improved?",
     "flag": "Yes, flag it",
     "thanks": "Thanks — sent to our team for review."
+  },
+  "welcome": {
+    "title": "Welcome, {name}",
+    "lead": "This is your renewed Piedro ordering portal — faster, multilingual, and always one step ahead.",
+    "badge": "Welcome to the new portal",
+    "h_gallery_t": "Browse & order",
+    "h_gallery_d": "Explore the full catalogue and configure orders per foot.",
+    "h_orders_t": "Your orders",
+    "h_orders_d": "Track status, expected dispatch, and repeat past orders in one click.",
+    "h_stock_t": "Stock, pair by pair",
+    "h_stock_d": "Order in-stock models immediately, no configuration.",
+    "h_assistant_t": "Ask the assistant",
+    "h_assistant_d": "Questions about the portal or your orders? Just ask, in your language.",
+    "cta": "Start exploring"
   }
 }

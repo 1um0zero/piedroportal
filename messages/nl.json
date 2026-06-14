@@ -1305,5 +1305,19 @@
     "prompt": "Moet dit antwoord beter?",
     "flag": "Ja, meld het",
     "thanks": "Bedankt — doorgestuurd naar ons team."
+  },
+  "welcome": {
+    "title": "Welkom, {name}",
+    "lead": "Dit is uw vernieuwde Piedro-bestelportaal — sneller, meertalig en altijd één stap voor.",
+    "badge": "Welkom in het nieuwe portaal",
+    "h_gallery_t": "Bladeren & bestellen",
+    "h_gallery_d": "Verken de volledige catalogus en configureer bestellingen per voet.",
+    "h_orders_t": "Uw bestellingen",
+    "h_orders_d": "Volg de status, verwachte verzending en herhaal eerdere bestellingen met één klik.",
+    "h_stock_t": "Voorraad, paar voor paar",
+    "h_stock_d": "Bestel voorraadmodellen direct, zonder configuratie.",
+    "h_assistant_t": "Vraag de assistent",
+    "h_assistant_d": "Vragen over het portaal of uw bestellingen? Vraag het gewoon, in uw taal.",
+    "cta": "Beginnen met verkennen"
   }
 }

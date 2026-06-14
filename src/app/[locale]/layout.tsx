@@ -12,6 +12,7 @@ import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { GallerySectionProvider } from '@/contexts/GallerySectionContext'
 import { ChatWidget } from '@/components/chat/ChatWidget'
+import WelcomeModal from '@/components/welcome/WelcomeModal'
 import PageViewTracker from '@/components/analytics/PageViewTracker'
 import { Analytics } from '@vercel/analytics/next'
 import type { Profile } from '@/types'
@@ -61,6 +62,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <div className="flex-1">{children}</div>
               <Footer />
               {user && <ChatWidget />}
+              {user && <WelcomeModal />}
               <CookieNotice />
               <PageViewTracker />
               <Analytics />

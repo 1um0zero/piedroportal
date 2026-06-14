@@ -1305,5 +1305,19 @@
     "prompt": "Sollte diese Antwort verbessert werden?",
     "flag": "Ja, melden",
     "thanks": "Danke — an unser Team weitergeleitet."
+  },
+  "welcome": {
+    "title": "Willkommen, {name}",
+    "lead": "Dies ist Ihr erneuertes Piedro-Bestellportal — schneller, mehrsprachig und immer einen Schritt voraus.",
+    "badge": "Willkommen im neuen Portal",
+    "h_gallery_t": "Stöbern & bestellen",
+    "h_gallery_d": "Entdecken Sie den gesamten Katalog und konfigurieren Sie Bestellungen pro Fuß.",
+    "h_orders_t": "Ihre Bestellungen",
+    "h_orders_d": "Verfolgen Sie Status, voraussichtlichen Versand und wiederholen Sie Bestellungen mit einem Klick.",
+    "h_stock_t": "Lager, Paar für Paar",
+    "h_stock_d": "Bestellen Sie Lagermodelle sofort, ohne Konfiguration.",
+    "h_assistant_t": "Fragen Sie den Assistenten",
+    "h_assistant_d": "Fragen zum Portal oder Ihren Bestellungen? Fragen Sie einfach, in Ihrer Sprache.",
+    "cta": "Erkunden beginnen"
   }
 }

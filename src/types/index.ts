@@ -50,6 +50,7 @@ export interface Profile {
   branch_id: string | null   // Branch office a branch_staff user belongs to
   preferred_locale: Locale
   must_set_password?: boolean // migrated users must set their own password on first login
+  seen_welcome?: boolean // false until the user dismisses the first-login welcome
 }
 
 /**
