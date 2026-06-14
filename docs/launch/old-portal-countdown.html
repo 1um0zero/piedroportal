@@ -1,68 +1,25 @@
 <!--
   ============================================================================
-  OLD PORTAL — "Grand Opening" countdown + lockout overlay
+  OLD PORTAL — "Grand Opening" countdown + lockout overlay  (HEAD-SAFE)
   ============================================================================
-  Paste this whole block into the OLD (Power Pages) portal so it shows on every
-  page — e.g. into a Content Snippet that the page template renders, or the
-  site's global Header/Footer web template, or (quickest) via Portal Management
-  → Web Templates / a "Custom JavaScript" content snippet on the home page.
+  This version builds the overlay entirely from JavaScript, so it is safe to
+  drop into a snippet that renders inside <head> — e.g. APPEND it directly
+  BELOW the Google tag in the existing `headbottom.html` content snippet.
+  (A single snippet that loads on every page is the simplest, most reliable
+  option; a separate snippet only helps if you want to toggle it on its own.)
 
   What it does
   ------------
   • Immediately covers the whole portal with a full-screen overlay and blocks
-    all interaction (scroll + clicks) — nobody can place orders on the old
-    portal during the cut-over window.
+    all interaction (scroll + clicks + keys) — nobody can use the old portal
+    during the cut-over window.
   • Shows a live countdown to the opening instant.
-  • At the opening instant it automatically redirects to the NEW portal.
-    (It also redirects right away if the page is loaded AFTER the opening time,
-    so you can leave it in place safely.)
+  • At the opening instant it redirects to the NEW portal (also redirects right
+    away if the page is opened AFTER that time, so it is safe to leave in place).
 
-  Configure the two constants below: OPENING (the launch instant, with the
-  Amsterdam +02:00 summer offset) and NEW_PORTAL_URL.
+  Configure OPENING and NEW_PORTAL_URL below.
   ============================================================================
 -->
-<div id="po-launch-overlay" aria-live="polite">
-  <div class="po-card">
-    <img class="po-logo" src="/brand/piedro-logo.svg"
-         onerror="this.style.display='none'" alt="Piedro International" />
-    <h1>We are getting ready</h1>
-    <p class="po-sub">
-      Het nieuwe Piedro-portaal opent zo meteen.<br />
-      The new Piedro portal opens shortly.
-    </p>
-    <div class="po-clock" id="po-clock">
-      <div><span id="po-d">00</span><small>dagen</small></div>
-      <div><span id="po-h">00</span><small>uur</small></div>
-      <div><span id="po-m">00</span><small>min</small></div>
-      <div><span id="po-s">00</span><small>sec</small></div>
-    </div>
-    <p class="po-foot">Piedro International B.V. — always one step ahead</p>
-  </div>
-</div>
-
-<style>
-  #po-launch-overlay{
-    position:fixed; inset:0; z-index:2147483647;
-    display:flex; align-items:center; justify-content:center;
-    background:#f5f4f2; color:#1e1b18;
-    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  }
-  #po-launch-overlay .po-card{ text-align:center; padding:2rem; max-width:560px; }
-  #po-launch-overlay .po-logo{ height:84px; width:auto; margin:0 auto 2rem; display:block; }
-  #po-launch-overlay h1{ font-size:2rem; font-weight:700; margin:0 0 .5rem; letter-spacing:-.02em; }
-  #po-launch-overlay .po-sub{ font-size:1.05rem; color:#57534e; line-height:1.5; margin:0 0 2rem; }
-  #po-launch-overlay .po-clock{ display:flex; gap:1rem; justify-content:center; }
-  #po-launch-overlay .po-clock > div{
-    min-width:72px; background:#fff; border-radius:14px; padding:1rem .5rem;
-    box-shadow:0 2px 4px rgba(0,0,0,.04),0 8px 16px rgba(0,0,0,.08);
-  }
-  #po-launch-overlay .po-clock span{ display:block; font-size:2rem; font-weight:700; font-variant-numeric:tabular-nums; color:#B8975A; }
-  #po-launch-overlay .po-clock small{ font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#a8a29e; }
-  #po-launch-overlay .po-foot{ margin-top:2.5rem; font-size:.8rem; color:#a8a29e; }
-  /* Belt-and-braces: stop the page behind the overlay from scrolling. */
-  html.po-locked, body.po-locked{ overflow:hidden !important; }
-</style>
-
 <script>
 (function () {
   // ── CONFIGURE ─────────────────────────────────────────────────────────────
@@ -71,35 +28,76 @@
   var NEW_PORTAL_URL = 'https://piedroportal.vercel.app/';  // ← set the real launch URL
   // ──────────────────────────────────────────────────────────────────────────
 
-  document.documentElement.classList.add('po-locked');
-  if (document.body) document.body.classList.add('po-locked');
+  // If we are already past opening, go straight to the new portal.
+  if (Date.now() >= OPENING) { window.location.replace(NEW_PORTAL_URL); return; }
 
-  // Block keyboard/scroll/click interaction behind the overlay.
-  function swallow(e){ e.stopPropagation(); }
-  ['keydown','wheel','touchmove'].forEach(function(ev){
-    document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive:false, capture:true });
-  });
+  // Inject styles.
+  var css = document.createElement('style');
+  css.textContent =
+    'html.po-locked,body.po-locked{overflow:hidden !important;}' +
+    '#po-overlay{position:fixed;inset:0;z-index:2147483647;display:flex;' +
+      'align-items:center;justify-content:center;background:#f5f4f2;color:#1e1b18;' +
+      'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}' +
+    '#po-overlay .po-card{text-align:center;padding:2rem;max-width:560px;}' +
+    '#po-overlay .po-logo{height:84px;width:auto;margin:0 auto 2rem;display:block;}' +
+    '#po-overlay h1{font-size:2rem;font-weight:700;margin:0 0 .5rem;letter-spacing:-.02em;}' +
+    '#po-overlay .po-sub{font-size:1.05rem;color:#57534e;line-height:1.5;margin:0 0 2rem;}' +
+    '#po-overlay .po-clock{display:flex;gap:1rem;justify-content:center;}' +
+    '#po-overlay .po-clock>div{min-width:72px;background:#fff;border-radius:14px;padding:1rem .5rem;' +
+      'box-shadow:0 2px 4px rgba(0,0,0,.04),0 8px 16px rgba(0,0,0,.08);}' +
+    '#po-overlay .po-clock span{display:block;font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;color:#B8975A;}' +
+    '#po-overlay .po-clock small{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#a8a29e;}' +
+    '#po-overlay .po-foot{margin-top:2.5rem;font-size:.8rem;color:#a8a29e;}';
 
-  var d=document.getElementById('po-d'), h=document.getElementById('po-h'),
-      m=document.getElementById('po-m'), s=document.getElementById('po-s'),
-      clock=document.getElementById('po-clock');
+  // Build the overlay DOM.
+  var overlay = document.createElement('div');
+  overlay.id = 'po-overlay';
+  overlay.setAttribute('aria-live', 'polite');
+  overlay.innerHTML =
+    '<div class="po-card">' +
+      '<img class="po-logo" src="/brand/piedro-logo.svg" alt="Piedro International" ' +
+        'onerror="this.style.display=\'none\'">' +
+      '<h1>We are getting ready</h1>' +
+      '<p class="po-sub">Het nieuwe Piedro-portaal opent zo meteen.<br>' +
+        'The new Piedro portal opens shortly.</p>' +
+      '<div class="po-clock">' +
+        '<div><span id="po-d">00</span><small>dagen</small></div>' +
+        '<div><span id="po-h">00</span><small>uur</small></div>' +
+        '<div><span id="po-m">00</span><small>min</small></div>' +
+        '<div><span id="po-s">00</span><small>sec</small></div>' +
+      '</div>' +
+      '<p class="po-foot">Piedro International B.V. — always one step ahead</p>' +
+    '</div>';
 
-  function pad(n){ return (n<10?'0':'')+n; }
+  function mount() {
+    document.head.appendChild(css);
+    document.documentElement.classList.add('po-locked');
+    document.body.classList.add('po-locked');
+    document.body.appendChild(overlay);
 
-  function tick(){
-    var diff = OPENING - Date.now();
-    if (diff <= 0){
-      // Open! Hand over to the new portal.
-      window.location.replace(NEW_PORTAL_URL);
-      return;
+    // Block interaction behind the overlay.
+    ['keydown', 'wheel', 'touchmove'].forEach(function (ev) {
+      document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false, capture: true });
+    });
+
+    var d = document.getElementById('po-d'), h = document.getElementById('po-h'),
+        m = document.getElementById('po-m'), s = document.getElementById('po-s');
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function tick() {
+      var diff = OPENING - Date.now();
+      if (diff <= 0) { window.location.replace(NEW_PORTAL_URL); return; }
+      var sec = Math.floor(diff / 1000);
+      d.textContent = pad(Math.floor(sec / 86400));
+      h.textContent = pad(Math.floor(sec % 86400 / 3600));
+      m.textContent = pad(Math.floor(sec % 3600 / 60));
+      s.textContent = pad(sec % 60);
     }
-    var sec = Math.floor(diff/1000);
-    d.textContent = pad(Math.floor(sec/86400));
-    h.textContent = pad(Math.floor(sec%86400/3600));
-    m.textContent = pad(Math.floor(sec%3600/60));
-    s.textContent = pad(sec%60);
+    tick();
+    setInterval(tick, 1000);
   }
-  tick();
-  setInterval(tick, 1000);
+
+  // The snippet runs inside <head>, so wait for <body> to exist.
+  if (document.body) mount();
+  else document.addEventListener('DOMContentLoaded', mount);
 })();
 </script>
