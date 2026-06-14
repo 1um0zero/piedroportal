@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import { useLocale } from 'next-intl'
 
 /**
  * First-party navigation beacon. Fires once per pathname change (logged-in or
@@ -10,6 +11,7 @@ import { usePathname } from 'next/navigation'
  */
 export default function PageViewTracker() {
   const pathname = usePathname()
+  const locale = useLocale()
   const last = useRef<string | null>(null)
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function PageViewTracker() {
     const payload = JSON.stringify({
       path: pathname,
       referrer: document.referrer || undefined,
-      locale: document.documentElement.lang || undefined,
+      locale: locale || undefined,
     })
 
     try {
@@ -31,7 +33,7 @@ export default function PageViewTracker() {
     } catch {
       /* analytics must never affect the user */
     }
-  }, [pathname])
+  }, [pathname, locale])
 
   return null
 }
