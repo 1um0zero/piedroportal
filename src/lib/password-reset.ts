@@ -52,7 +52,7 @@ export async function requestPasswordReset(email: string, fallbackLocale: string
   const locale: Loc = LOCALES.includes(profile.preferred_locale as Loc)
     ? (profile.preferred_locale as Loc)
     : (LOCALES.includes(fallbackLocale as Loc) ? (fallbackLocale as Loc) : 'en')
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
   const prefix = locale === 'en' ? '' : `/${locale}`
   const link = `${site}${prefix}/set-password?token=${encodeURIComponent(raw)}`
 

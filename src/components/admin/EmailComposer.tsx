@@ -306,7 +306,7 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
               dangerouslySetInnerHTML={{ __html: signature }} />
           ) : null}
           <p className="text-[11px] text-stone-400 leading-relaxed border-t border-stone-100 pt-2">
-            {t('footer_text')}<br />Piedro International · piedroportal.vercel.app
+            {t('footer_text')}<br />Piedro International · portal.piedro.pt
           </p>
         </div>
 

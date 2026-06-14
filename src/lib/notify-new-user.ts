@@ -4,7 +4,7 @@ import { getSettings } from '@/lib/settings'
 import { getTranslations } from 'next-intl/server'
 import { escapeHtml } from '@/lib/escape-html'
 
-const PORTAL_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+const PORTAL_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 
 /** Email the Piedro admin that a new user confirmed their account (fire-and-forget). */
 export async function notifyAdminNewUser(email: string, fullName: string) {

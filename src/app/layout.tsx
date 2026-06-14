@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 // latin-ext is required for NL/FR/DE diacritics (ë, ï, ç, ü, …).
 const inter = Inter({ subsets: ['latin', 'latin-ext'], variable: '--font-inter' })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

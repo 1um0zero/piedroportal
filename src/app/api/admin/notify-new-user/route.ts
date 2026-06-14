@@ -5,7 +5,7 @@ import { escapeHtml } from '@/lib/escape-html'
 import { getSettings } from '@/lib/settings'
 
 const WEBHOOK_SECRET = process.env.SUPABASE_WEBHOOK_SECRET
-const PORTAL_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+const PORTAL_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 
 /**
  * Supabase DB webhook → notify Piedro of a new user. Fail-closed: requires

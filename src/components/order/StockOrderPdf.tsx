@@ -8,7 +8,7 @@ const MUTED = '#78716C'
 const LIGHT = '#F5F5F4'
 const BORDER = '#E7E5E4'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 const LOGO_URL = `${SITE_URL}/piedro-logo.png`
 
 // A few item-table headers not in the shared pdf-translations dictionary.

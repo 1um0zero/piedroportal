@@ -25,7 +25,7 @@ const FOOTER: Record<Loc, { reason: string; contact: string }> = {
   de: { reason: 'Sie erhalten diese E-Mail, weil Sie ein Piedro Portal-Konto haben.', contact: 'Fragen? Antworten Sie auf diese E-Mail oder kontaktieren Sie' },
 }
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 
 /**
  * Conservative e-mail HTML sanitizer. Authors are piedro_admins (trusted), so

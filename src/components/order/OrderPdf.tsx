@@ -11,8 +11,8 @@ const LIGHT = '#F5F5F4'
 const BORDER = '#E7E5E4'
 
 // Absolute URL for assets embedded in the PDF (react-pdf fetches them server-side).
-// Set NEXT_PUBLIC_SITE_URL to the production domain (e.g. https://portal.piedro.com).
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piedroportal.vercel.app'
+// Set NEXT_PUBLIC_SITE_URL to the production domain (e.g. https://portal.piedro.pt).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 const LOGO_URL = `${SITE_URL}/piedro-logo.png`
 
 const s = StyleSheet.create({
