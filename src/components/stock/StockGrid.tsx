@@ -298,12 +298,12 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
 function ShoeBox({ size }: { size: number }) {
   return (
     <svg
-      width={44}
-      height={27}
+      width={64}
+      height={39}
       viewBox="0 0 78 48"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={1.4}
       strokeLinejoin="round"
       aria-hidden
     >
@@ -313,8 +313,8 @@ function ShoeBox({ size }: { size: number }) {
       <path d="M14 20 L39 30 L64 20" />
       <text
         x="39"
-        y="20.5"
-        fontSize="11"
+        y="20.8"
+        fontSize="14"
         fontWeight="700"
         fill="currentColor"
         stroke="none"
