@@ -169,10 +169,52 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
                           {s.size}
                           {qty > 0 && <span className="ml-1.5 text-gold-dark">×{qty}</span>}
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => add(p.id, s.size, s.available)}
+                          disabled={atCap}
+                          aria-label={t('add')}
+                          title={atCap ? t('limited', { max: s.available }) : undefined}
+                          className={`px-2 py-1.5 ${
+                            atCap
+                              ? 'cursor-not-allowed text-gray-300'
+                              : 'text-gray-500 hover:bg-gold/15 hover:text-gold-dark'
+                          }`}
+                        >
+                          +
+                        </button>
                       </div>
                     )
                   })}
                 </div>
+
+                {/* Selection summary — the picked sizes at a glance */}
+                {count > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {p.sizes
+                      .filter((s) => (cart[keyOf(p.id, s.size)] ?? 0) > 0)
+                      .map((s) => {
+                        const qty = cart[keyOf(p.id, s.size)] ?? 0
+                        return (
+                          <span
+                            key={s.size}
+                            className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-medium tabular-nums text-gold-dark"
+                          >
+                            {s.size}
+                            <span className="opacity-70">×{qty}</span>
+                            <button
+                              type="button"
+                              onClick={() => remove(p.id, s.size)}
+                              aria-label={t('remove')}
+                              className="ml-0.5 -mr-1 rounded-full px-1 leading-none text-gold-dark/60 hover:bg-gold/25 hover:text-gold-dark"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        )
+                      })}
+                  </div>
+                )}
               </div>
             </div>
           )

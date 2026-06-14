@@ -1211,6 +1211,7 @@
     "emptyCart": "Select at least one pair to order.",
     "size": "Size",
     "remove": "Remove a pair",
+    "add": "Add a pair",
     "detailTitle": "Stock order",
     "placed": "Placed",
     "dispatchExpected": "Expected dispatch",

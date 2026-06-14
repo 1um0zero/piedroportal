@@ -1211,6 +1211,7 @@
     "emptyCart": "Sélectionnez au moins une paire à commander.",
     "size": "Pointure",
     "remove": "Retirer une paire",
+    "add": "Ajouter une paire",
     "detailTitle": "Commande de stock",
     "placed": "Passée le",
     "dispatchExpected": "Expédition prévue",
