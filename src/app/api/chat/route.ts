@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
+import { hasChatConsent, logChatMessage } from '@/lib/chat-consent'
 
 // Lazily construct the client — the SDK throws at construction if the key is
 // missing, which would 500 the whole route (incl. the GET health check).
@@ -340,6 +341,15 @@ export async function POST(request: Request) {
   const companyIds = await getUserCompanyIds(user.id)
   if (companyIds.length === 0) return new Response('No company', { status: 403 })
 
+  // Defence-in-depth: never answer without recorded consent, even if a client
+  // somehow bypasses the gate.
+  if (!(await hasChatConsent(user.id))) {
+    return new Response(
+      `data: ${JSON.stringify({ type: 'error', text: 'consent_required' })}\n\ndata: ${JSON.stringify({ type: 'done' })}\n\n`,
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    )
+  }
+
   const { messages } = await request.json() as { messages: Anthropic.MessageParam[] }
 
   const { data: profile } = await createServiceClient()
@@ -349,10 +359,21 @@ export async function POST(request: Request) {
     .single()
   const system = buildSystem(profile?.role)
 
+  // Audit log: the latest user prompt (in). The assistant reply (out) is logged
+  // once assembled, at the end of the stream.
+  const roleSeen = profile?.role ?? null
+  const lastUser = [...messages].reverse().find(m => m.role === 'user')
+  const promptText = typeof lastUser?.content === 'string'
+    ? lastUser.content
+    : (lastUser?.content ?? []).map(b => (b.type === 'text' ? b.text : '')).join(' ').trim()
+  if (promptText) void logChatMessage(user.id, roleSeen, 'in', promptText)
+
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
       const send = (data: string) => controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+
+      let outText = ''
 
       try {
         let currentMessages = [...messages]
@@ -372,6 +393,7 @@ export async function POST(request: Request) {
 
             for (const block of response.content) {
               if (block.type === 'text' && block.text) {
+                outText += block.text
                 send(JSON.stringify({ type: 'text', text: block.text }))
               }
               if (block.type === 'tool_use') {
@@ -392,7 +414,7 @@ export async function POST(request: Request) {
             ]
           } else {
             for (const block of response.content) {
-              if (block.type === 'text') send(JSON.stringify({ type: 'text', text: block.text }))
+              if (block.type === 'text') { outText += block.text; send(JSON.stringify({ type: 'text', text: block.text })) }
             }
             break
           }
@@ -400,6 +422,7 @@ export async function POST(request: Request) {
       } catch (e) {
         send(JSON.stringify({ type: 'error', text: e instanceof Error ? e.message : 'Unknown error' }))
       } finally {
+        if (outText.trim()) void logChatMessage(user.id, roleSeen, 'out', outText)
         send(JSON.stringify({ type: 'done' }))
         controller.close()
       }

@@ -139,7 +139,8 @@
     "stock": "Stock",
     "backoffice": "Backoffice",
     "grand_opening": "Grand Opening",
-    "email": "Email"
+    "email": "Email",
+    "chat_feedback": "Assistant feedback"
   },
   "gallery": {
     "kids": "Kids",
@@ -1288,5 +1289,21 @@
     "translations_hint": "Recipients receive the version matching their portal language; languages without a translation get the original. Review and edit each tab before sending.",
     "translations_ready": "Translations ready: {langs}. Review each tab.",
     "discard_translations": "Discard"
+  },
+  "chatConsent": {
+    "title": "Before using the assistant",
+    "intro": "This chat helps you with questions about how the portal works and lets you look up your own data stored here.",
+    "log": "For internal control, quality and auditing, we keep a record of the message flow (in and out).",
+    "advise": "Please do not include patients’ personal data in your conversations — use references or order numbers instead.",
+    "breach": "Attempts to bypass the portal’s security or to access data that is not yours are a serious breach and may lead to your account being blocked.",
+    "emailNote": "By continuing you accept these terms. A confirmation email is sent to you and to the portal administrator.",
+    "accept": "I accept",
+    "decline": "Not now",
+    "declined": "No problem — you can accept any time to use the assistant."
+  },
+  "chatFeedback": {
+    "prompt": "Should this answer be improved?",
+    "flag": "Yes, flag it",
+    "thanks": "Thanks — sent to our team for review."
   }
 }

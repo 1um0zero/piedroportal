@@ -139,7 +139,8 @@
     "stock": "Voorraad",
     "backoffice": "Backoffice",
     "grand_opening": "Grand Opening",
-    "email": "E-mail"
+    "email": "E-mail",
+    "chat_feedback": "Assistent-feedback"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -1288,5 +1289,21 @@
     "translations_hint": "Ontvangers krijgen de versie in hun portaaltaal; talen zonder vertaling krijgen het origineel. Controleer en bewerk elk tabblad vóór verzending.",
     "translations_ready": "Vertalingen klaar: {langs}. Controleer elk tabblad.",
     "discard_translations": "Verwijderen"
+  },
+  "chatConsent": {
+    "title": "Voordat u de assistent gebruikt",
+    "intro": "Deze chat helpt u met vragen over hoe het portaal werkt en laat u uw eigen hier opgeslagen gegevens opzoeken.",
+    "log": "Voor interne controle, kwaliteit en audit bewaren wij een registratie van de berichtenstroom (in en uit).",
+    "advise": "Voeg geen persoonsgegevens van patiënten toe aan uw gesprekken — gebruik in plaats daarvan referenties of ordernummers.",
+    "breach": "Pogingen om de beveiliging van het portaal te omzeilen of toegang te krijgen tot gegevens die niet van u zijn, vormen een ernstige overtreding en kunnen leiden tot blokkering van uw account.",
+    "emailNote": "Door verder te gaan accepteert u deze voorwaarden. Er wordt een bevestigingsmail gestuurd naar u en naar de portaalbeheerder.",
+    "accept": "Ik ga akkoord",
+    "decline": "Niet nu",
+    "declined": "Geen probleem — u kunt op elk moment akkoord gaan om de assistent te gebruiken."
+  },
+  "chatFeedback": {
+    "prompt": "Moet dit antwoord beter?",
+    "flag": "Ja, meld het",
+    "thanks": "Bedankt — doorgestuurd naar ons team."
   }
 }

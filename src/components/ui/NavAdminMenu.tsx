@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { isSuperAdmin } from '@/lib/roles'
 
 /**
  * "Backoffice" dropdown in the desktop navbar — groups the low-frequency admin
@@ -11,6 +13,7 @@ import { Link } from '@/i18n/navigation'
  */
 export default function NavAdminMenu() {
   const t = useTranslations('nav')
+  const { profile } = useAuth()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -36,6 +39,10 @@ export default function NavAdminMenu() {
     { href: '/admin/email',        label: t('email') },
     { href: '/admin/settings',     label: t('settings') },
   ]
+  // Assistant feedback review is a super-admin (technical) curation tool.
+  if (isSuperAdmin(profile?.role)) {
+    items.push({ href: '/admin/chat-feedback', label: t('chat_feedback') })
+  }
 
   return (
     <div ref={ref} className="relative">

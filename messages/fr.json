@@ -139,7 +139,8 @@
     "stock": "Stock",
     "backoffice": "Backoffice",
     "grand_opening": "Grand Opening",
-    "email": "E-mail"
+    "email": "E-mail",
+    "chat_feedback": "Retour assistant"
   },
   "gallery": {
     "kids": "Enfants",
@@ -1288,5 +1289,21 @@
     "translations_hint": "Les destinataires reçoivent la version correspondant à leur langue du portail ; les langues sans traduction reçoivent l’original. Vérifiez et modifiez chaque onglet avant l’envoi.",
     "translations_ready": "Traductions prêtes : {langs}. Vérifiez chaque onglet.",
     "discard_translations": "Supprimer"
+  },
+  "chatConsent": {
+    "title": "Avant d’utiliser l’assistant",
+    "intro": "Ce chat vous aide à comprendre le fonctionnement du portail et à consulter vos propres données enregistrées ici.",
+    "log": "Pour le contrôle interne, la qualité et l’audit, nous conservons un enregistrement du flux de messages (entrants et sortants).",
+    "advise": "Veuillez ne pas inclure de données personnelles de patients dans vos conversations — utilisez plutôt des références ou des numéros de commande.",
+    "breach": "Toute tentative de contourner la sécurité du portail ou d’accéder à des données qui ne vous appartiennent pas constitue une violation grave et peut entraîner le blocage de votre compte.",
+    "emailNote": "En continuant, vous acceptez ces conditions. Un e-mail de confirmation vous est envoyé ainsi qu’à l’administrateur du portail.",
+    "accept": "J’accepte",
+    "decline": "Pas maintenant",
+    "declined": "Pas de souci — vous pouvez accepter à tout moment pour utiliser l’assistant."
+  },
+  "chatFeedback": {
+    "prompt": "Cette réponse doit-elle être améliorée ?",
+    "flag": "Oui, signaler",
+    "thanks": "Merci — transmis à notre équipe."
   }
 }

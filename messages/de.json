@@ -139,7 +139,8 @@
     "stock": "Lager",
     "backoffice": "Backoffice",
     "grand_opening": "Grand Opening",
-    "email": "E-Mail"
+    "email": "E-Mail",
+    "chat_feedback": "Assistent-Feedback"
   },
   "gallery": {
     "kids": "Kinder",
@@ -1288,5 +1289,21 @@
     "translations_hint": "Empfänger erhalten die Version in ihrer Portalsprache; Sprachen ohne Übersetzung erhalten das Original. Prüfen und bearbeiten Sie jeden Tab vor dem Versand.",
     "translations_ready": "Übersetzungen bereit: {langs}. Prüfen Sie jeden Tab.",
     "discard_translations": "Verwerfen"
+  },
+  "chatConsent": {
+    "title": "Bevor Sie den Assistenten verwenden",
+    "intro": "Dieser Chat hilft Ihnen bei Fragen zur Funktionsweise des Portals und ermöglicht das Nachschlagen Ihrer eigenen hier gespeicherten Daten.",
+    "log": "Zur internen Kontrolle, Qualitätssicherung und Prüfung speichern wir eine Aufzeichnung des Nachrichtenflusses (ein- und ausgehend).",
+    "advise": "Bitte nehmen Sie keine personenbezogenen Patientendaten in Ihre Gespräche auf — verwenden Sie stattdessen Referenzen oder Bestellnummern.",
+    "breach": "Versuche, die Sicherheit des Portals zu umgehen oder auf Daten zuzugreifen, die Ihnen nicht gehören, stellen einen schweren Verstoß dar und können zur Sperrung Ihres Kontos führen.",
+    "emailNote": "Mit dem Fortfahren akzeptieren Sie diese Bedingungen. Eine Bestätigungs-E-Mail wird an Sie und an den Portaladministrator gesendet.",
+    "accept": "Ich stimme zu",
+    "decline": "Jetzt nicht",
+    "declined": "Kein Problem — Sie können jederzeit zustimmen, um den Assistenten zu verwenden."
+  },
+  "chatFeedback": {
+    "prompt": "Sollte diese Antwort verbessert werden?",
+    "flag": "Ja, melden",
+    "thanks": "Danke — an unser Team weitergeleitet."
   }
 }

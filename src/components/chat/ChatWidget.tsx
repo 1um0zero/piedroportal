@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
+import { getChatConsentStatus, acceptChatConsent, submitChatFeedback } from '@/app/actions/chat'
 
 type Role = 'user' | 'assistant'
 type Message = { role: Role; content: string; pending?: boolean }
+type Consent = 'loading' | 'needed' | 'ok' | 'declined'
 
 const STARTERS = [
   'How do I place a new order?',
@@ -18,20 +21,46 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput]     = useState('')
   const [loading, setLoading] = useState(false)
+  const [consent, setConsent] = useState<Consent>('loading')
+  const [flagged, setFlagged] = useState<Record<number, boolean>>({})
   const bottomRef             = useRef<HTMLDivElement>(null)
   const inputRef              = useRef<HTMLInputElement>(null)
   const router                = useRouter()
+  const locale                = useLocale()
+  const t                     = useTranslations('chatConsent')
+  const tf                    = useTranslations('chatFeedback')
+
+  // Resolve consent once the panel is first opened.
+  useEffect(() => {
+    if (!open || consent !== 'loading') return
+    getChatConsentStatus()
+      .then(r => setConsent(r.needsConsent ? 'needed' : 'ok'))
+      .catch(() => setConsent('needed'))
+  }, [open, consent])
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 100)
-  }, [open])
+    if (open && consent === 'ok') setTimeout(() => inputRef.current?.focus(), 100)
+  }, [open, consent])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const accept = useCallback(async () => {
+    setConsent('ok')
+    try { await acceptChatConsent(locale) } catch { /* recorded best-effort */ }
+  }, [locale])
+
+  const flag = useCallback(async (idx: number) => {
+    if (flagged[idx]) return
+    setFlagged(prev => ({ ...prev, [idx]: true }))
+    const answer = messages[idx]?.content ?? ''
+    const question = messages[idx - 1]?.role === 'user' ? messages[idx - 1].content : ''
+    try { await submitChatFeedback(question, answer) } catch { /* best-effort */ }
+  }, [flagged, messages])
+
   const send = useCallback(async (text: string) => {
-    if (!text.trim() || loading) return
+    if (!text.trim() || loading || consent !== 'ok') return
     setInput('')
 
     const userMsg: Message = { role: 'user', content: text }
@@ -84,6 +113,12 @@ export function ChatWidget() {
               })
             }
             if (event.type === 'error') {
+              // Server requires consent — surface the gate instead of an error.
+              if (event.text === 'consent_required') {
+                setConsent('needed')
+                setMessages(prev => prev.slice(0, -2))
+                return
+              }
               setMessages(prev => {
                 const next = [...prev]
                 next[next.length - 1] = { role: 'assistant', content: `⚠️ ${event.text}` }
@@ -112,7 +147,7 @@ export function ChatWidget() {
       setLoading(false)
       inputRef.current?.focus()
     }
-  }, [messages, loading, router])
+  }, [messages, loading, consent, router])
 
   return (
     <>
@@ -162,6 +197,43 @@ export function ChatWidget() {
             </button>
           </div>
 
+          {/* Consent gate — shown until the user accepts the notice */}
+          {consent !== 'ok' ? (
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {consent === 'loading' ? (
+                <div className="h-full flex items-center justify-center">
+                  <span className="flex gap-1 items-center">
+                    {[0,1,2].map(i => (
+                      <span key={i} className="w-2 h-2 rounded-full bg-stone-300 animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
+                    ))}
+                  </span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-stone-800">{t('title')}</h3>
+                  <p className="text-xs leading-relaxed text-stone-600">{t('intro')}</p>
+                  <p className="text-xs leading-relaxed text-stone-600">{t('log')}</p>
+                  <p className="text-xs leading-relaxed text-stone-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">{t('advise')}</p>
+                  <p className="text-xs leading-relaxed text-stone-500">{t('breach')}</p>
+                  <p className="text-[11px] leading-relaxed text-stone-400">{t('emailNote')}</p>
+                  {consent === 'declined' && (
+                    <p className="text-xs text-stone-500 italic">{t('declined')}</p>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={accept}
+                      className="flex-1 h-10 rounded-xl bg-gold text-white text-sm font-semibold hover:bg-gold-dark transition-colors">
+                      {t('accept')}
+                    </button>
+                    <button onClick={() => setConsent('declined')}
+                      className="px-4 h-10 rounded-xl border border-stone-200 text-stone-500 text-sm hover:bg-stone-50 transition-colors">
+                      {t('decline')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+          <>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
             {messages.length === 0 ? (
@@ -181,7 +253,7 @@ export function ChatWidget() {
               </div>
             ) : (
               messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
                   <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed
                     ${m.role === 'user'
                       ? 'bg-gold text-white rounded-br-sm'
@@ -197,6 +269,17 @@ export function ChatWidget() {
                       <span className="whitespace-pre-wrap">{m.content}</span>
                     )}
                   </div>
+                  {/* Feedback prompt on completed assistant answers */}
+                  {m.role === 'assistant' && !m.pending && m.content && (
+                    flagged[i] ? (
+                      <p className="text-[10px] text-stone-400 mt-1 px-1">{tf('thanks')}</p>
+                    ) : (
+                      <button onClick={() => flag(i)}
+                        className="text-[10px] text-stone-400 hover:text-gold mt-1 px-1 transition-colors">
+                        {tf('prompt')} · {tf('flag')}
+                      </button>
+                    )
+                  )}
                 </div>
               ))
             )}
@@ -226,6 +309,8 @@ export function ChatWidget() {
               </button>
             </form>
           </div>
+          </>
+          )}
         </div>
       )}
     </>
