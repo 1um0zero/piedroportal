@@ -350,6 +350,23 @@ export async function POST(request: Request) {
     )
   }
 
+  // Rate limit: cap prompts per user per minute (the Anthropic call is paid;
+  // this blunts runaway loops / abuse). Reuses the chat_logs audit trail, so the
+  // limit is distributed across serverless instances without extra infra.
+  {
+    const since = new Date(Date.now() - 60_000).toISOString()
+    const { count } = await createServiceClient()
+      .from('chat_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id).eq('direction', 'in').gte('created_at', since)
+    if ((count ?? 0) >= 20) {
+      return new Response(
+        `data: ${JSON.stringify({ type: 'error', text: 'rate_limited' })}\n\ndata: ${JSON.stringify({ type: 'done' })}\n\n`,
+        { headers: { 'Content-Type': 'text/event-stream' } }
+      )
+    }
+  }
+
   const { messages } = await request.json() as { messages: Anthropic.MessageParam[] }
 
   const { data: profile } = await createServiceClient()

@@ -1305,7 +1305,8 @@
   "chatFeedback": {
     "prompt": "Moet dit antwoord beter?",
     "flag": "Ja, meld het",
-    "thanks": "Bedankt — doorgestuurd naar ons team."
+    "thanks": "Bedankt — doorgestuurd naar ons team.",
+    "rateLimited": "U verstuurt te snel berichten. Wacht even."
   },
   "welcome": {
     "title": "Welkom, {name}",

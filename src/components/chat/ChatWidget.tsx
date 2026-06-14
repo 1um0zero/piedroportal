@@ -119,9 +119,10 @@ export function ChatWidget() {
                 setMessages(prev => prev.slice(0, -2))
                 return
               }
+              const text = event.text === 'rate_limited' ? tf('rateLimited') : `⚠️ ${event.text}`
               setMessages(prev => {
                 const next = [...prev]
-                next[next.length - 1] = { role: 'assistant', content: `⚠️ ${event.text}` }
+                next[next.length - 1] = { role: 'assistant', content: text }
                 return next
               })
             }
@@ -147,7 +148,7 @@ export function ChatWidget() {
       setLoading(false)
       inputRef.current?.focus()
     }
-  }, [messages, loading, consent, router])
+  }, [messages, loading, consent, router, tf])
 
   return (
     <>

@@ -1305,7 +1305,8 @@
   "chatFeedback": {
     "prompt": "Sollte diese Antwort verbessert werden?",
     "flag": "Ja, melden",
-    "thanks": "Danke — an unser Team weitergeleitet."
+    "thanks": "Danke — an unser Team weitergeleitet.",
+    "rateLimited": "Sie senden Nachrichten zu schnell. Bitte warten Sie einen Moment."
   },
   "welcome": {
     "title": "Willkommen, {name}",

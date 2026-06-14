@@ -3,6 +3,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import React from 'react'
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rate-limit'
 import type { Locale } from '@/types'
 
 export async function POST(request: NextRequest) {
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // PDF rendering is CPU-heavy — cap previews per user (best-effort).
+    if (!rateLimit(`pdf:${user.id}`, 10, 60_000)) {
+      return NextResponse.json({ error: 'Too many requests, please wait a moment.' }, { status: 429 })
+    }
 
     const body = await request.json() as Omit<OrderPdfProps, 'showWatermark'>
 
