@@ -12,6 +12,8 @@ import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { GallerySectionProvider } from '@/contexts/GallerySectionContext'
 import { ChatWidget } from '@/components/chat/ChatWidget'
+import PageViewTracker from '@/components/analytics/PageViewTracker'
+import { Analytics } from '@vercel/analytics/next'
 import type { Profile } from '@/types'
 
 type Props = {
@@ -60,6 +62,8 @@ export default async function LocaleLayout({ children, params }: Props) {
               <Footer />
               {user && <ChatWidget />}
               <CookieNotice />
+              <PageViewTracker />
+              <Analytics />
             </div>
           </GallerySectionProvider>
         </WishlistProvider>
