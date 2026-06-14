@@ -343,10 +343,10 @@ export default function ProductDetail({ product, siblings }: Props) {
             </div>
           )}
 
-          {/* ORDER button — stock (EVO) models carry the NVOS approval notice */}
-          <div className="pt-2 flex flex-wrap items-start gap-4">
+          {/* ORDER button — stock (EVO) models carry the NVOS approval notice below it */}
+          <div className="pt-2 space-y-3">
             {orderBtn}
-            {product.is_stock && <NvosNotice className="flex-1 min-w-[260px]" />}
+            {product.is_stock && <NvosNotice className="w-full" />}
           </div>
         </div>
 

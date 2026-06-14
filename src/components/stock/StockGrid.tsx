@@ -100,7 +100,11 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
   }
 
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="mt-6 space-y-4">
+      {/* NVOS approval status — full-width banner at the top (these are stock/EVO orders) */}
+      <NvosNotice />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
       {/* Product list */}
       <div className="space-y-4">
         {products.map((p) => {
@@ -181,9 +185,7 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
       </div>
 
       {/* Cart / submit */}
-      <aside className="lg:sticky lg:top-6 lg:self-start space-y-3">
-        {/* NVOS approval status — these are stock (EVO) orders */}
-        <NvosNotice />
+      <aside className="lg:sticky lg:top-6 lg:self-start">
         <div className="rounded-[14px] border border-gray-200 bg-white p-5" style={{ boxShadow: 'var(--shadow-card)' }}>
           <div className="text-lg font-semibold text-gray-900">
             {t('totalPairs', { count: totalPairs })}
@@ -274,6 +276,7 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
           </div>
         </div>
       </aside>
+      </div>
     </div>
   )
 }
