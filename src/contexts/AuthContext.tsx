@@ -34,6 +34,18 @@ export function AuthProvider({ children, initialProfile, initialLoggedIn, initia
   // profiles.company_id) — a user can belong to several companies.
   const [hasCompany, setHasCompany] = useState(initialHasCompany)
 
+  // Re-seed from the server when the user identity changes (e.g. after a
+  // server-action login or set-password redirect re-renders the layout). useState
+  // only honours the initial value on mount, so without this the client context
+  // would keep a stale/null profile after a soft navigation — which, among other
+  // things, suppressed the first-login welcome until a manual refresh.
+  useEffect(() => {
+    setProfile(initialProfile)
+    setIsLoggedIn(initialLoggedIn)
+    setHasCompany(initialHasCompany)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialProfile?.id, initialLoggedIn, initialHasCompany])
+
   useEffect(() => {
     const sb = createClient()
     // Keep in sync with browser session changes (login/logout in other tabs, token refresh)
