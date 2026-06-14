@@ -508,7 +508,12 @@
     "resend_rate_limited": "Bitte warten Sie eine Minute, bevor Sie eine neue E-Mail anfordern.",
     "pending_company": "Konto wartet auf Genehmigung",
     "pending_company_desc": "Ihr Konto wird von Piedro International geprüft. Sie erhalten eine E-Mail, wenn Ihr Zugang zu Bestellungen aktiviert wurde.",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "migrated_welcome_title": "Willkommen im neuen Portal",
+    "migrated_welcome_body": "Aus Sicherheitsgründen konnten wir das Passwort, das Sie im alten Portal verwendet haben, nicht übernehmen. Wir senden Ihnen daher eine E-Mail mit einem Link zu einem sicheren Bereich, in dem Sie Ihr neues Passwort festlegen und alle Neuerungen nutzen können. Wir hoffen, es gefällt Ihnen — Ihr Feedback ist sehr willkommen und jedes Detail wird berücksichtigt und beantwortet. Vielen Dank, Ihr Team von Piedro International.",
+    "migrated_send_link": "Senden Sie mir den Link",
+    "migrated_sending": "Senden…",
+    "migrated_link_sent": "Wir haben einen sicheren Link an {email} gesendet. Öffnen Sie die E-Mail, um Ihr neues Passwort festzulegen."
   },
   "footer": {
     "privacy": "Datenschutz",

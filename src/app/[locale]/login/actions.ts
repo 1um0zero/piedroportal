@@ -3,6 +3,35 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { createServiceClient } from '@/lib/supabase/service'
+import { requestPasswordReset } from '@/lib/password-reset'
+
+/**
+ * On the login form, when the user leaves the email field we check whether that
+ * address belongs to a migrated user who has not yet set their own password
+ * (must_set_password). If so the form offers a friendly first-time-setup flow
+ * instead of letting them guess their old password. Only returns true for
+ * not-yet-activated migrated accounts — a window that closes per user as they
+ * activate. (Mild address enumeration, accepted: the link only ever reaches the
+ * real inbox.)
+ */
+export async function checkMigratedUser(email: string): Promise<{ migrated: boolean }> {
+  const clean = (email ?? '').trim().toLowerCase()
+  if (!clean) return { migrated: false }
+  const service = createServiceClient()
+  const { data } = await service
+    .from('profiles').select('must_set_password')
+    .ilike('email', clean).limit(1).maybeSingle()
+  return { migrated: !!data?.must_set_password }
+}
+
+/** Send the first-time set-password link to a migrated user (silent, deduped). */
+export async function sendMigrationLink(email: string, locale: string): Promise<{ ok: boolean }> {
+  const clean = (email ?? '').trim().toLowerCase()
+  if (!clean) return { ok: false }
+  await requestPasswordReset(clean, locale)
+  return { ok: true }
+}
 
 export async function signInAction(_: unknown, formData: FormData) {
   const email    = formData.get('email')    as string

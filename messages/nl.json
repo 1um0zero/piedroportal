@@ -508,7 +508,12 @@
     "resend_rate_limited": "Wacht een minuut voordat u een nieuwe e-mail aanvraagt.",
     "pending_company": "Account in afwachting van goedkeuring",
     "pending_company_desc": "Uw account wordt beoordeeld door Piedro International. U ontvangt een e-mail wanneer uw toegang tot bestellingen is geactiveerd.",
-    "contact": "Contact"
+    "contact": "Contact",
+    "migrated_welcome_title": "Welkom in het nieuwe portaal",
+    "migrated_welcome_body": "Om veiligheidsredenen konden wij het wachtwoord dat u op het oude portaal gebruikte niet overnemen. Wij sturen u daarom een e-mail met een link naar een beveiligde omgeving waar u uw nieuwe wachtwoord kunt instellen en van alle vernieuwingen kunt genieten. Wij hopen dat het u bevalt — uw feedback is zeer welkom en elk detail wordt in overweging genomen en beantwoord. Met dank, het team van Piedro International.",
+    "migrated_send_link": "Stuur mij de link",
+    "migrated_sending": "Versturen…",
+    "migrated_link_sent": "We hebben een beveiligde link gestuurd naar {email}. Open de e-mail om uw nieuwe wachtwoord in te stellen."
   },
   "footer": {
     "privacy": "Privacybeleid",

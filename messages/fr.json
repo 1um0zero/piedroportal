@@ -508,7 +508,12 @@
     "resend_rate_limited": "Veuillez patienter une minute avant de demander un nouvel e-mail.",
     "pending_company": "Compte en attente d'approbation",
     "pending_company_desc": "Votre compte est en cours d'examen par Piedro International. Vous recevrez un e-mail lorsque votre accès aux commandes sera activé.",
-    "contact": "Contact"
+    "contact": "Contact",
+    "migrated_welcome_title": "Bienvenue sur le nouveau portail",
+    "migrated_welcome_body": "Pour des raisons de sécurité, nous n'avons pas pu reprendre le mot de passe que vous utilisiez sur l'ancien portail. Nous vous enverrons donc un e-mail contenant un lien vers un espace sécurisé où vous pourrez définir votre nouveau mot de passe et profiter de toutes les nouveautés. Nous espérons qu'il vous plaira — vos retours sont les bienvenus et chaque détail sera étudié et pris en compte. Merci, l'équipe de Piedro International.",
+    "migrated_send_link": "Envoyez-moi le lien",
+    "migrated_sending": "Envoi…",
+    "migrated_link_sent": "Nous avons envoyé un lien sécurisé à {email}. Ouvrez l'e-mail pour définir votre nouveau mot de passe."
   },
   "footer": {
     "privacy": "Politique de confidentialité",

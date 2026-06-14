@@ -36,6 +36,17 @@ export async function requestPasswordReset(email: string, fallbackLocale: string
     .ilike('email', clean).limit(1).maybeSingle()
   if (!profile?.id) return // unknown address — say nothing
 
+  // Dedupe: if a still-valid, unused link was issued in the last 10 minutes,
+  // don't send another (protects against repeated button clicks / inbox spam).
+  const recent = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  const { count: recentCount } = await service
+    .from('password_reset_tokens')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', profile.id)
+    .is('used_at', null)
+    .gt('created_at', recent)
+  if (recentCount && recentCount > 0) return
+
   const raw = randomBytes(32).toString('base64url')
   const { error: insErr } = await service.from('password_reset_tokens').insert({
     token_hash: sha256(raw),

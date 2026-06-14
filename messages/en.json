@@ -508,7 +508,12 @@
     "resend_rate_limited": "Please wait a minute before requesting another email.",
     "pending_company": "Account pending approval",
     "pending_company_desc": "Your account is being reviewed by Piedro International. You will receive an email when your access to orders is activated.",
-    "contact": "Contact"
+    "contact": "Contact",
+    "migrated_welcome_title": "Welcome to the new portal",
+    "migrated_welcome_body": "For security reasons we could not carry over the password you used on the old portal. We will email you a link to a secure area where you can set your new password and enjoy everything new we have built. We hope you like it — your feedback is very welcome and every detail will be considered and answered. With thanks, the Piedro International team.",
+    "migrated_send_link": "Send me the link",
+    "migrated_sending": "Sending…",
+    "migrated_link_sent": "We sent a secure link to {email}. Open the email to set your new password."
   },
   "footer": {
     "privacy": "Privacy Policy",
