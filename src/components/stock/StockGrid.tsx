@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import type { Locale, StockProduct } from '@/types'
@@ -117,102 +117,75 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="font-semibold text-gray-900">
-                      {p.colour_id}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {p.color_name}
-                      {p.closure && <> · {translateFilterValueSync(p.closure, locale)}</>}
-                      {p.type && <> · {translateFilterValueSync(p.type, locale)}</>}
-                    </div>
+                <div>
+                  <div className="font-semibold text-gray-900">
+                    {p.colour_id}
                   </div>
-                  {count > 0 && (
-                    <span className="shrink-0 rounded-full bg-gold/15 px-3 py-1 text-sm font-medium text-gold-dark">
-                      {t('lineTotal', { count })}
-                    </span>
-                  )}
+                  <div className="text-sm text-gray-500">
+                    {p.color_name}
+                    {p.closure && <> · {translateFilterValueSync(p.closure, locale)}</>}
+                    {p.type && <> · {translateFilterValueSync(p.type, locale)}</>}
+                  </div>
                 </div>
 
-                {/* Size chips */}
+                {/* Size grid — a single tap adds one pair; no +/− to keep it clean */}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {p.sizes.map((s) => {
                     const qty = cart[keyOf(p.id, s.size)] ?? 0
                     const atCap = qty >= s.available
                     return (
-                      <div
+                      <button
                         key={s.size}
-                        className={`flex items-center overflow-hidden rounded-lg border ${
-                          qty > 0 ? 'border-gold bg-gold/10' : 'border-gray-300 bg-white'
+                        type="button"
+                        onClick={() => add(p.id, s.size, s.available)}
+                        disabled={atCap}
+                        title={atCap ? t('limited', { max: s.available }) : t('add')}
+                        className={`rounded-lg border px-3 py-1.5 text-sm font-medium tabular-nums transition-colors ${
+                          atCap
+                            ? 'cursor-not-allowed border-gray-200 text-gray-300'
+                            : qty > 0
+                              ? 'border-gold bg-gold/10 text-gold-dark hover:bg-gold/20'
+                              : 'border-gray-300 text-gray-800 hover:border-gold hover:bg-gold/10'
                         }`}
                       >
-                        {qty > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => remove(p.id, s.size)}
-                            aria-label={t('remove')}
-                            className="px-2 py-1.5 text-gray-500 hover:bg-gray-100"
-                          >
-                            −
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => add(p.id, s.size, s.available)}
-                          disabled={atCap}
-                          title={atCap ? t('limited', { max: s.available }) : undefined}
-                          className={`px-3 py-1.5 text-sm font-medium tabular-nums ${
-                            atCap ? 'cursor-not-allowed text-gray-400' : 'text-gray-800 hover:bg-gold/15'
-                          }`}
-                        >
-                          {s.size}
-                          {qty > 0 && <span className="ml-1.5 text-gold-dark">×{qty}</span>}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => add(p.id, s.size, s.available)}
-                          disabled={atCap}
-                          aria-label={t('add')}
-                          title={atCap ? t('limited', { max: s.available }) : undefined}
-                          className={`px-2 py-1.5 ${
-                            atCap
-                              ? 'cursor-not-allowed text-gray-300'
-                              : 'text-gray-500 hover:bg-gold/15 hover:text-gold-dark'
-                          }`}
-                        >
-                          +
-                        </button>
-                      </div>
+                        {s.size}
+                      </button>
                     )
                   })}
                 </div>
 
-                {/* Selection summary — the picked sizes at a glance */}
+                {/* Selection summary — one shoebox per pair, tap a box to remove
+                    it; the line total sits to the right. */}
                 {count > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-gray-100 pt-3">
                     {p.sizes
                       .filter((s) => (cart[keyOf(p.id, s.size)] ?? 0) > 0)
                       .map((s) => {
                         const qty = cart[keyOf(p.id, s.size)] ?? 0
                         return (
-                          <span
-                            key={s.size}
-                            className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-medium tabular-nums text-gold-dark"
-                          >
-                            {s.size}
-                            <span className="opacity-70">×{qty}</span>
-                            <button
-                              type="button"
-                              onClick={() => remove(p.id, s.size)}
-                              aria-label={t('remove')}
-                              className="ml-0.5 -mr-1 rounded-full px-1 leading-none text-gold-dark/60 hover:bg-gold/25 hover:text-gold-dark"
-                            >
-                              ×
-                            </button>
-                          </span>
+                          <div key={s.size} className="flex items-center gap-1">
+                            {Array.from({ length: qty }).map((_, i) => (
+                              <Fragment key={i}>
+                                {i > 0 && (
+                                  <span className="text-xs font-semibold text-gold/60">+</span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => remove(p.id, s.size)}
+                                  aria-label={t('remove')}
+                                  title={t('remove')}
+                                  className="text-gold-dark transition-transform hover:-translate-y-0.5"
+                                >
+                                  <ShoeBox size={s.size} />
+                                </button>
+                              </Fragment>
+                            ))}
+                          </div>
                         )
                       })}
+                    <span className="ml-auto shrink-0 rounded-full bg-gold/15 px-3 py-1 text-sm font-medium text-gold-dark">
+                      {t('lineTotal', { count })}
+                    </span>
                   </div>
                 )}
               </div>
@@ -314,5 +287,41 @@ export default function StockGrid({ products, companies, userCompany, isAdmin }:
         </div>
       </aside>
     </div>
+  )
+}
+
+/**
+ * Outline isometric shoebox — a flattened parallelepiped (not a cube) with the
+ * EU size on the lid. One box = one pair. Stroke uses currentColor so the
+ * parent button drives the colour and hover.
+ */
+function ShoeBox({ size }: { size: number }) {
+  return (
+    <svg
+      width={44}
+      height={27}
+      viewBox="0 0 78 48"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M14 16 L39 6 L64 16 L39 26 Z" fill="#fff" />
+      <path d="M14 16 L14 32 L39 42 L39 26 Z" fill="#faf8f4" />
+      <path d="M64 16 L64 32 L39 42 L39 26 Z" fill="#f3efe7" />
+      <path d="M14 20 L39 30 L64 20" />
+      <text
+        x="39"
+        y="20.5"
+        fontSize="11"
+        fontWeight="700"
+        fill="currentColor"
+        stroke="none"
+        textAnchor="middle"
+      >
+        {size}
+      </text>
+    </svg>
   )
 }
