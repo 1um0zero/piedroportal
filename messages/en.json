@@ -236,6 +236,7 @@
     "submit": "Submit Order",
     "save_draft": "Save Draft",
     "edit_draft": "Edit & submit",
+    "pdf_migrated": "PDF (migrated)",
     "customer": "Customer",
     "clinician": "Clinician",
     "patient": "Patient Name or number",

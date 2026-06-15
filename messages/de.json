@@ -236,6 +236,7 @@
     "submit": "Bestellung Einreichen",
     "save_draft": "Entwurf Speichern",
     "edit_draft": "Bearbeiten & senden",
+    "pdf_migrated": "PDF (migriert)",
     "customer": "Kunde",
     "clinician": "Arzt",
     "patient": "Patient Name oder Nummer",

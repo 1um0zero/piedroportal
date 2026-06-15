@@ -236,6 +236,7 @@
     "submit": "Soumettre la Commande",
     "save_draft": "Enregistrer le Brouillon",
     "edit_draft": "Modifier et envoyer",
+    "pdf_migrated": "PDF (migré)",
     "customer": "Client",
     "clinician": "Spécialiste",
     "patient": "Patient ID/Nom",

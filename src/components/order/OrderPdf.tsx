@@ -79,6 +79,9 @@ export type OrderPdfProps = {
   diff_sizes_pairs?: Array<{ qty: number; size: number }> | null
   locale: Locale
   showWatermark?: boolean
+  // Watermark caption (supports \n). Defaults to "NOT CONFIRMED" (preview).
+  // Migrated orders pass "NOT THE ORIGINAL\n(MIGRATED ORDER)".
+  watermarkText?: string
 }
 
 export function OrderPdf({
@@ -86,7 +89,7 @@ export function OrderPdf({
   construction_left, construction_right, width_left, width_right,
   size_left, size_right, additions, comments, created_at,
   companyName, productColourId, productColorName, productClosure, productImageUrl,
-  diff_sizes_pairs, locale, showWatermark = false,
+  diff_sizes_pairs, locale, showWatermark = false, watermarkText,
 }: OrderPdfProps) {
   const t = (key: string) => getPdfTranslation(locale, key)
   const ta = (key: string) => getPdfTranslation(locale, `additions.${key}`)
@@ -438,14 +441,16 @@ export function OrderPdf({
             transform: 'rotate(-45deg)'
           }}>
             <Text style={{
-              fontSize: 72,
+              // Scale down for longer captions so they stay on-page.
+              fontSize: Math.max(28, Math.min(72, Math.round(560 / Math.max(
+                ...(watermarkText ?? 'NOT\nCONFIRMED').split('\n').map(l => l.length))))),
               fontFamily: 'Helvetica-Bold',
               color: '#DC2626',
               textTransform: 'uppercase',
               letterSpacing: 4,
               textAlign: 'center'
             }}>
-              NOT{'\n'}CONFIRMED
+              {watermarkText ?? 'NOT\nCONFIRMED'}
             </Text>
           </View>
         )}
