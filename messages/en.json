@@ -487,10 +487,10 @@
         "hard": "Hard - 0.9 mm"
       },
       "zipper": {
-        "medial_(next_to_closure)": "Medial Zipper Next to closure",
-        "medial_(side)": "Medial Zipper Side",
-        "lateral_(next_to_closure)": "Lateral Zipper Next to closure",
-        "lateral_(next_to_closure)_+_medial_lace": "Lateral Zipper Next to closure + medial lace"
+        "1_medial_zipper_next_to_closure": "Medial Zipper Next to closure",
+        "2_medial_zipper_side": "Medial Zipper Side",
+        "3_lateral_zipper_next_to_closure": "Lateral Zipper Next to closure",
+        "4_lateral_zipper_next_to_closure_+_medial_lace": "Lateral Zipper Next to closure + medial lace"
       },
       "rocker": {
         "normal_rocker": "Normal Rocker",

@@ -74,7 +74,9 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'instep_front',  type: 'text',   side: 'both', dataverseKey: 'cr56f_instepmoretothefront' },
       { key: 'colour_mod',    type: 'text',   side: 'both', dataverseKey: 'cr56f_colourmodifications' },
       { key: 'pad_tongue',    type: 'mm',     side: 'both', values: mm4to10, dataverseKey: 'cr56f_extrapaddingontongue' },
-      { key: 'zipper',        type: 'option', side: 'both', collapse: true, values: ['Medial (next to closure)','Medial (side)','Lateral (next to closure)','Lateral (next to closure) + medial lace'], dataverseKey: 'cr56f_zipper' },
+      // Values mirror the Dataverse global option set cr56f_wpp_zipper (numeric-prefixed
+      // labels) so they match migrated orders and cross-reference the ERP codes 9795800xx.
+      { key: 'zipper',        type: 'option', side: 'both', collapse: true, values: ['1 Medial Zipper Next to closure','2 Medial Zipper Side','3 Lateral Zipper Next to closure','4 Lateral Zipper Next to closure + medial lace'], dataverseKey: 'cr56f_zipper' },
     ],
   },
 

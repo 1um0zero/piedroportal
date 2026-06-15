@@ -832,9 +832,11 @@ cr56f_toepuffslf;cr56f_wpp_toe_puffs;true;979580002;Hard
 cr56f_toepuffsrf;cr56f_wpp_toe_puffs;true;979580000;Soft
 cr56f_toepuffsrf;cr56f_wpp_toe_puffs;true;979580001;Standard
 cr56f_toepuffsrf;cr56f_wpp_toe_puffs;true;979580002;Hard
+cr56f_zipperlf;cr56f_wpp_zipper;true;979580003;4 Lateral Zipper Next to closure + medial lace
 cr56f_zipperlf;cr56f_wpp_zipper;true;979580000;1 Medial Zipper Next to closure
 cr56f_zipperlf;cr56f_wpp_zipper;true;979580001;2 Medial Zipper Side
 cr56f_zipperlf;cr56f_wpp_zipper;true;979580002;3 Lateral Zipper Next to closure
+cr56f_zipperrf;cr56f_wpp_zipper;true;979580003;4 Lateral Zipper Next to closure + medial lace
 cr56f_zipperrf;cr56f_wpp_zipper;true;979580000;1 Medial Zipper Next to closure
 cr56f_zipperrf;cr56f_wpp_zipper;true;979580001;2 Medial Zipper Side
 cr56f_zipperrf;cr56f_wpp_zipper;true;979580002;3 Lateral Zipper Next to closure

@@ -1,6 +1,6 @@
 {
   "entity": "cr56f_wpp_orders",
-  "fetchedAt": "2026-06-15T02:52:51.852Z",
+  "fetchedAt": "2026-06-15T03:02:17.317Z",
   "fields": {
     "cr56f_2bunionettelf": {
       "display": "4.2. bunionette LF",
@@ -3886,6 +3886,10 @@
       "isGlobal": true,
       "options": [
         {
+          "value": 979580003,
+          "label": "4 Lateral Zipper Next to closure + medial lace"
+        },
+        {
           "value": 979580000,
           "label": "1 Medial Zipper Next to closure"
         },
@@ -3904,6 +3908,10 @@
       "optionSet": "cr56f_wpp_zipper",
       "isGlobal": true,
       "options": [
+        {
+          "value": 979580003,
+          "label": "4 Lateral Zipper Next to closure + medial lace"
+        },
         {
           "value": 979580000,
           "label": "1 Medial Zipper Next to closure"
