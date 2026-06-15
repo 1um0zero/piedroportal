@@ -24,6 +24,12 @@ const STATUS_STYLES: Record<string, string> = {
 
 const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
+// Order unit → translation key in the `order` namespace.
+const UNIT_KEYS: Record<string, string> = {
+  PAIR: 'unit_pair', LEFT: 'unit_left', RIGHT: 'unit_right',
+  LEFT_RIGHT: 'unit_lr', DIFF_SIZES: 'unit_sizes',
+}
+
 type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   orders: any[]
@@ -99,6 +105,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
   const ts = useTranslations('dashboard.status')
   const ta = useTranslations('admin.approval')
   const tp = useTranslations('admin.production')
+  const tu = useTranslations('order')
   const isAdminPath = pathname.startsWith('/admin')
   const searchParams = useSearchParams()
   const [search, setSearch]       = useState('')
@@ -520,7 +527,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                     </td>
                     {/* Unit */}
                     <td className="px-4 py-3 text-stone-500 text-xs">
-                      {o.unit ?? '—'}
+                      {o.unit && UNIT_KEYS[o.unit] ? tu(UNIT_KEYS[o.unit]) : (o.unit ?? '—')}
                     </td>
                     {/* Additions */}
                     <td className="px-4 py-3">
