@@ -54,7 +54,11 @@ export function translateOptionValue(
   value: string,
   t: (key: string) => string
 ): string {
-  // Map of field keys to their option categories
+  // Map of field keys to their option categories.
+  // NOTE: sole_type, runner_sole and spoiler are intentionally absent — their
+  // values are technical/commercial sole names (EVA, Full Rubber, Vibram, Nora,
+  // Piedro Runner, …) kept in English across all locales by design. Do not add
+  // them here without corresponding `options.*` message keys.
   const categoryMap: Record<string, string> = {
     'lining': 'lining',
     'cl_laces': 'closure_laces',
