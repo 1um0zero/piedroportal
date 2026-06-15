@@ -13,9 +13,9 @@ import sharp from 'sharp'
 
 const SRC = 'docs/solas_type/solas'
 const OUT = 'public/soles'
-const BOX = 520          // longest side after trim
-const CANVAS = 600       // square canvas
-const MARGIN = 24
+const BOX = 1180         // longest side after trim (hi-res for the giant hover preview)
+const CANVAS = 1280      // square canvas
+const MARGIN = 40
 
 mkdirSync(OUT, { recursive: true })
 

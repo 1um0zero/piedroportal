@@ -221,6 +221,84 @@ function ImageChips({ values, value, onChange, images, label }: {
   )
 }
 
+// Sole swatch picker — photo cards with a giant floating "hologram" preview on hover,
+// so the clinic can inspect the actual sole detail. Falls back to a clean label-only
+// card when a given value has no photo yet.
+function SoleSwatch({ values, value, onChange, images, label }: {
+  values: (number | string)[]
+  value: unknown
+  onChange: (v: string | null) => void
+  images: Record<string, string>
+  label?: (v: string) => string
+}) {
+  const [hovered, setHovered] = useState<string | null>(null)
+  const hoveredSrc = hovered ? images[hovered] : null
+  return (
+    <div className="flex flex-wrap gap-2.5">
+      {values.map((v) => {
+        const key = String(v)
+        const src = images[key]
+        const selected = value === v
+        const display = label ? label(key) : key
+        return (
+          <button key={key} type="button"
+            onClick={() => onChange(selected ? null : key)}
+            onMouseEnter={() => setHovered(key)}
+            onMouseLeave={() => setHovered(h => (h === key ? null : h))}
+            title={display}
+            className={`group relative flex flex-col items-center w-[120px] rounded-lg border p-1.5 transition-all
+              ${selected
+                ? 'border-gold ring-2 ring-gold/30 bg-gold/5 shadow-sm'
+                : 'border-stone-200 bg-white hover:border-gold/60 hover:shadow-md'}`}>
+            {src ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={src} alt={key}
+                className="w-full h-[64px] object-contain pointer-events-none
+                           transition-transform duration-200 group-hover:scale-105" />
+            ) : (
+              <div className="w-full h-[64px] flex items-center justify-center
+                              text-[11px] font-medium text-stone-400 text-center px-1 leading-tight">
+                {display}
+              </div>
+            )}
+            {src && (
+              <span className={`mt-1 text-[10px] leading-tight font-medium text-center
+                ${selected ? 'text-gold' : 'text-stone-600'}`}>{display}</span>
+            )}
+            {selected && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-white
+                               flex items-center justify-center shadow-sm">
+                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            )}
+          </button>
+        )
+      })}
+
+      {/* Giant floating hologram preview */}
+      {hoveredSrc && (
+        <>
+          <div className="sole-holo-backdrop" />
+          <div className="sole-holo-panel">
+            <div className="relative flex flex-col items-center">
+              <div className="sole-holo-glow" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={hoveredSrc} alt={hovered ?? ''} className="sole-holo-img"
+                style={{ maxHeight: '78vh', maxWidth: 'min(88vw, 700px)', objectFit: 'contain' }} />
+              <span className="relative mt-4 px-4 py-1.5 rounded-full bg-white/95 text-stone-800
+                               text-sm font-semibold shadow-lg">
+                {hovered && label ? label(hovered) : hovered}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // Classic select dropdown — used for closure fields in LEFT_RIGHT mode
 function SelectCombo({ values, value, onChange, t, fieldKey }: {
   values: (number | string)[]
@@ -342,7 +420,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       // restricted set; otherwise fall back to text chips (keeps unprofiled models unchanged).
       const swatch = soleProfile ? soleImages(field.key, section) : {}
       if ((optVals as string[]).some(v => swatch[v]))
-        return <ImageChips values={optVals} value={val} onChange={setVal} images={swatch}
+        return <SoleSwatch values={optVals} value={val} onChange={setVal} images={swatch}
           label={(v) => translateOptionValue(field.key, v, t)} />
       return <OptionChips values={optVals} value={val} onChange={setVal} collapse={field.collapse}
         label={(v) => translateOptionValue(field.key, v, t)} />

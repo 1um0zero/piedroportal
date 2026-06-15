@@ -10,6 +10,9 @@ import manifest from '../../../public/soles/manifest.json'
 
 const M = manifest as Record<string, Record<string, string>>
 
+// Bump when the normalized images are regenerated, so browsers fetch the new ones.
+const V = '2'
+
 /** Map of { optionValue: imagePath } for a field, filtered to the product section. */
 export function soleImages(fieldKey: string, section?: string | null): Record<string, string> {
   const f = M[fieldKey]
@@ -17,8 +20,8 @@ export function soleImages(fieldKey: string, section?: string | null): Record<st
   const out: Record<string, string> = {}
   for (const [key, path] of Object.entries(f)) {
     const [value, sec] = key.split('::')
-    if (sec) { if (section && sec === section) out[value] = path }   // gender-specific: match section
-    else out[value] = path                                          // generic
+    if (sec) { if (section && sec === section) out[value] = `${path}?v=${V}` }  // gender-specific: match section
+    else out[value] = `${path}?v=${V}`                                         // generic
   }
   return out
 }
