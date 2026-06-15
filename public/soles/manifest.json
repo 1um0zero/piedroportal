@@ -1,0 +1,23 @@
+{
+  "pu_type": {
+    "PU Black::WOMEN": "/soles/cupsole-ladies-pu-black.png",
+    "PU White::WOMEN": "/soles/cupsole-ladies-pu-white.png",
+    "EVA Black::MEN": "/soles/cupsole-mens-eva-black.png",
+    "EVA White::MEN": "/soles/cupsole-mens-eva-white.png",
+    "PU Black::MEN": "/soles/cupsole-mens-pu-black.png",
+    "PU White::MEN": "/soles/cupsole-mens-pu-white.png"
+  },
+  "runner_sole": {
+    "Fish Amber": "/soles/rubber-sole-fish-amber.png",
+    "Fish Black": "/soles/rubber-sole-fish-black.png",
+    "Piedro Runner Black": "/soles/soleplate-tr-piedro-black.png",
+    "Piedro Runner Amber": "/soles/soleplate-tr-piedro-brown.png"
+  },
+  "zsm_prefab": {
+    "Sneaker Light Beige 19": "/soles/sneaker-beige.png",
+    "Sneaker Black 81": "/soles/sneaker-black.png",
+    "Sneaker Light Grey 56": "/soles/sneaker-grey.png",
+    "Sneaker Off-White": "/soles/sneaker-off-white.png",
+    "Sneaker White 09": "/soles/sneaker-white.png"
+  }
+}
