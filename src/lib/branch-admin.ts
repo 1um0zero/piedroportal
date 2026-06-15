@@ -24,12 +24,33 @@ export async function getBranchAdminCompanyIds(userId: string): Promise<string[]
   const branchIds = await getAdminBranchIds(userId)
   if (!branchIds.length) return []
   const service = createServiceClient()
-  const { data, error } = await service
+
+  // Explicit clients linked to the user's branches.
+  const { data: explicit } = await service
     .from('branch_companies')
     .select('company_id')
     .in('branch_id', branchIds)
-  if (error || !data) return []
-  return [...new Set(data.map(r => r.company_id as string))]
+  const ids = new Set((explicit ?? []).map(r => r.company_id as string))
+
+  // Catch-all: if any of the user's branches handles unassigned clients, add every
+  // company that is not explicitly linked to ANY branch.
+  const { data: branches } = await service
+    .from('branches')
+    .select('id, handles_unassigned_clients')
+    .in('id', branchIds)
+  const hasCatchAll = (branches ?? []).some(b => b.handles_unassigned_clients)
+  if (hasCatchAll) {
+    const [{ data: allCompanies }, { data: claimed }] = await Promise.all([
+      service.from('companies').select('id'),
+      service.from('branch_companies').select('company_id'),
+    ])
+    const claimedSet = new Set((claimed ?? []).map(r => r.company_id as string))
+    for (const c of allCompanies ?? []) {
+      if (!claimedSet.has(c.id as string)) ids.add(c.id as string)
+    }
+  }
+
+  return [...ids]
 }
 
 /** Same as getBranchAdminCompanyIds, but resolved to {id,name,erp_code} for pickers. */

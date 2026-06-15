@@ -65,6 +65,7 @@ export interface Branch {
   name: string
   code: string | null
   sees_full_catalogue: boolean
+  handles_unassigned_clients?: boolean  // catch-all: owns every client not linked to any branch
   notify_email: string | null   // where this branch's order copies are sent
   notify_locale: string | null  // language for this branch's copies (en/nl/fr/de)
   created_at?: string

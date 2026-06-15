@@ -45,6 +45,7 @@ export default function BranchDetail({
   const [name, setName] = useState(branch.name)
   const [code, setCode] = useState(branch.code ?? '')
   const [seesFull, setSeesFull] = useState(branch.sees_full_catalogue)
+  const [handlesUnassigned, setHandlesUnassigned] = useState(!!branch.handles_unassigned_clients)
   const [notifyEmail, setNotifyEmail] = useState(branch.notify_email ?? '')
   const [notifyLocale, setNotifyLocale] = useState(branch.notify_locale ?? 'en')
   const [savingSettings, setSavingSettings] = useState(false)
@@ -54,6 +55,7 @@ export default function BranchDetail({
     setSavingSettings(true); setSettingsMsg(null)
     const res = await updateBranch(branch.id, {
       name, code: code || null, sees_full_catalogue: seesFull,
+      handles_unassigned_clients: handlesUnassigned,
       notify_email: notifyEmail || null, notify_locale: notifyLocale,
     })
     setSavingSettings(false)
@@ -188,6 +190,13 @@ export default function BranchDetail({
             </label>
           </div>
         </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t('clients')}</label>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" checked={handlesUnassigned} onChange={e => setHandlesUnassigned(e.target.checked)} className="mt-1" />
+            <span className="text-sm text-stone-700">{t('catch_all')} <span className="text-stone-400">— {t('catch_all_hint')}</span></span>
+          </label>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
             <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">{t('field_notify_email')}</label>
@@ -280,6 +289,10 @@ export default function BranchDetail({
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('clients')}</h2>
           <p className="text-xs text-stone-400">{t('clients_hint')} · {t('selected_n', { n: clients.size })}</p>
         </div>
+
+        {branch.handles_unassigned_clients && (
+          <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">{t('catch_all_active')}</p>
+        )}
 
         {assignedClients.length === 0 ? (
           <p className="text-sm text-stone-400">{t('no_clients')}</p>

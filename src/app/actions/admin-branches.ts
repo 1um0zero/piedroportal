@@ -26,6 +26,7 @@ export interface BranchInput {
   name: string
   code: string | null
   sees_full_catalogue: boolean
+  handles_unassigned_clients?: boolean
   notify_email: string | null
   notify_locale: string | null
 }
@@ -42,6 +43,7 @@ export async function createBranch(input: BranchInput): Promise<{ id?: string; e
     name: input.name.trim(),
     code: input.code?.trim() || null,
     sees_full_catalogue: input.sees_full_catalogue,
+    handles_unassigned_clients: input.handles_unassigned_clients ?? false,
     notify_email: input.notify_email?.trim() || null,
     notify_locale: input.notify_locale || null,
   })
@@ -62,6 +64,7 @@ export async function updateBranch(
   if (input.name !== undefined) patch.name = input.name.trim()
   if (input.code !== undefined) patch.code = input.code?.trim() || null
   if (input.sees_full_catalogue !== undefined) patch.sees_full_catalogue = input.sees_full_catalogue
+  if (input.handles_unassigned_clients !== undefined) patch.handles_unassigned_clients = input.handles_unassigned_clients
   if (input.notify_email !== undefined) patch.notify_email = input.notify_email?.trim() || null
   if (input.notify_locale !== undefined) patch.notify_locale = input.notify_locale || null
 
