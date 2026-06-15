@@ -42,7 +42,11 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'hammer_toe',   type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2hammertoe',            glb: { l: 'hammer_toe_l.glb',      r: 'hammer_toe_r.glb' } },
       { key: 'toe_box',      type: 'mm',  side: 'both',  values: mm1to10,  dataverseKey: 'cr56f_2toebox',               glb: { l: 'toe_box_l.glb',         r: 'toe_box_r.glb' } },
       { key: 'bunionette',   type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2bunionette',           glb: { l: 'bunionette_l.glb',      r: 'bunionette_r.glb' } },
-      { key: 'hallux_v',     type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2halluxvalgus',         glb: { l: 'hallux_valgus_l.glb',   r: 'hallux_valgus_r.glb' } },
+      // NOTE: the hallux_valgus _l/_r GLBs are swapped at source — each shows the
+      // bump on the LATERAL side instead of medial. A render audit (vs the correct
+      // ankle/joint/bunionette models) confirmed this; cross-referencing l→_r and
+      // r→_l puts the bump back on the medial side. (tracker §20.x)
+      { key: 'hallux_v',     type: 'mm',  side: 'both',  values: mm4to10,  dataverseKey: 'cr56f_2halluxvalgus',         glb: { l: 'hallux_valgus_r.glb',   r: 'hallux_valgus_l.glb' } },
       { key: 'depth_fore',   type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2depthtoforepart',      glb: { l: 'depth_forefoot_l.glb',  r: 'depth_forefoot_r.glb' } },
       { key: 'depth_toe',    type: 'mm',  side: 'both',  values: mm2to8,   dataverseKey: 'cr56f_2depthtotoeheel',       glb: { l: 'depth_plantair_l.glb',  r: 'depth_plantair_r.glb' } },
       { key: 'xw_cone',      type: 'mm',  side: 'both',  values: mm1to20,  dataverseKey: 'cr56f_2extrawidthoncone',     glb: { l: 'width_cone_l.glb',      r: 'width_cone_r.glb' } },
