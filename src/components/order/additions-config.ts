@@ -28,6 +28,7 @@ const mm4to10   = [4,6,8,10]
 const mm2to8    = [2,4,6,8]
 const mm1to20   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 const mm1to60   = Array.from({ length: 60 }, (_, i) => i + 1)
+const mm5to25   = Array.from({ length: 21 }, (_, i) => i + 5)
 
 export const SECTIONS: AdditionSection[] = [
   // ── Section 1: Additions ──────────────────────────────────────────────────
@@ -71,7 +72,7 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'toe_puffs',     type: 'option', side: 'both', collapse: true, values: ['Soft','Standard','Hard'], dataverseKey: 'cr56f_toepuffs' },
       { key: 'toe_puffs_rim', type: 'toggle', side: 'both', dataverseKey: 'cr56f_toepuffsrim' },
       { key: 'str_leather',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_stretchleather' },
-      { key: 'instep_front',  type: 'text',   side: 'both', dataverseKey: 'cr56f_instepmoretothefront' },
+      { key: 'instep_front',  type: 'mm',     side: 'both', values: mm5to25, dataverseKey: 'cr56f_instepmoretothefront' },
       { key: 'colour_mod',    type: 'text',   side: 'both', dataverseKey: 'cr56f_colourmodifications' },
       { key: 'pad_tongue',    type: 'mm',     side: 'both', values: mm4to10, dataverseKey: 'cr56f_extrapaddingontongue' },
       // Values mirror the Dataverse global option set cr56f_wpp_zipper (numeric-prefixed
