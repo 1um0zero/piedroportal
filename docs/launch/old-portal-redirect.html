@@ -1,0 +1,46 @@
+<!--
+  ============================================================================
+  OLD POWER PAGES → NEW PORTAL   auto-forwarder  (HEAD-SAFE, post-launch)
+  ============================================================================
+  Replaces the launch countdown (old-portal-countdown.html). Paste this in the
+  Power Pages `headbottom.html` content snippet (renders in <head> on every
+  page), BELOW the Google tag.
+
+  WHY: the countdown sent every visitor to a FIXED root URL, so deep links like
+    /nl-NL/galeria/?gender=979580002&category=1
+  arrived at the new portal stripped of their path + query — landing on the
+  home/login instead of the filtered gallery.
+
+  This forwards the FULL incoming path + query + hash to the new portal, where
+  src/middleware.ts (legacyGaleriaRedirect) translates the legacy
+  `…/galeria?gender=…&category=…` into the new encoded /gallery deep link, with
+  the locale preserved (nl-NL → nl).
+
+  No loop risk: the source host (*.powerappsportals.com) and the destination
+  (portal.piedro.pt) are different origins.
+  ============================================================================
+-->
+<script>
+(function () {
+  // Public production domain — never *.vercel.app, never portal2.
+  var DEST = 'https://portal.piedro.pt';
+
+  // Preserve everything after the origin: /nl-NL/galeria/?gender=…#frag
+  var target = DEST + location.pathname + location.search + location.hash;
+
+  // Tiny holding screen so the jump isn't a blank flash on slow connections.
+  if (document.documentElement) {
+    document.documentElement.innerHTML =
+      '<body style="margin:0;display:flex;height:100vh;align-items:center;' +
+      'justify-content:center;font-family:-apple-system,Segoe UI,Roboto,Arial,' +
+      'sans-serif;background:#f5f4f2;color:#57534e">' +
+      '<div style="text-align:center">' +
+      '<p style="font-size:1.05rem;margin:0 0 .25rem">Doorsturen naar het nieuwe portaal…</p>' +
+      '<p style="font-size:.9rem;color:#a8a29e;margin:0">Redirecting to the new portal…</p>' +
+      '</div></body>';
+  }
+
+  // replace() so the old URL doesn't pollute the browser history / back button.
+  location.replace(target);
+})();
+</script>
