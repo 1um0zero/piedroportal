@@ -35,6 +35,34 @@ function legacyGaleriaRedirect(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(dest)
 }
 
+// Legacy Power Pages locale codes were region-tagged (`nl-NL`, `en-US`, …) and
+// some pages had different slugs than ours. The old-portal forwarder preserves
+// the full incoming path, so a link like `…/nl-NL/Pair-by-Pair/` reaches us with
+// a locale prefix our `as-needed` routing doesn't recognise (→ no translation)
+// and an old slug that doesn't resolve. Normalise the region-tagged locale to
+// our bare locale and remap known legacy slugs.
+const LEGACY_LOCALE_RE = /^[a-z]{2}-[a-z]{2}$/i
+// Old Power Pages page slug (lower-cased, no locale, no trailing slash) → new
+// locale-relative path. `Pair-by-Pair` was the catalogue page = our gallery.
+const LEGACY_PATHS: Record<string, string> = {
+  'pair-by-pair': '/gallery',
+}
+function legacyLocaleRedirect(request: NextRequest): NextResponse | null {
+  const segs = request.nextUrl.pathname.split('/').filter(Boolean)
+  if (segs.length === 0 || !LEGACY_LOCALE_RE.test(segs[0])) return null
+
+  const lang = segs[0].slice(0, 2).toLowerCase()
+  const isLocale = routing.locales.includes(lang as (typeof routing.locales)[number])
+  const prefix = isLocale && lang !== routing.defaultLocale ? `/${lang}` : ''
+
+  const restSlug = segs.slice(1).join('/').replace(/\/+$/, '').toLowerCase()
+  const restPath = LEGACY_PATHS[restSlug] ?? (segs.length > 1 ? `/${segs.slice(1).join('/')}` : '/gallery')
+
+  const dest = new URL(`${prefix}${restPath === '/' ? '' : restPath}` || '/', request.url)
+  dest.search = request.nextUrl.search
+  return NextResponse.redirect(dest)
+}
+
 // Routes requiring authentication (locale-relative)
 // /wishlist is a client-side (localStorage) browse list — viewable without login;
 // ordering from it still gates on login + eligibility in the order flow.
@@ -50,6 +78,10 @@ export async function middleware(request: NextRequest) {
   // Legacy /galeria deep links (piedro.com) → our encoded gallery URL.
   const galeria = legacyGaleriaRedirect(request)
   if (galeria) return galeria
+
+  // Other legacy Power Pages deep links (region-tagged locale + old slug).
+  const legacy = legacyLocaleRedirect(request)
+  if (legacy) return legacy
 
   // Strip locale prefix to get the locale-relative path
   const locales = routing.locales.map((l) => `/${l}`)
