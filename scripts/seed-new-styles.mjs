@@ -22,7 +22,14 @@ const KIDS = '2212,2212K,2213,2213K,2269,2269K,2270,2270K,2272,2272K,2312,2312K,
 const WOMEN = '4400,4571,4621'.split(',')
 const NEW = new Set([...KIDS, ...WOMEN])
 
-const { data: prods } = await sb.from('products').select('id, style_name, section, is_new')
+// Paginate — Supabase caps a single select at 1000 rows.
+const prods = []
+for (let from = 0; ; from += 1000) {
+  const { data } = await sb.from('products').select('id, style_name, section, is_new').order('id').range(from, from + 999)
+  if (!data?.length) break
+  prods.push(...data)
+  if (data.length < 1000) break
+}
 const toTrue = prods.filter(p => NEW.has(p.style_name))
 const toFalse = prods.filter(p => !NEW.has(p.style_name) && p.is_new)
 

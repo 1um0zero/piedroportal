@@ -30,12 +30,13 @@ export type Filters = {
   search: string
   onlyNew: boolean
   onlyWishlist: boolean
+  category: number   // 0 = all; 1..10 = catalogue category
 }
 
 const EMPTY: Filters = {
   closures: [], types: [], colours: [],
   constructions: [], widths: [], sizes: [],
-  search: '', onlyNew: false, onlyWishlist: false,
+  search: '', onlyNew: false, onlyWishlist: false, category: 0,
 }
 
 // Remembers the browse state (section + filters + scroll) so returning from a
@@ -64,6 +65,7 @@ export function applyFilters(
     if (exclude !== 'sizes'         && f.sizes.length > 0
       && !f.sizes.some((s) => s >= p.size_first && s <= p.size_last))                                     return false
     if (f.search && !matchesSearch(p.style_name, f.search))                                                return false
+    if (exclude !== 'category'      && f.category > 0 && p.category !== f.category)                        return false
     if (exclude !== 'onlyNew'       && f.onlyNew && !isNew(p))                                            return false
     // onlyWishlist is applied in the component (needs access to wishlist ids context)
     return true
@@ -122,7 +124,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const FIELDS = [
     'id','style_name','colour_id','picture_name','section',
     'closure','type','color_basic','color_name',
-    'size_first','size_last','size_unit','diabetics','is_new','constructions',
+    'size_first','size_last','size_unit','diabetics','is_new','category','constructions',
   ].join(',')
   const FIELDS_NO_UNIT = FIELDS.replace(',size_unit', '')
 
@@ -173,10 +175,14 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     }
 
     const q = new URLSearchParams(window.location.search).get('q')
-    const urlSection = (decodeQuery(q).section || '').toUpperCase() as Section
+    const dq = decodeQuery(q)
+    const urlSection = (dq.section || '').toUpperCase() as Section
     if (SECTIONS.includes(urlSection)) {
       resolved = urlSection
       if (urlSection !== section) { setSection(urlSection); fetchIfNeeded(urlSection) }
+      // Deep link may carry a catalogue category and/or search (piedro.com links).
+      const cat = parseInt(dq.category || '0', 10)
+      if (cat > 0 || dq.search) setFilters((f) => ({ ...f, category: cat > 0 ? cat : f.category, search: dq.search || f.search }))
     } else {
       let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
       try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
@@ -194,7 +200,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
     // Exclusive collection deep link (e.g. Livingston → ?q={exclusive:'LIV'}).
     // Adopt it (or clear a stale one) so a fresh /gallery entry resets it.
-    const urlExclusive = (decodeQuery(q).exclusive || '').toUpperCase()
+    const urlExclusive = (dq.exclusive || '').toUpperCase()
 
     // Adopt the resolved section as the header's baseline, then enable the
     // context→page bridge (so a stale persisted context can't override it).
@@ -350,7 +356,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
-    || filters.search || filters.onlyNew || filters.onlyWishlist || !!exclusiveFilter
+    || filters.search || filters.onlyNew || filters.onlyWishlist || filters.category > 0 || !!exclusiveFilter
 
   const [showWishlist, setShowWishlist] = useState(false)
 

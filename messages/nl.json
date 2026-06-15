@@ -160,7 +160,18 @@
       "searchHint": "Zoek op modelnummer. Gebruik * als jokerteken: 2* = begint met 2, *K = eindigt op K.",
       "all": "Filters wissen",
       "new": "Nieuw",
-      "searchWild": "Zoek — 2* = 2023, 2188…"
+      "searchWild": "Zoek — 2* = 2023, 2188…",
+      "category": "Categorie",
+      "cat_1": "Sportief",
+      "cat_2": "Bikerboots",
+      "cat_3": "Klassiek",
+      "cat_4": "Diabetische & gevoelige voet",
+      "cat_5": "First Steps",
+      "cat_6": "Flexibel",
+      "cat_7": "High & Mid Tops",
+      "cat_8": "Next Steps",
+      "cat_9": "Sandalen",
+      "cat_10": "Sneakers"
     },
     "badges": {
       "diabetic": "Diabetisch"

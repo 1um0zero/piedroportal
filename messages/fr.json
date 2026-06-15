@@ -160,7 +160,18 @@
       "searchHint": "Recherche par numéro de modèle. Utilisez * comme joker : 2* = commence par 2, *K = se termine par K.",
       "all": "Effacer les filtres",
       "new": "Nouveau",
-      "searchWild": "Recherche — 2* = 2023, 2188…"
+      "searchWild": "Recherche — 2* = 2023, 2188…",
+      "category": "Catégorie",
+      "cat_1": "Sportif",
+      "cat_2": "Bottes biker",
+      "cat_3": "Classique",
+      "cat_4": "Pied diabétique & sensible",
+      "cat_5": "First Steps",
+      "cat_6": "Flexible",
+      "cat_7": "High & Mid Tops",
+      "cat_8": "Next Steps",
+      "cat_9": "Sandales",
+      "cat_10": "Baskets"
     },
     "badges": {
       "diabetic": "Diabétique"

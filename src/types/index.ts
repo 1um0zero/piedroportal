@@ -37,6 +37,7 @@ export interface Product {
   constructions: Construction[]
   new_until: string | null  // DEPRECATED: superseded by is_new (kept for back-compat)
   is_new?: boolean  // editorial NEW flag; curated in the back-office product list
+  category?: number | null  // catalogue category 1..10 (Dataverse cr56f_category)
   adds_exclude: string | null  // e.g. "#cr56f_zipper" — additions to hide for this product
   exclusive: string | null
   is_stock?: boolean  // STOCK product (buy-as-is); see docs/PROJECT-TRACKER.md §23

@@ -160,7 +160,18 @@
       "searchHint": "Suche nach Modellnummer. * als Platzhalter: 2* = beginnt mit 2, *K = endet auf K.",
       "all": "Filter löschen",
       "new": "Neu",
-      "searchWild": "Suche — 2* = 2023, 2188…"
+      "searchWild": "Suche — 2* = 2023, 2188…",
+      "category": "Kategorie",
+      "cat_1": "Sportlich",
+      "cat_2": "Bikerstiefel",
+      "cat_3": "Klassisch",
+      "cat_4": "Diabetischer & sensibler Fuß",
+      "cat_5": "First Steps",
+      "cat_6": "Flexibel",
+      "cat_7": "High & Mid Tops",
+      "cat_8": "Next Steps",
+      "cat_9": "Sandalen",
+      "cat_10": "Sneaker"
     },
     "badges": {
       "diabetic": "Diabetisch"

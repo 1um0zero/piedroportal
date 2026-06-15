@@ -369,6 +369,17 @@ export default function GalleryFilters({
         <div className="border border-stone-200 rounded-xl bg-white px-5 py-4 space-y-4"
           style={{ boxShadow: 'var(--shadow-card)' }}>
 
+          {/* Active catalogue category (from a piedro.com deep link) — removable */}
+          {filters.category > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">{t('category')}</span>
+              <button type="button" onClick={() => setFilters((f) => ({ ...f, category: 0 }))}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-white text-xs font-medium hover:bg-gold-dark transition-colors">
+                {t(`cat_${filters.category}`)}<span aria-hidden className="text-white/80">✕</span>
+              </button>
+            </div>
+          )}
+
           {/* Closure chips */}
           {optClosures.length > 0 && (
             <SquareChips label={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} renderLabel={tr} />

@@ -160,7 +160,18 @@
       "searchHint": "Search by model number. Use * as a wildcard: 2* = starts with 2, *K = ends with K.",
       "all": "Clear filters",
       "new": "New",
-      "searchWild": "Search — 2* = 2023, 2188…"
+      "searchWild": "Search — 2* = 2023, 2188…",
+      "category": "Category",
+      "cat_1": "Sportive",
+      "cat_2": "Biker boots",
+      "cat_3": "Classic",
+      "cat_4": "Diabetic & Sensitive Foot",
+      "cat_5": "First Steps",
+      "cat_6": "Flexible",
+      "cat_7": "High & Mid Tops",
+      "cat_8": "Next Steps",
+      "cat_9": "Sandals",
+      "cat_10": "Trainers"
     },
     "badges": {
       "diabetic": "Diabetic"
