@@ -4,15 +4,16 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
+import { getSettings } from '@/lib/settings'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
 // Base select — always works
-const SELECT_BASE = `id, status, unit, quantity, reference_customer, patient_name, clinician,
+const SELECT_BASE = `id, user_id, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   diff_sizes_pairs, additions, comments, created_at, pdf_url,
   products(id, colour_id, color_name, closure, picture_name, style_name),
-  companies(id, name)`
+  companies(id, name, notify_cc)`
 
 // Extended select — requires SQL migrations to have been run
 const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state`
@@ -54,6 +55,14 @@ export default async function AdminOrderDetailPage({ params }: Props) {
     ? await getOrderNeighbors(service, { id: order.id, created_at: order.created_at })
     : { prevId: null, nextId: null }
 
+  // Client contact + order desk address, for the "email client" shortcut. Cc the
+  // desk so the thread stays with Piedro; To the ordering user (+ company Cc).
+  const { data: orderer } = order.user_id
+    ? await service.from('profiles').select('email').eq('id', order.user_id).single()
+    : { data: null }
+  const deskEmail = (await getSettings(['order_notify_email'])).order_notify_email ?? ''
+  const clientCc = (order as { companies?: { notify_cc?: string } }).companies?.notify_cc ?? ''
+
   return (
     <div>
       <div className="max-w-4xl mx-auto px-6 pt-6">
@@ -62,7 +71,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           ← {(await getTranslations('nav'))('orders')}
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={true} prevId={prevId} nextId={nextId} />
+      <OrderDetailView order={order} isAdmin={true} prevId={prevId} nextId={nextId}
+        clientEmail={orderer?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
     </div>
   )
 }

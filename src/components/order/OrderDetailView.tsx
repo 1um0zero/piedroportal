@@ -23,9 +23,10 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
+export default function OrderDetailView({ order, isAdmin, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   order: any; isAdmin: boolean; prevId?: string | null; nextId?: string | null
+  clientEmail?: string; clientCc?: string; deskEmail?: string
 }) {
   const router = useRouter()
   const locale = useLocale()
@@ -72,6 +73,19 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
 
   // Translate targets: the viewer's locale first, then EN/PT as quick fallbacks.
   const transTargets = Array.from(new Set<TransLang>([locale as TransLang, 'en', 'pt']))
+
+  // "Email client" shortcut: opens the staff member's mail client pre-addressed to
+  // the orderer (Cc the order desk + company), referencing the Piedro Order so a
+  // question about this order can go out in one click. No patient data in subject.
+  const emailRef = (piedroId || order.reference_customer || order.id?.slice(0, 8)) ?? ''
+  const mailtoCc = [deskEmail, clientCc].map(s => (s ?? '').trim()).filter(Boolean).join(',')
+  const mailtoHref = clientEmail
+    ? `mailto:${encodeURIComponent(clientEmail)}?` + [
+        `subject=${encodeURIComponent(tOrder('email_client_subject', { ref: emailRef }))}`,
+        mailtoCc ? `cc=${encodeURIComponent(mailtoCc)}` : '',
+        `body=${encodeURIComponent(tOrder('email_client_body', { ref: emailRef }))}`,
+      ].filter(Boolean).join('&')
+    : null
 
   async function handleSave(overrides?: Partial<Parameters<typeof updateOrderAdminAction>[1]>) {
     setSaving(true); setMsg(''); setMsgErr(false)
@@ -148,6 +162,16 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${PORTAL_STATUS_BADGE[order.status] ?? 'bg-stone-100 text-stone-500'}`}>
               {PORTAL_STATUS_LABEL[order.status] ?? order.status}
             </span>
+          )}
+          {isAdmin && mailtoHref && (
+            <a href={mailtoHref}
+              title={clientEmail}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-300 rounded-lg hover:border-gold hover:text-gold-dark transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
+              </svg>
+              {tOrder('email_client')}
+            </a>
           )}
           {order.pdf_url ? (
             <a href={order.pdf_url} target="_blank" rel="noopener noreferrer"

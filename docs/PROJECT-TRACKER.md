@@ -541,3 +541,10 @@ updated_at                   comments                     size
       decide import or ignore. · 👤
 - [ ] **26.10** first_name/last_name in DB but not displayed (UI uses full_name). · 🟡 🤖
 - [ ] **26.11** ZSM additions special rules (orphan zsm_* i18n keys, no code logic yet). · 🟡 👥
+- [ ] **26.12** **"Email client" from order detail — PDF attachment / server-send (DEFERRED).** Shipped a
+      simple `mailto:` button on the admin order detail (opens staff Outlook prefilled: To=orderer,
+      Cc=desk+company, subject=Piedro Order #, short body). Deliberately NOT server-sending and NOT
+      attaching the order PDF: `mailto:` cannot attach files, and a portal-sent variant opens a
+      "Pandora's box" of email tracking + split history (some threads in Outlook, some in the portal).
+      Revisit only if a real need for guaranteed PDF attachment / unified tracking emerges.
+      · 👥 decision (Jorge 2026-06-15)
