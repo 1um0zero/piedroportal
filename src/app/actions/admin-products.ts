@@ -333,9 +333,12 @@ export async function deleteProductImageAction(
   const { error: rmErr } = await service.storage.from('products').remove([storageName])
   if (rmErr) return { error: rmErr.message }
 
-  // If the main image was the product's picture_name, clear it.
+  // If the main image was the product's picture_name, clear it. The column is
+  // NOT NULL, so use '' (falsy → treated as "no image" by the gallery/cards).
   if (index === 1 && prod?.picture_name === storageName) {
-    await service.from('products').update({ picture_name: null }).eq('colour_id', colourId)
+    const { error: dbErr } = await service
+      .from('products').update({ picture_name: '' }).eq('colour_id', colourId)
+    if (dbErr) return { error: dbErr.message }
   }
 
   revalidatePath('/admin/products')
