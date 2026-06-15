@@ -11,10 +11,10 @@ export default async function GrandOpeningPage() {
   await requirePiedroAdminPage()
   const service = createServiceClient()
 
-  const { count: migratedOrders } = await service
-    .from('orders')
-    .select('id', { count: 'exact', head: true })
-    .not('dataverse_id', 'is', null)
+  const [{ count: migratedOrders }, { count: users }] = await Promise.all([
+    service.from('orders').select('id', { count: 'exact', head: true }).not('dataverse_id', 'is', null),
+    service.from('profiles').select('id', { count: 'exact', head: true }),
+  ])
 
-  return <GrandOpening migratedOrders={migratedOrders ?? 0} />
+  return <GrandOpening migratedOrders={migratedOrders ?? 0} users={users ?? 0} />
 }

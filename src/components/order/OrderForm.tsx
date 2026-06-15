@@ -9,7 +9,7 @@ import AdditionsForm from './AdditionsForm'
 import { emptyAdditions } from './additions-config'
 import OrderSummary from './OrderSummary'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
-import { displayWidth } from '@/lib/width-display'
+import { displayWidth, sortWidths } from '@/lib/width-display'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 
 
@@ -276,8 +276,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   }, [unit])
 
   const widthsForConstrution = (constr: string) => {
-    if (!constr) return [...new Set(constructions.flatMap(c => c.widths))]
-    return constructions.find(c => c.construction === constr)?.widths ?? []
+    if (!constr) return sortWidths([...new Set(constructions.flatMap(c => c.widths))])
+    return sortWidths(constructions.find(c => c.construction === constr)?.widths ?? [])
   }
   const widthsL = widthsForConstrution(constrLeft)
   const widthsR = widthsForConstrution(mirror ? constrLeft : constrRight)

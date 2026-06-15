@@ -9,7 +9,7 @@ import LoginModal from '@/components/auth/LoginModal'
 import NvosNotice from '@/components/stock/NvosNotice'
 import { isNew } from '@/components/gallery/GalleryPage'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
-import { displayWidth } from '@/lib/width-display'
+import { displayWidth, sortWidths } from '@/lib/width-display'
 import { productImageUrl } from '@/lib/products/image-url'
 import type { Product, Locale } from '@/types'
 
@@ -138,7 +138,7 @@ export default function ProductDetail({ product, siblings }: Props) {
       const key = [...c.widths].sort().join('|')
       const g = groups.get(key)
       if (g) g.names.push(c.construction)
-      else groups.set(key, { names: [c.construction], widths: c.widths })
+      else groups.set(key, { names: [c.construction], widths: sortWidths(c.widths) })
     }
     return [...groups.values()]
   }, [product.constructions])

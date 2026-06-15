@@ -13,6 +13,7 @@ import { decodeQuery } from '@/lib/query-cipher'
 import { matchesSearch } from '@/lib/search'
 import { useGallerySection } from '@/contexts/GallerySectionContext'
 import { exclusiveTokens } from '@/lib/exclusive'
+import { compareWidths } from '@/lib/width-display'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -87,25 +88,6 @@ function availableSizes(products: Product[], wholeOnly = false): number[] {
     if (products.some((p) => r >= p.size_first && r <= p.size_last)) out.push(r)
   }
   return out
-}
-
-// ── Width sort: numerics first → letters ───────────────────────────────────
-// S,M,L read naturally as Small→Medium→Large, not alphabetically (L,M,S).
-// Rank them by size so chips always show S M L. (No locale translation —
-// widths are S,M,L in all languages, client decision 2026-06-11.)
-const SIZE_RANK: Record<string, number> = { S: 1, M: 2, L: 3 }
-function parseWidthNum(s: string) {
-  return parseFloat(s.replace('½', '.5').replace(/(\d)1\/2/, '$1.5'))
-}
-function sortWidths(a: string, b: string): number {
-  const numA = /^\d/.test(a), numB = /^\d/.test(b)
-  if (numA !== numB) return numA ? -1 : 1
-  if (numA && numB) return parseWidthNum(a) - parseWidthNum(b)
-  const rA = SIZE_RANK[a], rB = SIZE_RANK[b]
-  if (rA && rB) return rA - rB   // S < M < L
-  if (rA) return -1
-  if (rB) return 1
-  return a.localeCompare(b)
 }
 
 // ── "NEW" helper ──────────────────────────────────────────────────────────────
@@ -252,7 +234,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         .filter((c) => filters.constructions.length === 0 || filters.constructions.includes(c.construction))
         .flatMap((c) => c.widths ?? [])))]
     .filter(w => w && w !== '--' && w !== '-')
-    .sort(sortWidths), [forWidths, filters.constructions])
+    .sort(compareWidths), [forWidths, filters.constructions])
   const optSizes         = useMemo(() => availableSizes(forSizes, section === 'KIDS'), [forSizes, section])
   // EU and UK scales are numerically different (UK 3–13.5, EU 15–48) — split the
   // size chips by unit so the filter never mixes them (size_unit, migration 015).

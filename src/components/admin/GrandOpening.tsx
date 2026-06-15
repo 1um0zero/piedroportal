@@ -28,7 +28,7 @@ function Champagne() {
   )
 }
 
-export default function GrandOpening({ migratedOrders }: { migratedOrders: number }) {
+export default function GrandOpening({ migratedOrders, users }: { migratedOrders: number; users: number }) {
   const t = useTranslations('grandOpening')
 
   return (
@@ -48,9 +48,15 @@ export default function GrandOpening({ migratedOrders }: { migratedOrders: numbe
         <p className="text-sm text-stone-500 leading-relaxed mb-4">{t('live_body')}</p>
         <p className="text-base text-stone-700 font-medium leading-relaxed">{t('live_moment')}</p>
 
-        <div className="mt-8 pt-6 border-t border-stone-100">
-          <p className="text-3xl font-semibold text-stone-800">{migratedOrders}</p>
-          <p className="text-xs text-stone-500 mt-0.5">{t('live_migrated')}</p>
+        <div className="mt-8 pt-6 border-t border-stone-100 grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-3xl font-semibold text-stone-800">{migratedOrders}</p>
+            <p className="text-xs text-stone-500 mt-0.5">{t('live_migrated')}</p>
+          </div>
+          <div>
+            <p className="text-3xl font-semibold text-stone-800">{users}</p>
+            <p className="text-xs text-stone-500 mt-0.5">{t('live_users')}</p>
+          </div>
         </div>
       </div>
     </div>
