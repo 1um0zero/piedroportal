@@ -6,7 +6,8 @@ import { Link } from '@/i18n/navigation'
 import { saveSettingsAction } from '@/app/[locale]/admin/settings/actions'
 
 type Cfg = {
-  order_notify_email?: string; admin_notify_email?: string; email_from?: string; notify_locale?: string
+  order_notify_email?: string; admin_notify_email?: string; chat_notify_email?: string
+  contact_email?: string; broadcast_reply_to?: string; email_from?: string; notify_locale?: string
   dispatch_days_normal?: string; dispatch_days_urgent?: string; dispatch_show_all?: string
 }
 
@@ -16,6 +17,9 @@ const LOCALES = ['en', 'nl', 'fr', 'de'] as const
 const FIELDS = [
   { key: 'order_notify_email', labelKey: 'order_notify_email', helpKey: 'order_notify_help', type: 'text' },
   { key: 'admin_notify_email', labelKey: 'admin_notify_email', helpKey: 'admin_notify_help', type: 'text' },
+  { key: 'chat_notify_email',  labelKey: 'chat_notify_email',  helpKey: 'chat_notify_help',  type: 'text' },
+  { key: 'contact_email',      labelKey: 'contact_email',      helpKey: 'contact_help',       type: 'text' },
+  { key: 'broadcast_reply_to', labelKey: 'broadcast_reply_to', helpKey: 'broadcast_reply_help', type: 'text' },
   { key: 'email_from',         labelKey: 'email_from',         helpKey: 'email_from_help',   type: 'text' },
 ] as const
 

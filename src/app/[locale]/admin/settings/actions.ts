@@ -4,7 +4,8 @@ import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import { setSettings } from '@/lib/settings'
 
-const ALLOWED = ['order_notify_email', 'admin_notify_email', 'email_from', 'notify_locale',
+const ALLOWED = ['order_notify_email', 'admin_notify_email', 'chat_notify_email', 'contact_email',
+  'broadcast_reply_to', 'email_from', 'notify_locale',
   'dispatch_days_normal', 'dispatch_days_urgent'] as const
 
 export async function saveSettingsAction(
@@ -17,7 +18,8 @@ export async function saveSettingsAction(
   const entries: Record<string, string> = {}
   for (const key of ALLOWED) entries[key] = (formData.get(key) as string ?? '').trim()
   // Notify fields accept multiple addresses — normalize separators and validate each.
-  for (const key of ['order_notify_email', 'admin_notify_email'] as const) {
+  for (const key of ['order_notify_email', 'admin_notify_email', 'chat_notify_email',
+    'contact_email', 'broadcast_reply_to'] as const) {
     const list = entries[key].split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
     const bad = list.find(e => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
     if (bad) return { error: `Invalid email address: ${bad}` }

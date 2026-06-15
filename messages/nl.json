@@ -59,7 +59,13 @@
     "dispatch_days_urgent": "Werkdagen — urgent",
     "dispatch_show_all": "Toon de verzendteller aan alle gebruikers (anders alleen staf/admin)",
     "dispatch_help": "Werkdagen toegevoegd aan de besteldatum, met overslaan van weekends, Portugese feestdagen en fabriekssluitingen.",
-    "dispatch_calendar_link": "Sluitingskalender fabriek"
+    "dispatch_calendar_link": "Sluitingskalender fabriek",
+    "chat_notify_email": "Chat-meldingen e-mail",
+    "chat_notify_help": "Waar toestemming + gemarkeerde antwoorden van de assistent naartoe gaan. Valt terug op het nieuwe-gebruiker-adres. Komma's toegestaan.",
+    "contact_email": "Openbaar contact e-mailadres",
+    "contact_help": "Door de assistent aan klanten getoond om Piedro te bereiken. Eerste adres wordt gebruikt. Nooit verzonnen.",
+    "broadcast_reply_to": "Antwoordadres campagnes",
+    "broadcast_reply_help": "Waar antwoorden op massamailcampagnes worden afgeleverd. Meestal het openbare contactadres."
   },
   "emails": {
     "subject_internal": "Nieuwe Piedro-bestelling — {ref}",

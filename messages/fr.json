@@ -59,7 +59,13 @@
     "dispatch_days_urgent": "Jours ouvrés — urgent",
     "dispatch_show_all": "Afficher le compteur d’expédition à tous les utilisateurs (sinon staff/admin uniquement)",
     "dispatch_help": "Jours ouvrés ajoutés à la date de commande, hors week-ends, jours fériés portugais et fermetures d’usine.",
-    "dispatch_calendar_link": "Calendrier de fermeture de l’usine"
+    "dispatch_calendar_link": "Calendrier de fermeture de l’usine",
+    "chat_notify_email": "E-mail des alertes du chat",
+    "chat_notify_help": "Où sont envoyés le consentement + les réponses signalées de l'assistant. À défaut, l'adresse nouvel-utilisateur. Virgules autorisées.",
+    "contact_email": "E-mail de contact public",
+    "contact_help": "Affiché aux clients par l'assistant pour joindre Piedro. La première adresse est utilisée. Jamais inventée.",
+    "broadcast_reply_to": "Répondre-à des campagnes",
+    "broadcast_reply_help": "Où sont reçues les réponses aux campagnes d'e-mailing. Généralement l'adresse de contact publique."
   },
   "emails": {
     "subject_internal": "Nouvelle commande Piedro — {ref}",

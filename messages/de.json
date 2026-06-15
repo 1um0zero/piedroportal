@@ -59,7 +59,13 @@
     "dispatch_days_urgent": "Arbeitstage — dringend",
     "dispatch_show_all": "Versandzähler allen Nutzern anzeigen (sonst nur Staff/Admin)",
     "dispatch_help": "Arbeitstage ab dem Bestelldatum, ohne Wochenenden, portugiesische Feiertage und Werksschließungen.",
-    "dispatch_calendar_link": "Werks-Schließkalender"
+    "dispatch_calendar_link": "Werks-Schließkalender",
+    "chat_notify_email": "Chat-Benachrichtigungs-E-Mail",
+    "chat_notify_help": "Wohin Zustimmung + markierte Antworten des Assistenten gesendet werden. Fällt auf die Neu-Benutzer-Adresse zurück. Kommas erlaubt.",
+    "contact_email": "Öffentliche Kontakt-E-Mail",
+    "contact_help": "Vom Assistenten Kunden gezeigt, um Piedro zu erreichen. Erste Adresse wird verwendet. Niemals erfunden.",
+    "broadcast_reply_to": "Antwort-an für Kampagnen",
+    "broadcast_reply_help": "Wohin Antworten auf Massen-E-Mail-Kampagnen geliefert werden. Meist die öffentliche Kontaktadresse."
   },
   "emails": {
     "subject_internal": "Neue Piedro-Bestellung — {ref}",

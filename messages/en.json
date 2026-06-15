@@ -59,7 +59,13 @@
     "dispatch_days_urgent": "Working days — urgent",
     "dispatch_show_all": "Show the dispatch counter to all users (otherwise staff/admin only)",
     "dispatch_help": "Working days added to the order date, skipping weekends, Portuguese holidays and factory closures.",
-    "dispatch_calendar_link": "Factory closure calendar"
+    "dispatch_calendar_link": "Factory closure calendar",
+    "chat_notify_email": "Chat alerts email",
+    "chat_notify_help": "Where assistant consent + flagged-answer alerts are emailed. Falls back to the new-user address. Commas allowed.",
+    "contact_email": "Public contact email",
+    "contact_help": "Shown to clients by the assistant when they need to reach Piedro. First address is used. Never invented.",
+    "broadcast_reply_to": "Campaign reply-to",
+    "broadcast_reply_help": "Where replies to mass email campaigns are delivered. Usually the public contact address."
   },
   "emails": {
     "subject_internal": "New Piedro order — {ref}",
