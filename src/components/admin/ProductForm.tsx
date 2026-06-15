@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { createProduct, updateProduct, type ProductInput } from '@/app/actions/admin-products'
@@ -36,6 +36,37 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls = 'w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none'
+
+/**
+ * Decimal input that accepts both "," and "." as the separator (a plain
+ * type="number" forces the OS/locale separator, so on a NL machine "." was
+ * rejected and you had to use the spinner). Shows the value with a dot, selects
+ * its content on focus (type-to-replace), and commits a parsed number on change.
+ */
+function DecimalInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const [draft, setDraft] = useState<string>(value ? String(value) : '')
+  // Resync when the external value changes and isn't just our own draft.
+  useEffect(() => {
+    if (parseFloat(draft.replace(',', '.')) !== value) setDraft(value ? String(value) : '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      className={inputCls}
+      value={draft}
+      onFocus={e => e.target.select()}
+      onChange={e => {
+        // Keep digits + one separator; normalise comma → dot for display.
+        const cleaned = e.target.value.replace(/[^\d.,]/g, '').replace(',', '.')
+        setDraft(cleaned)
+        const n = parseFloat(cleaned)
+        onChange(Number.isFinite(n) ? n : 0)
+      }}
+    />
+  )
+}
 
 export default function ProductForm({ product, companies }: { product?: Product; companies?: ExclusiveCompany[] }) {
   const router = useRouter()
@@ -141,12 +172,10 @@ export default function ProductForm({ product, companies }: { product?: Product;
             <input className={inputCls} value={f.info ?? ''} onChange={e => set('info', e.target.value || null)} />
           </Field>
           <Field label={t('f_size_first')}>
-            <input type="number" step="0.5" className={inputCls} value={f.size_first}
-              onChange={e => set('size_first', parseFloat(e.target.value) || 0)} />
+            <DecimalInput value={f.size_first} onChange={v => set('size_first', v)} />
           </Field>
           <Field label={t('f_size_last')}>
-            <input type="number" step="0.5" className={inputCls} value={f.size_last}
-              onChange={e => set('size_last', parseFloat(e.target.value) || 0)} />
+            <DecimalInput value={f.size_last} onChange={v => set('size_last', v)} />
           </Field>
           <Field label={t('f_adds_exclude')}>
             <input className={inputCls} value={f.adds_exclude ?? ''} onChange={e => set('adds_exclude', e.target.value)} />
