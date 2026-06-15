@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import {
   updateBranch, deleteBranch, setBranchModel, removeBranchModel, assignUserBranch,
+  addBranchCompany, removeBranchCompany, addBranchAdmin, removeBranchAdmin,
 } from '@/app/actions/admin-branches'
 import type { Branch } from '@/types'
 
@@ -16,14 +17,26 @@ export type BranchUser = {
   branch_id: string | null
 }
 
+export type BranchCompanyOption = {
+  id: string
+  name: string
+  erp_code: string
+}
+
 type Props = {
   branch: Branch
   allModels: string[]
   assignedModels: string[]
   users: BranchUser[]
+  allCompanies: BranchCompanyOption[]
+  assignedCompanyIds: string[]
+  branchAdminIds: string[]
 }
 
-export default function BranchDetail({ branch, allModels, assignedModels, users }: Props) {
+export default function BranchDetail({
+  branch, allModels, assignedModels, users,
+  allCompanies, assignedCompanyIds, branchAdminIds,
+}: Props) {
   const t = useTranslations('admin.branches')
   const tc = useTranslations('admin.common')
   const router = useRouter()
@@ -94,6 +107,55 @@ export default function BranchDetail({ branch, allModels, assignedModels, users 
     const res = await assignUserBranch(userId, toBranch)
     setBusyStaff(null)
     if (!res.error) setStaffBranch(prev => new Map(prev).set(userId, toBranch))
+  }
+
+  // ── Clients (companies) ───────────────────────────────────────────────────────
+  const [clients, setClients] = useState<Set<string>>(new Set(assignedCompanyIds))
+  const [clientQ, setClientQ] = useState('')
+  const [busyClient, setBusyClient] = useState<string | null>(null)
+
+  const assignedClients = useMemo(
+    () => allCompanies.filter(c => clients.has(c.id)), [allCompanies, clients],
+  )
+  const assignableClients = useMemo(() => {
+    const needle = clientQ.trim().toLowerCase()
+    return allCompanies.filter(c =>
+      !clients.has(c.id) &&
+      (!needle || c.name.toLowerCase().includes(needle) || c.erp_code.toLowerCase().includes(needle)))
+  }, [allCompanies, clients, clientQ])
+
+  async function addClient(companyId: string) {
+    setBusyClient(companyId)
+    const res = await addBranchCompany(branch.id, companyId)
+    setBusyClient(null)
+    if (!res.error) { setClients(prev => new Set(prev).add(companyId)); setClientQ('') }
+  }
+  async function removeClient(companyId: string) {
+    setBusyClient(companyId)
+    const res = await removeBranchCompany(branch.id, companyId)
+    setBusyClient(null)
+    if (!res.error) setClients(prev => { const n = new Set(prev); n.delete(companyId); return n })
+  }
+
+  // ── Branch admins (N:N) ───────────────────────────────────────────────────────
+  const [admins, setAdmins] = useState<Set<string>>(new Set(branchAdminIds))
+  const [addAdminId, setAddAdminId] = useState('')
+  const [busyAdmin, setBusyAdmin] = useState<string | null>(null)
+
+  const adminUsers = useMemo(() => users.filter(u => admins.has(u.id)), [users, admins])
+  const assignableAdmins = useMemo(() => users.filter(u => !admins.has(u.id)), [users, admins])
+
+  async function addAdmin(userId: string) {
+    setBusyAdmin(userId)
+    const res = await addBranchAdmin(branch.id, userId)
+    setBusyAdmin(null)
+    if (!res.error) { setAdmins(prev => new Set(prev).add(userId)); setAddAdminId('') }
+  }
+  async function removeAdmin(userId: string) {
+    setBusyAdmin(userId)
+    const res = await removeBranchAdmin(branch.id, userId)
+    setBusyAdmin(null)
+    if (!res.error) setAdmins(prev => { const n = new Set(prev); n.delete(userId); return n })
   }
 
   return (
@@ -210,6 +272,84 @@ export default function BranchDetail({ branch, allModels, assignedModels, users 
             className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">{tc('add')}</button>
         </div>
         <p className="text-xs text-stone-400">{t('staff_role_hint')}</p>
+      </section>
+
+      {/* Clients (companies this branch's admins may order/view on behalf of) */}
+      <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('clients')}</h2>
+          <p className="text-xs text-stone-400">{t('clients_hint')} · {t('selected_n', { n: clients.size })}</p>
+        </div>
+
+        {assignedClients.length === 0 ? (
+          <p className="text-sm text-stone-400">{t('no_clients')}</p>
+        ) : (
+          <div className="divide-y divide-stone-50">
+            {assignedClients.map(c => (
+              <div key={c.id} className="flex items-center gap-3 py-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-800 truncate">{c.name}</p>
+                  {c.erp_code && <p className="text-xs text-stone-400 truncate font-mono">{c.erp_code}</p>}
+                </div>
+                <button onClick={() => removeClient(c.id)} disabled={busyClient === c.id}
+                  className="text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-40">{tc('remove')}</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 pt-2">
+          <input value={clientQ} onChange={e => setClientQ(e.target.value)} placeholder={t('search_clients')}
+            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none" />
+        </div>
+        {clientQ.trim() && (
+          <div className="max-h-64 overflow-y-auto rounded-lg border border-stone-100 divide-y divide-stone-50">
+            {assignableClients.slice(0, 50).map(c => (
+              <button key={c.id} type="button" onClick={() => addClient(c.id)} disabled={busyClient === c.id}
+                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-stone-50 disabled:opacity-40">
+                <span className="flex-1 min-w-0 truncate text-sm text-stone-700">{c.name}</span>
+                {c.erp_code && <span className="text-xs text-stone-400 font-mono">{c.erp_code}</span>}
+                <span className="text-gold text-sm font-semibold">{tc('add')}</span>
+              </button>
+            ))}
+            {assignableClients.length === 0 && <p className="px-3 py-4 text-sm text-stone-400">{t('no_clients_found')}</p>}
+          </div>
+        )}
+      </section>
+
+      {/* Branch admins (may create/view orders for the branch's clients) */}
+      <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
+        <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('branch_admins')}</h2>
+
+        {adminUsers.length === 0 ? (
+          <p className="text-sm text-stone-400">{t('no_branch_admins')}</p>
+        ) : (
+          <div className="divide-y divide-stone-50">
+            {adminUsers.map(u => (
+              <div key={u.id} className="flex items-center gap-3 py-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-800 truncate">{u.full_name || u.email}</p>
+                  <p className="text-xs text-stone-400 truncate">{u.email}</p>
+                </div>
+                <button onClick={() => removeAdmin(u.id)} disabled={busyAdmin === u.id}
+                  className="text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-40">{tc('remove')}</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 pt-2">
+          <select value={addAdminId} onChange={e => setAddAdminId(e.target.value)}
+            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none">
+            <option value="">{t('add_branch_admin_placeholder')}</option>
+            {assignableAdmins.map(u => (
+              <option key={u.id} value={u.id}>{(u.full_name || u.email)}</option>
+            ))}
+          </select>
+          <button onClick={() => { if (addAdminId) addAdmin(addAdminId) }} disabled={!addAdminId || busyAdmin === addAdminId}
+            className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40">{tc('add')}</button>
+        </div>
+        <p className="text-xs text-stone-400">{t('branch_admins_hint')}</p>
       </section>
     </div>
   )

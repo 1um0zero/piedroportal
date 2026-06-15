@@ -119,7 +119,7 @@ export default function ProductDetail({ product, siblings }: Props) {
   const tn = useTranslations('nav')
   const ts = useTranslations('stock')
   const locale = useLocale() as Locale
-  const { hasCompany, isLoggedIn } = useAuth()
+  const { canOrder, isLoggedIn } = useAuth()
   const user = isLoggedIn
   const { ids, toggle }     = useWishlist()
   const [showLogin, setShowLogin] = useState(false)
@@ -233,7 +233,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                  text-gold font-semibold text-sm hover:bg-gold hover:text-white transition-all">
       {ts('loginCta')}
     </button>
-  ) : !hasCompany ? (
+  ) : !canOrder ? (
     <div className="inline-flex items-center gap-2 px-8 py-3 rounded-xl
                     bg-stone-100 text-stone-400 font-medium text-sm">
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

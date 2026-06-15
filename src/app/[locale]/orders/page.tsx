@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
+import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import { attachOrderExtras } from '@/lib/order-tracking'
 import { getSettings } from '@/lib/settings'
@@ -43,9 +44,14 @@ export default async function OrdersRoute({ searchParams }: Props) {
   // Piedro admins go to the back-office orders view
   if (isPiedroAdmin) redirect('/admin/orders')
 
+  // Companies the user may see orders for as a branch admin (clients of the
+  // branch office(s) they manage). A branch admin without a personal company is
+  // NOT "pending approval" — they reach the list through these.
+  const branchAdminCompanyIds = await getBranchAdminCompanyIds(user.id)
+
   // Check if user has any company associated (via user_companies table)
   const userHasCompany = await hasAnyCompany(user.id)
-  if (!userHasCompany) {
+  if (!userHasCompany && branchAdminCompanyIds.length === 0) {
     const t = await getTranslations('auth')
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center space-y-5">
@@ -60,9 +66,12 @@ export default async function OrdersRoute({ searchParams }: Props) {
     )
   }
 
-  // Get companies where user is admin (empty array if not admin of any)
+  // Get companies where user is admin (empty array if not admin of any), merged
+  // with the branch-admin client companies. Any of these widens the view from
+  // "own orders only" to "all orders of these companies".
   const adminCompanyIds = await getAdminCompanyIds(user.id)
-  const isCompanyAdmin = adminCompanyIds.length > 0
+  const scopedCompanyIds = [...new Set([...adminCompanyIds, ...branchAdminCompanyIds])]
+  const isCompanyAdmin = scopedCompanyIds.length > 0
 
   // Fetch orders: company_admin sees all orders from their admin companies, regular user sees only their own
   const service = createServiceClient()
@@ -82,9 +91,9 @@ export default async function OrdersRoute({ searchParams }: Props) {
       .from('orders')
       .select(SELECT)
 
-    // Company admins see all orders from companies they admin
+    // Company admins / branch admins see all orders from their scoped companies
     if (isCompanyAdmin) {
-      query = query.in('company_id', adminCompanyIds)
+      query = query.in('company_id', scopedCompanyIds)
     } else {
       // Regular users only see their own orders
       query = query.eq('user_id', user.id)
@@ -106,7 +115,7 @@ export default async function OrdersRoute({ searchParams }: Props) {
   // Merge in STOCK orders (separate table) for the unified list.
   const stockRows = await getStockOrderRows({
     userId: isCompanyAdmin ? undefined : user.id,
-    companyIds: isCompanyAdmin ? adminCompanyIds : undefined,
+    companyIds: isCompanyAdmin ? scopedCompanyIds : undefined,
     fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
     toISO: useRange ? `${sp.to}T23:59:59` : undefined,
     cutoffISO: cutoff,

@@ -2,7 +2,7 @@ export type Section = 'KIDS' | 'MEN' | 'WOMEN'
 export type Closure = 'LACE' | 'VELCRO' | 'BUCKLE' | 'TWIST LOCK SYSTEM' | 'LACE, ZIPPER'
 export type ProductType = 'Boot' | 'Shoes' | 'Sandal'
 export type OrderStatus = 'draft' | 'submitted' | 'approved' | 'in_production' | 'shipped' | 'delivered' | 'cancelled'
-export type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'super_admin'
+export type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
 export type Locale = 'en' | 'nl' | 'fr' | 'de'
 
 export interface ColorNameI18n {

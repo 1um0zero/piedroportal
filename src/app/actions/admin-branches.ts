@@ -143,3 +143,106 @@ export async function assignUserBranch(
   revalidatePath('/admin/branches')
   return { ok: true }
 }
+
+// ── Client (company) assignment — branch_companies ─────────────────────────────
+// The clients a branch admin may order/view on behalf of.
+
+export async function addBranchCompany(
+  branchId: string,
+  companyId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('branch_companies')
+    .upsert({ branch_id: branchId, company_id: companyId }, { onConflict: 'branch_id,company_id' })
+  if (error) return { error: error.message }
+
+  revalidate(branchId)
+  return { ok: true }
+}
+
+export async function removeBranchCompany(
+  branchId: string,
+  companyId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('branch_companies')
+    .delete()
+    .eq('branch_id', branchId)
+    .eq('company_id', companyId)
+  if (error) return { error: error.message }
+
+  revalidate(branchId)
+  return { ok: true }
+}
+
+// ── Branch admin assignment — branch_admins (N:N) ──────────────────────────────
+// A branch admin may create/view orders on behalf of the branch's clients. We
+// also stamp profiles.role='branch_admin' as the client-side label/gate, and
+// clear it when the user no longer administers any branch (unless they hold a
+// higher role we must not clobber).
+
+export async function addBranchAdmin(
+  branchId: string,
+  userId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('branch_admins')
+    .upsert({ branch_id: branchId, user_id: userId }, { onConflict: 'branch_id,user_id' })
+  if (error) return { error: error.message }
+
+  // Label the user (only if they're a plain user/branch_staff — never downgrade
+  // a company_admin/piedro_admin/super_admin).
+  const { data: prof } = await service.from('profiles').select('role').eq('id', userId).single()
+  if (prof && (prof.role === 'user' || prof.role === 'branch_staff' || !prof.role)) {
+    await service.from('profiles').update({ role: 'branch_admin' }).eq('id', userId)
+  }
+
+  revalidate(branchId)
+  revalidatePath('/admin/users')
+  return { ok: true }
+}
+
+export async function removeBranchAdmin(
+  branchId: string,
+  userId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('branch_admins')
+    .delete()
+    .eq('branch_id', branchId)
+    .eq('user_id', userId)
+  if (error) return { error: error.message }
+
+  // If the user no longer administers ANY branch, drop the branch_admin label
+  // back to a plain user (leave higher roles untouched).
+  const { count } = await service
+    .from('branch_admins')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+  if ((count ?? 0) === 0) {
+    const { data: prof } = await service.from('profiles').select('role').eq('id', userId).single()
+    if (prof?.role === 'branch_admin') {
+      await service.from('profiles').update({ role: 'user' }).eq('id', userId)
+    }
+  }
+
+  revalidate(branchId)
+  revalidatePath('/admin/users')
+  return { ok: true }
+}

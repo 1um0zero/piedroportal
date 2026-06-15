@@ -939,7 +939,16 @@
       "no_staff": "Dieser Niederlassung sind noch keine Mitarbeiter zugewiesen.",
       "add_staff_placeholder": "Einen Benutzer zu dieser Niederlassung hinzufügen…",
       "reassign": "neu zuweisen",
-      "staff_role_hint": "Setzen Sie die Rolle eines Benutzers unter Benutzer auf „Niederlassungsmitarbeiter“, damit die Einschränkung greift."
+      "staff_role_hint": "Setzen Sie die Rolle eines Benutzers unter Benutzer auf „Niederlassungsmitarbeiter“, damit die Einschränkung greift.",
+      "clients": "Kunden",
+      "clients_hint": "Firmen, für die die Administratoren dieser Niederlassung bestellen dürfen",
+      "search_clients": "Einen Kunden zum Hinzufügen suchen…",
+      "no_clients": "Dieser Niederlassung sind noch keine Kunden zugeordnet.",
+      "no_clients_found": "Keine passenden Kunden.",
+      "branch_admins": "Niederlassungsadministratoren",
+      "no_branch_admins": "Noch keine Niederlassungsadministratoren.",
+      "add_branch_admin_placeholder": "Einen Niederlassungsadministrator hinzufügen…",
+      "branch_admins_hint": "Niederlassungsadministratoren können Bestellungen im Namen jedes mit dieser Niederlassung verknüpften Kunden erstellen und einsehen."
     },
     "companies": {
       "title": "Firmen",

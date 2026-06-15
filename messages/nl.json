@@ -939,7 +939,16 @@
       "no_staff": "Nog geen medewerkers toegewezen aan dit filiaal.",
       "add_staff_placeholder": "Een gebruiker aan dit filiaal toevoegen…",
       "reassign": "opnieuw toewijzen",
-      "staff_role_hint": "Stel de rol van een gebruiker in op “Filiaalmedewerker” bij Gebruikers om de beperking te activeren."
+      "staff_role_hint": "Stel de rol van een gebruiker in op “Filiaalmedewerker” bij Gebruikers om de beperking te activeren.",
+      "clients": "Klanten",
+      "clients_hint": "Bedrijven waarvoor de beheerders van dit filiaal mogen bestellen",
+      "search_clients": "Zoek een klant om toe te voegen…",
+      "no_clients": "Nog geen klanten gekoppeld aan dit filiaal.",
+      "no_clients_found": "Geen overeenkomende klanten.",
+      "branch_admins": "Filiaalbeheerders",
+      "no_branch_admins": "Nog geen filiaalbeheerders.",
+      "add_branch_admin_placeholder": "Een filiaalbeheerder toevoegen…",
+      "branch_admins_hint": "Filiaalbeheerders kunnen bestellingen maken en bekijken namens elke klant die aan dit filiaal is gekoppeld."
     },
     "companies": {
       "title": "Bedrijven",

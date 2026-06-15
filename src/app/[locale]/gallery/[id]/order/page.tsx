@@ -3,6 +3,7 @@ import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanies, getUserExclusiveLabels } from '@/lib/user-companies'
+import { getBranchAdminCompanies } from '@/lib/branch-admin'
 import { isPiedroAdmin } from '@/lib/roles'
 import { isExclusiveVisible } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
@@ -50,23 +51,23 @@ export default async function OrderPage({ params, searchParams }: Props) {
     const { data } = await supabase.from('companies').select('id,name,erp_code').order('name')
     companies = (data ?? []) as Company[]
   } else if (user) {
-    // Regular users and company_admins see only their companies
-    const userCompanies = await getUserCompanies(user.id)
+    // Regular users and company_admins see their own companies. Branch admins
+    // additionally see every client linked to the branch office(s) they manage.
+    const [userCompanies, branchCompanies] = await Promise.all([
+      getUserCompanies(user.id),
+      getBranchAdminCompanies(user.id),
+    ])
+    const byId = new Map<string, Company>()
+    for (const c of userCompanies) byId.set(c.id, { id: c.id, name: c.name, erp_code: c.erp_code })
+    for (const c of branchCompanies) byId.set(c.id, { id: c.id, name: c.name, erp_code: c.erp_code })
+    const merged = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
 
-    if (userCompanies.length === 1) {
+    if (merged.length === 1) {
       // Single company → set as userCompany (no dropdown)
-      userCompany = {
-        id: userCompanies[0].id,
-        name: userCompanies[0].name,
-        erp_code: userCompanies[0].erp_code,
-      }
-    } else if (userCompanies.length > 1) {
+      userCompany = merged[0]
+    } else if (merged.length > 1) {
       // Multiple companies → show dropdown
-      companies = userCompanies.map(uc => ({
-        id: uc.id,
-        name: uc.name,
-        erp_code: uc.erp_code,
-      }))
+      companies = merged
     }
   }
 

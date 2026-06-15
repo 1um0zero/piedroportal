@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import { getAdminScope } from '@/lib/admin/scope'
 import { getUserCompanyIds } from '@/lib/user-companies'
+import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { getSettings } from '@/lib/settings'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
 import { escapeHtml } from '@/lib/escape-html'
@@ -101,8 +102,14 @@ export async function insertOrderAction(
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
   const isPiedroAdmin = isPiedroAdminRole(profile?.role)
   if (!isPiedroAdmin) {
-    const companyIds = await getUserCompanyIds(user.id)
-    if (!row.company_id || !companyIds.includes(row.company_id)) {
+    // A user may order for a company they belong to (user_companies) OR, as a
+    // branch admin, for any client linked to a branch office they administer.
+    const [ownIds, branchIds] = await Promise.all([
+      getUserCompanyIds(user.id),
+      getBranchAdminCompanyIds(user.id),
+    ])
+    const allowed = new Set([...ownIds, ...branchIds])
+    if (!row.company_id || !allowed.has(row.company_id)) {
       return { error: 'You do not have access to this company' }
     }
   }
@@ -300,8 +307,14 @@ export async function updateOrderAction(
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
   const isPiedroAdmin = isPiedroAdminRole(profile?.role)
   if (!isPiedroAdmin) {
-    const companyIds = await getUserCompanyIds(user.id)
-    if (!row.company_id || !companyIds.includes(row.company_id)) {
+    // A user may order for a company they belong to (user_companies) OR, as a
+    // branch admin, for any client linked to a branch office they administer.
+    const [ownIds, branchIds] = await Promise.all([
+      getUserCompanyIds(user.id),
+      getBranchAdminCompanyIds(user.id),
+    ])
+    const allowed = new Set([...ownIds, ...branchIds])
+    if (!row.company_id || !allowed.has(row.company_id)) {
       return { error: 'You do not have access to this company' }
     }
   }

@@ -15,3 +15,14 @@ export function isPiedroAdmin(role?: string | null): boolean {
 export function isSuperAdmin(role?: string | null): boolean {
   return role === 'super_admin'
 }
+
+/**
+ * A branch_admin may create/view orders on behalf of the clients linked to the
+ * branch office(s) they administer. This is a narrow capability — it grants NO
+ * back-office access (catalogue, companies, email, etc.). The authoritative
+ * membership lives in the `branch_admins` table; this role string is the
+ * client-side label/gate set when a user is assigned to a branch.
+ */
+export function isBranchAdmin(role?: string | null): boolean {
+  return role === 'branch_admin'
+}

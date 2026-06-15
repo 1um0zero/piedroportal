@@ -5,7 +5,7 @@ import {
   type ReactNode,
 } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchAdmin } from '@/lib/roles'
 import type { Profile } from '@/types'
 
 interface AuthCtx {
@@ -13,10 +13,13 @@ interface AuthCtx {
   isAdmin: boolean
   hasCompany: boolean
   isLoggedIn: boolean
+  // May place orders: belongs to a company, is a Piedro admin, or a branch admin
+  // ordering on behalf of the branch's clients.
+  canOrder: boolean
 }
 
 const Ctx = createContext<AuthCtx>({
-  profile: null, isAdmin: false, hasCompany: false, isLoggedIn: false,
+  profile: null, isAdmin: false, hasCompany: false, isLoggedIn: false, canOrder: false,
 })
 
 interface Props {
@@ -77,6 +80,7 @@ export function AuthProvider({ children, initialProfile, initialLoggedIn, initia
       isLoggedIn,
       isAdmin:    isPiedroAdmin(profile?.role),
       hasCompany,
+      canOrder:   hasCompany || isPiedroAdmin(profile?.role) || isBranchAdmin(profile?.role),
     }}>
       {children}
     </Ctx.Provider>

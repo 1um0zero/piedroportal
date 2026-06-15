@@ -939,7 +939,16 @@
       "no_staff": "No staff assigned to this branch yet.",
       "add_staff_placeholder": "Add a user to this branch…",
       "reassign": "reassign",
-      "staff_role_hint": "Set a user’s role to “Branch staff” in Users for scoping to take effect."
+      "staff_role_hint": "Set a user’s role to “Branch staff” in Users for scoping to take effect.",
+      "clients": "Clients",
+      "clients_hint": "Companies this branch’s admins may order for",
+      "search_clients": "Search a client to add…",
+      "no_clients": "No clients linked to this branch yet.",
+      "no_clients_found": "No matching clients.",
+      "branch_admins": "Branch admins",
+      "no_branch_admins": "No branch admins yet.",
+      "add_branch_admin_placeholder": "Add a branch admin…",
+      "branch_admins_hint": "Branch admins can create and view orders on behalf of every client linked to this branch."
     },
     "companies": {
       "title": "Companies",

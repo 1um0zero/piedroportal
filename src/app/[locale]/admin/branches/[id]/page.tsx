@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
-import BranchDetail, { type BranchUser } from '@/components/admin/BranchDetail'
+import BranchDetail, { type BranchUser, type BranchCompanyOption } from '@/components/admin/BranchDetail'
 import type { Branch } from '@/types'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
@@ -37,7 +37,7 @@ export default async function BranchDetailPage({ params }: Props) {
   }
   const allModels = [...styleSet].sort((a, b) => a.localeCompare(b))
 
-  // All users (for staff assignment).
+  // All users (for staff + branch-admin assignment).
   const { data: profiles } = await service
     .from('profiles').select('id, email, full_name, role, branch_id').order('full_name')
   const users: BranchUser[] = (profiles ?? []).map(p => ({
@@ -48,13 +48,26 @@ export default async function BranchDetailPage({ params }: Props) {
     branch_id: p.branch_id ?? null,
   }))
 
+  // Clients (companies) linked to this branch + the full company list to pick from.
+  const [{ data: allCompaniesRows }, { data: bc }, { data: ba }] = await Promise.all([
+    service.from('companies').select('id, name, erp_code').order('name'),
+    service.from('branch_companies').select('company_id').eq('branch_id', id),
+    service.from('branch_admins').select('user_id').eq('branch_id', id),
+  ])
+  const allCompanies: BranchCompanyOption[] = (allCompaniesRows ?? []).map(c => ({
+    id: c.id, name: c.name ?? '', erp_code: c.erp_code ?? '',
+  }))
+  const assignedCompanyIds = (bc ?? []).map(r => r.company_id as string)
+  const branchAdminIds = (ba ?? []).map(r => r.user_id as string)
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
       <div className="flex items-center gap-3">
         <Link href="/admin/branches" className="text-sm text-stone-400 hover:text-stone-700">← {t('title')}</Link>
         <h1 className="text-xl font-bold text-stone-900">{branch.name}</h1>
       </div>
-      <BranchDetail branch={branch} allModels={allModels} assignedModels={assignedModels} users={users} />
+      <BranchDetail branch={branch} allModels={allModels} assignedModels={assignedModels} users={users}
+        allCompanies={allCompanies} assignedCompanyIds={assignedCompanyIds} branchAdminIds={branchAdminIds} />
     </div>
   )
 }

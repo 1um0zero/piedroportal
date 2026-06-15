@@ -939,7 +939,16 @@
       "no_staff": "Aucun membre du personnel affecté à cette filiale.",
       "add_staff_placeholder": "Ajouter un utilisateur à cette filiale…",
       "reassign": "réaffecter",
-      "staff_role_hint": "Définissez le rôle d’un utilisateur sur « Personnel filiale » dans Utilisateurs pour activer la restriction."
+      "staff_role_hint": "Définissez le rôle d’un utilisateur sur « Personnel filiale » dans Utilisateurs pour activer la restriction.",
+      "clients": "Clients",
+      "clients_hint": "Sociétés pour lesquelles les administrateurs de cette filiale peuvent commander",
+      "search_clients": "Rechercher un client à ajouter…",
+      "no_clients": "Aucun client lié à cette filiale pour l’instant.",
+      "no_clients_found": "Aucun client correspondant.",
+      "branch_admins": "Administrateurs de filiale",
+      "no_branch_admins": "Aucun administrateur de filiale pour l’instant.",
+      "add_branch_admin_placeholder": "Ajouter un administrateur de filiale…",
+      "branch_admins_hint": "Les administrateurs de filiale peuvent créer et consulter des commandes au nom de chaque client lié à cette filiale."
     },
     "companies": {
       "title": "Sociétés",
