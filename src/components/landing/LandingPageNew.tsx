@@ -44,7 +44,6 @@ function Feature({ text }: { text: string }) {
 
 export default async function LandingPageNew({ hasError, loggedIn }: { hasError?: boolean; loggedIn?: boolean }) {
   const t = await getTranslations('homenew')
-  const tn = await getTranslations('nav')
   const heroBody = t.raw('hero.body') as string[]
   const orthoBody = t.raw('orthosoft.body') as string[]
   const portalFeatures = t.raw('portal.features') as string[]
@@ -54,7 +53,7 @@ export default async function LandingPageNew({ hasError, loggedIn }: { hasError?
     <div className="max-w-7xl mx-auto px-6 py-12 sm:py-20">
       {/* ── Hero — marketing copy + embedded login ─────────────────────── */}
       <section className="mb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,400px)] gap-10 lg:gap-16 items-center">
+        <div className={`grid grid-cols-1 gap-10 lg:gap-16 items-center ${loggedIn ? '' : 'lg:grid-cols-[1fr_minmax(0,400px)]'}`}>
           <div>
             {/* Full brand lockup (feet + PIEDRO + strapline) — shown large here,
                 where the strapline is actually readable; the navbar carries the
@@ -72,29 +71,14 @@ export default async function LandingPageNew({ hasError, loggedIn }: { hasError?
               <p key={i} className="mt-5 text-lg text-stone-600 leading-relaxed">{p}</p>
             ))}
           </div>
-          <div id="login" className="scroll-mt-24">
-            {/* Signed-in users don't need the login card — quick links instead. */}
-            {loggedIn ? (
-              <div className="bg-white rounded-[14px] p-8 space-y-4"
-                style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08)' }}>
-                <p className="text-xs text-stone-400">Piedro International B.V.</p>
-                <Link href="/gallery"
-                  className="flex h-11 w-full items-center justify-center rounded-lg bg-[#B8975A] text-sm font-semibold text-white hover:bg-[#9A7A42] transition-colors">
-                  {tn('gallery')} →
-                </Link>
-                <Link href="/stock"
-                  className="flex h-11 w-full items-center justify-center rounded-lg border border-stone-200 text-sm font-semibold text-stone-700 hover:border-gold hover:text-gold transition-colors">
-                  {tn('stock')} →
-                </Link>
-                <Link href="/orders"
-                  className="flex h-11 w-full items-center justify-center rounded-lg border border-stone-200 text-sm font-semibold text-stone-700 hover:border-gold hover:text-gold transition-colors">
-                  {tn('orders')} →
-                </Link>
-              </div>
-            ) : (
+          {/* Login card for guests only. Signed-in users already have these
+              destinations in the top nav, so we don't duplicate them here —
+              the hero collapses to a single column above. */}
+          {!loggedIn && (
+            <div id="login" className="scroll-mt-24">
               <LoginCard hasError={hasError} />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <Img src={IMG.hero} alt={t('hero.title')} className="mt-12 h-44 sm:h-72 w-full rounded-[14px]" />
