@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
+import { getAdminScope } from '@/lib/admin/scope'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { getSettings } from '@/lib/settings'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
@@ -373,7 +374,25 @@ export async function duplicateOrderAction(
   return { id: copy.id, productId: copy.product_id }
 }
 
-// ── Delete a draft order ──────────────────────────────────────────────────────
+// True once Piedro has touched the order — at that point the client can no longer
+// delete it (it must be cancelled by Piedro instead). "Untouched" = still a draft,
+// or submitted but untriaged (approval_state registered/null) and not in production.
+function piedroHasIntervened(o: {
+  status: string
+  approval_state: string | null
+  production_state: string | null
+}): boolean {
+  if (o.production_state) return true
+  if (o.status === 'draft') return false
+  if (o.status === 'submitted') return !(o.approval_state == null || o.approval_state === 'registered')
+  return true // approved / in_production / shipped / delivered / cancelled
+}
+
+// ── Delete an order (client, hard delete) ─────────────────────────────────────
+// A client may permanently delete their OWN order as long as Piedro has not yet
+// intervened. Once Piedro has acted on it, deletion is refused — the order must be
+// cancelled by Piedro (cancelOrderAction), or Piedro removes the Order Piedro to
+// release it back to the client.
 export async function deleteOrderAction(
   orderId: string,
 ): Promise<{ ok?: boolean; error?: string }> {
@@ -382,12 +401,44 @@ export async function deleteOrderAction(
   if (!user) return { error: 'Not authenticated' }
 
   const service = createServiceClient()
-  const { error } = await service
+  const { data: order, error: fetchErr } = await service
     .from('orders')
-    .delete()
+    .select('user_id, status, approval_state, production_state')
     .eq('id', orderId)
-    .eq('user_id', user.id)
-    .eq('status', 'draft')
+    .single()
+  if (fetchErr) return { error: fetchErr.message }
+  if (!order) return { error: 'Order not found' }
+  if (order.user_id !== user.id) return { error: 'Not allowed' }
+  if (piedroHasIntervened(order)) return { error: 'Order can no longer be deleted' }
+
+  const { error } = await service.from('orders').delete().eq('id', orderId)
+  if (error) return { error: error.message }
+  return { ok: true }
+}
+
+// ── Cancel an order (Piedro admin, soft) ──────────────────────────────────────
+// Piedro admins may cancel any order that has not yet entered production. This is a
+// soft action (status='cancelled') so the record — and its patient data trail — is
+// preserved for MDR / ISO 13485 traceability.
+export async function cancelOrderAction(
+  orderId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const scope = await getAdminScope()
+  if (!scope) return { error: 'Not authenticated' }
+  if (!isPiedroAdminRole(scope.role)) return { error: 'Not allowed' }
+
+  const service = createServiceClient()
+  const { data: order, error: fetchErr } = await service
+    .from('orders')
+    .select('status, production_state')
+    .eq('id', orderId)
+    .single()
+  if (fetchErr) return { error: fetchErr.message }
+  if (!order) return { error: 'Order not found' }
+  if (order.production_state || ['in_production', 'shipped', 'delivered'].includes(order.status))
+    return { error: 'Order already in production' }
+
+  const { error } = await service.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
   if (error) return { error: error.message }
   return { ok: true }
 }
