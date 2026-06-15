@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import OrderSummary from './OrderSummary'
 import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
@@ -29,6 +29,7 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
 }) {
   const router = useRouter()
   const locale = useLocale()
+  const tOrder = useTranslations('order')
   const base = isAdmin ? '/admin/orders' : '/orders'
   const [, start] = useTransition()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,6 +124,17 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId }: {
           {order.piedro_order_id && <p className="text-sm font-semibold text-stone-700 mt-1">Piedro Order: {order.piedro_order_id}</p>}
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* A draft is unfinished — let the owner reopen it in the order form to
+              edit and actually submit it (the detail view itself is read-only). */}
+          {!isAdmin && order.status === 'draft' && product?.id && (
+            <Link href={`/gallery/${product.id}/order?draft=${order.id}` as Parameters<typeof Link>[0]['href']}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gold rounded-lg hover:bg-gold-dark transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/>
+              </svg>
+              {tOrder('edit_draft')}
+            </Link>
+          )}
           {/* Single current state: production (VSI) > approval (Piedro) > portal status */}
           {productionMeta ? (
             <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700">
