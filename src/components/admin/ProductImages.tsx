@@ -304,7 +304,10 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
   const t = useTranslations('admin.products')
   const slots = [1, 2, 3, 4, 5, 6, 7, 8]
   const [status, setStatus] = useState<Record<number, 'idle' | 'uploading' | 'done' | 'error'>>({})
-  const [bust, setBust] = useState(0) // cache-buster after upload
+  // Seed the cache-buster with a per-mount unique value so a reload never reuses a
+  // previously-cached 404/400 for a slot whose image was just deleted/re-uploaded
+  // (the object name is stable, so a fixed ?v= would keep serving the stale miss).
+  const [bust, setBust] = useState(() => Date.now())
   const [err, setErr] = useState<string | null>(null)
   const [present, setPresent] = useState<Record<number, boolean>>({}) // slots that actually hold an image
   const [removing, setRemoving] = useState<number | null>(null)
