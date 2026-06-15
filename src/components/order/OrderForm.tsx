@@ -896,7 +896,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {constructionOpts.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
-                  {t('construction')}
+                  {t('construction')} <span className="text-red-400">*</span>
                 </h3>
                 {!isDouble ? (
                   <div className="space-y-1.5">
@@ -927,7 +927,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {/* Width — shows placeholder if no construction selected */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
-                {t('width')}
+                {t('width')} {(widthsL.length > 0 || widthsR.length > 0) && <span className="text-red-400">*</span>}
               </h3>
               {!isDouble && !(unit === 'RIGHT' ? constrRight : constrLeft) && constructionOpts.length > 0 ? (
                 <p className="text-xs text-stone-400 italic">{t('select_construction')}</p>
@@ -959,7 +959,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             {unit !== 'DIFF_SIZES' && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-stone-700 border-b border-stone-100 pb-1.5">
-                {t('size')}
+                {t('size')} <span className="text-red-400">*</span>
                 <span className="ml-2 text-gold font-normal text-xs normal-case">
                   {product.size_unit ?? 'EU'} {product.size_first}–{product.size_last}
                 </span>
@@ -995,6 +995,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   (constructionOpts.length > 0 && !constrRight && (unit === 'RIGHT' || isDouble)) ||
                   (widthsL.length > 0 && !widthLeft && unit !== 'RIGHT') ||
                   (widthsR.length > 0 && !widthRight && (unit === 'RIGHT' || isDouble)) ||
+                  (unit !== 'DIFF_SIZES' && unit !== 'RIGHT' && !sizeLeft) ||
+                  (unit !== 'DIFF_SIZES' && (unit === 'RIGHT' || isDouble) && !sizeRight) ||
                   (unit === 'DIFF_SIZES' && !diffSizesPairs.some(p => p.size))
                 }
                 onClick={() => setStep(showAdditions ? 2 : 3)}
