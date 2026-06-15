@@ -104,8 +104,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
       const isImage = field.type === 'image'
       const showVal = (v: unknown) =>
         field.type === 'mm' ? `${String(v)} mm`
-        : isImage ? translateOptionValue(field.key, String(v), ta)
-        : String(v)
+        : translateOptionValue(field.key, String(v), ta)
       return [{
         label: baseLabel,
         l: hasL ? showVal(sv!.l) : null,
