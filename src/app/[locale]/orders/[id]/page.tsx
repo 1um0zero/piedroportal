@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
+import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
 import { isPiedroAdmin } from '@/lib/roles'
@@ -30,13 +31,18 @@ export default async function OrderDetailPage({ params }: Props) {
 
   if (isPiedroAdmin(profile?.role)) redirect(`/admin/orders/${id}`)
 
-  // Check if user has any company
-  const userHasCompany = await hasAnyCompany(user.id)
-  if (!userHasCompany) redirect('/orders')
+  // Visible companies: those the user admins (user_companies) + clients of the
+  // branch office(s) they manage as a branch admin (mirrors the /orders list).
+  const [userHasCompany, adminCompanyIds, branchAdminCompanyIds] = await Promise.all([
+    hasAnyCompany(user.id),
+    getAdminCompanyIds(user.id),
+    getBranchAdminCompanyIds(user.id),
+  ])
+  // A branch admin without a personal company still reaches their clients' orders.
+  if (!userHasCompany && branchAdminCompanyIds.length === 0) redirect('/orders')
 
-  // Get companies where user is admin
-  const adminCompanyIds = await getAdminCompanyIds(user.id)
-  const isCompanyAdmin = adminCompanyIds.length > 0
+  const scopedCompanyIds = [...new Set([...adminCompanyIds, ...branchAdminCompanyIds])]
+  const isCompanyAdmin = scopedCompanyIds.length > 0
 
   const service = createServiceClient()
 
@@ -46,7 +52,7 @@ export default async function OrderDetailPage({ params }: Props) {
 
   // Company admins can view orders from companies they admin
   if (isCompanyAdmin) {
-    query = query.in('company_id', adminCompanyIds)
+    query = query.in('company_id', scopedCompanyIds)
   } else {
     // Regular users can only view their own orders
     query = query.eq('user_id', user.id)
@@ -58,7 +64,7 @@ export default async function OrderDetailPage({ params }: Props) {
     // Fallback to base fields (no admin fields)
     let baseQuery = service.from('orders').select(SELECT_BASE).eq('id', id)
     if (isCompanyAdmin) {
-      baseQuery = baseQuery.in('company_id', adminCompanyIds)
+      baseQuery = baseQuery.in('company_id', scopedCompanyIds)
     } else {
       baseQuery = baseQuery.eq('user_id', user.id)
     }
@@ -75,7 +81,7 @@ export default async function OrderDetailPage({ params }: Props) {
 
   // Prev/next navigator — within the same visibility scope as the list.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const applyScope = (q: any) => isCompanyAdmin ? q.in('company_id', adminCompanyIds) : q.eq('user_id', user.id)
+  const applyScope = (q: any) => isCompanyAdmin ? q.in('company_id', scopedCompanyIds) : q.eq('user_id', user.id)
   const { prevId, nextId } = order.created_at
     ? await getOrderNeighbors(service, { id: order.id, created_at: order.created_at }, applyScope)
     : { prevId: null, nextId: null }
