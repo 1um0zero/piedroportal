@@ -548,3 +548,15 @@ updated_at                   comments                     size
       "Pandora's box" of email tracking + split history (some threads in Outlook, some in the portal).
       Revisit only if a real need for guaranteed PDF attachment / unified tracking emerges.
       · 👥 decision (Jorge 2026-06-15)
+- [ ] **26.13** 🟠 **Multi-angle image scale distortion — pipeline fix + SUPPLIER RULE (HIGH).** The
+      per-image "trim→fill 90%" normalisation (`src/lib/products/normalize-image.ts`) scales each angle
+      independently, so frontal/3-4 views of multi-angle products get over-enlarged vs the side profile
+      (fixed-camera originals were consistent). Detector: `scripts/detect-image-scale-variance.mjs` →
+      ~46 affected products (8-photo shoots: 1700/1701/1702/1902/5205 families, e.g. 5205.5636); the
+      other ~1561 single-image products are fine. **The fix must change the UPLOAD pipeline, not just
+      re-process the bucket** — else every new multi-angle product recurs. Options: (A) one shared scale
+      per product (stateful, awkward on incremental upload); (B) drop trim/fill, keep bg-removal+pad
+      (stateless, future-proof; cross-product size then depends on framing at source) — **B recommended**.
+      **Before the next photo batch: decide the rule and communicate it to the supplier (Noa)** — likely
+      "all angles at the same fixed camera distance/framing" on top of the white/transparent-bg rule.
+      Bump `PRODUCT_IMG_VERSION` after any re-process. · 👥 decide + 🤖 implement (Jorge 2026-06-15)
