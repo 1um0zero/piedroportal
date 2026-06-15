@@ -123,7 +123,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const [section, setSection] = useState<Section>(initialSection)
   // In hero/preview mode the KIDS/MEN/WOMEN switch lives in the header; bridge it.
   const { section: ctxSection, setSection: setCtxSection, exclusive: ctxExclusive, setExclusive: setCtxExclusive } = useGallerySection()
-  // Active exclusive-collection token (e.g. Livingston/LIV). Only in hero mode.
+  // Active exclusive-collection token (e.g. Livingstone/LIV). Only in hero mode.
   const exclusiveFilter = showHero ? ctxExclusive : ''
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const { ids: wishlistIds }  = useWishlist()
@@ -194,7 +194,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       }
     }
 
-    // Exclusive collection deep link (e.g. Livingston → ?q={exclusive:'LIV'}).
+    // Exclusive collection deep link (e.g. Livingstone → ?q={exclusive:'LIV'}).
     // Adopt it (or clear a stale one) so a fresh /gallery entry resets it.
     const urlExclusive = (dq.exclusive || '').toUpperCase()
 
@@ -212,7 +212,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     const extra = exclusives.filter((p) => p.section === section)
     const seen = new Set(base.map((p) => p.id))
     let merged = extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
-    // Exclusive collection view (e.g. Livingston): keep only products whose
+    // Exclusive collection view (e.g. Livingstone): keep only products whose
     // `exclusive` field carries the token — a product can be LIV *and* others.
     if (exclusiveFilter) merged = merged.filter((p) => exclusiveTokens(p.exclusive).includes(exclusiveFilter))
     return merged

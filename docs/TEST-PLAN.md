@@ -88,7 +88,7 @@
 | U-50 | Profile: editar Cc/Bcc | Persiste e é aplicado no próximo email |
 | U-51 | Chat assistant | Responde sobre as suas orders; **não revela** dados de outras companies nem briefing back-office |
 | U-52 | Dashboard do user | Números corretos, zeros como "—", i18n completo |
-| U-53 | Exclusividade: user de company LIV vê modelos LIV (toggle/entrada Livingston); user sem sigla não os vê em gallery, search, detalhe direto por URL, nem no `/stock` | Sem fuga por URL direto |
+| U-53 | Exclusividade: user de company LIV vê modelos LIV (toggle/entrada Livingstone); user sem sigla não os vê em gallery, search, detalhe direto por URL, nem no `/stock` | Sem fuga por URL direto |
 
 ## 3. Company admin
 

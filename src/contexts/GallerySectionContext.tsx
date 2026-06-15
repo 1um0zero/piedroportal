@@ -5,7 +5,7 @@ import type { Section } from '@/types'
 
 type Ctx = {
   section: Section; setSection: (s: Section) => void
-  // Active exclusive-collection token (e.g. 'LIV' for Livingston), '' = none.
+  // Active exclusive-collection token (e.g. 'LIV' for Livingstone), '' = none.
   exclusive: string; setExclusive: (v: string) => void
 }
 
@@ -16,7 +16,7 @@ const GallerySectionContext = createContext<Ctx>({
 
 /**
  * Shares the active gallery section (KIDS/MEN/WOMEN) and the active exclusive
- * collection (e.g. Livingston / LIV) between the header (rendered in the Navbar)
+ * collection (e.g. Livingstone / LIV) between the header (rendered in the Navbar)
  * and the GalleryPage content. Wraps the whole locale layout so both subtrees
  * read/write the same value. Inert outside the gallery.
  */

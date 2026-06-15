@@ -9,7 +9,7 @@
 
 Áreas de negócio:
 1. **pair-by-pair** — **este portal**. Calçado por pares de catálogo + additions ortopédicas.
-   - 1.1. Sub-áreas **Livingston** e **ZSM** — são um **filtro sobre o portal** (a tratar mais tarde).
+   - 1.1. Sub-áreas **Livingstone** e **ZSM** — são um **filtro sobre o portal** (a tratar mais tarde).
 2. **custom** — **próxima área a desenvolver** no portal; permite muito mais alterações ao sapato.
 3. **fashion** — fora de âmbito por agora.
 

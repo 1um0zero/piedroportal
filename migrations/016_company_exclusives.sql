@@ -4,7 +4,7 @@
 --
 -- A model's `products.exclusive` may hold one OR several siglas (e.g. "LIV KIV").
 -- A company may hold several exclusivities, and one sigla (e.g. LIV = the
--- "Livingston" group) may belong to MANY companies — so the old single
+-- "Livingstone" group) may belong to MANY companies — so the old single
 -- `companies.exclusive_label` (unique) is not enough. This join table maps each
 -- company to its sigla(s); visibility = token intersection between a product's
 -- siglas and the union of the user's companies' siglas (piedro_admin sees all).

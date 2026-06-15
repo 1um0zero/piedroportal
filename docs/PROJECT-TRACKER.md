@@ -321,7 +321,7 @@ replace) the existing chat where the user can already ask specific questions. Us
       http. Align with existing `order-contract.ts` + `/api/erp/orders*`.
 - [ ] **18.5** **VSI-C ↔ portal "custom" area** — when the custom portal area is built, VSIC consumes it
       (separate A-Shell area, organically linked to VSI).
-- [ ] **18.6** **Livingston / ZSM** — sub-areas of pair-by-pair = a filter over the portal (later).
+- [ ] **18.6** **Livingstone / ZSM** — sub-areas of pair-by-pair = a filter over the portal (later).
 - [ ] **18.7** **Branches as PT-language scopes:** VSI (production) and VSI-C are branches; reuse the
       branch model (notify locale = PT, model scope). See `project_branch_offices`.
 
@@ -506,7 +506,7 @@ updated_at                   comments                     size
       before). **Needs migration 015 + `sync-size-scales.mjs --apply`.** Follow-up: gallery size FILTER
       still mixes units. (06-09)
 - [x] **25.4** **Exclusivity N:N backend** — `company_exclusives` token matching + Dataverse imports
-      live; gallery overlay; LIV (Livingston) gated nav entry + toggle; sharing preview (OpenGraph). (06-09/11)
+      live; gallery overlay; LIV (Livingstone) gated nav entry + toggle; sharing preview (OpenGraph). (06-09/11)
 - [x] **25.5** **Catalogues flip-book** — `/catalogues` page-flip viewer (Kids/Adults EN/NL), JPGs in
       Supabase `catalogues` bucket via `scripts/build-catalogues.mjs`. (06-10)
 - [x] **25.6** **Gallery hero + sticky header** — per-section hero, transparent→solid header,

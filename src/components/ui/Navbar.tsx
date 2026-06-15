@@ -33,7 +33,7 @@ export default async function Navbar({ locale }: Props) {
     isBackoffice = isAdmin || profile?.role === 'branch_staff'
   }
 
-  // Livingston (LIV) entry: visible to admin/staff or users whose company owns
+  // Livingstone (LIV) entry: visible to admin/staff or users whose company owns
   // the LIV sigla. `exclusive_label` is an UPPERCASE sigla; match the token.
   let canSeeLiv = false
   if (user) {

@@ -8,7 +8,7 @@
  *
  * Junk is ignored: contacts listing >3 known siglas (the "all siglas" test rows)
  * and companies whose name contains TEST. A sigla like LIV legitimately lands on
- * many companies (the Livingston group).
+ * many companies (the Livingstone group).
  *
  *   node scripts/populate-company-exclusives.mjs            → report only
  *   node scripts/populate-company-exclusives.mjs --apply    → write

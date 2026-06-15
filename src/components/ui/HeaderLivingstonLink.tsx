@@ -5,7 +5,7 @@ import { useGallerySection } from '@/contexts/GallerySectionContext'
 import { encodeQuery } from '@/lib/query-cipher'
 
 /**
- * "Livingston" nav entry — opens the gallery filtered to the LIV exclusive
+ * "Livingstone" nav entry — opens the gallery filtered to the LIV exclusive
  * collection (token match: a product may be LIV *and* other siglas). Rendered
  * only for eligible users (admin/staff or a company that owns LIV); the Navbar
  * decides `visible` server-side.
@@ -40,7 +40,7 @@ export default function HeaderLivingstonLink({ visible }: { visible: boolean }) 
       className={`section-switch-btn px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-colors
         ${active ? 'is-active' : ''}`}
     >
-      Livingston
+      Livingstone
     </button>
   )
 }
