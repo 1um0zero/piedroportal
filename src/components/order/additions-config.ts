@@ -27,6 +27,7 @@ const mm1to10   = [1,2,3,4,5,6,7,8,9,10]
 const mm4to10   = [4,6,8,10]
 const mm2to8    = [2,4,6,8]
 const mm1to20   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+const mm1to60   = Array.from({ length: 60 }, (_, i) => i + 1)
 
 export const SECTIONS: AdditionSection[] = [
   // ── Section 1: Additions ──────────────────────────────────────────────────
@@ -90,9 +91,9 @@ export const SECTIONS: AdditionSection[] = [
           'Delaying Rocker':  '/rocker/delaying.png',
           '2-Phase Rocker':   '/rocker/2-phase.png',
         } },
-      { key: 'rocker_toes',  type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2toes' },
-      { key: 'rocker_joint', type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2joint' },
-      { key: 'rocker_heel',  type: 'mm',     side: 'both', values: mm1to10, conditionalOn: 'rocker', dataverseKey: 'cr56f_2heel' },
+      { key: 'rocker_toes',  type: 'mm',     side: 'both', values: mm1to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2toes' },
+      { key: 'rocker_joint', type: 'mm',     side: 'both', values: mm1to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2joint' },
+      { key: 'rocker_heel',  type: 'mm',     side: 'both', values: mm1to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2heel' },
       // Amendment PU/EVA Bumper
       { key: 'pu_bumper',    type: 'toggle', side: 'both', dataverseKey: 'cr56f_6soleamendement2' },
       { key: 'pu_type',      type: 'option', side: 'both', collapse: true, values: ['PU Black','PU White','EVA Black','EVA White'], conditionalOn: 'pu_bumper', dataverseKey: 'cr56f_6puevabumper' },
