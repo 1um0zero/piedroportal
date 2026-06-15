@@ -105,14 +105,10 @@ function sortWidths(a: string, b: string): number {
 }
 
 // ── "NEW" helper ──────────────────────────────────────────────────────────────
-// new_until = future date → still NEW (badge shows)
-// new_until = past date   → NEW expired (no badge)
-// new_until = null/absent → not a NEW product
-// (Seeded from Dataverse style createdon by scripts/import-new-from-createdon.mjs;
-//  admin-editable per product in ProductForm.)
+// Editorial flag (products.is_new), curated in the back-office product list and
+// seeded from the old portal's NewStyles list (scripts/seed-new-styles.mjs).
 export function isNew(p: Product): boolean {
-  if (!p.new_until) return false                 // NULL = not a new product
-  return new Date(p.new_until) > new Date()      // future date = still new
+  return p.is_new === true
 }
 
 
@@ -126,7 +122,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const FIELDS = [
     'id','style_name','colour_id','picture_name','section',
     'closure','type','color_basic','color_name',
-    'size_first','size_last','size_unit','diabetics','new_until','constructions',
+    'size_first','size_last','size_unit','diabetics','is_new','constructions',
   ].join(',')
   const FIELDS_NO_UNIT = FIELDS.replace(',size_unit', '')
 

@@ -851,7 +851,13 @@
       "added_7d": "Laatste 7 dagen",
       "added_30d": "Laatste 30 dagen",
       "orphan_pending": "⏳ nog geen product",
-      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd."
+      "accept_orphans": "Upload ook {count} afbeelding(en) die de naamconventie volgen maar nog geen product hebben — ze worden automatisch gekoppeld zodra het product is aangemaakt of geïmporteerd.",
+      "all_new": "Alle NIEUW",
+      "new_yes": "Alleen NIEUW",
+      "new_no": "Niet NIEUW",
+      "col_new": "Nieuw",
+      "new_badge": "Nieuw",
+      "toggle_new_hint": "NIEUW-badge in de galerij aan/uit"
     },
     "branches": {
       "title": "Filialen",

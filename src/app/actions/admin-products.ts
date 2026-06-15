@@ -284,3 +284,27 @@ export async function setProductActive(
   revalidatePath('/admin/products')
   return { ok: true }
 }
+
+/** Toggle the editorial NEW flag (products.is_new) shown as a badge in the gallery. */
+export async function setProductNew(
+  id: string,
+  is_new: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
+
+  const service = createServiceClient()
+
+  if (!scope.allModels) {
+    const { data: current } = await service
+      .from('products').select('style_name').eq('id', id).maybeSingle()
+    if (!current || !scope.canModel(current.style_name as string))
+      return { error: 'This model is out of your scope' }
+  }
+
+  const { error } = await service.from('products').update({ is_new }).eq('id', id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/products')
+  return { ok: true }
+}

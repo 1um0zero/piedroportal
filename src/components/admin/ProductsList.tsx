@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { setProductActive } from '@/app/actions/admin-products'
+import { setProductActive, setProductNew } from '@/app/actions/admin-products'
 import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
 import { matchesAny } from '@/lib/search'
 
@@ -22,6 +22,7 @@ export type ProductRow = {
   picture_name: string | null
   exclusive: string | null
   is_stock: boolean
+  is_new: boolean
   created_at: string
 }
 
@@ -64,6 +65,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const [fType, setFType] = useState('')
   const [fExclusive, setFExclusive] = useState('')
   const [fStock, setFStock] = useState('')   // '' all | 'yes' | 'no'
+  const [fNew, setFNew] = useState('')       // '' all | 'yes' | 'no'
   const [fAdded, setFAdded] = useState('')   // '' all | 'today' | '7d' | '30d'
   const [onlyInactive, setOnlyInactive] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
@@ -91,12 +93,14 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
       if (fExclusive && p.exclusive !== fExclusive) return false
       if (fStock === 'yes' && !p.is_stock) return false
       if (fStock === 'no'  &&  p.is_stock) return false
+      if (fNew === 'yes' && !p.is_new) return false
+      if (fNew === 'no'  &&  p.is_new) return false
       if (!needle) return true
       return matchesAny([p.colour_id, p.style_name, p.color_name, p.closure, p.type, companyName(p)], needle)
     })
     return [...out].sort((a, b) =>
       compareValues((a as Record<string, unknown>)[sort.key], (b as Record<string, unknown>)[sort.key], sort.dir))
-  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, fAdded, sort]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, fNew, fAdded, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSort = (key: string) => setSort(s => nextSort(s, key))
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE)
@@ -106,6 +110,13 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
     setBusy(id)
     const res = await setProductActive(id, active)
     if (!res.error) setRows(prev => prev.map(p => p.id === id ? { ...p, active } : p))
+    setBusy(null)
+  }
+
+  async function toggleNew(id: string, is_new: boolean) {
+    setBusy(id)
+    const res = await setProductNew(id, is_new)
+    if (!res.error) setRows(prev => prev.map(p => p.id === id ? { ...p, is_new } : p))
     setBusy(null)
   }
 
@@ -131,6 +142,13 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           allLabel={t('all_stock')}
           options={['yes', 'no']}
           labels={{ yes: t('stock_yes'), no: t('stock_no') }}
+        />
+        <FilterSelect
+          value={fNew}
+          onChange={v => { setFNew(v); setPage(0) }}
+          allLabel={t('all_new')}
+          options={['yes', 'no']}
+          labels={{ yes: t('new_yes'), no: t('new_no') }}
         />
         <FilterSelect
           value={fAdded}
@@ -159,6 +177,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
               <SortableTh label={t('col_type')} sortKey="type" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_exclusive')} sortKey="exclusive" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_stock')} sortKey="is_stock" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_new')} sortKey="is_new" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_added')} sortKey="created_at" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_active')} sortKey="active" sort={sort} onSort={onSort} />
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
@@ -190,6 +209,15 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                   {p.is_stock
                     ? <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-dark">{t('stock_badge')}</span>
                     : <span className="text-stone-300">—</span>}
+                </td>
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => toggleNew(p.id, !p.is_new)}
+                    disabled={busy === p.id}
+                    title={t('toggle_new_hint')}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${p.is_new ? 'bg-gold text-white' : 'bg-stone-100 text-stone-400'}`}>
+                    {t('new_badge')}
+                  </button>
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap text-xs text-stone-500">
                   {p.created_at.slice(0, 10)}

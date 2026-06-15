@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import ProductsList, { type ProductRow } from '@/components/admin/ProductsList'
 
-const FIELDS = 'id, colour_id, style_name, color_name, section, closure, type, active, picture_name, exclusive, is_stock, created_at'
+const FIELDS = 'id, colour_id, style_name, color_name, section, closure, type, active, picture_name, exclusive, is_stock, is_new, created_at'
 
 export default async function AdminProductsPage() {
   const scope = await requireBackofficePage()

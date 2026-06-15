@@ -851,7 +851,13 @@
       "added_7d": "Last 7 days",
       "added_30d": "Last 30 days",
       "orphan_pending": "⏳ no product yet",
-      "accept_orphans": "Also upload {count} image(s) that follow the naming convention but have no product yet — they will link automatically once the product is created or imported."
+      "accept_orphans": "Also upload {count} image(s) that follow the naming convention but have no product yet — they will link automatically once the product is created or imported.",
+      "all_new": "All NEW",
+      "new_yes": "NEW only",
+      "new_no": "Not NEW",
+      "col_new": "New",
+      "new_badge": "New",
+      "toggle_new_hint": "Toggle the NEW badge in the gallery"
     },
     "branches": {
       "title": "Branch offices",

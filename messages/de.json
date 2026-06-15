@@ -851,7 +851,13 @@
       "added_7d": "Letzte 7 Tage",
       "added_30d": "Letzte 30 Tage",
       "orphan_pending": "⏳ noch kein Produkt",
-      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird."
+      "accept_orphans": "Auch {count} Bild(er) hochladen, die der Namenskonvention folgen, aber noch kein Produkt haben — sie werden automatisch verknüpft, sobald das Produkt erstellt oder importiert wird.",
+      "all_new": "Alle NEU",
+      "new_yes": "Nur NEU",
+      "new_no": "Nicht NEU",
+      "col_new": "Neu",
+      "new_badge": "Neu",
+      "toggle_new_hint": "NEU-Badge in der Galerie umschalten"
     },
     "branches": {
       "title": "Niederlassungen",
