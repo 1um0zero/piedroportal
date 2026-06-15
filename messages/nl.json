@@ -262,6 +262,8 @@
     "closure_label": "Sluiting",
     "selected": "selecteren",
     "required": " is vereist.",
+    "review_confirm": "Controleren en bevestigen",
+    "fill_required_additions": "Vul de verplichte aanpassingsvelden (gemarkeerd met *) in voordat u verdergaat: {fields}",
     "prev": "",
     "next_additions": "Aanpassingen",
     "back_to_product": "terug naar Klant en Product",

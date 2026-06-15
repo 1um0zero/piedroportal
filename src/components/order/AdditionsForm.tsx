@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, type AdditionField, type AdditionSection } from './additions-config'
+import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { GlbViewer } from './GlbViewer'
 import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
 
@@ -20,6 +20,8 @@ type Props = {
   addsExclude: string     // comma-separated Dataverse field names to exclude
   additions: Additions
   onChange: (additions: Additions) => void
+  isNew?: boolean         // new order → start with all sections collapsed
+  missing?: MissingRequired[]  // required children flagged empty on a failed advance
 }
 
 // ── Chip components ───────────────────────────────────────────────────────────
@@ -244,12 +246,22 @@ function SelectCombo({ values, value, onChange, t, fieldKey }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange }: Props) {
+export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, isNew, missing }: Props) {
   const t = useTranslations('additions')
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(['additions']))
+  // Field keys flagged as missing-required on the last failed "Review and confirm".
+  const missingKeys = new Set((missing ?? []).map(m => m.fieldKey))
+  // New orders open fully collapsed so the whole structure is visible; once the
+  // user navigates between tabs the chosen open/closed state is preserved.
+  const [expanded, setExpanded] = useState<Set<string>>(() =>
+    isNew ? new Set<string>() : new Set(['additions']))
 
   // Per-section filter state (replaces single showOnlyActive)
   const [sectionFilter, setSectionFilter] = useState<Record<string, boolean>>({})
+
+  // Sections containing a flagged-missing child — force-opened and unfiltered
+  // (derived during render, so no setState-in-effect cascade) so the user lands
+  // directly on the empty required fields.
+  const missingSections = new Set((missing ?? []).map(m => m.sectionKey))
 
   // Checkbox-expand state — covers additions, upper, sole sections
   const [addExpanded, setAddExpanded] = useState<Set<string>>(() => {
@@ -381,7 +393,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     const hasActive = fields.some(f =>
       f.side !== 'global' && (addExpanded.has(`${f.key}:l`) || addExpanded.has(`${f.key}:r`))
     )
-    const effectiveFilter = (sectionFilter[section.key] ?? false) && hasActive
+    const effectiveFilter = (sectionFilter[section.key] ?? false) && hasActive && !missingSections.has(section.key)
     const unitColLabel = unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'L' : unit === 'RIGHT' ? 'R' : ''
 
     return (
@@ -454,9 +466,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               if (isSubField) {
                 if (!isDouble) {
                   if (!isParentActive(field, displaySide)) return null
+                  const flagged = missingKeys.has(field.key)
                   return (
-                    <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
-                      <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
+                    <div key={field.key} className={`py-2 pl-4 ml-1 border-l-2 ${flagged ? 'border-red-400' : 'border-gold/20'}`}>
+                      <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel} <span className="text-red-400">*</span></p>
                       {renderControl(field, displaySide)}
                     </div>
                   )
@@ -464,9 +477,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const parentFilledL = isParentActive(field, 'l')
                   const parentFilledR = isParentActive(field, 'r')
                   if (!parentFilledL && !parentFilledR) return null
+                  const flagged = missingKeys.has(field.key)
                   return (
-                    <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
-                      <p className="text-xs text-stone-400 mb-2">{cleanLabel} <span className="text-red-400">*</span></p>
+                    <div key={field.key} className={`py-2 pl-4 ml-1 border-l-2 ${flagged ? 'border-red-400' : 'border-gold/20'}`}>
+                      <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel} <span className="text-red-400">*</span></p>
                       <div className="grid grid-cols-2 gap-4">
                         <div>{parentFilledL ? renderControl(field, 'l') : null}</div>
                         <div>{parentFilledR ? renderControl(field, 'r') : null}</div>
@@ -676,7 +690,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         // Nothing left to show (every field excluded) → drop the section header too
         if (fields.length === 0) return null
         const filled = countFilled(additions, section.key)
-        const open   = expanded.has(section.key)
+        const open   = expanded.has(section.key) || missingSections.has(section.key)
 
         // ── Additions, Upper Adaptions, Sole & Heel: checkbox-expand pattern ─────
         if (['additions', 'upper', 'sole'].includes(section.key)) {

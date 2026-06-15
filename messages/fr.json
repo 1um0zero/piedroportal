@@ -262,6 +262,8 @@
     "closure_label": "Fermeture",
     "selected": "sélectionner",
     "required": " est requis.",
+    "review_confirm": "Vérifier et confirmer",
+    "fill_required_additions": "Veuillez renseigner les champs d'adaptation obligatoires (marqués *) avant de continuer : {fields}",
     "prev": "",
     "next_additions": "Suppléments",
     "back_to_product": "retour aux Client et Produit",

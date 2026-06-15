@@ -217,6 +217,66 @@ export function isSectionExcluded(sectionKey: string, addsExclude: string | null
     .some(([trigger, sk]) => sk === sectionKey && ids.has(trigger))
 }
 
+// ── Required-child validation ───────────────────────────────────────────────────
+// Every conditional child (a field with `conditionalOn`) is mandatory once its
+// parent is active — these are the fields rendered with a red `*` in the form
+// (their labels are `↳`-prefixed). This mirrors the Power Pages "show + require"
+// behaviour. Returns the list of missing (sectionKey, fieldKey, side) tuples so
+// the caller can block navigation and point the user at what's missing.
+export type MissingRequired = { sectionKey: string; fieldKey: string; side: 'l' | 'r' }
+
+/** Which foot columns are in play for a given unit. */
+function activeSidesFor(unit: string): ('l' | 'r')[] {
+  if (unit === 'LEFT_RIGHT') return ['l', 'r']
+  if (unit === 'RIGHT') return ['r']
+  return ['l']   // PAIR / LEFT / DIFF_SIZES → single 'l' column
+}
+
+function isSidedParentActive(
+  additions: Record<string, unknown>, conditionalOn: string, side: 'l' | 'r',
+): boolean {
+  const parent = additions[conditionalOn]
+  if (parent === null || parent === undefined) return false
+  if (typeof parent === 'boolean') return parent
+  const sv = parent as { l: unknown; r: unknown }
+  const v = side === 'l' ? sv.l : sv.r
+  return v != null && v !== '' && v !== false
+}
+
+function isChildFilled(
+  additions: Record<string, unknown>, key: string, side: 'l' | 'r',
+): boolean {
+  const sv = additions[key] as { l: unknown; r: unknown } | null | undefined
+  if (!sv) return false
+  const v = side === 'l' ? sv.l : sv.r
+  return v != null && v !== '' && v !== false
+}
+
+/** Find required conditional children that are visible + active but left empty. */
+export function getMissingRequiredAdditions(
+  additions: Record<string, unknown>,
+  unit: string,
+  addsExclude: string | null | undefined,
+): MissingRequired[] {
+  const sides = activeSidesFor(unit)
+  const missing: MissingRequired[] = []
+
+  for (const section of SECTIONS) {
+    if (isSectionExcluded(section.key, addsExclude)) continue
+    const fields = filterExcluded(section.fields, addsExclude)
+    for (const field of fields) {
+      if (!field.conditionalOn || field.side === 'global') continue
+      for (const side of sides) {
+        if (!isSidedParentActive(additions, field.conditionalOn, side)) continue
+        if (!isChildFilled(additions, field.key, side)) {
+          missing.push({ sectionKey: section.key, fieldKey: field.key, side })
+        }
+      }
+    }
+  }
+  return missing
+}
+
 /** Filter fields that are excluded for this product, cascading to conditional children. */
 export function filterExcluded(fields: AdditionField[], addsExclude: string | null | undefined): AdditionField[] {
   const ids = parseAddsExclude(addsExclude)

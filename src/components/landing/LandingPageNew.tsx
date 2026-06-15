@@ -134,8 +134,8 @@ export default async function LandingPageNew({ hasError, loggedIn }: { hasError?
             {orthoBody.map((p, i) => (
               <p key={i} className="mt-5 text-lg text-stone-600 leading-relaxed">{p}</p>
             ))}
-            {/* TODO: target styles 5206 / 5207 / 5208 specifically (provisional: men's collection) */}
-            <Link href={{ pathname: '/gallery', query: { q: encodeQuery({ section: 'MEN' }) } }} className={`${ctaLink} mt-6`}>
+            {/* Ortho Soft collection = men's diabetic sneaker styles 5206/5207/5208. */}
+            <Link href={{ pathname: '/gallery', query: { q: encodeQuery({ section: 'MEN', styles: '5206,5207,5208' }) } }} className={`${ctaLink} mt-6`}>
               {t('orthosoft.cta')}
             </Link>
           </div>

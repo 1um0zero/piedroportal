@@ -6,7 +6,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
-import { emptyAdditions } from './additions-config'
+import { emptyAdditions, getMissingRequiredAdditions, SECTIONS, type MissingRequired } from './additions-config'
+import { getFieldLabel } from '@/lib/additions-helpers'
 import OrderSummary from './OrderSummary'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import { displayWidth, sortWidths } from '@/lib/width-display'
@@ -114,6 +115,7 @@ function SizeInput({ sizes, value, onChange, label, side, onBlurAfterSnap }: {
 
 export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData, closuresAhead = [] }: Props) {
   const t  = useTranslations('order')
+  const ta = useTranslations('additions')
   const locale = useLocale()
   const router = useRouter()
   const d = draftData  // shorthand for pre-fill
@@ -198,6 +200,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     getInitialState('diffSizesPairs', d?.diff_sizes_pairs ?? [{ qty: 1, size: '' }])
   )
   const [step,        setStep]      = useState<1 | 2 | 3>(getInitialState('step', 1))
+  const [missingAdds, setMissingAdds] = useState<MissingRequired[]>([])
   const [submitting,  setSubmitting] = useState(false)
   const [discarding,  setDiscarding] = useState(false)
   const [downloadingPdf, setDownloadingPdf] = useState(false)
@@ -208,6 +211,30 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [submitIssue, setSubmitIssue] = useState(() => getInitialState('submitIssue', false))  // submitted OK but email/PDF failed
 
   const showAdditions = unit !== 'DIFF_SIZES'
+
+  // Gate Tab2 → Tab3: every active conditional child (the `*` fields) must be filled.
+  function goToConfirmation() {
+    const missing = getMissingRequiredAdditions(
+      additions, unit, (product as unknown as Record<string, string>).adds_exclude ?? '',
+    )
+    if (missing.length > 0) {
+      setMissingAdds(missing)
+      // Build a friendly, de-duplicated list of the missing field labels.
+      const seen = new Set<string>()
+      const names: string[] = []
+      for (const m of missing) {
+        const field = SECTIONS.find(s => s.key === m.sectionKey)?.fields.find(f => f.key === m.fieldKey)
+        if (!field || seen.has(field.key)) continue
+        seen.add(field.key)
+        names.push(getFieldLabel(field, ta).replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '').trim())
+      }
+      setError(t('fill_required_additions', { fields: names.join(', ') }))
+      return
+    }
+    setMissingAdds([])
+    setError('')
+    setStep(3)
+  }
 
   const isDouble    = unit === 'LEFT_RIGHT'
   const mirror      = unit === 'PAIR'
@@ -535,18 +562,28 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               {submitting ? t('processing') : t('save_draft')}
             </button>
           </div>
+          {error && (
+            <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+              <p className="text-sm text-red-700 font-medium">{error}</p>
+            </div>
+          )}
           <AdditionsForm
             unit={unit}
             closure={product.closure}
             addsExclude={(product as unknown as Record<string, string>).adds_exclude ?? ''}
             additions={additions}
-            onChange={setAdditions}
+            onChange={(a) => { setAdditions(a); if (missingAdds.length) { setMissingAdds([]); setError('') } }}
+            isNew={!draftData}
+            missing={missingAdds}
           />
           <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
-            <button onClick={() => setStep(3)}
+            <button onClick={goToConfirmation}
               className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                          hover:bg-gold-dark transition-colors">
-              {t('tab3')} →
+              {t('review_confirm')} →
             </button>
             <button onClick={() => handleSubmit('draft')} disabled={submitting}
               className="px-6 py-2.5 border border-stone-200 text-stone-600 font-medium

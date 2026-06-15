@@ -33,12 +33,14 @@ export type Filters = {
   onlyWishlist: boolean
   onlyDiabetics: boolean
   category: number   // 0 = all; 1..10 = catalogue category
+  styles: string[]   // exact style_name allow-list (curated collections); [] = all
 }
 
 const EMPTY: Filters = {
   closures: [], types: [], colours: [],
   constructions: [], widths: [], sizes: [],
   search: '', onlyNew: false, onlyWishlist: false, onlyDiabetics: false, category: 0,
+  styles: [],
 }
 
 // Remembers the browse state (section + filters + scroll) so returning from a
@@ -66,6 +68,7 @@ export function applyFilters(
     }
     if (exclude !== 'sizes'         && f.sizes.length > 0
       && !f.sizes.some((s) => s >= p.size_first && s <= p.size_last))                                     return false
+    if (f.styles.length > 0 && !f.styles.includes((p.style_name ?? '').replace(/K$/i, '')))                return false
     if (f.search && !matchesSearch(p.style_name, f.search))                                                return false
     if (exclude !== 'category'      && f.category > 0 && p.category !== f.category)                        return false
     if (exclude !== 'onlyDiabetics' && f.onlyDiabetics && !p.diabetics)                                   return false
@@ -164,20 +167,23 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     if (SECTIONS.includes(urlSection)) {
       resolved = urlSection
       if (urlSection !== section) { setSection(urlSection); fetchIfNeeded(urlSection) }
-      // Deep link may carry a catalogue category, search and/or diabetics flag.
+      // Deep link may carry a catalogue category, search, diabetics flag and/or
+      // an explicit style allow-list (curated collections, e.g. Ortho Soft).
       const cat = parseInt(dq.category || '0', 10)
       const diab = dq.diabetics === '1'
-      if (cat > 0 || dq.search || diab) setFilters((f) => ({
+      const styles = (dq.styles || '').split(',').map((s) => s.trim()).filter(Boolean)
+      if (cat > 0 || dq.search || diab || styles.length) setFilters((f) => ({
         ...f,
         category: cat > 0 ? cat : f.category,
         search: dq.search || f.search,
         onlyDiabetics: diab || f.onlyDiabetics,
+        styles: styles.length ? styles : f.styles,
       }))
     } else {
       let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
       try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
       if (saved) {
-        if (saved.filters) setFilters(saved.filters)
+        if (saved.filters) setFilters({ ...EMPTY, ...saved.filters })
         if (typeof saved.scrollY === 'number') pendingScroll.current = saved.scrollY
         pendingAnchor.current = saved.anchorId ?? null
         const s = saved.section
@@ -346,7 +352,8 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
-    || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0 || !!exclusiveFilter
+    || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0
+    || filters.styles.length > 0 || !!exclusiveFilter
 
   const [showWishlist, setShowWishlist] = useState(false)
 

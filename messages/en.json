@@ -262,6 +262,8 @@
     "closure_label": "Closure",
     "selected": "selected",
     "required": " is required.",
+    "review_confirm": "Review and confirm",
+    "fill_required_additions": "Please fill in the required adaptation fields (marked *) before continuing: {fields}",
     "prev": "",
     "next_additions": "Additions",
     "back_to_product": "back to Customer and Product",

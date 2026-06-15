@@ -262,6 +262,8 @@
     "closure_label": "Verschluß",
     "selected": "ausgewählt",
     "required": " ist erforderlich.",
+    "review_confirm": "Prüfen und bestätigen",
+    "fill_required_additions": "Bitte füllen Sie die erforderlichen Anpassungsfelder (mit * markiert) aus, bevor Sie fortfahren: {fields}",
     "prev": "",
     "next_additions": "Ergänzungen",
     "back_to_product": "zurück zu Kunde und Produkt",
