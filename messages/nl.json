@@ -487,9 +487,10 @@
         "hard": "Hard - 0.9 mm"
       },
       "zipper": {
-        "medial_next": "Langs vetersluiting mediaal",
-        "medial_side": "Mediaal",
-        "lateral_next": "Langs vetersluiting Lateraal"
+        "medial_(next_to_closure)": "Langs vetersluiting mediaal",
+        "medial_(side)": "Mediaal",
+        "lateral_(next_to_closure)": "Langs vetersluiting lateraal",
+        "lateral_(next_to_closure)_+_medial_lace": "Langs vetersluiting lateraal + veter mediaal"
       },
       "rocker": {
         "normal_rocker": "Normale afwikkeling",

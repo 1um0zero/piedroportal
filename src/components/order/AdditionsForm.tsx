@@ -131,11 +131,12 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t }
   )
 }
 
-function OptionChips({ values, value, onChange, collapse = false }: {
+function OptionChips({ values, value, onChange, collapse = false, label }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: string | null) => void
   collapse?: boolean
+  label?: (v: string) => string
 }) {
   const displayed = collapse && value != null ? [value as number | string] : values
   return (
@@ -147,7 +148,7 @@ function OptionChips({ values, value, onChange, collapse = false }: {
             ${value === v
               ? 'bg-gold text-white border-gold shadow-sm'
               : 'text-stone-600 border-stone-200 bg-white hover:border-gold/60 hover:text-gold'}`}>
-          {v}
+          {label ? label(String(v)) : v}
         </button>
       ))}
     </div>
@@ -317,7 +318,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       return <ImageChips values={field.values ?? []} value={val} onChange={setVal} images={field.images}
         label={(v) => translateOptionValue(field.key, v, t)} />
     if (field.type === 'image' || field.type === 'option')
-      return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse} />
+      return <OptionChips values={field.values ?? []} value={val} onChange={setVal} collapse={field.collapse}
+        label={(v) => translateOptionValue(field.key, v, t)} />
     if (field.type === 'toggle')
       return null  // Toggles are now handled as checkboxes at the field level, not in renderControl
     if (field.type === 'text')
@@ -789,6 +791,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                               values={field.values ?? []}
                               value={(additions[field.key] as SidedVal)?.[displaySide]}
                               onChange={v => updateField(field.key, displaySide, v)}
+                              label={(v) => translateOptionValue(field.key, v, t)}
                             />
                           </div>
                         ) : (
@@ -810,6 +813,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                               values={field.values ?? []}
                               value={(additions[field.key] as SidedVal)?.[displaySide]}
                               onChange={v => updateField(field.key, displaySide, v)}
+                              label={(v) => translateOptionValue(field.key, v, t)}
                             />
                           </div>
                         ) : (

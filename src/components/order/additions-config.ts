@@ -73,7 +73,7 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'instep_front',  type: 'text',   side: 'both', dataverseKey: 'cr56f_instepmoretothefront' },
       { key: 'colour_mod',    type: 'text',   side: 'both', dataverseKey: 'cr56f_colourmodifications' },
       { key: 'pad_tongue',    type: 'mm',     side: 'both', values: mm4to10, dataverseKey: 'cr56f_extrapaddingontongue' },
-      { key: 'zipper',        type: 'option', side: 'both', collapse: true, values: ['Medial (next to closure)','Medial (side)','Lateral (next to closure)'], dataverseKey: 'cr56f_zipper' },
+      { key: 'zipper',        type: 'option', side: 'both', collapse: true, values: ['Medial (next to closure)','Medial (side)','Lateral (next to closure)','Lateral (next to closure) + medial lace'], dataverseKey: 'cr56f_zipper' },
     ],
   },
 

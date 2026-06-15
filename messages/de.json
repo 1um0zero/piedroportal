@@ -487,9 +487,10 @@
         "hard": "hart - 0.9 mm"
       },
       "zipper": {
-        "medial_next": "Medial Zipper Next to closure",
-        "medial_side": "Medial Zipper Side",
-        "lateral_next": "Lateral Zipper Next to closure"
+        "medial_(next_to_closure)": "Reißverschluss medial neben dem Verschluss",
+        "medial_(side)": "Reißverschluss medial seitlich",
+        "lateral_(next_to_closure)": "Reißverschluss lateral neben dem Verschluss",
+        "lateral_(next_to_closure)_+_medial_lace": "Reißverschluss lateral neben dem Verschluss + medialer Schnürsenkel"
       },
       "rocker": {
         "normal_rocker": "Mittelfußrolle",

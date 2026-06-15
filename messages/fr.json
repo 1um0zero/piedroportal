@@ -487,9 +487,10 @@
         "hard": "Dur - 0.9 mm"
       },
       "zipper": {
-        "medial_next": "Fermeture éclair médiale à côté de la fermeture",
-        "medial_side": "Côté fermeture éclair médiale",
-        "lateral_next": "Fermeture éclair latérale à côté de la fermeture"
+        "medial_(next_to_closure)": "Fermeture éclair médiale à côté de la fermeture",
+        "medial_(side)": "Côté fermeture éclair médiale",
+        "lateral_(next_to_closure)": "Fermeture éclair latérale à côté de la fermeture",
+        "lateral_(next_to_closure)_+_medial_lace": "Fermeture éclair latérale à côté de la fermeture + lacet médial"
       },
       "rocker": {
         "normal_rocker": "Déroulé normal",
