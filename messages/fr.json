@@ -253,7 +253,7 @@
     "unit_pair": "Paire",
     "unit_left": "Pied Gauche",
     "unit_right": "Pied Droit",
-    "unit_lr": "Pied Gauche et Droit",
+    "unit_lr": "Pied gauche+droit",
     "unit_sizes": "Différentes tailles",
     "pairs_sizes": "Paires/Pointures",
     "add_pair": "Ajouter une paire",

@@ -253,7 +253,7 @@
     "unit_pair": "Pair",
     "unit_left": "Left foot",
     "unit_right": "Right foot",
-    "unit_lr": "Left and Right foot",
+    "unit_lr": "Left+Right foot",
     "unit_sizes": "Different sizes",
     "pairs_sizes": "Pairs/Sizes",
     "add_pair": "Add pair",
