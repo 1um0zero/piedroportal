@@ -1,0 +1,3922 @@
+{
+  "entity": "cr56f_wpp_orders",
+  "fetchedAt": "2026-06-15T02:52:51.852Z",
+  "fields": {
+    "cr56f_2bunionettelf": {
+      "display": "4.2. bunionette LF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2bunionetterf": {
+      "display": "4.2. bunionette RF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2depthtoforepartlf": {
+      "display": "4.2. depth to forepart LF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2depthtoforepartrf": {
+      "display": "4.2. depth to forepart RF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2depthtotoeheellf": {
+      "display": "4.2. depth to toe heel LF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2depthtotoeheelrf": {
+      "display": "4.2. depth to toe heel RF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2extrawidthonconelf": {
+      "display": "4.2. extra width on cone LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_2extrawidthonconerf": {
+      "display": "4.2. extra width on cone RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_2haglundheelexostosislf": {
+      "display": "4.3. haglund/heel exostosis LF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2haglundheelexostosisrf": {
+      "display": "4.3. haglund/heel exostosis RF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2halluxvalguslf": {
+      "display": "4.2. hallux valgus LF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2halluxvalgusrf": {
+      "display": "4.2. hallux valgus RF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2hammertoelf": {
+      "display": "4.2 hammer toe LF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2hammertoerf": {
+      "display": "4.2 hammer toe RF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2heeldepthonlylf": {
+      "display": "4.2. heel depth only LF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2heeldepthonlyrf": {
+      "display": "4.2. heel depth only RF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2pesplanusaddaptionlf": {
+      "display": "4.2. pes planus addaption LF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2pesplanusaddaptionrf": {
+      "display": "4.2. pes planus addaption RF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2rockersoletypeslf": {
+      "display": "6.2 rocker sole types LF",
+      "optionSet": "cr56f_wpp_rocker_sole",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Normal Rocker"
+        },
+        {
+          "value": 979580001,
+          "label": "Advancing Rocker"
+        },
+        {
+          "value": 979580002,
+          "label": "Polyphase Rocker"
+        },
+        {
+          "value": 979580003,
+          "label": "Delaying Rocker"
+        },
+        {
+          "value": 979580004,
+          "label": "2-Phase Rocker"
+        }
+      ]
+    },
+    "cr56f_2rockersoletypesrf": {
+      "display": "6.2 rocker sole types RF",
+      "optionSet": "cr56f_wpp_rocker_sole",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Normal Rocker"
+        },
+        {
+          "value": 979580001,
+          "label": "Advancing Rocker"
+        },
+        {
+          "value": 979580002,
+          "label": "Polyphase Rocker"
+        },
+        {
+          "value": 979580003,
+          "label": "Delaying Rocker"
+        },
+        {
+          "value": 979580004,
+          "label": "2-Phase Rocker"
+        }
+      ]
+    },
+    "cr56f_2straightenheelcliplf": {
+      "display": "4.2. straighten heel clip LF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2straightenheelcliprf": {
+      "display": "4.2. straighten heel clip RF",
+      "optionSet": "cr56f_wpp_2468",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "2"
+        },
+        {
+          "value": 979580001,
+          "label": "4"
+        },
+        {
+          "value": 979580002,
+          "label": "6"
+        },
+        {
+          "value": 979580003,
+          "label": "8"
+        }
+      ]
+    },
+    "cr56f_2toeboxlf": {
+      "display": "4.2. toe box LF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_2toeboxrf": {
+      "display": "4.2. toe box RF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_3hf_laterallf": {
+      "display": "6.3 hf_lateral LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3hf_lateralrf": {
+      "display": "6.3 hf_lateral RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3hf_mediallf": {
+      "display": "6.3 hf_medial LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3hf_medialrf": {
+      "display": "6.3 hf_medial RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3sf_laterallf": {
+      "display": "6.3 sf_lateral LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3sf_lateralrf": {
+      "display": "6.3 sf_lateral RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3sf_mediallf": {
+      "display": "6.3 sf_medial LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_3sf_medialrf": {
+      "display": "6.3 sf_medial RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4hw_laterallf": {
+      "display": "6.4 hw_lateral LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4hw_lateralrf": {
+      "display": "6.4 hw_lateral RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4hw_mediallf": {
+      "display": "6.4 hw_medial LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4hw_medialrf": {
+      "display": "6.4 hw_medial RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4sw_laterallf": {
+      "display": "6.4 sw_lateral LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4sw_lateralrf": {
+      "display": "6.4 sw_lateral RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4sw_mediallf": {
+      "display": "6.4 sw_medial LF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_4sw_medialrf": {
+      "display": "6.4 sw_medial RF",
+      "optionSet": "cr56f_wpp_120",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580099,
+          "label": "--"
+        },
+        {
+          "value": 979580000,
+          "label": "1"
+        },
+        {
+          "value": 979580001,
+          "label": "2"
+        },
+        {
+          "value": 979580002,
+          "label": "3"
+        },
+        {
+          "value": 979580003,
+          "label": "4"
+        },
+        {
+          "value": 979580004,
+          "label": "5"
+        },
+        {
+          "value": 979580005,
+          "label": "6"
+        },
+        {
+          "value": 979580006,
+          "label": "7"
+        },
+        {
+          "value": 979580007,
+          "label": "8"
+        },
+        {
+          "value": 979580008,
+          "label": "9"
+        },
+        {
+          "value": 979580009,
+          "label": "10"
+        },
+        {
+          "value": 979580010,
+          "label": "11"
+        },
+        {
+          "value": 979580011,
+          "label": "12"
+        },
+        {
+          "value": 979580012,
+          "label": "13"
+        },
+        {
+          "value": 979580013,
+          "label": "14"
+        },
+        {
+          "value": 979580014,
+          "label": "15"
+        },
+        {
+          "value": 979580015,
+          "label": "16"
+        },
+        {
+          "value": 979580016,
+          "label": "17"
+        },
+        {
+          "value": 979580017,
+          "label": "18"
+        },
+        {
+          "value": 979580018,
+          "label": "19"
+        },
+        {
+          "value": 979580019,
+          "label": "20"
+        }
+      ]
+    },
+    "cr56f_6evawedgecolourlf": {
+      "display": "6.6 EVA/Sportive Sole LF",
+      "optionSet": "cr56f_evawedgecolour",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "EVA Black"
+        },
+        {
+          "value": 979580017,
+          "label": "EVA Brown"
+        },
+        {
+          "value": 979580001,
+          "label": "EVA Taupe"
+        },
+        {
+          "value": 979580002,
+          "label": "EVA Grey"
+        },
+        {
+          "value": 979580003,
+          "label": "EVA White"
+        },
+        {
+          "value": 979580010,
+          "label": "EVA Lightweight Amber"
+        },
+        {
+          "value": 979580004,
+          "label": "EVA Lightweight Black"
+        },
+        {
+          "value": 979580005,
+          "label": "EVA Lightweight Taupe"
+        },
+        {
+          "value": 979580011,
+          "label": "EVA Lightweight Off-White"
+        },
+        {
+          "value": 979580006,
+          "label": "Sportive Black"
+        },
+        {
+          "value": 979580007,
+          "label": "Sportive Beige"
+        },
+        {
+          "value": 979580008,
+          "label": "Sportive Grey"
+        },
+        {
+          "value": 979580009,
+          "label": "Sportive White"
+        },
+        {
+          "value": 979580012,
+          "label": "Full Rubber Black"
+        },
+        {
+          "value": 979580013,
+          "label": "Full Rubber Amber"
+        },
+        {
+          "value": 979580014,
+          "label": "Full Rubber Blue"
+        },
+        {
+          "value": 979580015,
+          "label": "Full Rubber Pink"
+        },
+        {
+          "value": 979580016,
+          "label": "Full Rubber White"
+        }
+      ]
+    },
+    "cr56f_6evawedgecolourrf": {
+      "display": "6.6 EVA/Sportive Sole RF",
+      "optionSet": "cr56f_evawedgecolour",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "EVA Black"
+        },
+        {
+          "value": 979580017,
+          "label": "EVA Brown"
+        },
+        {
+          "value": 979580001,
+          "label": "EVA Taupe"
+        },
+        {
+          "value": 979580002,
+          "label": "EVA Grey"
+        },
+        {
+          "value": 979580003,
+          "label": "EVA White"
+        },
+        {
+          "value": 979580010,
+          "label": "EVA Lightweight Amber"
+        },
+        {
+          "value": 979580004,
+          "label": "EVA Lightweight Black"
+        },
+        {
+          "value": 979580005,
+          "label": "EVA Lightweight Taupe"
+        },
+        {
+          "value": 979580011,
+          "label": "EVA Lightweight Off-White"
+        },
+        {
+          "value": 979580006,
+          "label": "Sportive Black"
+        },
+        {
+          "value": 979580007,
+          "label": "Sportive Beige"
+        },
+        {
+          "value": 979580008,
+          "label": "Sportive Grey"
+        },
+        {
+          "value": 979580009,
+          "label": "Sportive White"
+        },
+        {
+          "value": 979580012,
+          "label": "Full Rubber Black"
+        },
+        {
+          "value": 979580013,
+          "label": "Full Rubber Amber"
+        },
+        {
+          "value": 979580014,
+          "label": "Full Rubber Blue"
+        },
+        {
+          "value": 979580015,
+          "label": "Full Rubber Pink"
+        },
+        {
+          "value": 979580016,
+          "label": "Full Rubber White"
+        }
+      ]
+    },
+    "cr56f_6puevabumperlf": {
+      "display": "6.6 PU/EVA bumper LF",
+      "optionSet": "cr56f_puevabumper",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "PU Black"
+        },
+        {
+          "value": 979580001,
+          "label": "PU White"
+        },
+        {
+          "value": 979580002,
+          "label": "EVA Black"
+        },
+        {
+          "value": 979580003,
+          "label": "EVA White"
+        }
+      ]
+    },
+    "cr56f_6puevabumperrf": {
+      "display": "6.6 PU/EVA bumper RF",
+      "optionSet": "cr56f_puevabumper",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "PU Black"
+        },
+        {
+          "value": 979580001,
+          "label": "PU White"
+        },
+        {
+          "value": 979580002,
+          "label": "EVA Black"
+        },
+        {
+          "value": 979580003,
+          "label": "EVA White"
+        }
+      ]
+    },
+    "cr56f_6runnersolelf": {
+      "display": "6.6 Sole LF",
+      "optionSet": "cr56f_runnersole",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Piedro Runner Black"
+        },
+        {
+          "value": 979580001,
+          "label": "Piedro Runner Amber"
+        },
+        {
+          "value": 979580002,
+          "label": "Rubber Black"
+        },
+        {
+          "value": 979580003,
+          "label": "Rubber Amber"
+        },
+        {
+          "value": 979580004,
+          "label": "Fish Black"
+        },
+        {
+          "value": 979580005,
+          "label": "Fish Amber"
+        },
+        {
+          "value": 979580006,
+          "label": "Tire Black"
+        },
+        {
+          "value": 979580007,
+          "label": "Tire Amber"
+        },
+        {
+          "value": 979580008,
+          "label": "EVA Nora Astro Star Lightweight Black"
+        },
+        {
+          "value": 979580009,
+          "label": "EVA Nora Astro Star Lightweight Amber"
+        },
+        {
+          "value": 979580010,
+          "label": "EVA Lightweight Port Flex Black"
+        },
+        {
+          "value": 979580011,
+          "label": "EVA Lightweight Port Flex Amber"
+        },
+        {
+          "value": 979580012,
+          "label": "Lightweight Vibram Sole Black"
+        },
+        {
+          "value": 979580013,
+          "label": "Lightweight Vibram Sole Brown"
+        },
+        {
+          "value": 979580014,
+          "label": "Lightweight Sole Forli Uomo"
+        },
+        {
+          "value": 979580015,
+          "label": "Full Rubber Sole Montana Black"
+        },
+        {
+          "value": 979580016,
+          "label": "Full Rubber Sole Montana Brown"
+        },
+        {
+          "value": 979580017,
+          "label": "Nora Sole Plate Blue with Light Body Colour"
+        },
+        {
+          "value": 979580018,
+          "label": "Nora Sole Plate Black with Light Body Colour"
+        },
+        {
+          "value": 979580019,
+          "label": "Nora Sole Plate Black with Black Body Colour"
+        }
+      ]
+    },
+    "cr56f_6runnersolerf": {
+      "display": "6.6 Sole RF",
+      "optionSet": "cr56f_runnersole",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Piedro Runner Black"
+        },
+        {
+          "value": 979580001,
+          "label": "Piedro Runner Amber"
+        },
+        {
+          "value": 979580002,
+          "label": "Rubber Black"
+        },
+        {
+          "value": 979580003,
+          "label": "Rubber Amber"
+        },
+        {
+          "value": 979580004,
+          "label": "Fish Black"
+        },
+        {
+          "value": 979580005,
+          "label": "Fish Amber"
+        },
+        {
+          "value": 979580006,
+          "label": "Tire Black"
+        },
+        {
+          "value": 979580007,
+          "label": "Tire Amber"
+        },
+        {
+          "value": 979580008,
+          "label": "EVA Nora Astro Star Lightweight Black"
+        },
+        {
+          "value": 979580009,
+          "label": "EVA Nora Astro Star Lightweight Amber"
+        },
+        {
+          "value": 979580010,
+          "label": "EVA Lightweight Port Flex Black"
+        },
+        {
+          "value": 979580011,
+          "label": "EVA Lightweight Port Flex Amber"
+        },
+        {
+          "value": 979580012,
+          "label": "Lightweight Vibram Sole Black"
+        },
+        {
+          "value": 979580013,
+          "label": "Lightweight Vibram Sole Brown"
+        },
+        {
+          "value": 979580014,
+          "label": "Lightweight Sole Forli Uomo"
+        },
+        {
+          "value": 979580015,
+          "label": "Full Rubber Sole Montana Black"
+        },
+        {
+          "value": 979580016,
+          "label": "Full Rubber Sole Montana Brown"
+        },
+        {
+          "value": 979580017,
+          "label": "Nora Sole Plate Blue with Light Body Colour"
+        },
+        {
+          "value": 979580018,
+          "label": "Nora Sole Plate Black with Light Body Colour"
+        },
+        {
+          "value": 979580019,
+          "label": "Nora Sole Plate Black with Black Body Colour"
+        }
+      ]
+    },
+    "cr56f_6spoilerlf": {
+      "display": "6.6 Spoiler LF",
+      "optionSet": "cr56f_spoiler",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Black"
+        },
+        {
+          "value": 979580001,
+          "label": "Dark Brown"
+        },
+        {
+          "value": 979580002,
+          "label": "Light Grey"
+        },
+        {
+          "value": 979580003,
+          "label": "Dark Grey"
+        },
+        {
+          "value": 979580004,
+          "label": "Dark Blue"
+        },
+        {
+          "value": 979580005,
+          "label": "Red"
+        },
+        {
+          "value": 979580006,
+          "label": "Amber"
+        },
+        {
+          "value": 979580007,
+          "label": "Cobalt"
+        }
+      ]
+    },
+    "cr56f_6spoilerrf": {
+      "display": "6.6 Spoiler RF",
+      "optionSet": "cr56f_spoiler",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Black"
+        },
+        {
+          "value": 979580001,
+          "label": "Dark Brown"
+        },
+        {
+          "value": 979580002,
+          "label": "Light Grey"
+        },
+        {
+          "value": 979580003,
+          "label": "Dark Grey"
+        },
+        {
+          "value": 979580004,
+          "label": "Dark Blue"
+        },
+        {
+          "value": 979580005,
+          "label": "Red"
+        },
+        {
+          "value": 979580006,
+          "label": "Amber"
+        },
+        {
+          "value": 979580007,
+          "label": "Cobalt"
+        }
+      ]
+    },
+    "cr56f_7zsmprefabsolelf": {
+      "display": "6.7 ZSM prefab sole LF",
+      "optionSet": "cr56f_zsmprefabsoles",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "Sneaker White 09"
+        },
+        {
+          "value": 979580002,
+          "label": "Sneaker Light Beige 19"
+        },
+        {
+          "value": 979580003,
+          "label": "Sneaker Black 81"
+        },
+        {
+          "value": 979580004,
+          "label": "Runner White 09"
+        },
+        {
+          "value": 979580005,
+          "label": "Runner Light Grey 56"
+        },
+        {
+          "value": 979580006,
+          "label": "Runner Black 81"
+        }
+      ]
+    },
+    "cr56f_7zsmprefabsolerf": {
+      "display": "6.7 ZSM prefab sole RF",
+      "optionSet": "cr56f_zsmprefabsoles",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "Sneaker White 09"
+        },
+        {
+          "value": 979580002,
+          "label": "Sneaker Light Beige 19"
+        },
+        {
+          "value": 979580003,
+          "label": "Sneaker Black 81"
+        },
+        {
+          "value": 979580004,
+          "label": "Runner White 09"
+        },
+        {
+          "value": 979580005,
+          "label": "Runner Light Grey 56"
+        },
+        {
+          "value": 979580006,
+          "label": "Runner Black 81"
+        }
+      ]
+    },
+    "cr56f_7zsmsolesheetcolourlf": {
+      "display": "6.7 ZSM sole sheet colour LF",
+      "optionSet": "cr56f_zsmsolesheetcolours",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580009,
+          "label": "09 White"
+        },
+        {
+          "value": 979580017,
+          "label": "17 Beige"
+        },
+        {
+          "value": 979580019,
+          "label": "19 Light Beige"
+        },
+        {
+          "value": 979580030,
+          "label": "30 Honey"
+        },
+        {
+          "value": 979580032,
+          "label": "32 Yellow"
+        },
+        {
+          "value": 979580034,
+          "label": "34 Orange"
+        },
+        {
+          "value": 979580035,
+          "label": "35 Mid Brown"
+        },
+        {
+          "value": 979580038,
+          "label": "38 Green"
+        },
+        {
+          "value": 979580041,
+          "label": "41 Taupe"
+        },
+        {
+          "value": 979580046,
+          "label": "46 Brown"
+        },
+        {
+          "value": 979580056,
+          "label": "56 Grey"
+        },
+        {
+          "value": 979580078,
+          "label": "78 Blue"
+        },
+        {
+          "value": 979580081,
+          "label": "81 Black"
+        },
+        {
+          "value": 979580102,
+          "label": "102 Red"
+        },
+        {
+          "value": 979580103,
+          "label": "103 Blue"
+        }
+      ]
+    },
+    "cr56f_7zsmsolesheetcolourrf": {
+      "display": "6.7 ZSM sole sheet colour RF",
+      "optionSet": "cr56f_zsmsolesheetcolours",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580009,
+          "label": "09 White"
+        },
+        {
+          "value": 979580017,
+          "label": "17 Beige"
+        },
+        {
+          "value": 979580019,
+          "label": "19 Light Beige"
+        },
+        {
+          "value": 979580030,
+          "label": "30 Honey"
+        },
+        {
+          "value": 979580032,
+          "label": "32 Yellow"
+        },
+        {
+          "value": 979580034,
+          "label": "34 Orange"
+        },
+        {
+          "value": 979580035,
+          "label": "35 Mid Brown"
+        },
+        {
+          "value": 979580038,
+          "label": "38 Green"
+        },
+        {
+          "value": 979580041,
+          "label": "41 Taupe"
+        },
+        {
+          "value": 979580046,
+          "label": "46 Brown"
+        },
+        {
+          "value": 979580056,
+          "label": "56 Grey"
+        },
+        {
+          "value": 979580078,
+          "label": "78 Blue"
+        },
+        {
+          "value": 979580081,
+          "label": "81 Black"
+        },
+        {
+          "value": 979580102,
+          "label": "102 Red"
+        },
+        {
+          "value": 979580103,
+          "label": "103 Blue"
+        }
+      ]
+    },
+    "cr56f_7zsmsolesheetlf": {
+      "display": "6.7 ZSM sole sheet LF",
+      "optionSet": "cr56f_zsmsolesheets",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "EVA Lavero Soft 6 mm"
+        },
+        {
+          "value": 979580002,
+          "label": "EVA Lavero Soft 8 mm"
+        },
+        {
+          "value": 979580003,
+          "label": "EVA Mandorlo 6 mm"
+        },
+        {
+          "value": 979580004,
+          "label": "Optimum  6 mm"
+        },
+        {
+          "value": 979580005,
+          "label": "Vibram 8870 5 mm"
+        },
+        {
+          "value": 979580006,
+          "label": "Vibram 8860 6 mm"
+        },
+        {
+          "value": 979580007,
+          "label": "EVA Rubber Astro Star 4 mm"
+        },
+        {
+          "value": 979580008,
+          "label": "EVA Rubber Astro Star 6 mm"
+        },
+        {
+          "value": 979580009,
+          "label": "EVA Rubber Astrolight Delta 4 mm"
+        },
+        {
+          "value": 979580010,
+          "label": "EVA Rubber Astrolight Delta 6 mm"
+        },
+        {
+          "value": 979580011,
+          "label": "EVA Rubber Anna 4 mm"
+        },
+        {
+          "value": 979580012,
+          "label": "EVA Rubber Anna 6 mm"
+        },
+        {
+          "value": 979580013,
+          "label": "Lavero Flex Rubber 4 mm"
+        },
+        {
+          "value": 979580014,
+          "label": "Lavero Flex Rubber 6 mm"
+        },
+        {
+          "value": 979580015,
+          "label": "Rubber Tire 6 mm"
+        },
+        {
+          "value": 979580016,
+          "label": "Vibram 2002  6 mm"
+        },
+        {
+          "value": 979580017,
+          "label": "Jony Sole 6 mm"
+        },
+        {
+          "value": 979580018,
+          "label": "Astrolight Delta 6 mm"
+        },
+        {
+          "value": 979580019,
+          "label": "Tire 8 mm"
+        },
+        {
+          "value": 979580020,
+          "label": "Sportflex 8mm"
+        }
+      ]
+    },
+    "cr56f_7zsmsolesheetrf": {
+      "display": "6.7 ZSM sole sheet RF",
+      "optionSet": "cr56f_zsmsolesheets",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "EVA Lavero Soft 6 mm"
+        },
+        {
+          "value": 979580002,
+          "label": "EVA Lavero Soft 8 mm"
+        },
+        {
+          "value": 979580003,
+          "label": "EVA Mandorlo 6 mm"
+        },
+        {
+          "value": 979580004,
+          "label": "Optimum  6 mm"
+        },
+        {
+          "value": 979580005,
+          "label": "Vibram 8870 5 mm"
+        },
+        {
+          "value": 979580006,
+          "label": "Vibram 8860 6 mm"
+        },
+        {
+          "value": 979580007,
+          "label": "EVA Rubber Astro Star 4 mm"
+        },
+        {
+          "value": 979580008,
+          "label": "EVA Rubber Astro Star 6 mm"
+        },
+        {
+          "value": 979580009,
+          "label": "EVA Rubber Astrolight Delta 4 mm"
+        },
+        {
+          "value": 979580010,
+          "label": "EVA Rubber Astrolight Delta 6 mm"
+        },
+        {
+          "value": 979580011,
+          "label": "EVA Rubber Anna 4 mm"
+        },
+        {
+          "value": 979580012,
+          "label": "EVA Rubber Anna 6 mm"
+        },
+        {
+          "value": 979580013,
+          "label": "Lavero Flex Rubber 4 mm"
+        },
+        {
+          "value": 979580014,
+          "label": "Lavero Flex Rubber 6 mm"
+        },
+        {
+          "value": 979580015,
+          "label": "Rubber Tire 6 mm"
+        },
+        {
+          "value": 979580016,
+          "label": "Vibram 2002  6 mm"
+        },
+        {
+          "value": 979580017,
+          "label": "Jony Sole 6 mm"
+        },
+        {
+          "value": 979580018,
+          "label": "Astrolight Delta 6 mm"
+        },
+        {
+          "value": 979580019,
+          "label": "Tire 8 mm"
+        },
+        {
+          "value": 979580020,
+          "label": "Sportflex 8mm"
+        }
+      ]
+    },
+    "cr56f_additionsconfirmation": {
+      "display": "9 additions confirmation",
+      "optionSet": "cr56f_wpp_orders_cr56f_additionsconfirmation",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 1,
+          "label": "Confirmed"
+        },
+        {
+          "value": 2,
+          "label": "No additions"
+        }
+      ]
+    },
+    "cr56f_closurelaceslf": {
+      "display": "5 closure laces LF",
+      "optionSet": "cr56f_wpp_closure_laces",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Eyelets"
+        },
+        {
+          "value": 979580001,
+          "label": "Hooks"
+        },
+        {
+          "value": 979580002,
+          "label": "D-Rings"
+        },
+        {
+          "value": 979580003,
+          "label": "Blind Eyelets"
+        },
+        {
+          "value": 979580004,
+          "label": "Buckle & Strap"
+        },
+        {
+          "value": 979580005,
+          "label": "BOA Closure"
+        }
+      ]
+    },
+    "cr56f_closurelacesrf": {
+      "display": "5 closure laces RF",
+      "optionSet": "cr56f_wpp_closure_laces",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Eyelets"
+        },
+        {
+          "value": 979580001,
+          "label": "Hooks"
+        },
+        {
+          "value": 979580002,
+          "label": "D-Rings"
+        },
+        {
+          "value": 979580003,
+          "label": "Blind Eyelets"
+        },
+        {
+          "value": 979580004,
+          "label": "Buckle & Strap"
+        },
+        {
+          "value": 979580005,
+          "label": "BOA Closure"
+        }
+      ]
+    },
+    "cr56f_closurevelcrostrapslf": {
+      "display": "5 closure velcro and straps LF",
+      "optionSet": "cr56f_wpp_closure_velcro_straps",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Return Velcro"
+        },
+        {
+          "value": 979580001,
+          "label": "Lap-Over Velcro"
+        },
+        {
+          "value": 979580002,
+          "label": "Single Hand Velcro"
+        },
+        {
+          "value": 979580003,
+          "label": "Velcro Seperate"
+        }
+      ]
+    },
+    "cr56f_closurevelcrostrapsrf": {
+      "display": "5 closure velcro and straps RF",
+      "optionSet": "cr56f_wpp_closure_velcro_straps",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Return Velcro"
+        },
+        {
+          "value": 979580001,
+          "label": "Lap-Over Velcro"
+        },
+        {
+          "value": 979580002,
+          "label": "Single Hand Velcro"
+        },
+        {
+          "value": 979580003,
+          "label": "Velcro Seperate"
+        }
+      ]
+    },
+    "cr56f_extrapaddingontonguelf": {
+      "display": "5 extra padding on tongue LF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_extrapaddingontonguerf": {
+      "display": "5 extra padding on tongue RF",
+      "optionSet": "cr56f_wpp_46810",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "4"
+        },
+        {
+          "value": 979580001,
+          "label": "6"
+        },
+        {
+          "value": 979580002,
+          "label": "8"
+        },
+        {
+          "value": 979580003,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_lateralheelwidthlf": {
+      "display": "4 lateral heel width LF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_lateralheelwidthrf": {
+      "display": "4 lateral heel width RF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_lateraljointwidthlf": {
+      "display": "4 lateral joint width LF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_lateraljointwidthrf": {
+      "display": "4 lateral joint width RF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_lininglf": {
+      "display": "5 lining LF",
+      "optionSet": "cr56f_lining",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Leather"
+        },
+        {
+          "value": 979580001,
+          "label": "Synthetic Fur"
+        },
+        {
+          "value": 979580002,
+          "label": "Real Fur"
+        },
+        {
+          "value": 979580003,
+          "label": "Sympatex"
+        },
+        {
+          "value": 979580004,
+          "label": "Diabetic"
+        },
+        {
+          "value": 979580005,
+          "label": "Microfiber"
+        }
+      ]
+    },
+    "cr56f_liningrf": {
+      "display": "5 lining RF",
+      "optionSet": "cr56f_lining",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Leather"
+        },
+        {
+          "value": 979580001,
+          "label": "Synthetic Fur"
+        },
+        {
+          "value": 979580002,
+          "label": "Real Fur"
+        },
+        {
+          "value": 979580003,
+          "label": "Sympatex"
+        },
+        {
+          "value": 979580004,
+          "label": "Diabetic"
+        },
+        {
+          "value": 979580005,
+          "label": "Microfiber"
+        }
+      ]
+    },
+    "cr56f_medialheelwidthlf": {
+      "display": "4 medial heel width LF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_medialheelwidthrf": {
+      "display": "4 medial heel width RF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_medialjointwidthlf": {
+      "display": "4 medial joint width LF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_medialjointwidthrf": {
+      "display": "4 medial joint width RF",
+      "optionSet": "cr56f_wpp_110",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580001,
+          "label": "1"
+        },
+        {
+          "value": 979580002,
+          "label": "2"
+        },
+        {
+          "value": 979580003,
+          "label": "3"
+        },
+        {
+          "value": 979580004,
+          "label": "4"
+        },
+        {
+          "value": 979580005,
+          "label": "5"
+        },
+        {
+          "value": 979580006,
+          "label": "6"
+        },
+        {
+          "value": 979580007,
+          "label": "7"
+        },
+        {
+          "value": 979580008,
+          "label": "8"
+        },
+        {
+          "value": 979580009,
+          "label": "9"
+        },
+        {
+          "value": 979580010,
+          "label": "10"
+        }
+      ]
+    },
+    "cr56f_productionstate": {
+      "display": "Prod.Status",
+      "optionSet": "cr56f_productionstate",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "order received"
+        },
+        {
+          "value": 979580001,
+          "label": "in preparation"
+        },
+        {
+          "value": 979580005,
+          "label": "cutting"
+        },
+        {
+          "value": 979580015,
+          "label": "stitching"
+        },
+        {
+          "value": 979580025,
+          "label": "mounting"
+        },
+        {
+          "value": 979580035,
+          "label": "finishing"
+        },
+        {
+          "value": 979580007,
+          "label": "delivered"
+        },
+        {
+          "value": 979580008,
+          "label": "fitting"
+        },
+        {
+          "value": 979580002,
+          "label": "modeling"
+        },
+        {
+          "value": 979580003,
+          "label": "preparing"
+        }
+      ]
+    },
+    "cr56f_shoeunit": {
+      "display": "Unit",
+      "optionSet": "cr56f_wpp_shoe_unit",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Left Foot"
+        },
+        {
+          "value": 979580001,
+          "label": "Right Foot"
+        },
+        {
+          "value": 979580002,
+          "label": "Pair"
+        },
+        {
+          "value": 979580004,
+          "label": "Left and Right foot"
+        },
+        {
+          "value": 979580005,
+          "label": "Different sizes"
+        }
+      ]
+    },
+    "cr56f_state_approval": {
+      "display": "Approval",
+      "optionSet": "cr56f_orderstate",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 0,
+          "label": "registered"
+        },
+        {
+          "value": 979580001,
+          "label": "under analysis"
+        },
+        {
+          "value": 979580002,
+          "label": "approved"
+        },
+        {
+          "value": 979580003,
+          "label": "refused"
+        },
+        {
+          "value": 979580004,
+          "label": "need attention"
+        },
+        {
+          "value": 979580005,
+          "label": "awaiting payment"
+        }
+      ]
+    },
+    "cr56f_stiffenerhardnesslf": {
+      "display": "5 stiffener hardness LF",
+      "optionSet": "cr56f_stiffener",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Soft"
+        },
+        {
+          "value": 979580001,
+          "label": "Standard"
+        },
+        {
+          "value": 979580002,
+          "label": "Hard"
+        },
+        {
+          "value": 979580003,
+          "label": "Double"
+        },
+        {
+          "value": 979580004,
+          "label": "Extra padding"
+        }
+      ]
+    },
+    "cr56f_stiffenerhardnessrf": {
+      "display": "5 stiffener hardness RF",
+      "optionSet": "cr56f_stiffener",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Soft"
+        },
+        {
+          "value": 979580001,
+          "label": "Standard"
+        },
+        {
+          "value": 979580002,
+          "label": "Hard"
+        },
+        {
+          "value": 979580003,
+          "label": "Double"
+        },
+        {
+          "value": 979580004,
+          "label": "Extra padding"
+        }
+      ]
+    },
+    "cr56f_toepuffslf": {
+      "display": "5 toe puffs LF",
+      "optionSet": "cr56f_wpp_toe_puffs",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Soft"
+        },
+        {
+          "value": 979580001,
+          "label": "Standard"
+        },
+        {
+          "value": 979580002,
+          "label": "Hard"
+        }
+      ]
+    },
+    "cr56f_toepuffsrf": {
+      "display": "5 toe puffs RF",
+      "optionSet": "cr56f_wpp_toe_puffs",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "Soft"
+        },
+        {
+          "value": 979580001,
+          "label": "Standard"
+        },
+        {
+          "value": 979580002,
+          "label": "Hard"
+        }
+      ]
+    },
+    "cr56f_zipperlf": {
+      "display": "5 zipper LF",
+      "optionSet": "cr56f_wpp_zipper",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "1 Medial Zipper Next to closure"
+        },
+        {
+          "value": 979580001,
+          "label": "2 Medial Zipper Side"
+        },
+        {
+          "value": 979580002,
+          "label": "3 Lateral Zipper Next to closure"
+        }
+      ]
+    },
+    "cr56f_zipperrf": {
+      "display": "5 zipper RF",
+      "optionSet": "cr56f_wpp_zipper",
+      "isGlobal": true,
+      "options": [
+        {
+          "value": 979580000,
+          "label": "1 Medial Zipper Next to closure"
+        },
+        {
+          "value": 979580001,
+          "label": "2 Medial Zipper Side"
+        },
+        {
+          "value": 979580002,
+          "label": "3 Lateral Zipper Next to closure"
+        }
+      ]
+    }
+  }
+}
