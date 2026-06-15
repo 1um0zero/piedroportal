@@ -72,12 +72,13 @@ function MmInput({ values, value, onChange, onBlurDone }: {
 }
 
 // ── Shared option picker (one strip, click fills active foot) ─────────────────
-function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t }: {
+function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t, fieldKey }: {
   options: string[]
   valueL: string; valueR: string
   onChangeL: (v: string | null) => void
   onChangeR: (v: string | null) => void
   t: (key: string) => string
+  fieldKey: string
 }) {
   const [active, setActive] = useState<'l'|'r'>('l')
   const current = active === 'l' ? valueL : valueR
@@ -96,7 +97,7 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t }
           className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg border text-xs transition-all
             ${active === 'l' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
           <span className="text-stone-500 font-bold">{t('left')}</span>
-          <span className={`mx-1 truncate ${valueL ? 'text-stone-800' : 'text-stone-300'}`}>{valueL || t('empty_value')}</span>
+          <span className={`mx-1 truncate ${valueL ? 'text-stone-800' : 'text-stone-300'}`}>{valueL ? translateOptionValue(fieldKey, valueL, t) : t('empty_value')}</span>
           {valueL && (
             <span className="shrink-0 text-stone-300 hover:text-red-400 cursor-pointer"
               onClick={e => { e.stopPropagation(); onChangeL(null) }}>×</span>
@@ -107,7 +108,7 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t }
           className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg border text-xs transition-all
             ${active === 'r' ? 'border-gold bg-gold/5 font-medium' : 'border-stone-200 hover:border-stone-300'}`}>
           <span className="text-stone-500 font-bold">{t('right')}</span>
-          <span className={`mx-1 truncate ${valueR ? 'text-stone-800' : 'text-stone-300'}`}>{valueR || t('empty_value')}</span>
+          <span className={`mx-1 truncate ${valueR ? 'text-stone-800' : 'text-stone-300'}`}>{valueR ? translateOptionValue(fieldKey, valueR, t) : t('empty_value')}</span>
           {valueR && (
             <span className="shrink-0 text-stone-300 hover:text-red-400 cursor-pointer"
               onClick={e => { e.stopPropagation(); onChangeR(null) }}>×</span>
@@ -123,7 +124,7 @@ function SharedOptionPicker({ options, valueL, valueR, onChangeL, onChangeR, t }
               ${current === opt
                 ? 'bg-gold text-white border-gold shadow-sm'
                 : 'text-stone-600 border-stone-200 bg-white hover:border-gold/60 hover:text-gold'}`}>
-            {opt}
+            {translateOptionValue(fieldKey, opt, t)}
           </button>
         ))}
       </div>
@@ -215,11 +216,12 @@ function ImageChips({ values, value, onChange, images, label }: {
 }
 
 // Classic select dropdown — used for closure fields in LEFT_RIGHT mode
-function SelectCombo({ values, value, onChange, t }: {
+function SelectCombo({ values, value, onChange, t, fieldKey }: {
   values: (number | string)[]
   value: unknown
   onChange: (v: string | null) => void
   t: (key: string) => string
+  fieldKey: string
 }) {
   return (
     <div className="relative">
@@ -230,7 +232,7 @@ function SelectCombo({ values, value, onChange, t }: {
                    appearance-none focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
                    transition-colors text-stone-700">
         <option value="">{t('empty_value')}</option>
-        {values.map(v => <option key={String(v)} value={String(v)}>{v}</option>)}
+        {values.map(v => <option key={String(v)} value={String(v)}>{translateOptionValue(fieldKey, String(v), t)}</option>)}
       </select>
       <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -796,6 +798,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           </div>
                         ) : (
                           <SharedOptionPicker
+                            fieldKey={field.key}
                             options={(field.values ?? []).map(String)}
                             valueL={String((additions[field.key] as SidedVal)?.l ?? '')}
                             valueR={String((additions[field.key] as SidedVal)?.r ?? '')}
@@ -822,6 +825,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                               <div className="space-y-1">
                                 <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')}</p>
                                 <SelectCombo
+                                  fieldKey={field.key}
                                   values={field.values ?? []}
                                   value={(additions[field.key] as SidedVal)?.l}
                                   onChange={v => updateField(field.key, 'l', v)}
@@ -833,6 +837,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                               <div className="space-y-1">
                                 <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')}</p>
                                 <SelectCombo
+                                  fieldKey={field.key}
                                   values={field.values ?? []}
                                   value={(additions[field.key] as SidedVal)?.r}
                                   onChange={v => updateField(field.key, 'r', v)}
