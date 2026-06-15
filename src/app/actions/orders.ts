@@ -226,11 +226,27 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const orderLocale    = (row.locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'
     const errors: string[] = []
 
-    // (1) Internal notification to the order desk.
+    // Client contacts (used to Cc the order desk so staff can reply-all to the
+    // client, and to Cc/Bcc the client's confirmation).
+    const [{ data: prof }, { data: comp }] = await Promise.all([
+      service.from('profiles').select('notify_cc, notify_bcc').eq('id', userId).single(),
+      row.company_id
+        ? service.from('companies').select('notify_cc, notify_bcc').eq('id', row.company_id).single()
+        : Promise.resolve({ data: null as { notify_cc?: string; notify_bcc?: string } | null }),
+    ])
+    const internalSet = new Set(toEmails.map(e => e.toLowerCase()))
+
+    // (1) Internal notification to the order desk — Cc the client (ordering user +
+    // company Cc) so the desk can reply-all if they have questions about the order.
     if (toEmails.length) {
+      const clientCc = uniq([
+        ...(userEmail ? [userEmail] : []),
+        ...splitEmails(comp?.notify_cc),
+      ]).filter(e => !internalSet.has(e))
       const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
       const { error } = await resend.emails.send({
         from: emailFrom, to: toEmails,
+        cc: clientCc.length ? clientCc : undefined,
         subject: t('subject_internal', { ref }),
         html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
         attachments: [attachment],
@@ -240,12 +256,6 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
 
     // (2) Confirmation to the ordering user (+ user/company Cc/Bcc).
     if (userEmail) {
-      const [{ data: prof }, { data: comp }] = await Promise.all([
-        service.from('profiles').select('notify_cc, notify_bcc').eq('id', userId).single(),
-        row.company_id
-          ? service.from('companies').select('notify_cc, notify_bcc').eq('id', row.company_id).single()
-          : Promise.resolve({ data: null as { notify_cc?: string; notify_bcc?: string } | null }),
-      ])
       const cc  = uniq([...splitEmails(prof?.notify_cc),  ...splitEmails(comp?.notify_cc)]).filter(e => e !== userEmail.toLowerCase())
       const bcc = uniq([...splitEmails(prof?.notify_bcc), ...splitEmails(comp?.notify_bcc)])
       const t = await getTranslations({ locale: orderLocale, namespace: 'emails' })
@@ -262,7 +272,6 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
 
     // (3) Branch-office copies — each relevant branch in its OWN language.
     const { data: prod } = await service.from('products').select('style_name').eq('id', row.product_id).single()
-    const internalSet = new Set(toEmails.map(e => e.toLowerCase()))
     const branchTargets = (await getBranchNotifyTargets(prod?.style_name))
       .filter(bt => !internalSet.has(bt.email.toLowerCase()))
     for (const bt of branchTargets) {
