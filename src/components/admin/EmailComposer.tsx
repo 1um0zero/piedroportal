@@ -16,6 +16,8 @@ export interface CampaignRow {
   sent_count: number
   failed_count: number
   created_at: string
+  body_html?: string | null
+  body?: string | null
 }
 
 interface UserOpt { id: string; name: string; email: string }
@@ -47,6 +49,7 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
   const defaultBody = `<p>${t('greeting')}</p><p><br/></p>`
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState(defaultBody) // rich HTML from the editor
+  const [editorInitial, setEditorInitial] = useState(defaultBody) // seed for the uncontrolled editor
   const [editorKey, setEditorKey] = useState(0) // bump to reset the uncontrolled editor
   const [signature, setSignature] = useState(signatureHtml)
   const [sigOpen, setSigOpen] = useState(false)
@@ -64,6 +67,7 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
   const [varKey, setVarKey] = useState(0) // bump to remount the variant editors
   const [translating, setTranslating] = useState(false)
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  const [viewing, setViewing] = useState<CampaignRow | null>(null)
 
   const LOCALES = ['en', 'nl', 'fr', 'de']
   // Languages actually present in the selected audience, beyond the original.
@@ -107,7 +111,7 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
       if (r.error) setMsg({ kind: 'err', text: r.error })
       else {
         setMsg({ kind: 'ok', text: t('created', { count: r.recipients ?? 0 }) })
-        setSubject(''); setBody(defaultBody); setEditorKey(k => k + 1); setScheduledAt(''); setWhen('now')
+        setSubject(''); setBody(defaultBody); setEditorInitial(defaultBody); setEditorKey(k => k + 1); setScheduledAt(''); setWhen('now')
         setExtraTo(''); setExtraCc(''); setExtraBcc(''); setRecipOpen(false)
         setVariants({}); setActiveVar(null); setVarKey(k => k + 1)
         router.refresh()
@@ -130,6 +134,20 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
       setVarKey(k => k + 1)
       setMsg({ kind: 'ok', text: t('translations_ready', { langs: Object.keys(r.translations).join(', ').toUpperCase() }) })
     })
+  }
+
+  // Load a past campaign's subject + body into the composer to send again. Audience
+  // and schedule are intentionally left untouched — the admin re-picks those.
+  function reuse(c: CampaignRow) {
+    const html = c.body_html || (c.body ? `<p>${c.body.replace(/\n/g, '<br/>')}</p>` : defaultBody)
+    setSubject(c.subject)
+    setBody(html)
+    setEditorInitial(html)
+    setEditorKey(k => k + 1)
+    setVariants({}); setActiveVar(null); setVarKey(k => k + 1)
+    setViewing(null)
+    setMsg({ kind: 'ok', text: t('reused') })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function test() {
@@ -205,7 +223,7 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
         {/* Subject + body */}
         <div className="space-y-3">
           <input className={inputCls} placeholder={t('subject')} value={subject} onChange={e => setSubject(e.target.value)} />
-          <RichTextEditor key={editorKey} initialHtml={defaultBody} onChange={setBody} placeholder={t('body_placeholder')} />
+          <RichTextEditor key={editorKey} initialHtml={editorInitial} onChange={setBody} placeholder={t('body_placeholder')} />
           <p className="text-xs text-stone-400">{t('body_hint')}</p>
         </div>
 
@@ -385,11 +403,15 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
                         {t(`status_${c.status}`)}
                       </span>
                     </td>
-                    <td className="py-2.5 text-right">
+                    <td className="py-2.5 text-right whitespace-nowrap">
+                      <button type="button" onClick={() => setViewing(c)}
+                        className="text-xs font-semibold text-stone-500 hover:text-gold-dark">
+                        {t('view_message')}
+                      </button>
                       {(c.status === 'scheduled' || c.status === 'sending') && (
                         <button type="button" disabled={pending}
                           onClick={() => startTransition(async () => { await cancelCampaign(c.id); router.refresh() })}
-                          className="text-xs font-semibold text-red-400 hover:text-red-600 disabled:opacity-40">
+                          className="ml-3 text-xs font-semibold text-red-400 hover:text-red-600 disabled:opacity-40">
                           {t('cancel')}
                         </button>
                       )}
@@ -401,6 +423,47 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
           </div>
         )}
       </div>
+
+      {/* ── View sent message ────────────────────────────────────────────── */}
+      {viewing && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8"
+          onClick={() => setViewing(null)}>
+          <div className="w-full max-w-2xl my-auto bg-white rounded-[14px] shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4 border-b border-stone-100 px-6 py-4">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">{t('subject')}</p>
+                <h3 className="text-base font-bold text-stone-800 break-words">{viewing.subject}</h3>
+              </div>
+              <button type="button" onClick={() => setViewing(null)}
+                className="shrink-0 text-stone-400 hover:text-stone-700 text-xl leading-none">×</button>
+            </div>
+            <div className="px-6 py-5 max-h-[65vh] overflow-y-auto">
+              {viewing.body_html ? (
+                <div className="text-sm text-stone-700 leading-relaxed [&_img]:max-w-full [&_img]:h-auto [&_a]:text-gold-dark [&_a]:underline"
+                  dangerouslySetInnerHTML={{ __html: viewing.body_html }} />
+              ) : viewing.body ? (
+                <pre className="whitespace-pre-wrap font-sans text-sm text-stone-700 leading-relaxed">{viewing.body}</pre>
+              ) : (
+                <p className="text-sm text-stone-400">{t('no_body')}</p>
+              )}
+              {signature && (
+                <div className="mt-4 border-t border-stone-100 pt-4 text-[12px] text-stone-500 leading-relaxed [&_img]:max-h-16 [&_img]:w-auto"
+                  dangerouslySetInnerHTML={{ __html: signature }} />
+              )}
+            </div>
+            <div className="flex justify-end gap-3 border-t border-stone-100 px-6 py-3">
+              <button type="button" onClick={() => setViewing(null)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold border border-stone-200 text-stone-600 hover:border-stone-300 transition-colors">
+                {t('close')}
+              </button>
+              <button type="button" onClick={() => reuse(viewing)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-gold text-white hover:bg-gold-dark transition-colors">
+                {t('reuse')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

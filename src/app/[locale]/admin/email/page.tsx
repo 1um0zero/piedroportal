@@ -16,7 +16,7 @@ export default async function AdminEmailPage() {
     service.from('profiles').select('id, full_name, email').not('email', 'is', null).order('full_name'),
     service.from('companies').select('id, name').order('name'),
     service.from('email_campaigns')
-      .select('id, subject, audience, scheduled_at, status, total_recipients, sent_count, failed_count, created_at')
+      .select('id, subject, audience, scheduled_at, status, total_recipients, sent_count, failed_count, created_at, body_html, body')
       .order('created_at', { ascending: false }).limit(50),
     getSettings(['broadcast_signature_html']),
   ])
