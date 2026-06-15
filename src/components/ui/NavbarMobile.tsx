@@ -53,8 +53,9 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
 
               <Link href="/gallery" onClick={close} className={linkCls}>{t('gallery')}</Link>
 
-              {/* STOCK is public like the gallery — browsing needs no login. */}
-              {!isBackoffice && (
+              {/* STOCK is public like the gallery — browsing needs no login. Everyone
+                  except piedro_admin (who gets /admin/stock below) sees this. */}
+              {!isAdmin && (
                 <Link href="/stock" onClick={close} className={linkCls}>{t('stock')}</Link>
               )}
 

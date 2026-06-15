@@ -85,8 +85,9 @@ export default async function Navbar({ locale }: Props) {
         <nav className="hidden lg:flex items-center gap-6 flex-1">
           <NavGalleryLink />
           <HeaderLivingstonLink visible={canSeeLiv} />
-          {/* STOCK is public like the gallery — browsing needs no login; ordering gates later. */}
-          {!isBackoffice && (
+          {/* STOCK is public like the gallery — browsing needs no login; ordering gates
+              later. Everyone except piedro_admin (who gets /admin/stock) sees this. */}
+          {!isAdmin && (
             <Link href="/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
               {t('stock')}
             </Link>
