@@ -6,7 +6,7 @@ import { getStockOrderRows } from '@/app/actions/stock'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const SELECT = `
-  id, user_id, dataverse_id, status, approval_state, production_state, unit, patient_name, reference_customer, quantity,
+  id, user_id, dataverse_id, status, approval_state, production_state, piedro_order_id, unit, patient_name, reference_customer, quantity,
   created_at, updated_at, size_left, size_right, additions, comments, pdf_url,
   products(id, style_name, colour_id, color_name, closure, picture_name, section),
   companies(id, name, erp_code)

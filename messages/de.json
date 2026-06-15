@@ -679,6 +679,7 @@
       "metric_production": "Produktion",
       "metric_urgent": "Dringend",
       "search_placeholder": "Modell, Patient, Ref. suchen…",
+      "search_placeholder_admin": "Piedro-Bestellung, Modell, Patient, Ref. suchen…",
       "search_hint": "* als Platzhalter: 2* = beginnt mit 2, *K = endet auf K.",
       "all_statuses": "Alle Status",
       "urgent_only": "Nur dringend",

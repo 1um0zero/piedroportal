@@ -679,6 +679,7 @@
       "metric_production": "Production",
       "metric_urgent": "Urgent",
       "search_placeholder": "Search style, patient, ref…",
+      "search_placeholder_admin": "Search Piedro order, style, patient, ref…",
       "search_hint": "Use * as a wildcard: 2* = starts with 2, *K = ends with K.",
       "all_statuses": "All statuses",
       "urgent_only": "Urgent only",

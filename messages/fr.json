@@ -679,6 +679,7 @@
       "metric_production": "Production",
       "metric_urgent": "Urgent",
       "search_placeholder": "Rechercher modèle, patient, réf…",
+      "search_placeholder_admin": "Rechercher commande Piedro, modèle, patient, réf…",
       "search_hint": "Utilisez * comme joker : 2* = commence par 2, *K = se termine par K.",
       "all_statuses": "Tous les statuts",
       "urgent_only": "Urgent uniquement",

@@ -192,7 +192,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
       else if (active)               { if (o.status !== active) return false }
       if (urgentFilter && !isUrgent(o)) return false
       if (search && !matchesAny(
-        [o.products?.style_name, o.products?.colour_id, o.patient_name, o.reference_customer, o.companies?.name],
+        [o.piedro_order_id, o.products?.style_name, o.products?.colour_id, o.patient_name, o.reference_customer, o.companies?.name],
         search,
       )) return false
       return true
@@ -310,7 +310,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
           </svg>
           <input
             type="search" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder={t('search_placeholder')}
+            placeholder={isAdmin ? t('search_placeholder_admin') : t('search_placeholder')}
             title={t('search_hint')}
             className="h-9 pl-8 pr-3 text-sm bg-white border border-stone-200 rounded-lg w-56
                        focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
@@ -388,6 +388,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
                 <th className="px-4 py-3 text-left">{t('col_product')}</th>
+                {isAdmin && <th className="px-4 py-3 text-left">{t('col_piedro_order')}</th>}
                 <th className="px-4 py-3 text-left">{t('col_patient')}</th>
                 {isAdmin && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
                 <th className="px-4 py-3 text-left">{t('col_status')}</th>
@@ -401,7 +402,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 9 : 8}
+                  <td colSpan={isAdmin ? 10 : 8}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     {t('no_orders')}
                   </td>
@@ -459,6 +460,14 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                         </div>
                       </div>
                     </td>
+                    {/* Piedro Order # (admin only) — the ERP order number staff search by */}
+                    {isAdmin && (
+                      <td className="px-4 py-3">
+                        {o.piedro_order_id
+                          ? <span className="font-semibold text-stone-700 tabular-nums">{o.piedro_order_id}</span>
+                          : <span className="text-stone-300">—</span>}
+                      </td>
+                    )}
                     {/* Patient */}
                     <td className="px-4 py-3">
                       <p className="text-stone-700 truncate max-w-[150px]">
