@@ -24,6 +24,8 @@ function legacyGaleriaRedirect(request: NextRequest): NextResponse | null {
   if (category > 0) params.category = category
   const search = sp.get('search')
   if (search) params.search = search
+  const diabetics = (sp.get('diabetics') ?? '').toLowerCase()
+  if (diabetics && !['0', 'false', ''].includes(diabetics)) params.diabetics = 1
   const dest = new URL('/gallery', request.url)
   dest.searchParams.set('q', encodeQuery(params))
   return NextResponse.redirect(dest)

@@ -30,13 +30,14 @@ export type Filters = {
   search: string
   onlyNew: boolean
   onlyWishlist: boolean
+  onlyDiabetics: boolean
   category: number   // 0 = all; 1..10 = catalogue category
 }
 
 const EMPTY: Filters = {
   closures: [], types: [], colours: [],
   constructions: [], widths: [], sizes: [],
-  search: '', onlyNew: false, onlyWishlist: false, category: 0,
+  search: '', onlyNew: false, onlyWishlist: false, onlyDiabetics: false, category: 0,
 }
 
 // Remembers the browse state (section + filters + scroll) so returning from a
@@ -66,6 +67,7 @@ export function applyFilters(
       && !f.sizes.some((s) => s >= p.size_first && s <= p.size_last))                                     return false
     if (f.search && !matchesSearch(p.style_name, f.search))                                                return false
     if (exclude !== 'category'      && f.category > 0 && p.category !== f.category)                        return false
+    if (exclude !== 'onlyDiabetics' && f.onlyDiabetics && !p.diabetics)                                   return false
     if (exclude !== 'onlyNew'       && f.onlyNew && !isNew(p))                                            return false
     // onlyWishlist is applied in the component (needs access to wishlist ids context)
     return true
@@ -180,9 +182,15 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     if (SECTIONS.includes(urlSection)) {
       resolved = urlSection
       if (urlSection !== section) { setSection(urlSection); fetchIfNeeded(urlSection) }
-      // Deep link may carry a catalogue category and/or search (piedro.com links).
+      // Deep link may carry a catalogue category, search and/or diabetics flag.
       const cat = parseInt(dq.category || '0', 10)
-      if (cat > 0 || dq.search) setFilters((f) => ({ ...f, category: cat > 0 ? cat : f.category, search: dq.search || f.search }))
+      const diab = dq.diabetics === '1'
+      if (cat > 0 || dq.search || diab) setFilters((f) => ({
+        ...f,
+        category: cat > 0 ? cat : f.category,
+        search: dq.search || f.search,
+        onlyDiabetics: diab || f.onlyDiabetics,
+      }))
     } else {
       let saved: { section?: Section; filters?: Filters; scrollY?: number; anchorId?: string | null } | null = null
       try { saved = JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null') } catch { /* ignore */ }
@@ -356,7 +364,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
-    || filters.search || filters.onlyNew || filters.onlyWishlist || filters.category > 0 || !!exclusiveFilter
+    || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0 || !!exclusiveFilter
 
   const [showWishlist, setShowWishlist] = useState(false)
 
@@ -366,6 +374,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   )
 
   const hasNew = useMemo(() => sectionProducts.some(isNew), [sectionProducts])
+  const hasDiabetics = useMemo(() => sectionProducts.some((p) => p.diabetics), [sectionProducts])
 
   // Preload filter translations on mount, then bump state so the filter chips
   // (which read the synchronous cache during render) re-render with the
@@ -437,6 +446,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         optSizesEU={optSizesEU}
         optSizesUK={optSizesUK}
         hasNew={hasNew}
+        hasDiabetics={hasDiabetics}
         hasFilters={!!hasFilters}
         onClear={() => { setFilters(EMPTY); setCtxExclusive('') }}
         resultCount={filtered.length}

@@ -171,7 +171,9 @@
       "cat_7": "High & Mid Tops",
       "cat_8": "Next Steps",
       "cat_9": "Sandals",
-      "cat_10": "Trainers"
+      "cat_10": "Trainers",
+      "diabetics": "Diabetics",
+      "diabetics_hint": "Show only diabetic & sensitive-foot models"
     },
     "badges": {
       "diabetic": "Diabetic"

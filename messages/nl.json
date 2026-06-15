@@ -171,7 +171,9 @@
       "cat_7": "High & Mid Tops",
       "cat_8": "Next Steps",
       "cat_9": "Sandalen",
-      "cat_10": "Sneakers"
+      "cat_10": "Sneakers",
+      "diabetics": "Diabetisch",
+      "diabetics_hint": "Toon alleen modellen voor diabetische/gevoelige voeten"
     },
     "badges": {
       "diabetic": "Diabetisch"

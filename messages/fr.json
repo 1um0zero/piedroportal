@@ -171,7 +171,9 @@
       "cat_7": "High & Mid Tops",
       "cat_8": "Next Steps",
       "cat_9": "Sandales",
-      "cat_10": "Baskets"
+      "cat_10": "Baskets",
+      "diabetics": "Diabétique",
+      "diabetics_hint": "Afficher uniquement les modèles pied diabétique/sensible"
     },
     "badges": {
       "diabetic": "Diabétique"

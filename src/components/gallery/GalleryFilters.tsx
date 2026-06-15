@@ -19,6 +19,7 @@ type Props = {
   optSizesEU: number[]
   optSizesUK: number[]
   hasNew: boolean
+  hasDiabetics: boolean
   hasFilters: boolean
   onClear: () => void
   resultCount: number
@@ -252,7 +253,7 @@ function MultiDropdown({
 export default function GalleryFilters({
   filters, setFilters,
   optClosures, optTypes, optColours, optConstructions, optWidths, optSizes, optSizesEU, optSizesUK,
-  hasNew, hasFilters, onClear, resultCount, wishlistCount,
+  hasNew, hasDiabetics, hasFilters, onClear, resultCount, wishlistCount,
   showWishlist, onToggleBuildWishlist,
 }: Props) {
   const t = useTranslations('gallery.filters')
@@ -281,7 +282,7 @@ export default function GalleryFilters({
 
   const activeCount = filters.closures.length + filters.types.length + filters.colours.length
     + filters.constructions.length + filters.widths.length + filters.sizes.length
-    + (filters.onlyNew ? 1 : 0)
+    + (filters.onlyNew ? 1 : 0) + (filters.onlyDiabetics ? 1 : 0) + (filters.category > 0 ? 1 : 0)
 
   return (
     <div className="space-y-2">
@@ -408,6 +409,14 @@ export default function GalleryFilters({
                     className={`h-9 px-3 text-xs font-bold tracking-widest rounded-lg border transition-all
                       ${filters.onlyNew ? 'bg-gold text-white border-gold' : 'text-gold border-gold/40 hover:border-gold hover:bg-gold/5'}`}>
                     {t('new')}
+                  </button>
+                )}
+                {hasDiabetics && (
+                  <button onClick={() => setFilters((f) => ({ ...f, onlyDiabetics: !f.onlyDiabetics }))}
+                    title={t('diabetics_hint')}
+                    className={`h-9 px-3 text-xs font-bold rounded-lg border transition-all
+                      ${filters.onlyDiabetics ? 'bg-stone-700 text-white border-stone-700' : 'text-stone-600 border-stone-300 hover:border-stone-500 hover:bg-stone-50'}`}>
+                    {t('diabetics')}
                   </button>
                 )}
               </div>
