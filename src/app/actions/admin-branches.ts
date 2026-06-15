@@ -209,7 +209,11 @@ export async function addBranchAdmin(
   // a company_admin/piedro_admin/super_admin).
   const { data: prof } = await service.from('profiles').select('role').eq('id', userId).single()
   if (prof && (prof.role === 'user' || prof.role === 'branch_staff' || !prof.role)) {
-    await service.from('profiles').update({ role: 'branch_admin' }).eq('id', userId)
+    const { error: roleErr } = await service.from('profiles')
+      .update({ role: 'branch_admin', branch_id: null }).eq('id', userId)
+    // Surface (don't swallow) — e.g. a role CHECK constraint missing 'branch_admin'
+    // would otherwise leave the user on their old role and locked out of orders.
+    if (roleErr) return { error: `Branch admin linked, but role not set: ${roleErr.message}` }
   }
 
   revalidate(branchId)
