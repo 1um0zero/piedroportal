@@ -57,8 +57,8 @@ export async function requestPasswordReset(email: string, fallbackLocale: string
 
   const resend = lazyResend()
   const { email_from } = await getSettings(['email_from'])
-  const from = email_from ?? process.env.EMAIL_FROM
-  if (!resend || !from) { console.error('reset email skipped: Resend/EMAIL_FROM not configured'); return }
+  const from = email_from
+  if (!resend || !from) { console.error('reset email skipped: Resend key or email_from setting missing'); return }
 
   const locale: Loc = LOCALES.includes(profile.preferred_locale as Loc)
     ? (profile.preferred_locale as Loc)

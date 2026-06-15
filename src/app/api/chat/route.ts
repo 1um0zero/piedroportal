@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
 import { hasChatConsent, logChatMessage } from '@/lib/chat-consent'
-import { getSettings } from '@/lib/settings'
+import { getContactInfo } from '@/lib/contact-info.server'
 
 // Lazily construct the client — the SDK throws at construction if the key is
 // missing, which would 500 the whole route (incl. the GET health check).
@@ -383,8 +383,8 @@ export async function POST(request: Request) {
     .select('role')
     .eq('id', user.id)
     .single()
-  const { contact_email } = await getSettings(['contact_email'])
-  const system = buildSystem(profile?.role, contact_email)
+  const { email: contactEmail } = await getContactInfo()
+  const system = buildSystem(profile?.role, contactEmail)
 
   // Audit log: the latest user prompt (in). The assistant reply (out) is logged
   // once assembled, at the end of the stream.

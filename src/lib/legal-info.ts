@@ -3,7 +3,11 @@
 //
 // ⚠️ CLIENT ACTION REQUIRED: replace every "[…]" placeholder with Piedro's real
 // data, then have a DPO / legal counsel review the legal pages before go-live.
-// Values can also be supplied via environment variables where noted.
+//
+// Email addresses are NOT configured here — they live in the back-office
+// (/admin/settings → contact_email, dpo_email) and are read via
+// getLegalContacts() in src/lib/legal-contacts.ts. The strings below are only
+// fallback placeholders shown until an admin sets them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const LEGAL = {
@@ -14,8 +18,8 @@ export const LEGAL = {
   country: 'Netherlands',
   chamberOfCommerce: '[KvK number]',          // NL Chamber of Commerce (KvK)
   vatNumber: '[BTW / VAT number]',
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '[contact@piedro.example]',
-  dpoEmail: process.env.NEXT_PUBLIC_DPO_EMAIL ?? '[privacy@piedro.example]',
+  email: '[contact@piedro.example]',     // fallback only — set in /admin/settings (contact_email)
+  dpoEmail: '[privacy@piedro.example]',  // fallback only — set in /admin/settings (dpo_email)
   phone: '[+31 …]',
 
   // ISO / quality

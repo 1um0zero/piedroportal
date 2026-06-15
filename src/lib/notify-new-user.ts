@@ -12,9 +12,9 @@ export async function notifyAdminNewUser(email: string, fullName: string) {
   // Recipients/sender/locale from /admin/settings, env fallback. Skip if not configured.
   const cfg = await getSettings(['admin_notify_email', 'email_from', 'notify_locale'])
   // Setting may hold a comma-separated list of addresses.
-  const ADMIN_EMAILS = (cfg.admin_notify_email ?? process.env.ADMIN_NOTIFY_EMAIL ?? '')
+  const ADMIN_EMAILS = (cfg.admin_notify_email ?? '')
     .split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
-  const EMAIL_FROM  = cfg.email_from         ?? process.env.EMAIL_FROM
+  const EMAIL_FROM  = cfg.email_from
   if (!apiKey || !ADMIN_EMAILS.length || !EMAIL_FROM) return   // skip if not fully configured
 
   const locale = (cfg.notify_locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'

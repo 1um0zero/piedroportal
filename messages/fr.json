@@ -65,7 +65,10 @@
     "contact_email": "E-mail de contact public",
     "contact_help": "Affiché aux clients par l'assistant pour joindre Piedro. La première adresse est utilisée. Jamais inventée.",
     "broadcast_reply_to": "Répondre-à des campagnes",
-    "broadcast_reply_help": "Où sont reçues les réponses aux campagnes d'e-mailing. Généralement l'adresse de contact publique."
+    "broadcast_reply_help": "Où sont reçues les réponses aux campagnes d'e-mailing. Généralement l'adresse de contact publique.",
+    "dpo_email": "E-mail protection des données (DPO)",
+    "dpo_help": "Contact vie privée/DPO affiché sur les pages Confidentialité et Mentions légales. La première adresse est utilisée.",
+    "edit_contacts": "Modifier les coordonnées et réseaux sociaux →"
   },
   "emails": {
     "subject_internal": "Nouvelle commande Piedro — {ref}",
@@ -547,7 +550,14 @@
     "refresh": "Actualiser",
     "refresh_hint": "Charger la dernière version",
     "built": "Compilé {date}",
-    "updated": "Mis à jour {datetime}"
+    "updated": "Mis à jour {datetime}",
+    "location_type": {
+      "office": "Bureau",
+      "factory": "Usine",
+      "warehouse": "Entrepôt",
+      "showroom": "Showroom",
+      "other": "Autre"
+    }
   },
   "dashboard": {
     "title_user": "Mon tableau de bord",
@@ -1346,5 +1356,34 @@
     "h_assistant_t": "Demandez à l’assistant",
     "h_assistant_d": "Des questions sur le portail ou vos commandes ? Demandez, dans votre langue.",
     "cta": "Commencer à explorer"
+  },
+  "adminContacts": {
+    "title": "Coordonnées",
+    "description": "Coordonnées publiques affichées dans le pied de page et utilisées par l'assistant et les pages légales. Tout est géré dans le back-office — rien n'est codé en dur.",
+    "public_title": "Contact public",
+    "contact_email": "E-mail de contact public",
+    "contact_email_help": "Affiché par l'assistant et sur la page Mentions légales. Utilisé lorsque les clients doivent joindre Piedro.",
+    "dpo_email": "E-mail protection des données (DPO)",
+    "dpo_email_help": "Affiché sur les pages Confidentialité et Mentions légales pour les demandes de protection des données.",
+    "social_title": "Réseaux sociaux",
+    "social_help": "Collez l'URL complète. Seuls les réseaux remplis apparaissent dans le pied de page.",
+    "locations_title": "Sites",
+    "add_location": "Ajouter un site",
+    "no_locations": "Aucun site pour l'instant. Ajoutez un bureau, une usine ou un entrepôt.",
+    "remove": "Supprimer",
+    "loc_type": "Type",
+    "loc_label": "Nom",
+    "loc_label_ph": "ex. Siège social",
+    "loc_address": "Adresse",
+    "loc_phone": "Téléphone",
+    "loc_email": "E-mail",
+    "saved": "Coordonnées enregistrées.",
+    "save": "Enregistrer",
+    "back_to_settings": "Retour aux paramètres",
+    "type_office": "Bureau",
+    "type_factory": "Usine",
+    "type_warehouse": "Entrepôt",
+    "type_showroom": "Showroom",
+    "type_other": "Autre"
   }
 }

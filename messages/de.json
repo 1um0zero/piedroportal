@@ -65,7 +65,10 @@
     "contact_email": "Öffentliche Kontakt-E-Mail",
     "contact_help": "Vom Assistenten Kunden gezeigt, um Piedro zu erreichen. Erste Adresse wird verwendet. Niemals erfunden.",
     "broadcast_reply_to": "Antwort-an für Kampagnen",
-    "broadcast_reply_help": "Wohin Antworten auf Massen-E-Mail-Kampagnen geliefert werden. Meist die öffentliche Kontaktadresse."
+    "broadcast_reply_help": "Wohin Antworten auf Massen-E-Mail-Kampagnen geliefert werden. Meist die öffentliche Kontaktadresse.",
+    "dpo_email": "Datenschutz (DSB) E-Mail",
+    "dpo_help": "Datenschutz-/DSB-Kontakt auf den Datenschutz- und Impressumsseiten. Erste Adresse wird verwendet.",
+    "edit_contacts": "Kontaktdaten & soziale Medien bearbeiten →"
   },
   "emails": {
     "subject_internal": "Neue Piedro-Bestellung — {ref}",
@@ -547,7 +550,14 @@
     "refresh": "Aktualisieren",
     "refresh_hint": "Neueste Version laden",
     "built": "Erstellt {date}",
-    "updated": "Aktualisiert {datetime}"
+    "updated": "Aktualisiert {datetime}",
+    "location_type": {
+      "office": "Büro",
+      "factory": "Fabrik",
+      "warehouse": "Lager",
+      "showroom": "Showroom",
+      "other": "Sonstiges"
+    }
   },
   "dashboard": {
     "title_user": "Mein Dashboard",
@@ -1346,5 +1356,34 @@
     "h_assistant_t": "Fragen Sie den Assistenten",
     "h_assistant_d": "Fragen zum Portal oder Ihren Bestellungen? Fragen Sie einfach, in Ihrer Sprache.",
     "cta": "Erkunden beginnen"
+  },
+  "adminContacts": {
+    "title": "Kontaktdaten",
+    "description": "Öffentliche Kontaktdaten, die in der Fußzeile angezeigt und vom Assistenten sowie den Rechtsseiten verwendet werden. Alles wird hier im Back-Office verwaltet — nichts ist fest codiert.",
+    "public_title": "Öffentlicher Kontakt",
+    "contact_email": "Öffentliche Kontakt-E-Mail",
+    "contact_email_help": "Vom Assistenten und auf der Impressumsseite angezeigt. Verwendet, wenn Kunden Piedro erreichen möchten.",
+    "dpo_email": "Datenschutz (DSB) E-Mail",
+    "dpo_email_help": "Auf den Datenschutz- und Impressumsseiten für Datenschutzanfragen angezeigt.",
+    "social_title": "Soziale Medien",
+    "social_help": "Vollständige URL einfügen. Nur ausgefüllte Netzwerke erscheinen in der Fußzeile.",
+    "locations_title": "Standorte",
+    "add_location": "Standort hinzufügen",
+    "no_locations": "Noch keine Standorte. Fügen Sie ein Büro, eine Fabrik oder ein Lager hinzu.",
+    "remove": "Entfernen",
+    "loc_type": "Typ",
+    "loc_label": "Name",
+    "loc_label_ph": "z. B. Hauptsitz",
+    "loc_address": "Adresse",
+    "loc_phone": "Telefon",
+    "loc_email": "E-Mail",
+    "saved": "Kontaktdaten gespeichert.",
+    "save": "Speichern",
+    "back_to_settings": "Zurück zu den Einstellungen",
+    "type_office": "Büro",
+    "type_factory": "Fabrik",
+    "type_warehouse": "Lager",
+    "type_showroom": "Showroom",
+    "type_other": "Sonstiges"
   }
 }

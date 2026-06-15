@@ -65,7 +65,10 @@
     "contact_email": "Public contact email",
     "contact_help": "Shown to clients by the assistant when they need to reach Piedro. First address is used. Never invented.",
     "broadcast_reply_to": "Campaign reply-to",
-    "broadcast_reply_help": "Where replies to mass email campaigns are delivered. Usually the public contact address."
+    "broadcast_reply_help": "Where replies to mass email campaigns are delivered. Usually the public contact address.",
+    "dpo_email": "Data protection (DPO) email",
+    "dpo_help": "Privacy/DPO contact shown on the Privacy & Legal pages. First address is used.",
+    "edit_contacts": "Edit contact details & social links →"
   },
   "emails": {
     "subject_internal": "New Piedro order — {ref}",
@@ -547,7 +550,14 @@
     "refresh": "Refresh",
     "refresh_hint": "Load the latest version",
     "built": "Built {date}",
-    "updated": "Updated {datetime}"
+    "updated": "Updated {datetime}",
+    "location_type": {
+      "office": "Office",
+      "factory": "Factory",
+      "warehouse": "Warehouse",
+      "showroom": "Showroom",
+      "other": "Other"
+    }
   },
   "dashboard": {
     "title_user": "My Dashboard",
@@ -1346,5 +1356,34 @@
     "h_assistant_t": "Ask the assistant",
     "h_assistant_d": "Questions about the portal or your orders? Just ask, in your language.",
     "cta": "Start exploring"
+  },
+  "adminContacts": {
+    "title": "Contact details",
+    "description": "Public contact information shown in the footer and used by the assistant and legal pages. Everything here is managed in the back-office — nothing is hardcoded.",
+    "public_title": "Public contact",
+    "contact_email": "Public contact email",
+    "contact_email_help": "Shown by the assistant and on the Legal page. Used when clients need to reach Piedro.",
+    "dpo_email": "Data protection (DPO) email",
+    "dpo_email_help": "Shown on the Privacy and Legal pages for data-protection requests.",
+    "social_title": "Social media",
+    "social_help": "Paste the full URL. Only filled networks appear in the footer.",
+    "locations_title": "Locations",
+    "add_location": "Add location",
+    "no_locations": "No locations yet. Add an office, factory or warehouse.",
+    "remove": "Remove",
+    "loc_type": "Type",
+    "loc_label": "Name",
+    "loc_label_ph": "e.g. Head Office",
+    "loc_address": "Address",
+    "loc_phone": "Phone",
+    "loc_email": "Email",
+    "saved": "Contact details saved.",
+    "save": "Save",
+    "back_to_settings": "Back to settings",
+    "type_office": "Office",
+    "type_factory": "Factory",
+    "type_warehouse": "Warehouse",
+    "type_showroom": "Showroom",
+    "type_other": "Other"
   }
 }

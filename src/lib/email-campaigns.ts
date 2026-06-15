@@ -120,8 +120,8 @@ export async function processDueCampaigns(timeBudgetMs = 45_000): Promise<Proces
 
   const key = process.env.RESEND_API_KEY
   const cfg = await getSettings(['email_from', 'broadcast_reply_to', 'broadcast_signature_html'])
-  const from = cfg.email_from ?? process.env.EMAIL_FROM
-  if (!key || !from) return { ...result, error: 'Resend / EMAIL_FROM not configured' }
+  const from = cfg.email_from
+  if (!key || !from) return { ...result, error: 'Sender (email_from) not configured in back-office settings' }
   const resend = new Resend(key)
   const replyTo = cfg.broadcast_reply_to || undefined
   const signature = cfg.broadcast_signature_html || null

@@ -306,8 +306,8 @@ async function generateStockPdfAndEmail(
     if (!resend) return { emailError: 'Email service not configured (RESEND_API_KEY missing)' }
     const cfg = await getSettings(['order_notify_email', 'email_from', 'notify_locale'])
     // The order-desk setting may hold a comma-separated list of addresses.
-    const toEmails = splitEmails(cfg.order_notify_email ?? process.env.ORDER_NOTIFY_EMAIL)
-    const emailFrom = cfg.email_from ?? process.env.EMAIL_FROM
+    const toEmails = splitEmails(cfg.order_notify_email)
+    const emailFrom = cfg.email_from
     if (!emailFrom || (!toEmails.length && !userEmail)) {
       return { emailError: 'Email not sent: set sender/recipient in Admin → Settings' }
     }

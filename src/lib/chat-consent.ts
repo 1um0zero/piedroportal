@@ -45,9 +45,9 @@ export async function recordChatConsent(
   // Confirmation / proof-of-consent email to the user and to the alert inbox.
   const apiKey = process.env.RESEND_API_KEY
   const cfg = await getSettings(['chat_notify_email', 'admin_notify_email', 'email_from'])
-  const from = cfg.email_from ?? process.env.EMAIL_FROM
+  const from = cfg.email_from
   if (!apiKey || !from) return
-  const admins = (cfg.chat_notify_email ?? cfg.admin_notify_email ?? process.env.ADMIN_NOTIFY_EMAIL ?? '')
+  const admins = (cfg.chat_notify_email ?? cfg.admin_notify_email ?? '')
     .split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
   const resend = new Resend(apiKey)
   const when = new Date().toLocaleString(locale, { timeZone: 'Europe/Amsterdam' })
@@ -111,8 +111,8 @@ export async function recordChatFeedback(
 
   const apiKey = process.env.RESEND_API_KEY
   const cfg = await getSettings(['chat_notify_email', 'admin_notify_email', 'email_from'])
-  const from = cfg.email_from ?? process.env.EMAIL_FROM
-  const admins = (cfg.chat_notify_email ?? cfg.admin_notify_email ?? process.env.ADMIN_NOTIFY_EMAIL ?? '')
+  const from = cfg.email_from
+  const admins = (cfg.chat_notify_email ?? cfg.admin_notify_email ?? '')
     .split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
   if (!apiKey || !from || !admins.length) return
   const resend = new Resend(apiKey)

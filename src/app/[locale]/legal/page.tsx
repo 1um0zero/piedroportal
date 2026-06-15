@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
 import { LEGAL, LAST_UPDATED } from '@/lib/legal-info'
+import { getLegalContacts } from '@/lib/legal-contacts'
 
 export const metadata: Metadata = { title: 'Legal Notice — Piedro Portal' }
 
 // Legal Notice / Imprint (required in e.g. Germany under the DDG, and good
-// practice elsewhere). Fill the placeholders in src/lib/legal-info.ts.
-export default function LegalNoticePage() {
+// practice elsewhere). Fill the placeholders in src/lib/legal-info.ts;
+// email addresses come from /admin/settings.
+export default async function LegalNoticePage() {
+  const { email, dpoEmail } = await getLegalContacts()
   return (
     <article className="max-w-3xl mx-auto px-6 py-12">
       <p className="text-xs uppercase tracking-[0.2em] text-gold mb-2">Piedro Portal</p>
@@ -20,11 +23,11 @@ export default function LegalNoticePage() {
       <dl className="text-sm text-stone-700 space-y-3">
         <Row label="Operator">{LEGAL.companyLegalName}</Row>
         <Row label="Address">{LEGAL.registeredAddress}, {LEGAL.country}</Row>
-        <Row label="Email"><a className="text-gold" href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></Row>
+        <Row label="Email"><a className="text-gold" href={`mailto:${email}`}>{email}</a></Row>
         <Row label="Phone">{LEGAL.phone}</Row>
         <Row label="Chamber of Commerce (KvK)">{LEGAL.chamberOfCommerce}</Row>
         <Row label="VAT / BTW">{LEGAL.vatNumber}</Row>
-        <Row label="Data protection contact"><a className="text-gold" href={`mailto:${LEGAL.dpoEmail}`}>{LEGAL.dpoEmail}</a></Row>
+        <Row label="Data protection contact"><a className="text-gold" href={`mailto:${dpoEmail}`}>{dpoEmail}</a></Row>
         {LEGAL.iso13485Certified && <Row label="Quality management">ISO 13485 certified — {LEGAL.isoCertNumber}</Row>}
       </dl>
 

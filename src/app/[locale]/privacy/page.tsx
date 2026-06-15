@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { LEGAL, LAST_UPDATED } from '@/lib/legal-info'
+import { getLegalContacts } from '@/lib/legal-contacts'
 
 export const metadata: Metadata = { title: 'Privacy Policy — Piedro Portal' }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { dpoEmail } = await getLegalContacts()
   return (
     <article className="max-w-3xl mx-auto px-6 py-12 prose-stone">
       <p className="text-xs uppercase tracking-[0.2em] text-gold mb-2">Piedro Portal</p>
@@ -20,7 +22,7 @@ export default function PrivacyPage() {
         <p>
           {LEGAL.companyLegalName} ({LEGAL.tradeName}), {LEGAL.registeredAddress}, {LEGAL.country}, operates
           the Piedro Portal. For data-protection questions contact our privacy team at{' '}
-          <a className="text-gold" href={`mailto:${LEGAL.dpoEmail}`}>{LEGAL.dpoEmail}</a>.
+          <a className="text-gold" href={`mailto:${dpoEmail}`}>{dpoEmail}</a>.
         </p>
       </Section>
 
@@ -118,7 +120,7 @@ export default function PrivacyPage() {
         <p>
           Subject to legal limits, data subjects may request access, rectification, erasure, restriction,
           portability and may object to processing. Requests can be sent to{' '}
-          <a className="text-gold" href={`mailto:${LEGAL.dpoEmail}`}>{LEGAL.dpoEmail}</a>. You may also lodge a
+          <a className="text-gold" href={`mailto:${dpoEmail}`}>{dpoEmail}</a>. You may also lodge a
           complaint with a supervisory authority:
         </p>
         <ul className="list-disc pl-5 space-y-1 mt-2">

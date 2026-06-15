@@ -166,8 +166,8 @@ export async function sendTestEmail(subject: string, bodyHtml: string): Promise<
 
   const key = process.env.RESEND_API_KEY
   const cfg = await getSettings(['email_from', 'broadcast_reply_to', 'broadcast_signature_html'])
-  const from = cfg.email_from ?? process.env.EMAIL_FROM
-  if (!key || !from) return { error: 'Resend / EMAIL_FROM not configured' }
+  const from = cfg.email_from
+  if (!key || !from) return { error: 'Sender (email_from) not configured in back-office settings' }
 
   const html = renderCampaignHtml(body, me.full_name, me.preferred_locale ?? 'en',
     cfg.broadcast_reply_to || from, bodyHtml, cfg.broadcast_signature_html || null)

@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
   const key = process.env.RESEND_API_KEY
   const cfg = await getSettings(['admin_notify_email', 'email_from', 'notify_locale'])
   // Setting may hold a comma-separated list of addresses.
-  const adminEmails = (cfg.admin_notify_email ?? process.env.ADMIN_NOTIFY_EMAIL ?? '')
+  const adminEmails = (cfg.admin_notify_email ?? '')
     .split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
-  const emailFrom  = cfg.email_from         ?? process.env.EMAIL_FROM
+  const emailFrom  = cfg.email_from
   if (!key || !adminEmails.length || !emailFrom) return NextResponse.json({ ok: true, skipped: 'email not configured' })
 
   const locale = (['en', 'nl', 'fr', 'de'].includes(cfg.notify_locale) ? cfg.notify_locale : 'en') as 'en' | 'nl' | 'fr' | 'de'

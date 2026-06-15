@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { LEGAL, LAST_UPDATED } from '@/lib/legal-info'
+import { getLegalContacts } from '@/lib/legal-contacts'
 
 export const metadata: Metadata = { title: 'Terms of Use — Piedro Portal' }
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const { email } = await getLegalContacts()
   return (
     <article className="max-w-3xl mx-auto px-6 py-12">
       <p className="text-xs uppercase tracking-[0.2em] text-gold mb-2">Piedro Portal</p>
@@ -69,7 +71,7 @@ export default function TermsPage() {
       <Section title="9. Contact">
         <p>
           {LEGAL.companyLegalName}, {LEGAL.registeredAddress} —{' '}
-          <a className="text-gold" href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>.
+          <a className="text-gold" href={`mailto:${email}`}>{email}</a>.
         </p>
       </Section>
     </article>

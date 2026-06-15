@@ -5,6 +5,7 @@ import { getMessages } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { hasAnyCompany } from '@/lib/user-companies'
+import { getContactInfo } from '@/lib/contact-info.server'
 import Navbar from '@/components/ui/Navbar'
 import Footer from '@/components/ui/Footer'
 import CookieNotice from '@/components/ui/CookieNotice'
@@ -52,6 +53,8 @@ export default async function LocaleLayout({ children, params }: Props) {
     hasCompany = await hasAnyCompany(user.id)
   }
 
+  const contact = await getContactInfo()
+
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <AuthProvider initialProfile={profile} initialLoggedIn={!!user} initialHasCompany={hasCompany}>
@@ -60,7 +63,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             <div className="flex flex-col min-h-screen">
               <Navbar locale={locale} />
               <div className="flex-1">{children}</div>
-              <Footer />
+              <Footer contact={contact} />
               {user && <ChatWidget />}
               {user && <WelcomeModal />}
               <CookieNotice />

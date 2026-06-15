@@ -65,7 +65,10 @@
     "contact_email": "Openbaar contact e-mailadres",
     "contact_help": "Door de assistent aan klanten getoond om Piedro te bereiken. Eerste adres wordt gebruikt. Nooit verzonnen.",
     "broadcast_reply_to": "Antwoordadres campagnes",
-    "broadcast_reply_help": "Waar antwoorden op massamailcampagnes worden afgeleverd. Meestal het openbare contactadres."
+    "broadcast_reply_help": "Waar antwoorden op massamailcampagnes worden afgeleverd. Meestal het openbare contactadres.",
+    "dpo_email": "Gegevensbescherming (FG) e-mail",
+    "dpo_help": "Privacy-/FG-contact op de Privacy- en Juridische pagina's. Eerste adres wordt gebruikt.",
+    "edit_contacts": "Contactgegevens & sociale media bewerken →"
   },
   "emails": {
     "subject_internal": "Nieuwe Piedro-bestelling — {ref}",
@@ -547,7 +550,14 @@
     "refresh": "Vernieuwen",
     "refresh_hint": "Laad de nieuwste versie",
     "built": "Gebouwd {date}",
-    "updated": "Bijgewerkt {datetime}"
+    "updated": "Bijgewerkt {datetime}",
+    "location_type": {
+      "office": "Kantoor",
+      "factory": "Fabriek",
+      "warehouse": "Magazijn",
+      "showroom": "Showroom",
+      "other": "Overig"
+    }
   },
   "dashboard": {
     "title_user": "Mijn dashboard",
@@ -1346,5 +1356,34 @@
     "h_assistant_t": "Vraag de assistent",
     "h_assistant_d": "Vragen over het portaal of uw bestellingen? Vraag het gewoon, in uw taal.",
     "cta": "Beginnen met verkennen"
+  },
+  "adminContacts": {
+    "title": "Contactgegevens",
+    "description": "Openbare contactinformatie die in de voettekst verschijnt en door de assistent en juridische pagina's wordt gebruikt. Alles wordt hier in de back-office beheerd — niets is hardcoded.",
+    "public_title": "Openbaar contact",
+    "contact_email": "Openbaar contact e-mailadres",
+    "contact_email_help": "Getoond door de assistent en op de Juridische pagina. Gebruikt wanneer klanten Piedro willen bereiken.",
+    "dpo_email": "Gegevensbescherming (FG) e-mail",
+    "dpo_email_help": "Getoond op de Privacy- en Juridische pagina's voor verzoeken over gegevensbescherming.",
+    "social_title": "Sociale media",
+    "social_help": "Plak de volledige URL. Alleen ingevulde netwerken verschijnen in de voettekst.",
+    "locations_title": "Locaties",
+    "add_location": "Locatie toevoegen",
+    "no_locations": "Nog geen locaties. Voeg een kantoor, fabriek of magazijn toe.",
+    "remove": "Verwijderen",
+    "loc_type": "Type",
+    "loc_label": "Naam",
+    "loc_label_ph": "bijv. Hoofdkantoor",
+    "loc_address": "Adres",
+    "loc_phone": "Telefoon",
+    "loc_email": "E-mail",
+    "saved": "Contactgegevens opgeslagen.",
+    "save": "Opslaan",
+    "back_to_settings": "Terug naar instellingen",
+    "type_office": "Kantoor",
+    "type_factory": "Fabriek",
+    "type_warehouse": "Magazijn",
+    "type_showroom": "Showroom",
+    "type_other": "Overig"
   }
 }

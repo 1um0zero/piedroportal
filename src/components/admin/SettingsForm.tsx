@@ -7,7 +7,7 @@ import { saveSettingsAction } from '@/app/[locale]/admin/settings/actions'
 
 type Cfg = {
   order_notify_email?: string; admin_notify_email?: string; chat_notify_email?: string
-  contact_email?: string; broadcast_reply_to?: string; email_from?: string; notify_locale?: string
+  broadcast_reply_to?: string; email_from?: string; notify_locale?: string
   dispatch_days_normal?: string; dispatch_days_urgent?: string; dispatch_show_all?: string
 }
 
@@ -18,12 +18,11 @@ const FIELDS = [
   { key: 'order_notify_email', labelKey: 'order_notify_email', helpKey: 'order_notify_help', type: 'text' },
   { key: 'admin_notify_email', labelKey: 'admin_notify_email', helpKey: 'admin_notify_help', type: 'text' },
   { key: 'chat_notify_email',  labelKey: 'chat_notify_email',  helpKey: 'chat_notify_help',  type: 'text' },
-  { key: 'contact_email',      labelKey: 'contact_email',      helpKey: 'contact_help',       type: 'text' },
   { key: 'broadcast_reply_to', labelKey: 'broadcast_reply_to', helpKey: 'broadcast_reply_help', type: 'text' },
   { key: 'email_from',         labelKey: 'email_from',         helpKey: 'email_from_help',   type: 'text' },
 ] as const
 
-export default function SettingsForm({ current, envFallback }: { current: Cfg; envFallback: Cfg }) {
+export default function SettingsForm({ current }: { current: Cfg }) {
   const t = useTranslations('adminSettings')
   const [state, action, pending] = useActionState(saveSettingsAction, null)
   // Controlled values: React 19 resets uncontrolled inputs after a form action,
@@ -46,9 +45,6 @@ export default function SettingsForm({ current, envFallback }: { current: Cfg; e
               type={f.type}
               value={values[f.key as keyof Cfg] ?? ''}
               onChange={set(f.key as keyof Cfg)}
-              placeholder={envFallback[f.key as keyof Cfg]
-                ? t('using_env_fallback', { value: envFallback[f.key as keyof Cfg] as string })
-                : ''}
               className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg
                          text-stone-900 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
             />
@@ -110,7 +106,10 @@ export default function SettingsForm({ current, envFallback }: { current: Cfg; e
         </button>
       </form>
 
-      <div className="mt-5">
+      <div className="mt-5 flex flex-col gap-2">
+        <Link href="/admin/settings/contacts" className="text-sm text-gold hover:underline">
+          {t('edit_contacts')}
+        </Link>
         <Link href="/admin/settings/texts" className="text-sm text-gold hover:underline">
           {t('edit_texts')}
         </Link>
