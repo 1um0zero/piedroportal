@@ -26,7 +26,11 @@ function legacyGaleriaRedirect(request: NextRequest): NextResponse | null {
   if (search) params.search = search
   const diabetics = (sp.get('diabetics') ?? '').toLowerCase()
   if (diabetics && !['0', 'false', ''].includes(diabetics)) params.diabetics = 1
-  const dest = new URL('/gallery', request.url)
+  // Preserve the legacy locale prefix (e.g. `/nl-NL/galeria` → Dutch gallery).
+  // `as-needed` means the default locale (en) stays prefix-free.
+  const lang = (segs.find((s) => /^[a-z]{2}-[a-z]{2}$/i.test(s)) ?? '').slice(0, 2).toLowerCase()
+  const localized = routing.locales.includes(lang as (typeof routing.locales)[number]) && lang !== routing.defaultLocale
+  const dest = new URL(localized ? `/${lang}/gallery` : '/gallery', request.url)
   dest.searchParams.set('q', encodeQuery(params))
   return NextResponse.redirect(dest)
 }
