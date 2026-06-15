@@ -127,7 +127,13 @@
     "danger_title": "Point of no return",
     "danger_text": "Dit verwijdert permanent {total} testbestelling(en) en hun PDF's. Typ {word} om te bevestigen.",
     "delete_button": "Testbestellingen verwijderen",
-    "done": "Klaar! {orders} portaalbestelling(en), {stock} voorraadbestelling(en) en {pdfs} PDF('s) verwijderd. Tijd voor champagne."
+    "done": "Klaar! {orders} portaalbestelling(en), {stock} voorraadbestelling(en) en {pdfs} PDF('s) verwijderd. Tijd voor champagne.",
+    "live_eyebrow": "Missie volbracht",
+    "live_title": "Het portaal is live",
+    "live_when": "Grand Opening — 15 juni 2026, 00:00",
+    "live_body": "Het gebeurde precies om middernacht op 15 juni 2026, en alles verliep exact volgens plan. Het portaal is nu de enige bron van waarheid.",
+    "live_moment": "Het echte moment van de waarheid komt over een paar uur, wanneer de klanten binnenkomen. Het gaat lukken. Succes! 🍾",
+    "live_migrated": "Gemigreerde bestellingen overgenomen"
   },
   "nav": {
     "gallery": "OSB",

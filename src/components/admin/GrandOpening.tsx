@@ -1,11 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Link } from '@/i18n/navigation'
-import { deletePortalTestOrdersAction } from '@/app/actions/grand-opening'
-
-const CONFIRM_WORD = 'OPEN'
 
 /** Champagne bottle + glass, gold line illustration. */
 function Champagne() {
@@ -33,116 +28,30 @@ function Champagne() {
   )
 }
 
-export default function GrandOpening({ portalOrders, stockOrders, migratedOrders, canExecute }: {
-  portalOrders: number; stockOrders: number; migratedOrders: number; canExecute: boolean
-}) {
+export default function GrandOpening({ migratedOrders }: { migratedOrders: number }) {
   const t = useTranslations('grandOpening')
-  const [word, setWord] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState<{ ok?: boolean; error?: string; deletedOrders?: number; deletedStockOrders?: number; deletedPdfs?: number } | null>(null)
-
-  const total = portalOrders + stockOrders
-  const armed = word.trim().toUpperCase() === CONFIRM_WORD
-
-  async function run() {
-    if (!armed || busy) return
-    setBusy(true); setResult(null)
-    const res = await deletePortalTestOrdersAction()
-    setBusy(false); setResult(res)
-    if (res.ok) setWord('')
-  }
-
-  const steps = ['step_1', 'step_2', 'step_3', 'step_4', 'step_5'] as const
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
-      {/* Header */}
-      <div className="bg-white rounded-[14px] p-8 mb-6 flex items-center gap-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <Champagne />
-        <div>
-          <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-gold mb-1">Piedro Portal</p>
-          <h1 className="text-2xl font-semibold text-stone-800 mb-2">{t('title')}</h1>
-          <p className="text-sm text-stone-500 leading-relaxed">{t('intro')}</p>
+    <div className="max-w-2xl mx-auto px-6 py-16">
+      <div className="bg-white rounded-[14px] p-10 text-center" style={{ boxShadow: 'var(--shadow-card)' }}>
+        <div className="flex justify-center mb-4">
+          <Champagne />
         </div>
-      </div>
+        <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-gold mb-2">{t('live_eyebrow')}</p>
+        <h1 className="text-3xl font-semibold text-stone-800 mb-3">{t('live_title')}</h1>
 
-      {/* Counts */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          { n: portalOrders,   label: t('count_portal_orders'),  danger: true  },
-          { n: stockOrders,    label: t('count_stock_orders'),   danger: true  },
-          { n: migratedOrders, label: t('count_migrated_kept'),  danger: false },
-        ].map((c, i) => (
-          <div key={i} className={`bg-white rounded-[14px] px-5 py-4 ${c.danger ? 'border border-red-100' : 'border border-green-100'}`}
-            style={{ boxShadow: 'var(--shadow-card)' }}>
-            <p className={`text-2xl font-semibold ${c.danger ? 'text-red-500' : 'text-green-600'}`}>{c.n}</p>
-            <p className="text-xs text-stone-500 mt-0.5">{c.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* The cut-over plan */}
-      <div className="bg-white rounded-[14px] p-8 mb-6" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <h2 className="text-sm font-bold text-stone-700 uppercase tracking-wide mb-4">{t('plan_title')}</h2>
-        <ol className="space-y-3">
-          {steps.map((k, i) => (
-            <li key={k} className="flex gap-3 text-sm text-stone-600">
-              <span className="shrink-0 w-6 h-6 rounded-full bg-gold/10 text-gold text-xs font-bold flex items-center justify-center">{i + 1}</span>
-              <span className="leading-relaxed">{t(k)}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="text-xs text-stone-400 mt-5">
-          {t('users_hint')}{' '}
-          <Link href="/admin/users" className="text-gold hover:underline">{t('users_link')}</Link>
-        </p>
-      </div>
-
-      {/* Danger zone — visible to every admin, executable only by super_admin */}
-      <div className="bg-white rounded-[14px] p-8 border border-red-100" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <h2 className="text-sm font-bold text-red-500 uppercase tracking-wide mb-2">{t('danger_title')}</h2>
-        <p className="text-sm text-stone-500 mb-5 leading-relaxed">
-          {t('danger_text', { total, word: CONFIRM_WORD })}
-        </p>
-        {!canExecute && (
-          <p className="text-sm text-stone-600 bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 flex items-center gap-2">
-            <svg className="w-4 h-4 text-stone-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-            {t('super_only')}
-          </p>
-        )}
-        {canExecute && (
-        <div className="flex gap-3">
-          <input
-            value={word}
-            onChange={e => setWord(e.target.value)}
-            placeholder={CONFIRM_WORD}
-            className="h-10 w-36 px-3 text-sm font-semibold tracking-widest text-center bg-stone-50 border border-stone-200 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300"
-          />
-          <button onClick={run} disabled={!armed || busy}
-            className="h-10 px-5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600
-                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
-            {busy && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-            {t('delete_button')}
-          </button>
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-full px-3 py-1 mb-6">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          {t('live_when')}
         </div>
-        )}
 
-        {result?.error && (
-          <p className="mt-4 text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{result.error}</p>
-        )}
-        {result?.ok && (
-          <p className="mt-4 text-sm text-green-600 bg-green-50 border border-green-100 rounded-lg px-4 py-3">
-            🍾 {t('done', {
-              orders: result.deletedOrders ?? 0,
-              stock: result.deletedStockOrders ?? 0,
-              pdfs: result.deletedPdfs ?? 0,
-            })}
-          </p>
-        )}
+        <p className="text-sm text-stone-500 leading-relaxed mb-4">{t('live_body')}</p>
+        <p className="text-base text-stone-700 font-medium leading-relaxed">{t('live_moment')}</p>
+
+        <div className="mt-8 pt-6 border-t border-stone-100">
+          <p className="text-3xl font-semibold text-stone-800">{migratedOrders}</p>
+          <p className="text-xs text-stone-500 mt-0.5">{t('live_migrated')}</p>
+        </div>
       </div>
     </div>
   )

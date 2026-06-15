@@ -127,7 +127,13 @@
     "danger_title": "Point of no return",
     "danger_text": "Dies löscht dauerhaft {total} Testbestellung(en) und ihre PDFs. Geben Sie {word} ein, um zu bestätigen.",
     "delete_button": "Testbestellungen löschen",
-    "done": "Fertig! {orders} Portalbestellung(en), {stock} Lagerbestellung(en) und {pdfs} PDF(s) gelöscht. Zeit für Champagner."
+    "done": "Fertig! {orders} Portalbestellung(en), {stock} Lagerbestellung(en) und {pdfs} PDF(s) gelöscht. Zeit für Champagner.",
+    "live_eyebrow": "Mission erfüllt",
+    "live_title": "Das Portal ist live",
+    "live_when": "Grand Opening — 15. Juni 2026, 00:00",
+    "live_body": "Es geschah genau um Mitternacht am 15. Juni 2026, und alles verlief exakt nach Plan. Das Portal ist nun die einzige Quelle der Wahrheit.",
+    "live_moment": "Der eigentliche Moment der Wahrheit kommt in wenigen Stunden, wenn die Kunden eintreffen. Es wird klappen. Viel Erfolg! 🍾",
+    "live_migrated": "Migrierte Bestellungen übernommen"
   },
   "nav": {
     "gallery": "Pair-by-Pair",

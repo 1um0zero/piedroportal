@@ -1,30 +1,20 @@
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
-import { isSuperAdmin } from '@/lib/roles'
 import { createServiceClient } from '@/lib/supabase/service'
 import GrandOpening from '@/components/admin/GrandOpening'
 
 /**
- * Grand Opening — one-time cut-over from the test phase to production.
- * Visible to every Piedro admin; EXECUTION is super_admin only (enforced
- * again in the server action).
+ * Grand Opening — done. The cut-over to production happened at 00:00 on
+ * 15 June 2026. This page now stands as a live confirmation, kept for every
+ * Piedro admin.
  */
 export default async function GrandOpeningPage() {
-  const scope = await requirePiedroAdminPage()
-  const canExecute = isSuperAdmin(scope.role)
+  await requirePiedroAdminPage()
   const service = createServiceClient()
 
-  const [{ count: portalOrders }, { count: stockOrders }, { count: migratedOrders }] = await Promise.all([
-    service.from('orders').select('id', { count: 'exact', head: true }).is('dataverse_id', null),
-    service.from('stock_orders').select('id', { count: 'exact', head: true }),
-    service.from('orders').select('id', { count: 'exact', head: true }).not('dataverse_id', 'is', null),
-  ])
+  const { count: migratedOrders } = await service
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .not('dataverse_id', 'is', null)
 
-  return (
-    <GrandOpening
-      portalOrders={portalOrders ?? 0}
-      stockOrders={stockOrders ?? 0}
-      migratedOrders={migratedOrders ?? 0}
-      canExecute={canExecute}
-    />
-  )
+  return <GrandOpening migratedOrders={migratedOrders ?? 0} />
 }

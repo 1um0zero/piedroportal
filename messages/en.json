@@ -127,7 +127,13 @@
     "danger_title": "Point of no return",
     "danger_text": "This permanently deletes {total} test order(s) and their PDFs. Type {word} to confirm.",
     "delete_button": "Delete test orders",
-    "done": "Done! {orders} portal order(s), {stock} stock order(s) and {pdfs} PDF(s) deleted. Time for champagne."
+    "done": "Done! {orders} portal order(s), {stock} stock order(s) and {pdfs} PDF(s) deleted. Time for champagne.",
+    "live_eyebrow": "Mission accomplished",
+    "live_title": "The portal is live",
+    "live_when": "Grand Opening — 15 June 2026, 00:00",
+    "live_body": "It happened right on the stroke of midnight, 15 June 2026, and everything went exactly according to plan. The portal is now the single source of truth.",
+    "live_moment": "The real moment of truth arrives in a few hours, when the clients walk in. It's going to work out. Good luck — and success! 🍾",
+    "live_migrated": "Migrated orders carried over"
   },
   "nav": {
     "gallery": "Pair-by-Pair",
