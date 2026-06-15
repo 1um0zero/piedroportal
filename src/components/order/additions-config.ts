@@ -1,5 +1,7 @@
 // Config-driven additions form — sourced from Power Pages JS + Dataverse picklist metadata
 
+import { soleFieldHidden } from './sole-profiles'
+
 export type FieldType = 'mm' | 'option' | 'toggle' | 'text' | 'image'
 export type SideType  = 'both' | 'global'
 
@@ -262,6 +264,7 @@ export function getMissingRequiredAdditions(
   additions: Record<string, unknown>,
   unit: string,
   addsExclude: string | null | undefined,
+  soleProfile: string | null = null,
 ): MissingRequired[] {
   const sides = activeSidesFor(unit)
   const missing: MissingRequired[] = []
@@ -271,6 +274,8 @@ export function getMissingRequiredAdditions(
     const fields = filterExcluded(section.fields, addsExclude)
     for (const field of fields) {
       if (!field.conditionalOn || field.side === 'global') continue
+      // Hidden by the model's sole profile → never required (would block submit invisibly).
+      if (soleFieldHidden(soleProfile, field.key, (field.values ?? []) as string[])) continue
       for (const side of sides) {
         if (!isSidedParentActive(additions, field.conditionalOn, side)) continue
         if (!isChildFilled(additions, field.key, side)) {

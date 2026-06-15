@@ -7,6 +7,7 @@ import { useRouter, Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, getMissingRequiredAdditions, SECTIONS, type MissingRequired } from './additions-config'
+import { soleProfileFor } from './sole-profiles'
 import { getFieldLabel } from '@/lib/additions-helpers'
 import OrderSummary from './OrderSummary'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
@@ -211,11 +212,13 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [submitIssue, setSubmitIssue] = useState(() => getInitialState('submitIssue', false))  // submitted OK but email/PDF failed
 
   const showAdditions = unit !== 'DIFF_SIZES'
+  // Sole hierarchy: which sole group this model belongs to (null → full options, no restriction).
+  const soleProfile = soleProfileFor(product.style_name)
 
   // Gate Tab2 → Tab3: every active conditional child (the `*` fields) must be filled.
   function goToConfirmation() {
     const missing = getMissingRequiredAdditions(
-      additions, unit, (product as unknown as Record<string, string>).adds_exclude ?? '',
+      additions, unit, (product as unknown as Record<string, string>).adds_exclude ?? '', soleProfile,
     )
     if (missing.length > 0) {
       setMissingAdds(missing)
@@ -578,6 +581,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             onChange={(a) => { setAdditions(a); if (missingAdds.length) { setMissingAdds([]); setError('') } }}
             isNew={!draftData}
             missing={missingAdds}
+            soleProfile={soleProfile}
           />
           <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
             <button onClick={goToConfirmation}

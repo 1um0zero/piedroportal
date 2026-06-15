@@ -50,3 +50,6 @@ _catalogues_src/
 
 # Excel/Office temporary lock files (e.g. ~$All models….xlsx)
 ~$*
+
+# Heavy raw sole source photos (normalized versions live in public/soles/)
+docs/solas_type/solas/

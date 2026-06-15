@@ -160,6 +160,34 @@ lists these 3. Confirm whether the others are also no-adjust or just not yet cov
 
 ---
 
+# Tab2 sole selector — design (DECIDED 2026-06-15)
+
+Decision (Jorge): **swatch cards with loupe**. Replace text chips for the sole-amendment
+fields (pu_type, sole_type, spoiler, runner_sole) with an image-based swatch grid:
+- Card = sole photo + name below; selected → gold ring + check; hover → lift + loupe affordance.
+- Loupe reuses the gallery magnifier to inspect tread detail.
+- K2 nested: step 1 material (EVA Lightweight | Full Rubber) → step 2 colour swatches.
+- Pattern already exists: `rocker` field uses ImageChips (type:'image' + images map). Extend that.
+
+### Source images
+docs/solas_type/solas/ADULTS/ — 16 PNGs, 2 semantic groups:
+- Side-profile (bumpers/wedges): Cupsole PU/EVA Black/White (Ladies + Mens), Sneaker ×5 colours.
+- Bottom-tread (sheets/plates): Rubber Sole Fish Black/Amber, Soleplate TR Piedro Black/Brown.
+Maps: Cupsole→pu_type, Sneaker→ZSM prefab, Fish/TR Piedro→runner_sole.
+
+### Image prep TODO (independent of Anabela — can start anytime)
+1. Normalize via existing pipeline ([[project_image_pipeline]]): uniform white bg + trim + center,
+   downscale ~700px / <150KB (currently 1.5–3MB each).
+2. Soft shadow / light neutral plinth so all-black soles (Cupsole PU Black, TR Black) read.
+3. Consistent canvas/scale per group (bumpers = wide rail, footprints = portrait tile).
+4. Cupsole is gender-specific (Ladies vs Mens) → pick by product.section.
+5. Upload to a Supabase bucket + map option value → image path (mirror rocker images approach).
+6. Photos still missing (Anabela "will follow"): EVA/Sportive/Lightweight sole colours, spoilers,
+   Vibram/Montana/Forli, Nora plates, ZSM prefab colours. Selector must degrade gracefully
+   (fallback to name-only chip when no image yet).
+
+---
+
 ## Open questions (for Anabela / Jorge)
 
 1. ~~Are the model codes `style_name` or `colour_id`?~~ → **`style_name`** (Jorge 2026-06-15).
