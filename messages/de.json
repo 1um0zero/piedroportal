@@ -466,13 +466,13 @@
         "d_rings": "D-Ringen",
         "blind_eyelets": "Blindösen",
         "buckle_strap": "Schnallen und Riemen",
-        "twist_lock": "Twist Lock System"
+        "boa_closure": "BOA-Verschluss"
       },
       "closure_velcro": {
-        "return": "Umlenkklettverschluß",
-        "lap_over": "Klettverschluß überlappend",
-        "single_hand": "Einhandklettverschluß",
-        "separate": "Velcro Seperate"
+        "return_velcro": "Umlenkklettverschluß",
+        "lap_over_velcro": "Klettverschluß überlappend",
+        "single_hand_velcro": "Einhandklettverschluß",
+        "velcro_seperate": "Velcro Seperate"
       },
       "stiffener": {
         "soft": "weich - 1.0 mm",

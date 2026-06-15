@@ -466,13 +466,13 @@
         "d_rings": "Anneaux en D",
         "blind_eyelets": "Anneaux aveugles",
         "buckle_strap": "Boucle et Sangle",
-        "twist_lock": "Twist Lock System"
+        "boa_closure": "Fermeture BOA"
       },
       "closure_velcro": {
-        "return": "Velcro de retour",
-        "lap_over": "Velcro à recouvrement",
-        "single_hand": "Velcro à une main",
-        "separate": "Velcro séparé"
+        "return_velcro": "Velcro de retour",
+        "lap_over_velcro": "Velcro à recouvrement",
+        "single_hand_velcro": "Velcro à une main",
+        "velcro_seperate": "Velcro séparé"
       },
       "stiffener": {
         "soft": "Doux - 1.0 mm",

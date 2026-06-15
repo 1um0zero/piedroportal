@@ -466,13 +466,13 @@
         "d_rings": "D-Ringen",
         "blind_eyelets": "Blinde Ringen",
         "buckle_strap": "Gesp & Band",
-        "twist_lock": "Twist Lock System"
+        "boa_closure": "BOA Closure"
       },
       "closure_velcro": {
-        "return": "Klittenband",
-        "lap_over": "Kruis Klittenband",
-        "single_hand": "Eenhands Sluiting",
-        "separate": "Losse Klittenband"
+        "return_velcro": "Klittenband",
+        "lap_over_velcro": "Kruis Klittenband",
+        "single_hand_velcro": "Eenhands Sluiting",
+        "velcro_seperate": "Losse Klittenband"
       },
       "stiffener": {
         "soft": "Zacht - 1.0 mm",

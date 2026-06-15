@@ -63,7 +63,7 @@ export function translateOptionValue(
     'toe_puffs': 'toe_puffs',
     'zipper': 'zipper',
     'rocker': 'rocker',
-    'bumper': 'bumper',
+    'pu_type': 'bumper',
   }
 
   const category = categoryMap[fieldKey]

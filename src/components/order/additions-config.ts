@@ -65,10 +65,10 @@ export const SECTIONS: AdditionSection[] = [
     key: 'upper',
     fields: [
       { key: 'lining',        type: 'option', side: 'both', collapse: true, values: ['Leather','Synthetic Fur','Real Fur','Sympatex','Diabetic','Microfiber'], dataverseKey: 'cr56f_lining' },
-      { key: 'cl_laces',      type: 'option', side: 'both', collapse: true, closureOnly: 'LACE', values: ['Eyelets','Hooks','D-Rings','Blind Eyelets','Buckle & Strap','Twist Lock System'], dataverseKey: 'cr56f_closurelaces' },
-      { key: 'cl_velcro',     type: 'option', side: 'both', collapse: true, closureOnly: 'VELCRO', values: ['Return Velcro','Lap-Over Velcro','Single Hand Velcro','Velcro Separate'], dataverseKey: 'cr56f_closurevelcrostraps' },
-      { key: 'stiff_hard',    type: 'option', side: 'both', collapse: true, values: ['Soft - 1.0 mm','Standard - 1.5 mm','Hard - 1.9 mm','Double - 2 x 1.5 mm','Extra padding - 6 mm'], dataverseKey: 'cr56f_stiffenerhardness' },
-      { key: 'toe_puffs',     type: 'option', side: 'both', collapse: true, values: ['Soft - 0.5 mm','Standard - 0.8 mm','Hard - 0.9 mm'], dataverseKey: 'cr56f_toepuffs' },
+      { key: 'cl_laces',      type: 'option', side: 'both', collapse: true, closureOnly: 'LACE', values: ['Eyelets','Hooks','D-Rings','Blind Eyelets','Buckle & Strap','BOA Closure'], dataverseKey: 'cr56f_closurelaces' },
+      { key: 'cl_velcro',     type: 'option', side: 'both', collapse: true, closureOnly: 'VELCRO', values: ['Return Velcro','Lap-Over Velcro','Single Hand Velcro','Velcro Seperate'], dataverseKey: 'cr56f_closurevelcrostraps' },
+      { key: 'stiff_hard',    type: 'option', side: 'both', collapse: true, values: ['Soft','Standard','Hard','Double','Extra padding'], dataverseKey: 'cr56f_stiffenerhardness' },
+      { key: 'toe_puffs',     type: 'option', side: 'both', collapse: true, values: ['Soft','Standard','Hard'], dataverseKey: 'cr56f_toepuffs' },
       { key: 'toe_puffs_rim', type: 'toggle', side: 'both', dataverseKey: 'cr56f_toepuffsrim' },
       { key: 'str_leather',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_stretchleather' },
       { key: 'instep_front',  type: 'text',   side: 'both', dataverseKey: 'cr56f_instepmoretothefront' },
@@ -101,7 +101,7 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'pu_type',      type: 'option', side: 'both', collapse: true, values: ['PU Black','PU White','EVA Black','EVA White'], conditionalOn: 'pu_bumper', dataverseKey: 'cr56f_6puevabumper' },
       // Amendment Sole
       { key: 'amend_sole',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_6soleamendement1' },
-      { key: 'sole_type',    type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['EVA Black','EVA Taupe','EVA Grey','EVA White','EVA Lightweight Black','EVA Lightweight Taupe','SPORTIVE Black','SPORTIVE Beige','SPORTIVE Grey','SPORTIVE White','EVA Lightweight Amber','EVA Lightweight White','Full Rubber Black','Full Rubber Amber','Full Rubber Blue','Full Rubber Pink','Full Rubber White','EVA Brown'], dataverseKey: 'cr56f_6evawedgecolour' },
+      { key: 'sole_type',    type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['EVA Black','EVA Taupe','EVA Grey','EVA White','EVA Lightweight Black','EVA Lightweight Taupe','Sportive Black','Sportive Beige','Sportive Grey','Sportive White','EVA Lightweight Amber','EVA Lightweight Off-White','Full Rubber Black','Full Rubber Amber','Full Rubber Blue','Full Rubber Pink','Full Rubber White','EVA Brown'], dataverseKey: 'cr56f_6evawedgecolour' },
       { key: 'spoiler',      type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['Black','Dark Brown','Light Grey','Dark Grey','Dark Blue','Red','Amber','Cobalt'], dataverseKey: 'cr56f_6spoiler' },
       { key: 'runner_sole',  type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['Piedro Runner Black','Piedro Runner Amber','Rubber Black','Rubber Amber','Fish Black','Fish Amber','Tire Black','Tire Amber','EVA Nora Astro Star Lightweight Black','EVA Nora Astro Star Lightweight Amber','EVA Lightweight Port Flex Black','EVA Lightweight Port Flex Amber','Lightweight Vibram Sole Black','Lightweight Vibram Sole Brown','Lightweight Sole Forli Uomo','Full Rubber Sole Montana Black','Full Rubber Sole Montana Brown','Nora Sole Plate Blue with Light Body Colour','Nora Sole Plate Black with Light Body Colour','Nora Sole Plate Black with Black Body Colour'], dataverseKey: 'cr56f_6runnersole' },
       // Float & Wedge with L/R sub-options

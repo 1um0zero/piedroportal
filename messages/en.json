@@ -466,13 +466,13 @@
         "d_rings": "D-Rings",
         "blind_eyelets": "Blind Eyelets",
         "buckle_strap": "Buckle & Strap",
-        "twist_lock": "Twist Lock System"
+        "boa_closure": "BOA Closure"
       },
       "closure_velcro": {
-        "return": "Return Velcro",
-        "lap_over": "Lap-Over Velcro",
-        "single_hand": "Single Hand Velcro",
-        "separate": "Velcro Seperate"
+        "return_velcro": "Return Velcro",
+        "lap_over_velcro": "Lap-Over Velcro",
+        "single_hand_velcro": "Single Hand Velcro",
+        "velcro_seperate": "Velcro Separate"
       },
       "stiffener": {
         "soft": "Soft - 1.0 mm",
