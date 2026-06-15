@@ -60,12 +60,40 @@ for (const file of walk(SRC)) {
   const outName = slug(name) + '.png'
   const outPath = join(OUT, outName)
 
-  // trim near-white, fit into BOX, centre on CANVAS with white bg + margin
+  // trim near-white, fit into BOX, centre on a white CANVAS
   const trimmed = await sharp(file).flatten({ background: '#ffffff' }).trim({ threshold: 12 })
     .resize(BOX - MARGIN * 2, BOX - MARGIN * 2, { fit: 'inside', withoutEnlargement: true })
     .toBuffer()
-  await sharp({ create: { width: CANVAS, height: CANVAS, channels: 4, background: '#ffffff' } })
+  const composed = await sharp({ create: { width: CANVAS, height: CANVAS, channels: 4, background: '#ffffff' } })
     .composite([{ input: trimmed, gravity: 'center' }])
+    .raw().toBuffer({ resolveWithObject: true })
+
+  // Background removal: flood-fill near-white from the border → transparent.
+  // (Edge-connected only, so white *inside* a sole, e.g. PU White, is preserved.)
+  const { data, info } = composed
+  const { width: W, height: H } = info
+  const ch = info.channels
+  const NEAR = 236                 // a pixel is "white-ish" if all RGB >= NEAR
+  const isWhite = i => data[i] >= NEAR && data[i + 1] >= NEAR && data[i + 2] >= NEAR
+  const bg = new Uint8Array(W * H)
+  const stack = []
+  for (let x = 0; x < W; x++) { stack.push(x, x + (H - 1) * W) }
+  for (let y = 0; y < H; y++) { stack.push(y * W, W - 1 + y * W) }
+  while (stack.length) {
+    const p = stack.pop()
+    if (bg[p]) continue
+    if (!isWhite(p * ch)) continue
+    bg[p] = 1
+    const x = p % W, y = (p / W) | 0
+    if (x > 0) stack.push(p - 1)
+    if (x < W - 1) stack.push(p + 1)
+    if (y > 0) stack.push(p - W)
+    if (y < H - 1) stack.push(p + W)
+  }
+  for (let p = 0; p < W * H; p++) if (bg[p]) data[p * ch + 3] = 0   // clear alpha on background
+
+  await sharp(data, { raw: { width: W, height: H, channels: ch } })
+    .blur(0.4)                                                     // soften the cut edge a touch
     .png({ quality: 82, compressionLevel: 9 })
     .toFile(outPath)
 

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
 import { soleImages } from './sole-images'
+import SoleStage from './SoleStage'
 import { GlbViewer } from './GlbViewer'
 import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
 
@@ -232,6 +233,8 @@ function SoleSwatch({ values, value, onChange, images, label }: {
   label?: (v: string) => string
 }) {
   const [hovered, setHovered] = useState<string | null>(null)
+  const [stageAt, setStageAt] = useState<string | null>(null)  // non-null → stage open at this value
+  const lbl = (v: string) => (label ? label(v) : v)
   const hoveredSrc = hovered ? images[hovered] : null
   return (
     <div className="flex flex-wrap gap-2.5">
@@ -239,10 +242,10 @@ function SoleSwatch({ values, value, onChange, images, label }: {
         const key = String(v)
         const src = images[key]
         const selected = value === v
-        const display = label ? label(key) : key
+        const display = lbl(key)
         return (
           <button key={key} type="button"
-            onClick={() => onChange(selected ? null : key)}
+            onClick={() => (src ? setStageAt(key) : onChange(selected ? null : key))}
             onMouseEnter={() => setHovered(key)}
             onMouseLeave={() => setHovered(h => (h === key ? null : h))}
             title={display}
@@ -265,6 +268,13 @@ function SoleSwatch({ values, value, onChange, images, label }: {
               <span className={`mt-1 text-[10px] leading-tight font-medium text-center
                 ${selected ? 'text-gold' : 'text-stone-600'}`}>{display}</span>
             )}
+            {src && (
+              <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-stone-900/40 text-white
+                               opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14zM11 8v6M8 11h6" /></svg>
+              </span>
+            )}
             {selected && (
               <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-white
                                flex items-center justify-center shadow-sm">
@@ -277,23 +287,25 @@ function SoleSwatch({ values, value, onChange, images, label }: {
         )
       })}
 
-      {/* Giant floating hologram preview */}
-      {hoveredSrc && (
-        <>
-          <div className="sole-holo-backdrop" />
-          <div className="sole-holo-panel">
-            <div className="relative flex flex-col items-center">
-              <div className="sole-holo-glow" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={hoveredSrc} alt={hovered ?? ''} className="sole-holo-img"
-                style={{ maxHeight: '78vh', maxWidth: 'min(88vw, 700px)', objectFit: 'contain' }} />
-              <span className="relative mt-4 px-4 py-1.5 rounded-full bg-white/95 text-stone-800
-                               text-sm font-semibold shadow-lg">
-                {hovered && label ? label(hovered) : hovered}
-              </span>
-            </div>
+      {/* Light floating glance on hover (no screen dim — deep inspection is the stage on click) */}
+      {hoveredSrc && stageAt === null && (
+        <div className="sole-holo-panel">
+          <div className="relative flex flex-col items-center">
+            <div className="sole-holo-glow" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={hoveredSrc} alt={hovered ?? ''} className="sole-holo-img"
+              style={{ maxHeight: '44vh', maxWidth: 'min(64vw, 440px)', objectFit: 'contain' }} />
+            <span className="relative mt-3 px-3 py-1 rounded-full bg-white/95 text-stone-800
+                             text-xs font-semibold shadow-lg">{lbl(hovered!)}</span>
           </div>
-        </>
+        </div>
+      )}
+
+      {/* Immersive stage on click: 3D tilt + loupe + levitating carousel */}
+      {stageAt !== null && (
+        <SoleStage
+          values={values.map(String)} images={images} value={value == null ? null : String(value)}
+          label={lbl} startAt={stageAt} onSelect={onChange} onClose={() => setStageAt(null)} />
       )}
     </div>
   )
