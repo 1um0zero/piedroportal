@@ -582,6 +582,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             isNew={!draftData}
             missing={missingAdds}
             soleProfile={soleProfile}
+            section={product.section}
           />
           <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
             <button onClick={goToConfirmation}

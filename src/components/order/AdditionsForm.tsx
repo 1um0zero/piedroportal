@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
+import { soleImages } from './sole-images'
 import { GlbViewer } from './GlbViewer'
 import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
 
@@ -24,6 +25,7 @@ type Props = {
   isNew?: boolean         // new order → start with all sections collapsed
   missing?: MissingRequired[]  // required children flagged empty on a failed advance
   soleProfile?: string | null  // sole group key for this model → restricts sole-amendment options
+  section?: string | null      // product section (KIDS/MEN/WOMEN) → picks gender-specific sole photos
 }
 
 // ── Chip components ───────────────────────────────────────────────────────────
@@ -248,7 +250,7 @@ function SelectCombo({ values, value, onChange, t, fieldKey }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, isNew, missing, soleProfile = null }: Props) {
+export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, isNew, missing, soleProfile = null, section = null }: Props) {
   const t = useTranslations('additions')
   // Field keys flagged as missing-required on the last failed "Review and confirm".
   const missingKeys = new Set((missing ?? []).map(m => m.fieldKey))
@@ -335,9 +337,16 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     if (field.type === 'image' && field.images)
       return <ImageChips values={optVals} value={val} onChange={setVal} images={field.images}
         label={(v) => translateOptionValue(field.key, v, t)} />
-    if (field.type === 'image' || field.type === 'option')
+    if (field.type === 'image' || field.type === 'option') {
+      // Sole swatches: for profiled models, show photo cards when we have images for the
+      // restricted set; otherwise fall back to text chips (keeps unprofiled models unchanged).
+      const swatch = soleProfile ? soleImages(field.key, section) : {}
+      if ((optVals as string[]).some(v => swatch[v]))
+        return <ImageChips values={optVals} value={val} onChange={setVal} images={swatch}
+          label={(v) => translateOptionValue(field.key, v, t)} />
       return <OptionChips values={optVals} value={val} onChange={setVal} collapse={field.collapse}
         label={(v) => translateOptionValue(field.key, v, t)} />
+    }
     if (field.type === 'toggle')
       return null  // Toggles are now handled as checkboxes at the field level, not in renderControl
     if (field.type === 'text')
