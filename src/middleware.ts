@@ -2,8 +2,32 @@ import { type NextRequest, NextResponse } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { routing } from './i18n/routing'
+import { encodeQuery } from './lib/query-cipher'
 
 const handleI18n = createMiddleware(routing)
+
+// Legacy piedro.com catalogue deep links used the old Power Pages gallery at
+// `…/galeria/?gender=979580002&category=1&search=…` (often with an `/en-US/`
+// prefix our routing doesn't know). Catch any `…/galeria` path, translate the
+// numeric gender + category to our encoded gallery deep link, and redirect.
+const GENDER_TO_SECTION: Record<string, string> = {
+  '979580000': 'KIDS', '979580001': 'MEN', '979580002': 'WOMEN',
+}
+function legacyGaleriaRedirect(request: NextRequest): NextResponse | null {
+  const segs = request.nextUrl.pathname.replace(/\/+$/, '').split('/')
+  if (segs[segs.length - 1].toLowerCase() !== 'galeria') return null
+  const sp = request.nextUrl.searchParams
+  const params: Record<string, string | number> = {
+    section: GENDER_TO_SECTION[sp.get('gender') ?? ''] ?? 'KIDS',
+  }
+  const category = parseInt(sp.get('category') ?? '0', 10)
+  if (category > 0) params.category = category
+  const search = sp.get('search')
+  if (search) params.search = search
+  const dest = new URL('/gallery', request.url)
+  dest.searchParams.set('q', encodeQuery(params))
+  return NextResponse.redirect(dest)
+}
 
 // Routes requiring authentication (locale-relative)
 // /wishlist is a client-side (localStorage) browse list — viewable without login;
@@ -16,6 +40,10 @@ const AUTH_REQUIRED = ['/orders', '/orders/dashboard', '/admin', '/set-password'
 // eagerly and doesn't invoke proxy.ts at runtime — using src/middleware.ts instead.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Legacy /galeria deep links (piedro.com) → our encoded gallery URL.
+  const galeria = legacyGaleriaRedirect(request)
+  if (galeria) return galeria
 
   // Strip locale prefix to get the locale-relative path
   const locales = routing.locales.map((l) => `/${l}`)
