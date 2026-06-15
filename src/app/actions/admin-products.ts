@@ -308,3 +308,36 @@ export async function setProductNew(
   revalidatePath('/admin/products')
   return { ok: true }
 }
+
+// ── Delete a product image slot ───────────────────────────────────────────────
+// Removes `<colour_id>.<NN>.png` from the products bucket. If the main slot (01)
+// is removed and it was the product's picture_name, the picture_name is cleared.
+export async function deleteProductImageAction(
+  colourId: string,
+  index: number,
+): Promise<{ ok?: boolean; error?: string }> {
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
+  if (!colourId || !Number.isFinite(index) || index < 1 || index > 99)
+    return { error: 'Invalid image reference' }
+
+  const service = createServiceClient()
+
+  // Enforce model scope (same as upload).
+  const { data: prod } = await service
+    .from('products').select('style_name, picture_name').eq('colour_id', colourId).maybeSingle()
+  if (!scope.allModels && (!prod || !scope.canModel(prod.style_name as string)))
+    return { error: 'This model is out of your scope' }
+
+  const storageName = `${colourId}.${String(index).padStart(2, '0')}.png`
+  const { error: rmErr } = await service.storage.from('products').remove([storageName])
+  if (rmErr) return { error: rmErr.message }
+
+  // If the main image was the product's picture_name, clear it.
+  if (index === 1 && prod?.picture_name === storageName) {
+    await service.from('products').update({ picture_name: null }).eq('colour_id', colourId)
+  }
+
+  revalidatePath('/admin/products')
+  return { ok: true }
+}

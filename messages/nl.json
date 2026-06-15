@@ -861,6 +861,8 @@
       "st_done": "klaar",
       "st_error": "fout",
       "slot_main": "hoofd",
+      "image_delete": "Afbeelding verwijderen",
+      "image_delete_confirm": "Deze afbeelding verwijderen?",
       "slots_hint": "Slot 1 is de hoofdafbeelding (stelt picture_name in). Elke afbeelding wordt automatisch verwerkt: achtergrond verwijderd (alleen effen wit), bijgesneden en op dezelfde schaal gecentreerd, omgezet naar PNG.",
       "result_skipped": "{n} overgeslagen (buiten bereik)",
       "stat_rejected": "Geweigerd",

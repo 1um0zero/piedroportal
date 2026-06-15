@@ -861,6 +861,8 @@
       "st_done": "done",
       "st_error": "error",
       "slot_main": "main",
+      "image_delete": "Remove image",
+      "image_delete_confirm": "Remove this image?",
       "slots_hint": "Slot 1 is the main image (sets picture_name). Every image is auto-processed: background removed (plain white only), trimmed and re-centred at the same scale, converted to PNG.",
       "result_skipped": "{n} skipped (out of scope)",
       "stat_rejected": "Rejected",

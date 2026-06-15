@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { deleteProductImageAction } from '@/app/actions/admin-products'
 
 const BUCKET = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products`
 
@@ -305,6 +306,8 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
   const [status, setStatus] = useState<Record<number, 'idle' | 'uploading' | 'done' | 'error'>>({})
   const [bust, setBust] = useState(0) // cache-buster after upload
   const [err, setErr] = useState<string | null>(null)
+  const [present, setPresent] = useState<Record<number, boolean>>({}) // slots that actually hold an image
+  const [removing, setRemoving] = useState<number | null>(null)
 
   async function pick(index: number, files: FileList | null) {
     const file = files?.[0]
@@ -313,8 +316,23 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
     setStatus(s => ({ ...s, [index]: 'uploading' }))
     const r = await uploadOne(file, colourId, index)
     setStatus(s => ({ ...s, [index]: r.ok ? 'done' : 'error' }))
-    if (r.ok) setBust(b => b + 1)
+    if (r.ok) { setBust(b => b + 1); setPresent(p => ({ ...p, [index]: true })) }
     else setErr(r.error ?? 'Upload failed')
+  }
+
+  async function remove(index: number) {
+    if (!confirm(t('image_delete_confirm'))) return
+    setErr(null)
+    setRemoving(index)
+    const r = await deleteProductImageAction(colourId, index)
+    setRemoving(null)
+    if (r.ok) {
+      setPresent(p => ({ ...p, [index]: false }))
+      setStatus(s => ({ ...s, [index]: 'idle' }))
+      setBust(b => b + 1)
+    } else {
+      setErr(r.error ?? 'Delete failed')
+    }
   }
 
   return (
@@ -332,12 +350,22 @@ export function ProductImageSlots({ colourId }: { colourId: string }) {
                 src={`${BUCKET}/${name}?v=${bust}`}
                 alt={`${n}`}
                 className="h-full w-full object-contain p-1"
-                onLoad={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'visible' }}
-                onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                onLoad={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'visible'; setPresent(p => ({ ...p, [n]: true })) }}
+                onError={e => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden'; setPresent(p => ({ ...p, [n]: false })) }}
               />
               <span className="absolute top-1 left-1 rounded bg-black/50 px-1.5 text-[10px] font-bold text-white">
                 {n === 1 ? t('slot_main') : String(n).padStart(2, '0')}
               </span>
+              {/* Remove — only when the slot actually holds an image. Stops the label
+                  from also opening the file picker. */}
+              {present[n] && st !== 'uploading' && (
+                <button type="button" title={t('image_delete')}
+                  onClick={e => { e.preventDefault(); e.stopPropagation(); remove(n) }}
+                  disabled={removing === n}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/55 text-white text-xs leading-none flex items-center justify-center hover:bg-red-500 disabled:opacity-50">
+                  {removing === n ? '…' : '×'}
+                </button>
+              )}
               {st === 'uploading' && <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-xs text-blue-500">uploading…</span>}
               {st === 'done' && <span className="absolute bottom-1 right-1 text-emerald-600 text-xs">✓</span>}
               {st === 'error' && <span className="absolute bottom-1 right-1 text-red-500 text-xs">!</span>}

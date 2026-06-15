@@ -861,6 +861,8 @@
       "st_done": "terminé",
       "st_error": "erreur",
       "slot_main": "principal",
+      "image_delete": "Supprimer l’image",
+      "image_delete_confirm": "Supprimer cette image ?",
       "slots_hint": "Le slot 1 est l’image principale (définit picture_name). Chaque image est traitée automatiquement : fond supprimé (blanc uni uniquement), rognée et recentrée à la même échelle, convertie en PNG.",
       "result_skipped": "{n} ignoré(s) (hors périmètre)",
       "stat_rejected": "Rejetés",

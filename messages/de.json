@@ -861,6 +861,8 @@
       "st_done": "fertig",
       "st_error": "Fehler",
       "slot_main": "Haupt",
+      "image_delete": "Bild entfernen",
+      "image_delete_confirm": "Dieses Bild entfernen?",
       "slots_hint": "Slot 1 ist das Hauptbild (setzt picture_name). Jedes Bild wird automatisch verarbeitet: Hintergrund entfernt (nur einfarbig weiß), zugeschnitten und im gleichen Maßstab zentriert, in PNG umgewandelt.",
       "result_skipped": "{n} übersprungen (außerhalb des Bereichs)",
       "stat_rejected": "Abgelehnt",
