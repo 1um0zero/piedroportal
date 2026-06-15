@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import LoginCard from '@/components/auth/LoginCard'
 import { encodeQuery } from '@/lib/query-cipher'
@@ -44,6 +44,10 @@ function Feature({ text }: { text: string }) {
 
 export default async function LandingPageNew({ hasError, loggedIn }: { hasError?: boolean; loggedIn?: boolean }) {
   const t = await getTranslations('homenew')
+  const locale = await getLocale()
+  // After signing in from the embedded card, stay on the homepage (not the
+  // gallery) — the locale-prefixed home path; `en` is prefix-free.
+  const homePath = locale === 'en' ? '/' : `/${locale}`
   const heroBody = t.raw('hero.body') as string[]
   const orthoBody = t.raw('orthosoft.body') as string[]
   const portalFeatures = t.raw('portal.features') as string[]
@@ -76,7 +80,7 @@ export default async function LandingPageNew({ hasError, loggedIn }: { hasError?
               the hero collapses to a single column above. */}
           {!loggedIn && (
             <div id="login" className="scroll-mt-24">
-              <LoginCard hasError={hasError} />
+              <LoginCard hasError={hasError} redirectTo={homePath} />
             </div>
           )}
         </div>
