@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true },
   icons: {
     icon: [
-      { url: '/piedro-foot.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: 'any' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/piedro-foot.svg',
+    apple: '/apple-icon.png',
   },
   // Rich preview when the portal link is shared (WhatsApp, e-mail, Slack…).
   openGraph: {
