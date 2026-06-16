@@ -301,36 +301,6 @@ export default function GalleryFilters({
       {/* Always-visible bar */}
       <div className="flex flex-wrap items-center gap-2">
 
-        {/* Livingstone (LIV) chips. Inside the LIV collection: one chip per
-            available section (MEN/WOMEN, all on by default) to narrow it. Inside
-            a normal section that has LIV models: a single Livingstone chip
-            (default off) that swaps the grid to that section's LIV models only. */}
-        {exclusiveMode ? (
-          livSectionsAvailable.map((s) => {
-            const on = !livHidden.includes(s)
-            return (
-              <button
-                key={s}
-                onClick={() => onToggleLivSection(s)}
-                aria-pressed={on}
-                className={`h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
-                  ${on ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
-              >
-                {tg(SECTION_KEY[s])}
-              </button>
-            )
-          })
-        ) : livAvailableHere ? (
-          <button
-            onClick={onToggleLivOnly}
-            aria-pressed={livOnly}
-            className={`h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
-              ${livOnly ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
-          >
-            Livingstone
-          </button>
-        ) : null}
-
         {/* Filters toggle */}
         <button
           onClick={() => setOpen(o => !o)}
@@ -353,6 +323,37 @@ export default function GalleryFilters({
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+
+        {/* Livingstone (LIV) chips — to the right of Filters. Inside the LIV
+            collection: one chip per available section (MEN/WOMEN, all on by
+            default, equal width) to narrow it. Inside a normal section that has
+            LIV models: a single Livingstone chip (default off) that swaps the
+            grid to that section's LIV models only. */}
+        {exclusiveMode ? (
+          livSectionsAvailable.map((s) => {
+            const on = !livHidden.includes(s)
+            return (
+              <button
+                key={s}
+                onClick={() => onToggleLivSection(s)}
+                aria-pressed={on}
+                className={`h-9 px-3 min-w-[88px] text-center text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
+                  ${on ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+              >
+                {tg(SECTION_KEY[s])}
+              </button>
+            )
+          })
+        ) : livAvailableHere ? (
+          <button
+            onClick={onToggleLivOnly}
+            aria-pressed={livOnly}
+            className={`h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
+              ${livOnly ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+          >
+            Livingstone
+          </button>
+        ) : null}
 
         {/* Build wishlist toggle */}
         <button
