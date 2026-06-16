@@ -20,13 +20,22 @@ const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
 /**
  * Full-bleed gallery hero. Sits at the very top of the page and is pulled up
  * (-mt-16, matching the navbar height) so the photo bleeds behind the
- * transparent navbar. Switches per
- * active section (KIDS/MEN/WOMEN).
+ * transparent navbar. Switches per active section (KIDS/MEN/WOMEN), or shows the
+ * Livingstone collection diptych (men + women blend) when an exclusive token is
+ * active.
  */
-export default function GalleryHero({ section }: { section: Section }) {
+export default function GalleryHero({ section, exclusive = '' }: { section: Section; exclusive?: string }) {
   const t = useTranslations('gallery')
   const key = SECTION_KEY[section]
-  const cfg = HERO[section]
+  const isLiv = exclusive === 'LIV'
+
+  // Livingstone is a section-agnostic collection spanning Men + Women, so it gets
+  // a dedicated diptych hero (see scripts that build /landing/osb-livingstone.jpg).
+  const cfg: HeroCfg = isLiv
+    ? { img: '/landing/osb-livingstone.jpg', fit: 'cover', bg: '#2b2b22' }
+    : HERO[section]
+  const title = isLiv ? 'Livingstone' : t(`hero.${key}.title`)
+  const subtitle = isLiv ? `${t('men')} / ${t('women')}` : t(`hero.${key}.subtitle`)
 
   return (
     <section
@@ -36,7 +45,7 @@ export default function GalleryHero({ section }: { section: Section }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={cfg.img}
-        alt={t(`hero.${key}.title`)}
+        alt={title}
         className={`absolute inset-0 h-full w-full ${cfg.fit === 'contain' ? 'object-contain' : 'object-cover'} object-center`}
       />
       {/* Scrim: darker at the top (under the white header) and bottom (under the copy). */}
@@ -44,10 +53,10 @@ export default function GalleryHero({ section }: { section: Section }) {
 
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-10 pt-16">
         <h1 className="text-3xl sm:text-5xl font-bold tracking-[-0.02em] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
-          {t(`hero.${key}.title`)}
+          {title}
         </h1>
         <p className="mt-3 max-w-xl text-base sm:text-lg text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
-          {t(`hero.${key}.subtitle`)}
+          {subtitle}
         </p>
       </div>
     </section>

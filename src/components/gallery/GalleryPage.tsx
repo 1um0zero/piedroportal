@@ -405,7 +405,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
 
   return (
     <>
-      {showHero && !exclusiveFilter && <GalleryHero section={section} />}
+      {showHero && <GalleryHero section={section} exclusive={exclusiveFilter} />}
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       {/* Section tabs + search. In hero mode the section switch is in the header
           and the search is in the hero, so this whole row is hidden. */}
