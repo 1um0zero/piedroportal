@@ -14,6 +14,17 @@ export function exclusiveTokens(s: string | null | undefined): string[] {
   return [...new Set(String(s).toUpperCase().match(/[A-Z0-9]+/g) ?? [])]
 }
 
+/**
+ * Whether a product belongs to the Livingstone collection. The `exclusive` field
+ * carries several siglas and `LIV` is NOT exclusive to Livingstone — the `KIV`
+ * collection is tagged `"LIV KIV"`. So a model is Livingstone only when it has
+ * the LIV token WITHOUT KIV (the genuine "LIV"-only models, currently MEN).
+ */
+export function isLivingstone(exclusive: string | null | undefined): boolean {
+  const tokens = exclusiveTokens(exclusive)
+  return tokens.includes('LIV') && !tokens.includes('KIV')
+}
+
 /** Whether a product (by its raw `exclusive` value) is visible to the user. */
 export function isExclusiveVisible(
   productExclusive: string | null | undefined,

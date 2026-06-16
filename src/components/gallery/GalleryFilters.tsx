@@ -330,7 +330,7 @@ export default function GalleryFilters({
             default, equal width) to narrow it. Inside a normal section that has
             LIV models: a single Livingstone chip (default off) that swaps the
             grid to that section's LIV models only. */}
-        {exclusiveMode ? (
+        {exclusiveMode && livSectionsAvailable.length > 1 ? (
           livSectionsAvailable.map((s) => {
             const on = !livHidden.includes(s)
             return (

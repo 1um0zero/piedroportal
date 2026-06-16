@@ -12,7 +12,7 @@ import { preloadFilterTranslations } from '@/lib/filter-translations'
 import { decodeQuery } from '@/lib/query-cipher'
 import { matchesSearch } from '@/lib/search'
 import { useGallerySection } from '@/contexts/GallerySectionContext'
-import { exclusiveTokens } from '@/lib/exclusive'
+import { isLivingstone } from '@/lib/exclusive'
 import { compareWidths } from '@/lib/width-display'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
@@ -141,7 +141,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   // section chips (MEN/WOMEN, KIDS later) narrows it — all on by default, so we
   // track which are toggled OFF. Inside a normal section a single Livingstone
   // chip (default off) restricts the grid to that section's LIV models only.
-  const isLiv = (p: Product) => exclusiveTokens(p.exclusive).includes('LIV')
+  const isLiv = (p: Product) => isLivingstone(p.exclusive)
   const livSectionsAvailable = useMemo(
     () => SECTIONS.filter((s) => exclusives.some((p) => p.section === s && isLiv(p))),
     [exclusives],

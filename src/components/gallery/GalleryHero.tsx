@@ -29,13 +29,11 @@ export default function GalleryHero({ section, exclusive = '' }: { section: Sect
   const key = SECTION_KEY[section]
   const isLiv = exclusive === 'LIV'
 
-  // Livingstone is a section-agnostic collection spanning Men + Women, so it gets
-  // a dedicated diptych hero (see scripts that build /landing/osb-livingstone.jpg).
-  const cfg: HeroCfg = isLiv
-    ? { img: '/landing/osb-livingstone.jpg', fit: 'cover', bg: '#2b2b22' }
-    : HERO[section]
+  // Livingstone is currently a Men-only collection, so it reuses the Men hero
+  // photo and simply shows the "Livingstone" wordmark.
+  const cfg: HeroCfg = isLiv ? { ...HERO.MEN } : HERO[section]
   const title = isLiv ? 'Livingstone' : t(`hero.${key}.title`)
-  const subtitle = isLiv ? `${t('men')} / ${t('women')}` : t(`hero.${key}.subtitle`)
+  const subtitle = isLiv ? '' : t(`hero.${key}.subtitle`)
 
   return (
     <section
@@ -55,9 +53,11 @@ export default function GalleryHero({ section, exclusive = '' }: { section: Sect
         <h1 className="text-3xl sm:text-5xl font-bold tracking-[-0.02em] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
           {title}
         </h1>
-        <p className="mt-3 max-w-xl text-base sm:text-lg text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
-          {subtitle}
-        </p>
+        {subtitle && (
+          <p className="mt-3 max-w-xl text-base sm:text-lg text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+            {subtitle}
+          </p>
+        )}
       </div>
     </section>
   )
