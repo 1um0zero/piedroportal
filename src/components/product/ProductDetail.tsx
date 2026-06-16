@@ -360,7 +360,7 @@ export default function ProductDetail({ product, siblings }: Props) {
               <span>{t('info')}</span><span>{t('sizes')}</span>
             </div>
             <div className="grid grid-cols-2 px-4 py-3 text-stone-800">
-              <span className="text-stone-500">{product.info ?? '—'}</span>
+              <span>{product.info ?? '—'}</span>
               <span>{selected.size_unit ?? 'EU'} {selected.size_first}–{selected.size_last}</span>
             </div>
           </div>
@@ -376,12 +376,12 @@ export default function ProductDetail({ product, siblings }: Props) {
               {groupedConstructions.map((g, i) => (
                 <div key={i}
                   className={`grid grid-cols-2 px-4 py-2.5 gap-4 ${i % 2 === 0 ? 'bg-white' : 'bg-stone-50/50'}`}>
-                  <span className="font-medium text-stone-700 leading-snug">
+                  <span className="text-stone-800 leading-snug">
                     {g.names.map((n) => translateFilterValueSync(n, locale)).join(', ')}
                   </span>
                   <span className="flex flex-wrap gap-1">
                     {g.widths.map((w) => (
-                      <span key={w} className="px-1.5 py-0.5 text-xs bg-stone-100 rounded font-mono text-stone-700">{displayWidth(w, g.widths, locale)}</span>
+                      <span key={w} className="px-1.5 py-0.5 text-xs bg-stone-100 rounded text-stone-800">{displayWidth(w, g.widths, locale)}</span>
                     ))}
                   </span>
                 </div>
