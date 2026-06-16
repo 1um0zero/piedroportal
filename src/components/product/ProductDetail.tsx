@@ -25,7 +25,7 @@ const ZOOM_STEPS = [2.5, 4]  // click-to-zoom levels (each click steps up)
 // Hover shows the classic loupe lens. Clicking the image magnifies it inside the
 // same frame; moving the cursor then pans the shoe so the zone under the pointer
 // is brought into view. Click again (or leave) to reset.
-function ZoomImage({ url, alt }: { url: string; alt: string }) {
+function ZoomImage({ url, alt, onError }: { url: string; alt: string; onError?: () => void }) {
   const [pos, setPos]         = useState<{ x: number; y: number } | null>(null)
   // level: 0 = normal, 1..N = ZOOM_STEPS index+1 · dir: click direction (+1 in, -1 out)
   const [zoom, setZoom]       = useState({ level: 0, dir: 1 })
@@ -126,6 +126,7 @@ function ZoomImage({ url, alt }: { url: string; alt: string }) {
           const img = e.currentTarget
           setImgSize({ w: img.naturalWidth, h: img.naturalHeight })
         }}
+        onError={onError}
       />
 
       {/* Hover loupe — only while not click-zoomed */}
@@ -266,16 +267,23 @@ export default function ProductDetail({ product, siblings }: Props) {
     // Keep the same colour when switching closure; fall back to first available.
     const wantKey = colourKey(selected)
     const next = inClosure.find((p) => colourKey(p) === wantKey) ?? inClosure[0]
-    if (next) { setSelected(next); setActiveImg(0); setFailed(new Set()) }
+    // Keep the same image index across models; setFailed reset lets the new
+    // model's images re-evaluate (currentUrl falls back if that index is absent).
+    if (next) { setSelected(next); setFailed(new Set()) }
   }
   function selectVariant(p: Product) {
     setSelected(p); setActiveClosure(p.closure)
-    setActiveImg(0); setFailed(new Set())
+    setFailed(new Set())
   }
 
   const wishlisted = ids.has(selected.id)
-  const currentUrl = allImages[activeImg] && !failed.has(activeImg)
-    ? src(allImages[activeImg]) : null
+  // Show the active image if this model has it; otherwise fall back to the first
+  // image that loaded, and to nothing at all if the model has no images.
+  const displayIdx = allImages[activeImg] && !failed.has(activeImg)
+    ? activeImg
+    : allImages.findIndex((_, i) => !failed.has(i))
+  const currentUrl = displayIdx >= 0 && allImages[displayIdx]
+    ? src(allImages[displayIdx]) : null
 
   const orderBtn = !user ? (
     // Explicit "log in to order" — opens the floating login panel in place
@@ -353,7 +361,11 @@ export default function ProductDetail({ product, siblings }: Props) {
           <div className="relative aspect-square"
             style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
             {currentUrl ? (
-              <ZoomImage url={currentUrl} alt={`${product.style_name} ${getColorName(selected)}`} />
+              <ZoomImage
+                url={currentUrl}
+                alt={`${product.style_name} ${getColorName(selected)}`}
+                onError={() => { if (displayIdx >= 0) setFailed((p) => new Set([...p, displayIdx])) }}
+              />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
