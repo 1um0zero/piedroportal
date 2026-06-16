@@ -57,6 +57,12 @@ export async function POST(req: Request) {
   if (typeof body.approval_state === 'string' && APPROVAL_TO_STATUS[body.approval_state]) {
     update.status = APPROVAL_TO_STATUS[body.approval_state]
   }
+  // Stamp the approval date when the ERP approves (the grid reads it; the
+  // back-office action does the same). Only when not already provided.
+  if (body.approval_state === 'approved' && typeof body.approval_date !== 'string') {
+    update.approval_date = new Date().toISOString()
+  }
+  if (typeof body.approval_date === 'string') update.approval_date = body.approval_date
   if (typeof body.production_state === 'string' && body.production_state) {
     // "delivered" is a terminal production state, not in_production.
     update.status = /deliver/i.test(body.production_state) ? 'delivered' : 'in_production'

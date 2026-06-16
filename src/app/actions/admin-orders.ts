@@ -36,17 +36,20 @@ export async function updateOrderAdminAction(
       if (!scope.canModel(style)) return { error: 'Not authorized' }
     }
 
-    // Validation: cannot approve without Piedro Order ID
+    // Validation: cannot approve without Piedro Order ID; and stamp the
+    // approval date the first time an order is approved (the ERP/grid reads it).
+    let stampApprovalDate = false
     if (fields.approval_state === 'approved') {
       const { data: order } = await service
         .from('orders')
-        .select('piedro_order_id')
+        .select('piedro_order_id, approval_date')
         .eq('id', orderId)
         .single()
       const currentPiedroId = fields.piedro_order_id ?? order?.piedro_order_id
       if (!currentPiedroId?.trim()) {
         return { error: 'Piedro Order # is required before approving.' }
       }
+      if (!order?.approval_date) stampApprovalDate = true
     }
 
     // Also update the portal status to keep them in sync
@@ -66,6 +69,7 @@ export async function updateOrderAdminAction(
     if (fields.production_state) {
       update.status = 'in_production'
     }
+    if (stampApprovalDate) update.approval_date = new Date().toISOString()
 
     const { error } = await service.from('orders').update(update).eq('id', orderId)
     if (error) {
