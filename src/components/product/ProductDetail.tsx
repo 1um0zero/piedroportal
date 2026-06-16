@@ -21,7 +21,7 @@ const LENS = 160   // lens diameter px
 const ZOOM = 2.5   // magnification
 
 // ── Loupe magnifier (classic e-commerce style) ────────────────────────────────
-function ZoomImage({ url, alt }: { url: string; alt: string }) {
+function ZoomImage({ url, alt, onOpen }: { url: string; alt: string; onOpen?: () => void }) {
   const [pos, setPos]     = useState<{ x: number; y: number } | null>(null)
   const [imgSize, setImgSize] = useState({ w: 1, h: 1 })  // natural size
   const containerRef      = useRef<HTMLDivElement>(null)
@@ -59,9 +59,10 @@ function ZoomImage({ url, alt }: { url: string; alt: string }) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full cursor-crosshair"
+      className="relative w-full h-full cursor-zoom-in"
       onMouseMove={onMove}
       onMouseLeave={() => setPos(null)}
+      onClick={onOpen}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -148,6 +149,7 @@ export default function ProductDetail({ product, siblings }: Props) {
   const [activeImg, setActiveImg]         = useState(0)
   const [failed, setFailed]               = useState<Set<number>>(new Set())
   const [playing, setPlaying]             = useState(false)
+  const [fullscreen, setFullscreen]       = useState(false)
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Helper to get translated color name
@@ -197,6 +199,16 @@ export default function ProductDetail({ product, siblings }: Props) {
   }
   // Stop when images change (new variant selected)
   useEffect(() => { stopPlay() }, [selected])
+
+  // Close the fullscreen viewer with Escape and lock body scroll while open
+  useEffect(() => {
+    if (!fullscreen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFullscreen(false) }
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
+  }, [fullscreen])
 
   // Preload filter translations on mount, then bump state so chips that read the
   // synchronous cache during render re-render with the translated values.
@@ -253,6 +265,35 @@ export default function ProductDetail({ product, siblings }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
+
+      {/* Fullscreen image viewer — opened by clicking the main image */}
+      {fullscreen && currentUrl && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-6 cursor-zoom-out"
+          onClick={() => setFullscreen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            onClick={() => setFullscreen(false)}
+            aria-label="Close"
+            className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20
+                       text-white flex items-center justify-center transition-colors"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={currentUrl}
+            alt={`${product.style_name} ${getColorName(selected)}`}
+            className="max-w-full max-h-full object-contain select-none"
+            draggable={false}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       <Link href="/gallery"
         className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800
                    border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg transition-colors">
@@ -301,7 +342,7 @@ export default function ProductDetail({ product, siblings }: Props) {
           <div className="relative aspect-square"
             style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
             {currentUrl ? (
-              <ZoomImage url={currentUrl} alt={`${product.style_name} ${getColorName(selected)}`} />
+              <ZoomImage url={currentUrl} alt={`${product.style_name} ${getColorName(selected)}`} onOpen={() => setFullscreen(true)} />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
