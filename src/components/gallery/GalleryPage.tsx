@@ -144,7 +144,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const isLiv = (p: Product) => exclusiveTokens(p.exclusive).includes('LIV')
   const livSectionsAvailable = useMemo(
     () => SECTIONS.filter((s) => exclusives.some((p) => p.section === s && isLiv(p))),
-    [exclusives], // eslint-disable-line react-hooks/exhaustive-deps
+    [exclusives],
   )
   const [livHidden, setLivHidden] = useState<Section[]>([])  // sections toggled off in the LIV view
   const [livOnly, setLivOnly] = useState(false)              // LIV-only chip inside a normal section
