@@ -23,10 +23,13 @@ export default function HeaderLivingstonLink({ visible }: { visible: boolean }) 
   const onGallery = pathname === '/gallery' || pathname.endsWith('/gallery')
   const active = onGallery && exclusive === 'LIV'
 
-  // On the gallery it toggles the LIV collection (highlighted while active);
-  // elsewhere it navigates with the deep link.
+  // Livingstone behaves like a section (KIDS/MEN/WOMEN), not a toggle: selecting
+  // it always shows the collection — clicking it again while active is a no-op
+  // (you leave by picking another section). On the gallery it sets the shared
+  // exclusive instantly; elsewhere it navigates with the deep link.
   const go = () => {
-    if (onGallery) setExclusive(active ? '' : 'LIV')
+    if (active) return
+    if (onGallery) setExclusive('LIV')
     else router.push({ pathname: '/gallery', query: { q: encodeQuery({ exclusive: 'LIV' }) } })
   }
 
