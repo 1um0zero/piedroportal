@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import OrderSummary from './OrderSummary'
 import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
+import { cancelOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
 
 const PORTAL_STATUS_BADGE: Record<string, string> = {
@@ -48,6 +49,25 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
   const [translation, setTranslation] = useState('')
   const [translating, setTranslating] = useState(false)
   const [transLang, setTransLang]     = useState<TransLang>('en')
+
+  // Cancel (Piedro admin soft-cancel) — guarded behind a confirmation modal so it's
+  // a deliberate action, not a stray click. Same rule the server re-enforces: not
+  // yet in production, and currently a live order (new/approved, not a draft).
+  const [showCancel, setShowCancel]   = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelling, setCancelling]   = useState(false)
+  const canCancel = isAdmin
+    && !order.production_state
+    && (order.status === 'submitted' || order.status === 'approved')
+
+  async function handleCancel() {
+    setCancelling(true); setMsg(''); setMsgErr(false)
+    const res = await cancelOrderAction(order.id, cancelReason)
+    setCancelling(false)
+    if (res.error) { setMsg(res.error); setMsgErr(true); return }
+    setShowCancel(false)
+    router.refresh()
+  }
 
   const unit  = order.unit ?? 'PAIR'
   const approvalMeta   = APPROVAL_STATES.find(s => s.value === approvalSt)
@@ -172,6 +192,15 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
               </svg>
               {tOrder('email_client')}
             </a>
+          )}
+          {canCancel && (
+            <button onClick={() => { setCancelReason(''); setShowCancel(true) }}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {tOrder('cancel_order')}
+            </button>
           )}
           {order.pdf_url ? (
             <a href={order.pdf_url} target="_blank" rel="noopener noreferrer"
@@ -311,6 +340,49 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
           </div>
         ) : undefined}
       />
+
+      {/* ── Cancel confirmation modal ─────────────────────────────────────── */}
+      {showCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40"
+          onClick={() => !cancelling && setShowCancel(false)}>
+          <div className="bg-white rounded-[14px] max-w-md w-full p-6 space-y-4"
+            style={{ boxShadow: 'var(--shadow-card)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 w-9 h-9 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </span>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-stone-900">{tOrder('cancel_modal_title')}</h3>
+                <p className="text-sm text-stone-600 leading-relaxed">{tOrder('cancel_modal_body')}</p>
+                <p className="text-xs text-stone-500 leading-relaxed bg-stone-50 border border-stone-100 rounded-lg p-2.5">
+                  {tOrder('cancel_modal_revert')}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">{tOrder('cancel_reason_label')}</label>
+              <textarea value={cancelReason} onChange={e => setCancelReason(e.target.value)}
+                rows={2} placeholder={tOrder('cancel_reason_placeholder')}
+                className="w-full px-3 py-2 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300 resize-none" />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={() => setShowCancel(false)} disabled={cancelling}
+                className="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors disabled:opacity-50">
+                {tOrder('cancel_keep_btn')}
+              </button>
+              <button onClick={handleCancel} disabled={cancelling}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
+                {cancelling ? tOrder('cancelling') : tOrder('cancel_confirm_btn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

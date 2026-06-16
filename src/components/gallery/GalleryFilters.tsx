@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import type { Locale, Section } from '@/types'
-import { translateFilterValueSync } from '@/lib/filter-translations'
+import { translateFilterValueSync, translateClosureSync } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
 import type { Filters } from './GalleryPage'
 
@@ -272,6 +272,7 @@ export default function GalleryFilters({
   const tg = useTranslations('gallery')
   const locale = useLocale() as Locale
   const tr = (v: string) => translateFilterValueSync(v, locale)
+  const trClosure = (v: string) => translateClosureSync(v, locale)
   const [open, setOpen] = useState(false)
 
   function toggleArr(key: keyof Filters, val: string) {
@@ -426,7 +427,7 @@ export default function GalleryFilters({
 
           {/* Closure chips */}
           {optClosures.length > 0 && (
-            <SquareChips label={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} renderLabel={tr} />
+            <SquareChips label={t('closure')} options={optClosures} selected={filters.closures} onToggle={(v) => toggleArr('closures', v)} renderLabel={trClosure} />
           )}
 
           {/* Type chips */}

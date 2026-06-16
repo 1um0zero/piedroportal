@@ -8,7 +8,7 @@ import { useWishlist } from '@/contexts/WishlistContext'
 import LoginModal from '@/components/auth/LoginModal'
 import NvosNotice from '@/components/stock/NvosNotice'
 import { isNew } from '@/components/gallery/GalleryPage'
-import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
+import { translateFilterValueSync, translateClosureSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import { displayWidth, sortWidths } from '@/lib/width-display'
 import { productImageUrl } from '@/lib/products/image-url'
 import type { Product, Locale } from '@/types'
@@ -466,7 +466,7 @@ export default function ProductDetail({ product, siblings }: Props) {
                                 ${cl === activeClosure
                                   ? 'bg-gold text-white border-gold shadow-sm'
                                   : 'border-stone-200 text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
-                    {translateFilterValueSync(cl, locale)}
+                    {translateClosureSync(cl, locale)}
                   </button>
                 ))}
               </div>

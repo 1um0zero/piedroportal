@@ -77,6 +77,24 @@ export function translateFilterValueSync(
 }
 
 /**
+ * Title-cases a label (e.g. "TWIST LOCK SYSTEM" → "Twist Lock System").
+ * Closure values arrive inconsistently capitalised from the source data, so we
+ * normalise them at display time rather than relying on the upstream casing.
+ */
+export function titleCase(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/(^|[\s/-])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase())
+}
+
+/**
+ * Translates a closure value and normalises its capitalisation to Title Case.
+ */
+export function translateClosureSync(value: string | null | undefined, locale: Locale): string {
+  return titleCase(translateFilterValueSync(value, locale))
+}
+
+/**
  * Preloads all filter translations into cache
  * Call this early in the app lifecycle for better performance
  */

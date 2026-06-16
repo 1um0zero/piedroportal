@@ -7,7 +7,7 @@ import { Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
 import { isNew } from './GalleryPage'
 import { useWishlist } from '@/contexts/WishlistContext'
-import { translateFilterValueSync } from '@/lib/filter-translations'
+import { translateFilterValueSync, translateClosureSync } from '@/lib/filter-translations'
 import { displayWidths } from '@/lib/width-display'
 import { productImageUrl as imageUrl } from '@/lib/products/image-url'
 
@@ -34,7 +34,7 @@ export default function ProductCard({ product, showWishlist = false, onNavigate 
 
   // Translate filter values for tooltip
   const translatedType = translateFilterValueSync(product.type, locale)
-  const translatedClosure = translateFilterValueSync(product.closure, locale)
+  const translatedClosure = translateClosureSync(product.closure, locale)
 
   return (
     <Link

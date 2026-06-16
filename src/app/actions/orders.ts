@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import { getAdminScope } from '@/lib/admin/scope'
+import { logAdminAction } from '@/lib/admin/audit'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { getSettings } from '@/lib/settings'
@@ -444,6 +445,7 @@ export async function deleteOrderAction(
 // preserved for MDR / ISO 13485 traceability.
 export async function cancelOrderAction(
   orderId: string,
+  reason?: string,
 ): Promise<{ ok?: boolean; error?: string }> {
   const scope = await getAdminScope()
   if (!scope) return { error: 'Not authenticated' }
@@ -462,5 +464,14 @@ export async function cancelOrderAction(
 
   const { error } = await service.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
   if (error) return { error: error.message }
+
+  // Audit trail — soft-cancel is a Piedro intervention; record who/when/why.
+  await logAdminAction({
+    actorId:   scope.userId,
+    actorRole: scope.role,
+    action:    'order_cancel',
+    orderId,
+    details:   { previous_status: order.status, reason: reason?.trim() || null },
+  })
   return { ok: true }
 }

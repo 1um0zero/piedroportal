@@ -2,6 +2,7 @@
 
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
+import { logAdminAction } from '@/lib/admin/audit'
 import type { ApprovalState, ProductionState } from '@/lib/order-status'
 
 // NOTE: this is a 'use server' module — it may ONLY export async functions.
@@ -71,6 +72,15 @@ export async function updateOrderAdminAction(
       console.error('updateOrderAdminAction update error', error)
       return { error: error.message || error.details || error.hint || error.code || 'Update failed' }
     }
+
+    // Audit trail — record which back-office fields were changed and to what.
+    await logAdminAction({
+      actorId:   scope.userId,
+      actorRole: scope.role,
+      action:    'order_update',
+      orderId,
+      details:   { changed: update },
+    })
     return { ok: true }
   } catch (e) {
     console.error('updateOrderAdminAction threw', e)
