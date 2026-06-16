@@ -46,13 +46,26 @@ export async function GET(_request: NextRequest, { params }: Params) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const product: any = Array.isArray(order.products) ? order.products[0] : order.products
 
-    // ── Visibility: mirror BOTH order-detail pages exactly ────────────────────
+    // ── Visibility: mirror BOTH order-detail pages, plus a migrated-order exception ──
     //  • back-office users (piedro_admin or branch_staff) within their model scope
     //  • the ordering user (owner)
     //  • company admins of the order's company (user_companies)
     //  • branch admins managing the order's company's clients (branch_admins)
+    //
+    // Migrated exception: orders imported from Dataverse predate the branch
+    // concept and have no branch attribution. As an explicit exception, any
+    // branch back-office user (branch_staff/branch_admin) may view a migrated
+    // order's watermarked reproduction, regardless of model/company scope.
+    const isMigrated = !order.pdf_url
     const scope = await getAdminScope()
-    let allowed = (!!scope && scope.canModel(product?.style_name)) || order.user_id === user.id
+    const isBranchBackoffice =
+      (!!scope && scope.role === 'branch_staff' && !!scope.branchId) ||
+      (await getBranchAdminCompanyIds(user.id)).length > 0
+
+    let allowed =
+      (!!scope && scope.canModel(product?.style_name)) ||
+      order.user_id === user.id ||
+      (isMigrated && isBranchBackoffice)
     if (!allowed && order.company_id) {
       const [adminCompanyIds, branchAdminCompanyIds] = await Promise.all([
         getAdminCompanyIds(user.id),
