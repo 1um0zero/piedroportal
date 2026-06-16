@@ -749,6 +749,8 @@
       "delete_user": "Delete user",
       "delete_confirm": "Delete user {name}? Only possible if they have no orders.",
       "role_branch_staff": "Branch staff",
+      "role_branch_admin": "Branch admin",
+      "role_managed_elsewhere": "Managed from the branch page",
       "no_branch": "No branch",
       "view_cards": "Cards",
       "view_grid": "Grid",

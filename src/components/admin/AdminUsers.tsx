@@ -7,7 +7,7 @@ import { assignUserBranch } from '@/app/actions/admin-branches'
 import { isPiedroAdmin } from '@/lib/roles'
 import AdminUsersGrid from './AdminUsersGrid'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'super_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
 
 type UserCompany = {
   company_id: string
@@ -35,6 +35,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
   company_admin: 'bg-blue-50 text-blue-600',
   piedro_admin:  'bg-gold/10 text-gold',
   branch_staff:  'bg-emerald-50 text-emerald-600',
+  branch_admin:  'bg-teal-50 text-teal-600',
   super_admin:   'bg-stone-800 text-white',
 }
 
@@ -114,9 +115,12 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
       <div className="flex flex-wrap items-center gap-2">
         {/* Role chips (super_admin is assigned via CLI, shown as a static badge) */}
         <div className="flex gap-1">
-          {u.role === 'super_admin' ? (
-            <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg ${ROLE_COLORS.super_admin}`}>
-              {t('role_super_admin')}
+          {u.role === 'super_admin' || u.role === 'branch_admin' ? (
+            // Assigned elsewhere (super_admin via CLI; branch_admin from the branch
+            // page's "branch admins" panel). Shown read-only so it isn't silently
+            // clobbered by clicking another role chip.
+            <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg ${ROLE_COLORS[u.role]}`} title={t('role_managed_elsewhere')}>
+              {t(`role_${u.role}`)}
             </span>
           ) : (['user', 'branch_staff', 'piedro_admin'] as UserRole[]).map(role => (
             <button key={role}

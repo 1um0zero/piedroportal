@@ -749,6 +749,8 @@
       "delete_user": "Benutzer löschen",
       "delete_confirm": "Benutzer {name} löschen? Nur möglich, wenn keine Bestellungen vorhanden sind.",
       "role_branch_staff": "Niederlassungsmitarbeiter",
+      "role_branch_admin": "Niederlassungsadministrator",
+      "role_managed_elsewhere": "Verwaltet auf der Niederlassungsseite",
       "no_branch": "Keine Niederlassung",
       "view_cards": "Karten",
       "view_grid": "Raster",

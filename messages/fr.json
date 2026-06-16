@@ -749,6 +749,8 @@
       "delete_user": "Supprimer l'utilisateur",
       "delete_confirm": "Supprimer l'utilisateur {name} ? Possible uniquement s'il n'a aucune commande.",
       "role_branch_staff": "Personnel filiale",
+      "role_branch_admin": "Administrateur de filiale",
+      "role_managed_elsewhere": "Géré depuis la page de la filiale",
       "no_branch": "Aucune filiale",
       "view_cards": "Fiches",
       "view_grid": "Grille",

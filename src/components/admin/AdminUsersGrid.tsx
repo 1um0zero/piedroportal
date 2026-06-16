@@ -30,7 +30,7 @@ const COLUMNS = [
 ] as const
 const MIN_COL_WIDTH = 50
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'super_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
 
 type UserCompany = {
   company_id: string
@@ -56,6 +56,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
   company_admin: 'bg-blue-50 text-blue-600',
   piedro_admin:  'bg-gold/10 text-gold',
   branch_staff:  'bg-emerald-50 text-emerald-600',
+  branch_admin:  'bg-teal-50 text-teal-600',
   super_admin:   'bg-stone-800 text-white',
 }
 

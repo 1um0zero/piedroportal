@@ -749,6 +749,8 @@
       "delete_user": "Gebruiker verwijderen",
       "delete_confirm": "Gebruiker {name} verwijderen? Alleen mogelijk als deze geen bestellingen heeft.",
       "role_branch_staff": "Filiaalmedewerker",
+      "role_branch_admin": "Filiaalbeheerder",
+      "role_managed_elsewhere": "Beheerd vanaf de filiaalpagina",
       "no_branch": "Geen filiaal",
       "view_cards": "Kaarten",
       "view_grid": "Raster",

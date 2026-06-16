@@ -243,9 +243,12 @@ export async function removeBranchAdmin(
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
   if ((count ?? 0) === 0) {
-    const { data: prof } = await service.from('profiles').select('role').eq('id', userId).single()
+    const { data: prof } = await service.from('profiles').select('role, branch_id').eq('id', userId).single()
     if (prof?.role === 'branch_admin') {
-      await service.from('profiles').update({ role: 'user' }).eq('id', userId)
+      // A user still attached to a branch (branch_id) is branch staff; only a
+      // fully-detached one falls back to a plain user.
+      await service.from('profiles')
+        .update({ role: prof.branch_id ? 'branch_staff' : 'user' }).eq('id', userId)
     }
   }
 
