@@ -224,7 +224,8 @@
     "also_available": "Ook beschikbaar in {closure}",
     "order": "Dit model bestellen",
     "diabetic": "Geschikt voor diabetici",
-    "pending_approval": "Account in afwachting van goedkeuring"
+    "pending_approval": "Account in afwachting van goedkeuring",
+    "exclusive": "Exclusief model"
   },
   "order": {
     "title": "Nieuwe Bestelling",

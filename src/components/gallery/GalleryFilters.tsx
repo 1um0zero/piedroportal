@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import type { Locale, Section } from '@/types'
 import { translateFilterValueSync, translateClosureSync } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
+import { siglaColor } from '@/lib/exclusive-colors'
 import type { Filters } from './GalleryPage'
 
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = { KIDS: 'kids', MEN: 'men', WOMEN: 'women' }
@@ -33,9 +34,10 @@ type Props = {
   livSectionsAvailable: Section[]              // sections that actually have LIV models
   livHidden: Section[]                         // LIV-view section chips toggled off
   onToggleLivSection: (s: Section) => void
-  livAvailableHere: boolean                    // current normal section has LIV models
-  livOnly: boolean                             // LIV-only chip state in a normal section
-  onToggleLivOnly: () => void
+  // Back-office per-sigla filter chips (normal sections).
+  siglasAvailable: string[]                    // siglas present in the current section ([] for clients)
+  selectedSiglas: string[]
+  onToggleSigla: (s: string) => void
 }
 
 // ── Size range buckets ────────────────────────────────────────────────────────
@@ -266,7 +268,7 @@ export default function GalleryFilters({
   hasNew, hasDiabetics, hasFilters, onClear, resultCount, wishlistCount,
   showWishlist, onToggleBuildWishlist,
   exclusiveMode, livSectionsAvailable, livHidden, onToggleLivSection,
-  livAvailableHere, livOnly, onToggleLivOnly,
+  siglasAvailable, selectedSiglas, onToggleSigla,
 }: Props) {
   const t = useTranslations('gallery.filters')
   const tg = useTranslations('gallery')
@@ -325,36 +327,48 @@ export default function GalleryFilters({
           </svg>
         </button>
 
-        {/* Livingstone (LIV) chips — to the right of Filters. Inside the LIV
-            collection: one chip per available section (MEN/WOMEN, all on by
-            default, equal width) to narrow it. Inside a normal section that has
-            LIV models: a single Livingstone chip (default off) that swaps the
-            grid to that section's LIV models only. */}
-        {exclusiveMode && livSectionsAvailable.length > 1 ? (
-          livSectionsAvailable.map((s) => {
-            const on = !livHidden.includes(s)
-            return (
-              <button
-                key={s}
-                onClick={() => onToggleLivSection(s)}
-                aria-pressed={on}
-                className={`h-9 px-3 min-w-[88px] text-center text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
-                  ${on ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
-              >
-                {tg(SECTION_KEY[s])}
-              </button>
-            )
-          })
-        ) : livAvailableHere ? (
-          <button
-            onClick={onToggleLivOnly}
-            aria-pressed={livOnly}
-            className={`h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
-              ${livOnly ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
-          >
-            Livingstone
-          </button>
-        ) : null}
+        {/* Exclusive chips — to the right of Filters.
+            • Inside the Livingstone view: one chip per available section
+              (MEN/WOMEN, all on by default, equal width) to narrow it.
+            • In a normal section (back-office only): one multi-select chip per
+              sigla present, tinted with the collection's pastel colour. Selecting
+              narrows the grid to those exclusive collections. */}
+        {/* Livingstone section sub-chips (MEN/WOMEN) — only inside the LIV view */}
+        {exclusiveMode && livSectionsAvailable.length > 1 && livSectionsAvailable.map((s) => {
+          const on = !livHidden.includes(s)
+          return (
+            <button
+              key={s}
+              onClick={() => onToggleLivSection(s)}
+              aria-pressed={on}
+              className={`h-9 px-3 min-w-[88px] text-center text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
+                ${on ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+            >
+              {tg(SECTION_KEY[s])}
+            </button>
+          )
+        })}
+
+        {/* Customer-sigla filter chips (back-office) — both normal & LIV view */}
+        {siglasAvailable.map((sg) => {
+          const on = selectedSiglas.includes(sg)
+          const color = siglaColor(sg)
+          return (
+            <button
+              key={sg}
+              onClick={() => onToggleSigla(sg)}
+              aria-pressed={on}
+              title={sg}
+              className="h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all flex items-center gap-1.5"
+              style={on
+                ? { backgroundColor: color, borderColor: color, color: '#fff' }
+                : { borderColor: color, color: '#57534e', backgroundColor: '#fff' }}
+            >
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: on ? '#fff' : color }} />
+              {sg}
+            </button>
+          )
+        })}
 
         {/* Build wishlist toggle */}
         <button

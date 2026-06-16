@@ -224,7 +224,8 @@
     "also_available": "Aussi disponible en {closure}",
     "order": "Commander ce modèle",
     "diabetic": "Adapté aux diabétiques",
-    "pending_approval": "Compte en attente d'approbation"
+    "pending_approval": "Compte en attente d'approbation",
+    "exclusive": "Modèle exclusif"
   },
   "order": {
     "title": "Nouvelle Commande",

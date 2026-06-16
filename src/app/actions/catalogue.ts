@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserExclusiveLabels } from '@/lib/user-companies'
-import { isPiedroAdmin } from '@/lib/roles'
+import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
+import { isPiedroAdmin, isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import { isExclusiveVisible } from '@/lib/exclusive'
 import type { Product } from '@/types'
 
@@ -31,10 +32,25 @@ export async function getMyExclusiveProducts(): Promise<Product[]> {
 
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
   const isAdmin = isPiedroAdmin(profile?.role)
+  const isBranch = isBranchAdmin(profile?.role) || isBranchStaff(profile?.role)
 
-  const labels = await getUserExclusiveLabels(user.id)
-  if (!isAdmin && labels.length === 0) return []
-  const labelSet = new Set(labels)
+  // The siglas this user may see. Branch admin/staff additionally always get LIV
+  // plus the siglas of every client company linked to the branches they consult.
+  const labels = new Set(await getUserExclusiveLabels(user.id))
+  if (isBranch) {
+    labels.add('LIV')
+    const companyIds = await getBranchAdminCompanyIds(user.id)
+    if (companyIds.length) {
+      const svc = createServiceClient()
+      const { data: ce } = await svc.from('company_exclusives').select('label').in('company_id', companyIds)
+      for (const r of (ce ?? []) as { label: string }[]) {
+        const l = (r.label ?? '').trim().toUpperCase()
+        if (l) labels.add(l)
+      }
+    }
+  }
+  if (!isAdmin && labels.size === 0) return []
+  const labelSet = labels
 
   const service = createServiceClient()
   const { data } = await service

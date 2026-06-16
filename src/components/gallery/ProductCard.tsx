@@ -10,13 +10,22 @@ import { useWishlist } from '@/contexts/WishlistContext'
 import { translateFilterValueSync, translateClosureSync } from '@/lib/filter-translations'
 import { displayWidths } from '@/lib/width-display'
 import { productImageUrl as imageUrl } from '@/lib/products/image-url'
+import { clientSiglas } from '@/lib/exclusive'
+import { siglaColor, CLIENT_DOT_COLOR } from '@/lib/exclusive-colors'
 
 const SHADOW     = 'drop-shadow(0 8px 20px rgba(0,0,0,0.11)) drop-shadow(0 2px 5px rgba(0,0,0,0.06))'
 const SHADOW_HOV = 'drop-shadow(0 16px 32px rgba(0,0,0,0.16)) drop-shadow(0 4px 8px rgba(0,0,0,0.08))'
 
-type Props = { product: Product; showWishlist?: boolean; onNavigate?: () => void }
+type Props = {
+  product: Product
+  showWishlist?: boolean
+  onNavigate?: () => void
+  // Exclusive marker: 'client' → a single gold dot on the user's own exclusive
+  // models; 'admin' → one pastel dot per collection (sigla); 'none' → no marker.
+  exclusiveView?: 'none' | 'client' | 'admin'
+}
 
-export default function ProductCard({ product, showWishlist = false, onNavigate }: Props) {
+export default function ProductCard({ product, showWishlist = false, onNavigate, exclusiveView = 'none' }: Props) {
   const [imgError, setImgError] = useState(false)
   const [hovered, setHovered]   = useState(false)
   const { ids, toggle }         = useWishlist()
@@ -35,6 +44,16 @@ export default function ProductCard({ product, showWishlist = false, onNavigate 
   // Translate filter values for tooltip
   const translatedType = translateFilterValueSync(product.type, locale)
   const translatedClosure = translateClosureSync(product.closure, locale)
+
+  // Customer-exclusivity dots (LIV is a section, never a dot). Clients get a
+  // single gold dot on their own exclusive models; admin/branch get one pastel
+  // dot per customer sigla.
+  const siglas = exclusiveView === 'none'
+    ? []
+    : clientSiglas((product as Product & { exclusive?: string }).exclusive)
+  const dots = exclusiveView === 'client'
+    ? (siglas.length ? [{ key: 'client', color: CLIENT_DOT_COLOR, label: tp('exclusive') }] : [])
+    : siglas.map((c) => ({ key: c, color: siglaColor(c), label: c }))
 
   return (
     <Link
@@ -78,6 +97,16 @@ export default function ProductCard({ product, showWishlist = false, onNavigate 
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
             </svg>
           </button>
+        )}
+
+        {dots.length > 0 && (
+          <div className={`absolute right-2 z-10 flex items-center gap-1 ${showWishlist ? 'top-11' : 'top-2'}`}>
+            {dots.map((d) => (
+              <span key={d.key} title={d.label} aria-label={d.label}
+                className="w-3 h-3 rounded-full ring-2 ring-white shadow-sm"
+                style={{ backgroundColor: d.color }} />
+            ))}
+          </div>
         )}
 
         {isNew(product) && (

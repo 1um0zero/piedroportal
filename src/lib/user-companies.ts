@@ -1,4 +1,5 @@
 import { createServiceClient } from './supabase/service'
+import { exclusiveTokens } from './exclusive'
 
 export type UserCompany = {
   user_id: string
@@ -136,11 +137,15 @@ export async function getUserExclusiveLabels(userId: string): Promise<string[]> 
   if (error || !data) return []
 
   const labels = new Set<string>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const uc of data as any[]) {
-    const legacy = (uc.companies?.exclusive_label ?? '').trim().toUpperCase()
-    if (legacy) labels.add(legacy)
+  // A label field may hold several siglas (e.g. "ZSM LIV") — tokenise so each is
+  // matched independently. company_exclusives normally has one sigla per row, but
+  // tokenising both sources keeps a combined value working everywhere.
+  const addLabels = (raw: string | null | undefined) => {
+    for (const t of exclusiveTokens(raw)) labels.add(t)
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const uc of data as any[]) addLabels(uc.companies?.exclusive_label)
 
   const companyIds = (data as { company_id: string }[]).map((d) => d.company_id)
   if (companyIds.length) {
@@ -149,10 +154,7 @@ export async function getUserExclusiveLabels(userId: string): Promise<string[]> 
       .from('company_exclusives')
       .select('label')
       .in('company_id', companyIds)
-    for (const r of (ce ?? []) as { label: string }[]) {
-      const l = (r.label ?? '').trim().toUpperCase()
-      if (l) labels.add(l)
-    }
+    for (const r of (ce ?? []) as { label: string }[]) addLabels(r.label)
   }
 
   return [...labels]

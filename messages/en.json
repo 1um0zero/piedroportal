@@ -224,7 +224,8 @@
     "also_available": "Also available in {closure}",
     "order": "Order this model",
     "diabetic": "Suitable for diabetics",
-    "pending_approval": "Account pending approval"
+    "pending_approval": "Account pending approval",
+    "exclusive": "Exclusive model"
   },
   "order": {
     "title": "New Order",

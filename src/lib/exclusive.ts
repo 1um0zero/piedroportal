@@ -1,11 +1,17 @@
 /**
- * Customer-exclusive model visibility.
+ * Customer-exclusive model visibility & classification.
  *
- * A product's `exclusive` field may hold one or several siglas separated by
- * spaces/commas (e.g. "LIV KIV"). A user's exclusivities are the union of the
- * siglas of every company they belong to (see getUserExclusiveLabels). A model
- * is visible when it is not exclusive, the user is a piedro_admin (sees all), or
- * the two token sets intersect.
+ * A product's `exclusive` field holds one or several siglas separated by spaces/
+ * commas (e.g. "LIV", "ZSM", or a future "LIV XXX"). Two distinct concepts:
+ *
+ *  • LIV is a COMPLEMENTARY CLASSIFICATION — it places a model in the Livingstone
+ *    section. It is not a customer-exclusivity by itself.
+ *  • Every OTHER sigla (ZSM, KIV, MME, …) is a CUSTOMER exclusivity: only that
+ *    client's companies (plus back-office) may see the model.
+ *
+ * So a model's customer exclusivity = its siglas EXCEPT LIV (`clientSiglas`). A
+ * model with only "LIV" is a plain Livingstone model; a model with "LIV XXX" is a
+ * Livingstone model that is ALSO exclusive to client XXX (hidden from non-XXX).
  */
 
 /** Split an exclusive string into UPPERCASE sigla tokens (deduped). */
@@ -14,15 +20,28 @@ export function exclusiveTokens(s: string | null | undefined): string[] {
   return [...new Set(String(s).toUpperCase().match(/[A-Z0-9]+/g) ?? [])]
 }
 
-/**
- * Whether a product belongs to the Livingstone collection. The `exclusive` field
- * carries several siglas and `LIV` is NOT exclusive to Livingstone — the `KIV`
- * collection is tagged `"LIV KIV"`. So a model is Livingstone only when it has
- * the LIV token WITHOUT KIV (the genuine "LIV"-only models, currently MEN).
- */
+/** Whether a model belongs to the Livingstone section (carries the LIV tag). */
 export function isLivingstone(exclusive: string | null | undefined): boolean {
-  const tokens = exclusiveTokens(exclusive)
-  return tokens.includes('LIV') && !tokens.includes('KIV')
+  return exclusiveTokens(exclusive).includes('LIV')
+}
+
+/**
+ * The CUSTOMER-exclusivity siglas of a model = all siglas except LIV. Empty for a
+ * non-exclusive model or a plain Livingstone model. Drives the card dots and the
+ * per-sigla filter chips.
+ */
+export function clientSiglas(exclusive: string | null | undefined): string[] {
+  return exclusiveTokens(exclusive).filter((t) => t !== 'LIV')
+}
+
+/**
+ * Siglas that GATE who may see a model. If it has any customer sigla, those gate
+ * it (LIV alone never grants access to a customer-exclusive model). Otherwise the
+ * raw tokens gate it (a plain "LIV" model is gated by the LIV grant).
+ */
+function gatingSiglas(exclusive: string | null | undefined): string[] {
+  const cs = clientSiglas(exclusive)
+  return cs.length ? cs : exclusiveTokens(exclusive)
 }
 
 /** Whether a product (by its raw `exclusive` value) is visible to the user. */
@@ -31,8 +50,8 @@ export function isExclusiveVisible(
   userLabels: Set<string>,
   isAdmin: boolean,
 ): boolean {
-  const tokens = exclusiveTokens(productExclusive)
-  if (tokens.length === 0) return true // not exclusive → visible to everyone
+  const gating = gatingSiglas(productExclusive)
+  if (gating.length === 0) return true // not exclusive → visible to everyone
   if (isAdmin) return true             // back-office sees all exclusive models
-  return tokens.some((t) => userLabels.has(t))
+  return gating.some((g) => userLabels.has(g))
 }

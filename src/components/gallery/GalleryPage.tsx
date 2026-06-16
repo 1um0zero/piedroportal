@@ -12,7 +12,9 @@ import { preloadFilterTranslations } from '@/lib/filter-translations'
 import { decodeQuery } from '@/lib/query-cipher'
 import { matchesSearch } from '@/lib/search'
 import { useGallerySection } from '@/contexts/GallerySectionContext'
-import { isLivingstone } from '@/lib/exclusive'
+import { useAuth } from '@/contexts/AuthContext'
+import { isLivingstone, clientSiglas } from '@/lib/exclusive'
+import { isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import { compareWidths } from '@/lib/width-display'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
@@ -136,22 +138,46 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     getMyExclusiveProducts().then(setExclusives).catch(() => {})
   }, [])
 
-  // ── Livingstone (LIV) collection controls ──
-  // Inside the Livingstone view the catalogue is section-agnostic, but a set of
-  // section chips (MEN/WOMEN, KIDS later) narrows it — all on by default, so we
-  // track which are toggled OFF. Inside a normal section a single Livingstone
-  // chip (default off) restricts the grid to that section's LIV models only.
-  const isLiv = (p: Product) => isLivingstone(p.exclusive)
+  // ── Viewer mode for exclusive markers/filters ──
+  // Back-office (piedro/super admin + branch admin/staff) get per-sigla pastel
+  // dots and multi-select sigla filter chips; signed-in clients get a single
+  // gold dot on their own exclusive models; anonymous visitors see none.
+  const { isAdmin, isLoggedIn, profile } = useAuth()
+  const isBackofficeViewer = isAdmin || isBranchAdmin(profile?.role) || isBranchStaff(profile?.role)
+  const exclusiveView: 'none' | 'client' | 'admin' = isBackofficeViewer ? 'admin' : isLoggedIn ? 'client' : 'none'
+
+  const siglasOf = (p: Product) => clientSiglas((p as Product & { exclusive?: string }).exclusive)
+
+  // ── Livingstone (LIV) section-view controls ──
+  // The Livingstone nav entry opens a section-agnostic view; the MEN/WOMEN chips
+  // there narrow it (all on by default, so we track which are toggled OFF).
+  const isLiv = (p: Product) => isLivingstone((p as Product & { exclusive?: string }).exclusive)
   const livSectionsAvailable = useMemo(
     () => SECTIONS.filter((s) => exclusives.some((p) => p.section === s && isLiv(p))),
     [exclusives],
   )
   const [livHidden, setLivHidden] = useState<Section[]>([])  // sections toggled off in the LIV view
-  const [livOnly, setLivOnly] = useState(false)              // LIV-only chip inside a normal section
-  // Entering the Livingstone view starts with every section chip on.
-  useEffect(() => { if (exclusiveFilter) setLivHidden([]) }, [exclusiveFilter])
   const toggleLivSection = (s: Section) =>
     setLivHidden((h) => (h.includes(s) ? h.filter((x) => x !== s) : [...h, s]))
+
+  // ── Per-sigla multi-select filter (back-office) ──
+  // Empty = show everything (customer-exclusives inline, dotted). Selecting one
+  // or more siglas narrows the grid to just those customer collections (union).
+  // Applies both in normal sections and inside the Livingstone view.
+  const [selectedSiglas, setSelectedSiglas] = useState<string[]>([])
+  // Reset transient view state when entering/leaving the Livingstone view.
+  useEffect(() => { setLivHidden([]); setSelectedSiglas([]) }, [exclusiveFilter])
+  const siglasAvailable = useMemo(() => {
+    if (!isBackofficeViewer) return []
+    const pool = exclusiveFilter
+      ? exclusives.filter((p) => isLiv(p))            // Livingstone view: across all LIV models
+      : exclusives.filter((p) => p.section === section)
+    const set = new Set<string>()
+    for (const p of pool) for (const c of siglasOf(p)) set.add(c)
+    return [...set].sort()
+  }, [exclusives, section, isBackofficeViewer, exclusiveFilter])
+  const toggleSigla = (s: string) =>
+    setSelectedSiglas((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
 
   // ── Restore browse state on mount (after returning from a product page) ──
   // Done in an effect (not in useState initialisers) to avoid an SSR/hydration
@@ -229,23 +255,29 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     return list.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
   }
   const sectionProducts = useMemo(() => {
-    // Livingstone collection view — a SEPARATE, section-agnostic catalogue: every
-    // LIV model, narrowed only by the MEN/WOMEN chips (sections toggled off live
-    // in `livHidden`). KIDS/MEN/WOMEN tabs don't apply here.
+    // Livingstone view — a SEPARATE, section-agnostic catalogue: every LIV model
+    // the user may see, narrowed by the MEN/WOMEN chips (`livHidden`). Customer
+    // exclusives within it are already gated by getMyExclusiveProducts; back-office
+    // can further narrow to a customer sigla via the chips (selectedSiglas).
     if (exclusiveFilter) {
-      return dedupById(exclusives.filter((p) => isLiv(p) && !livHidden.includes(p.section)))
+      let list = exclusives.filter((p) => isLiv(p) && !livHidden.includes(p.section))
+      if (selectedSiglas.length) list = list.filter((p) => siglasOf(p).some((c) => selectedSiglas.includes(c)))
+      return dedupById(list)
     }
-    // Normal section. The LIV-only chip shows just this section's Livingstone
-    // models; otherwise LIV is excluded entirely (never mixed into the section)
-    // while other exclusive collections the user owns stay overlaid as before.
-    if (livOnly) {
-      return dedupById(exclusives.filter((p) => isLiv(p) && p.section === section))
+    // Normal section. With sigla chips selected (back-office), show ONLY those
+    // customer collections (union). Otherwise the section is the public set plus
+    // every CUSTOMER exclusive the user may see, overlaid inline (marked with a
+    // dot). Plain Livingstone models live only in their own section, never here.
+    if (selectedSiglas.length) {
+      return dedupById(exclusives.filter((p) =>
+        p.section === section && siglasOf(p).some((c) => selectedSiglas.includes(c)),
+      ))
     }
     const base = cache[section] ?? []
-    const extra = exclusives.filter((p) => p.section === section && !isLiv(p))
+    const extra = exclusives.filter((p) => p.section === section && siglasOf(p).length > 0)
     const seen = new Set(base.map((p) => p.id))
     return extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
-  }, [cache, section, exclusives, exclusiveFilter, livHidden, livOnly]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cache, section, exclusives, exclusiveFilter, livHidden, selectedSiglas])
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
@@ -355,7 +387,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   async function switchSection(s: Section) {
     setSection(s)
     setFilters(EMPTY)
-    setLivOnly(false)  // the LIV-only chip is per-section; clear it on switch
+    setSelectedSiglas([])  // sigla chips are per-section; clear on switch
     if (cache[s]) return
     setLoading(true)
     try {
@@ -383,7 +415,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
     || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0
-    || filters.styles.length > 0 || !!exclusiveFilter || livOnly
+    || filters.styles.length > 0 || !!exclusiveFilter || selectedSiglas.length > 0
 
   const [showWishlist, setShowWishlist] = useState(false)
 
@@ -467,15 +499,15 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         hasNew={hasNew}
         hasDiabetics={hasDiabetics}
         hasFilters={!!hasFilters}
-        onClear={() => { setFilters(EMPTY); setCtxExclusive(''); setLivOnly(false) }}
+        onClear={() => { setFilters(EMPTY); setCtxExclusive(''); setSelectedSiglas([]) }}
         resultCount={filtered.length}
         exclusiveMode={!!exclusiveFilter}
         livSectionsAvailable={livSectionsAvailable}
         livHidden={livHidden}
         onToggleLivSection={toggleLivSection}
-        livAvailableHere={!exclusiveFilter && livSectionsAvailable.includes(section)}
-        livOnly={livOnly}
-        onToggleLivOnly={() => setLivOnly((v) => !v)}
+        siglasAvailable={siglasAvailable}
+        selectedSiglas={selectedSiglas}
+        onToggleSigla={toggleSigla}
         showWishlist={showWishlist}
         onToggleBuildWishlist={() => setShowWishlist(s => !s)}
       />
@@ -495,7 +527,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       ) : (
         <div id="catalogue" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 scroll-mt-20">
           {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} showWishlist={showWishlist} onNavigate={() => saveBrowse(p.id)} />
+            <ProductCard key={p.id} product={p} showWishlist={showWishlist} exclusiveView={exclusiveView} onNavigate={() => saveBrowse(p.id)} />
           ))}
         </div>
       )}
