@@ -16,10 +16,14 @@ const KEY: Record<Section, 'kids' | 'men' | 'women'> = { KIDS: 'kids', MEN: 'men
 export default function HeaderSectionSwitch() {
   const pathname = usePathname()
   const t = useTranslations('gallery')
-  const { section, setSection } = useGallerySection()
+  const { section, setSection, exclusive, setExclusive } = useGallerySection()
 
   const onHero = pathname === '/gallery' || pathname.endsWith('/gallery')
   if (!onHero) return null
+
+  // Picking a section leaves an active exclusive collection (e.g. Livingstone),
+  // which is a separate, section-agnostic view.
+  const pick = (s: Section) => { if (exclusive) setExclusive(''); setSection(s) }
 
   // Colours are driven by CSS so they follow the header: white over the photo
   // (under .nav-overlay) and dark grey once the bar turns solid on scroll.
@@ -29,9 +33,9 @@ export default function HeaderSectionSwitch() {
         <button
           key={s}
           type="button"
-          onClick={() => setSection(s)}
+          onClick={() => pick(s)}
           className={`section-switch-btn px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-colors
-            ${s === section ? 'is-active' : ''}`}
+            ${!exclusive && s === section ? 'is-active' : ''}`}
         >
           {t(KEY[s])}
         </button>
