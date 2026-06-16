@@ -5,7 +5,8 @@ import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminCompanyIds } from '@/lib/user-companies'
-import { isPiedroAdmin } from '@/lib/roles'
+import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
+import { getAdminScope } from '@/lib/admin/scope'
 import { displayWidthByConstruction } from '@/lib/width-display'
 import { productImageUrl } from '@/lib/products/image-url'
 import { rateLimit } from '@/lib/rate-limit'
@@ -21,7 +22,7 @@ const WATERMARK = 'NOT THE ORIGINAL\n(MIGRATED ORDER)'
 const SELECT = `id, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   diff_sizes_pairs, additions, comments, created_at, pdf_url, user_id, company_id, locale,
-  products(colour_id, color_name, closure, picture_name),
+  products(colour_id, color_name, closure, picture_name, style_name),
   companies(name)`
 
 type Params = { params: Promise<{ id: string }> }
@@ -42,17 +43,24 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const { data: order, error } = await service.from('orders').select(SELECT).eq('id', id).single()
     if (error || !order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    // ── Visibility: same scope as the order detail pages ──────────────────────
-    const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
-    let allowed = isPiedroAdmin(profile?.role) || order.user_id === user.id
-    if (!allowed) {
-      const adminCompanyIds = await getAdminCompanyIds(user.id)
-      allowed = !!order.company_id && adminCompanyIds.includes(order.company_id)
-    }
-    if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const product: any = Array.isArray(order.products) ? order.products[0] : order.products
+
+    // ── Visibility: mirror BOTH order-detail pages exactly ────────────────────
+    //  • back-office users (piedro_admin or branch_staff) within their model scope
+    //  • the ordering user (owner)
+    //  • company admins of the order's company (user_companies)
+    //  • branch admins managing the order's company's clients (branch_admins)
+    const scope = await getAdminScope()
+    let allowed = (!!scope && scope.canModel(product?.style_name)) || order.user_id === user.id
+    if (!allowed && order.company_id) {
+      const [adminCompanyIds, branchAdminCompanyIds] = await Promise.all([
+        getAdminCompanyIds(user.id),
+        getBranchAdminCompanyIds(user.id),
+      ])
+      allowed = adminCompanyIds.includes(order.company_id) || branchAdminCompanyIds.includes(order.company_id)
+    }
+    if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const company: any = Array.isArray(order.companies) ? order.companies[0] : order.companies
     const locale: Locale = ((order as { locale?: string }).locale ?? 'en') as Locale
