@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import type { Locale, Section } from '@/types'
 import { translateFilterValueSync, translateClosureSync } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
-import { siglaColor } from '@/lib/exclusive-colors'
+import { siglaColor, CLIENT_DOT_COLOR } from '@/lib/exclusive-colors'
 import type { Filters } from './GalleryPage'
 
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = { KIDS: 'kids', MEN: 'men', WOMEN: 'women' }
@@ -38,6 +38,10 @@ type Props = {
   siglasAvailable: string[]                    // siglas present in the current section ([] for clients)
   selectedSiglas: string[]
   onToggleSigla: (s: string) => void
+  // Client "My styles" gold chip (isolates the client's own exclusive models).
+  myStylesAvailable: boolean
+  myStylesOnly: boolean
+  onToggleMyStyles: () => void
 }
 
 // ── Size range buckets ────────────────────────────────────────────────────────
@@ -269,6 +273,7 @@ export default function GalleryFilters({
   showWishlist, onToggleBuildWishlist,
   exclusiveMode, livSectionsAvailable, livHidden, onToggleLivSection,
   siglasAvailable, selectedSiglas, onToggleSigla,
+  myStylesAvailable, myStylesOnly, onToggleMyStyles,
 }: Props) {
   const t = useTranslations('gallery.filters')
   const tg = useTranslations('gallery')
@@ -348,6 +353,21 @@ export default function GalleryFilters({
             </button>
           )
         })}
+
+        {/* Client "My styles" gold chip — isolates the client's own exclusives */}
+        {myStylesAvailable && (
+          <button
+            onClick={onToggleMyStyles}
+            aria-pressed={myStylesOnly}
+            className="h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all flex items-center gap-1.5"
+            style={myStylesOnly
+              ? { backgroundColor: CLIENT_DOT_COLOR, borderColor: CLIENT_DOT_COLOR, color: '#fff' }
+              : { borderColor: CLIENT_DOT_COLOR, color: '#57534e', backgroundColor: '#fff' }}
+          >
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: myStylesOnly ? '#fff' : CLIENT_DOT_COLOR }} />
+            {t('my_styles')}
+          </button>
+        )}
 
         {/* Customer-sigla filter chips (back-office) — both normal & LIV view */}
         {siglasAvailable.map((sg) => {

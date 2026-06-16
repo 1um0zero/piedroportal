@@ -190,7 +190,8 @@
       "cat_9": "Sandales",
       "cat_10": "Baskets",
       "diabetics": "Diabétique",
-      "diabetics_hint": "Afficher uniquement les modèles pied diabétique/sensible"
+      "diabetics_hint": "Afficher uniquement les modèles pied diabétique/sensible",
+      "my_styles": "Mes modèles"
     },
     "badges": {
       "diabetic": "Diabétique"

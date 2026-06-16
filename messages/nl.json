@@ -190,7 +190,8 @@
       "cat_9": "Sandalen",
       "cat_10": "Sneakers",
       "diabetics": "Diabetisch",
-      "diabetics_hint": "Toon alleen modellen voor diabetische/gevoelige voeten"
+      "diabetics_hint": "Toon alleen modellen voor diabetische/gevoelige voeten",
+      "my_styles": "Mijn modellen"
     },
     "badges": {
       "diabetic": "Diabetisch"

@@ -179,6 +179,14 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const toggleSigla = (s: string) =>
     setSelectedSiglas((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
 
+  // ── Client "My styles" filter ──
+  // A signed-in client with exclusives gets a single gold chip to isolate their
+  // own exclusive models in the current section (back-office uses sigla chips).
+  const [myStylesOnly, setMyStylesOnly] = useState(false)
+  const myStylesAvailable = exclusiveView === 'client'
+    && !exclusiveFilter
+    && exclusives.some((p) => p.section === section && siglasOf(p).length > 0)
+
   // ── Restore browse state on mount (after returning from a product page) ──
   // Done in an effect (not in useState initialisers) to avoid an SSR/hydration
   // mismatch: the server always renders the default section.
@@ -273,11 +281,15 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         p.section === section && siglasOf(p).some((c) => selectedSiglas.includes(c)),
       ))
     }
+    // Client "My styles": only this section's own exclusive models.
+    if (myStylesOnly) {
+      return dedupById(exclusives.filter((p) => p.section === section && siglasOf(p).length > 0))
+    }
     const base = cache[section] ?? []
     const extra = exclusives.filter((p) => p.section === section && siglasOf(p).length > 0)
     const seen = new Set(base.map((p) => p.id))
     return extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
-  }, [cache, section, exclusives, exclusiveFilter, livHidden, selectedSiglas])
+  }, [cache, section, exclusives, exclusiveFilter, livHidden, selectedSiglas, myStylesOnly])
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
@@ -388,6 +400,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     setSection(s)
     setFilters(EMPTY)
     setSelectedSiglas([])  // sigla chips are per-section; clear on switch
+    setMyStylesOnly(false)
     if (cache[s]) return
     setLoading(true)
     try {
@@ -415,7 +428,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
     || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0
-    || filters.styles.length > 0 || !!exclusiveFilter || selectedSiglas.length > 0
+    || filters.styles.length > 0 || !!exclusiveFilter || selectedSiglas.length > 0 || myStylesOnly
 
   const [showWishlist, setShowWishlist] = useState(false)
 
@@ -499,7 +512,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         hasNew={hasNew}
         hasDiabetics={hasDiabetics}
         hasFilters={!!hasFilters}
-        onClear={() => { setFilters(EMPTY); setCtxExclusive(''); setSelectedSiglas([]) }}
+        onClear={() => { setFilters(EMPTY); setCtxExclusive(''); setSelectedSiglas([]); setMyStylesOnly(false) }}
         resultCount={filtered.length}
         exclusiveMode={!!exclusiveFilter}
         livSectionsAvailable={livSectionsAvailable}
@@ -508,6 +521,9 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         siglasAvailable={siglasAvailable}
         selectedSiglas={selectedSiglas}
         onToggleSigla={toggleSigla}
+        myStylesAvailable={myStylesAvailable}
+        myStylesOnly={myStylesOnly}
+        onToggleMyStyles={() => setMyStylesOnly((v) => !v)}
         showWishlist={showWishlist}
         onToggleBuildWishlist={() => setShowWishlist(s => !s)}
       />

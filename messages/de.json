@@ -190,7 +190,8 @@
       "cat_9": "Sandalen",
       "cat_10": "Sneaker",
       "diabetics": "Diabetiker",
-      "diabetics_hint": "Nur Modelle für diabetische/empfindliche Füße zeigen"
+      "diabetics_hint": "Nur Modelle für diabetische/empfindliche Füße zeigen",
+      "my_styles": "Meine Modelle"
     },
     "badges": {
       "diabetic": "Diabetisch"
