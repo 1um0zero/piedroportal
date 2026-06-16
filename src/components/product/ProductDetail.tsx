@@ -17,68 +17,119 @@ import type { Product, Locale } from '@/types'
 // cache-busting version (re-processed images keep the same object name).
 const src = (name: string) => productImageUrl(name)
 
-const LENS = 160   // lens diameter px
-const ZOOM = 2.5   // magnification
+const LENS = 160       // lens diameter px (hover loupe)
+const LENS_ZOOM = 1.8  // hover loupe magnification
+const ZOOM_STEPS = [2.5, 4]  // click-to-zoom levels (each click steps up)
 
-// ── Loupe magnifier (classic e-commerce style) ────────────────────────────────
-function ZoomImage({ url, alt, onOpen }: { url: string; alt: string; onOpen?: () => void }) {
-  const [pos, setPos]     = useState<{ x: number; y: number } | null>(null)
+// ── Image viewer: hover loupe + click-to-zoom with cursor pan (in-place) ───────
+// Hover shows the classic loupe lens. Clicking the image magnifies it inside the
+// same frame; moving the cursor then pans the shoe so the zone under the pointer
+// is brought into view. Click again (or leave) to reset.
+function ZoomImage({ url, alt }: { url: string; alt: string }) {
+  const [pos, setPos]         = useState<{ x: number; y: number } | null>(null)
+  // level: 0 = normal, 1..N = ZOOM_STEPS index+1 · dir: click direction (+1 in, -1 out)
+  const [zoom, setZoom]       = useState({ level: 0, dir: 1 })
   const [imgSize, setImgSize] = useState({ w: 1, h: 1 })  // natural size
-  const containerRef      = useRef<HTMLDivElement>(null)
-  const imgRef            = useRef<HTMLImageElement>(null)
+  const containerRef          = useRef<HTMLDivElement>(null)
+  const originRef             = useRef({ x: 50, y: 50 })  // last pan anchor (%) — persists when cursor leaves
+  const lastMoveRef           = useRef<{ x: number; y: number; t: number } | null>(null)
+
+  const level  = zoom.level
+  const zoomed = level > 0
+  const scale  = zoomed ? ZOOM_STEPS[level - 1] : 1
 
   const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return
     const r = containerRef.current.getBoundingClientRect()
-    setPos({ x: e.clientX - r.left, y: e.clientY - r.top })
+    const x = e.clientX - r.left
+    const y = e.clientY - r.top
+    const now = performance.now()
+    const last = lastMoveRef.current
+    lastMoveRef.current = { x, y, t: now }
+    if (zoomed) {
+      // First move after (re)entering: just establish the baseline so the pan
+      // resumes from this point instead of jumping to it.
+      if (!last) return
+      // Ignore fast cursor flicks (e.g. darting to the edge to exit) so the
+      // image doesn't lurch away — only deliberate, slow moves pan it.
+      const speed = Math.hypot(x - last.x, y - last.y) / Math.max(now - last.t, 1)
+      if (speed > 1.2) return  // px per ms
+    }
+    setPos({ x, y })
+  }, [zoomed])
+
+  // Each click steps the zoom level, bouncing at the ends: 0→1→2→1→0→…
+  // Pure updater (no ref mutation) so React StrictMode's double-invoke is safe.
+  const onCycle = useCallback(() => {
+    const max = ZOOM_STEPS.length
+    setZoom(({ level: l, dir }) => {
+      let next = l + dir
+      if (next >= max)      { next = max; dir = -1 }
+      else if (next <= 0)   { next = 0;   dir = 1 }
+      return { level: next, dir }
+    })
   }, [])
 
-  // Lens background-position: show the zoomed portion of the image
-  // The img uses object-contain with p-4 (16px), so rendered area ≠ container
-  const lens = pos ? (() => {
+  // Geometry of the rendered image (object-contain with p-4) and cursor fraction.
+  const geo = pos ? (() => {
     const cw = containerRef.current?.clientWidth  ?? 1
     const ch = containerRef.current?.clientHeight ?? 1
     const pad = 16
-    // Rendered image area within container (object-contain)
     const ir = Math.min((cw - pad*2) / imgSize.w, (ch - pad*2) / imgSize.h)
     const iw = imgSize.w * ir
     const ih = imgSize.h * ir
-    const ix = (cw - iw) / 2  // image left offset
-    const iy = (ch - ih) / 2  // image top offset
-    // Position within image (0-1)
-    const px = (pos.x - ix) / iw
+    const ix = (cw - iw) / 2
+    const iy = (ch - ih) / 2
+    const px = (pos.x - ix) / iw   // 0-1 within image (may fall outside)
     const py = (pos.y - iy) / ih
-    // Background size = ZOOM × container
-    const bgW = iw * ZOOM
-    const bgH = ih * ZOOM
+    const inside = px >= 0 && px <= 1 && py >= 0 && py <= 1
+    // Loupe background (zoomed slice centred on cursor)
+    const bgW = iw * LENS_ZOOM
+    const bgH = ih * LENS_ZOOM
     const bgX = -(px * bgW - LENS / 2)
     const bgY = -(py * bgH - LENS / 2)
-    return { bgW, bgH, bgX, bgY, inside: px >= 0 && px <= 1 && py >= 0 && py <= 1 }
+    return { px, py, inside, bgW, bgH, bgX, bgY }
   })() : null
+
+  // Clamp the pan anchor so we never scroll past the shoe's edges, and remember
+  // the last position so the zoom stays put when the cursor leaves the frame.
+  if (geo) {
+    originRef.current = {
+      x: Math.min(Math.max(geo.px, 0), 1) * 100,
+      y: Math.min(Math.max(geo.py, 0), 1) * 100,
+    }
+  }
+  const originX = originRef.current.x
+  const originY = originRef.current.y
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full cursor-zoom-in"
+      className={`relative w-full h-full overflow-hidden ${zoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
       onMouseMove={onMove}
-      onMouseLeave={() => setPos(null)}
-      onClick={onOpen}
+      onMouseLeave={() => { setPos(null); lastMoveRef.current = null }}
+      onClick={onCycle}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        ref={imgRef}
         src={url}
         alt={alt}
-        className="w-full h-full object-contain p-4 select-none"
+        className="w-full h-full object-contain p-4 select-none transition-transform duration-150 ease-out"
         draggable={false}
+        style={{
+          transform: `scale(${scale})`,
+          // Anchor the scale to the cursor so the zone under the pointer pans to
+          // the centre — moving the cursor drags the far side into view.
+          transformOrigin: `${originX}% ${originY}%`,
+        }}
         onLoad={(e) => {
           const img = e.currentTarget
           setImgSize({ w: img.naturalWidth, h: img.naturalHeight })
         }}
       />
 
-      {/* Loupe lens */}
-      {pos && lens?.inside && (
+      {/* Hover loupe — only while not click-zoomed */}
+      {!zoomed && pos && geo?.inside && (
         <div
           style={{
             position: 'absolute',
@@ -93,13 +144,13 @@ function ZoomImage({ url, alt, onOpen }: { url: string; alt: string; onOpen?: ()
             overflow: 'hidden',
             backgroundImage: `url(${url})`,
             backgroundRepeat: 'no-repeat',
-            backgroundSize: `${lens.bgW}px ${lens.bgH}px`,
-            backgroundPosition: `${lens.bgX}px ${lens.bgY}px`,
+            backgroundSize: `${geo.bgW}px ${geo.bgH}px`,
+            backgroundPosition: `${geo.bgX}px ${geo.bgY}px`,
           }}
         />
       )}
 
-      {!pos && (
+      {!zoomed && !pos && (
         <span className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm
                          rounded-full p-1.5 shadow text-stone-400 pointer-events-none">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -149,7 +200,6 @@ export default function ProductDetail({ product, siblings }: Props) {
   const [activeImg, setActiveImg]         = useState(0)
   const [failed, setFailed]               = useState<Set<number>>(new Set())
   const [playing, setPlaying]             = useState(false)
-  const [fullscreen, setFullscreen]       = useState(false)
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Helper to get translated color name
@@ -199,16 +249,6 @@ export default function ProductDetail({ product, siblings }: Props) {
   }
   // Stop when images change (new variant selected)
   useEffect(() => { stopPlay() }, [selected])
-
-  // Close the fullscreen viewer with Escape and lock body scroll while open
-  useEffect(() => {
-    if (!fullscreen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFullscreen(false) }
-    document.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
-  }, [fullscreen])
 
   // Preload filter translations on mount, then bump state so chips that read the
   // synchronous cache during render re-render with the translated values.
@@ -265,35 +305,6 @@ export default function ProductDetail({ product, siblings }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
-
-      {/* Fullscreen image viewer — opened by clicking the main image */}
-      {fullscreen && currentUrl && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-6 cursor-zoom-out"
-          onClick={() => setFullscreen(false)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            onClick={() => setFullscreen(false)}
-            aria-label="Close"
-            className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20
-                       text-white flex items-center justify-center transition-colors"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentUrl}
-            alt={`${product.style_name} ${getColorName(selected)}`}
-            className="max-w-full max-h-full object-contain select-none"
-            draggable={false}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
       <Link href="/gallery"
         className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800
                    border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg transition-colors">
@@ -342,7 +353,7 @@ export default function ProductDetail({ product, siblings }: Props) {
           <div className="relative aspect-square"
             style={{ filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.13)) drop-shadow(0 3px 8px rgba(0,0,0,0.07))' }}>
             {currentUrl ? (
-              <ZoomImage url={currentUrl} alt={`${product.style_name} ${getColorName(selected)}`} onOpen={() => setFullscreen(true)} />
+              <ZoomImage url={currentUrl} alt={`${product.style_name} ${getColorName(selected)}`} />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-5xl font-light text-stone-200 tracking-widest">{product.style_name}</span>
