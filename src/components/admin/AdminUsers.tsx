@@ -261,6 +261,7 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
   const [msg, setMsg]       = useState<{ id: string; ok: boolean; text?: string } | null>(null)
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [view, setView] = useState<'cards' | 'grid'>('cards')
+  const [q, setQ] = useState('')
 
   async function changeRole(userId: string, role: UserRole) {
     setSaving(userId); setMsg(null)
@@ -344,9 +345,15 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     }
   }
 
-  const pending  = users.filter(u => u.companies.length === 0 && !isPiedroAdmin(u.role))
-  const admins   = users.filter(u => isPiedroAdmin(u.role))
-  const assigned = users.filter(u => u.companies.length > 0)
+  // Cards-view search across name, email and company names.
+  const needle = q.trim().toLowerCase()
+  const matchesQ = (u: UserRow) =>
+    !needle ||
+    `${u.full_name} ${u.email} ${u.companies.map(c => c.company_name).join(' ')}`.toLowerCase().includes(needle)
+  const visible  = users.filter(matchesQ)
+  const pending  = visible.filter(u => u.companies.length === 0 && !isPiedroAdmin(u.role))
+  const admins   = visible.filter(u => isPiedroAdmin(u.role))
+  const assigned = visible.filter(u => u.companies.length > 0)
 
   const rowProps = {
     companies,
@@ -383,6 +390,16 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
       {view === 'grid' && <AdminUsersGrid users={users} branches={branches} />}
 
       {view === 'cards' && (<>
+      {/* Search across all sections (name / email / company) */}
+      <input
+        type="text"
+        value={q}
+        onChange={e => setQ(e.target.value)}
+        placeholder={t('grid_search')}
+        className="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded-lg text-stone-700 placeholder-stone-400
+                   focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
+      />
+
       {/* Piedro admins */}
       {admins.length > 0 && (
         <section className="space-y-3">
@@ -424,6 +441,9 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
 
       {users.length === 0 && (
         <p className="text-sm text-stone-400 text-center py-12">{t('no_users')}</p>
+      )}
+      {users.length > 0 && visible.length === 0 && (
+        <p className="text-sm text-stone-400 text-center py-12">{t('grid_no_results')}</p>
       )}
       </>)}
     </div>

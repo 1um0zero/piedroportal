@@ -14,9 +14,8 @@ async function assertPiedroAdmin(): Promise<string | null> {
   return null
 }
 
-function normalizeLabel(label: string | null): string | null {
-  const v = (label ?? '').trim().toUpperCase()
-  return v || null
+function normalizeLabel(label: string | null): string {
+  return (label ?? '').trim().toUpperCase()
 }
 
 function revalidate(companyId?: string) {
@@ -26,13 +25,14 @@ function revalidate(companyId?: string) {
   revalidatePath('/gallery')
 }
 
-// ── Company exclusive label ────────────────────────────────────────────────────
+// ── Company exclusive siglas (N:N company_exclusives — the source of truth) ─────
+// A company may hold SEVERAL siglas (e.g. "LIV" + "ZSM"); unlike a sigla→model
+// tag, a sigla is shared by many companies (the Livingstone group). The legacy
+// single `companies.exclusive_label` field is deprecated (read-only fallback in
+// getUserExclusiveLabels) and no longer written here.
 
-/**
- * Set (or clear) the customer "sigla" of a company. The label is unique
- * (case-insensitive) across companies — one label belongs to one company.
- */
-export async function updateCompanyExclusiveLabel(
+/** Add a sigla to a company (idempotent, uppercased). */
+export async function addCompanyExclusiveSigla(
   companyId: string,
   label: string | null,
 ): Promise<{ ok?: boolean; error?: string }> {
@@ -40,23 +40,43 @@ export async function updateCompanyExclusiveLabel(
   if (authErr) return { error: authErr }
 
   const value = normalizeLabel(label)
-  const service = createServiceClient()
+  if (!value) return { error: 'Sigla is required' }
 
-  if (value) {
-    // Guard against assigning the same label to two companies.
-    const { data: clash } = await service
-      .from('companies')
-      .select('id')
-      .ilike('exclusive_label', value)
-      .neq('id', companyId)
-      .maybeSingle()
-    if (clash) return { error: `Label "${value}" is already used by another company` }
-  }
+  const service = createServiceClient()
+  const { data: existing } = await service
+    .from('company_exclusives')
+    .select('label')
+    .eq('company_id', companyId)
+    .ilike('label', value)
+    .maybeSingle()
+  if (existing) return { ok: true } // already present
 
   const { error } = await service
-    .from('companies')
-    .update({ exclusive_label: value })
-    .eq('id', companyId)
+    .from('company_exclusives')
+    .insert({ company_id: companyId, label: value })
+  if (error) return { error: error.message }
+
+  revalidate(companyId)
+  return { ok: true }
+}
+
+/** Remove a sigla from a company. */
+export async function removeCompanyExclusiveSigla(
+  companyId: string,
+  label: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const value = normalizeLabel(label)
+  if (!value) return { error: 'Sigla is required' }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('company_exclusives')
+    .delete()
+    .eq('company_id', companyId)
+    .ilike('label', value)
   if (error) return { error: error.message }
 
   revalidate(companyId)
@@ -103,7 +123,7 @@ export async function setModelExclusiveLabel(
   const service = createServiceClient()
   const { error } = await service
     .from('products')
-    .update({ exclusive: value ?? '' })
+    .update({ exclusive: value })
     .eq('style_name', styleName)
   if (error) return { error: error.message }
 

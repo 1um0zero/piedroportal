@@ -1014,7 +1014,9 @@
       "add_model": "Een model toevoegen",
       "search_models": "Modellen zoeken…",
       "no_free_models": "Geen beschikbare modellen gevonden.",
-      "add_hint": "Alleen modellen die niet exclusief zijn voor een ander bedrijf worden getoond. Toevoegen maakt het model exclusief voor dit bedrijf (alle kleuren)."
+      "add_hint": "Alleen modellen die niet exclusief zijn voor een ander bedrijf worden getoond. Toevoegen maakt het model exclusief voor dit bedrijf (alle kleuren).",
+      "no_company_siglas": "Nog geen siglas — voeg er hieronder een toe.",
+      "owned_by_n": "{n} bedrijven"
     },
     "order": {
       "title": "Galerijvolgorde",

@@ -61,32 +61,38 @@ export default async function AdminCompaniesPage() {
     offset += PAGE
   }
 
-  const labelToCompany = new Map<string, string>()
-  for (const c of companies) {
-    const l = (c.exclusive_label ?? '').trim().toUpperCase()
-    if (l) labelToCompany.set(l, c.name)
+  // Company siglas live in company_exclusives (N:N). A sigla is owned by MANY
+  // companies (e.g. ~65 own LIV). Include any stray legacy value as a fallback.
+  const siglasByCompany = new Map<string, Set<string>>()
+  const companiesBySigla = new Map<string, Set<string>>()
+  const addCompanySigla = (companyId: string, sigla: string) => {
+    const s = sigla.trim().toUpperCase()
+    if (!s) return
+    if (!siglasByCompany.has(companyId)) siglasByCompany.set(companyId, new Set())
+    siglasByCompany.get(companyId)!.add(s)
+    if (!companiesBySigla.has(s)) companiesBySigla.set(s, new Set())
+    companiesBySigla.get(s)!.add(companyId)
   }
-
-  const modelCount = (label: string | null) => {
-    const l = (label ?? '').trim().toUpperCase()
-    return l ? (siglaModels.get(l)?.size ?? 0) : 0
-  }
+  const { data: ceRows } = await service.from('company_exclusives').select('company_id, label')
+  for (const r of ceRows ?? []) addCompanySigla(r.company_id as string, (r.label as string) ?? '')
+  for (const c of companies) for (const tok of (c.exclusive_label ?? '').toUpperCase().match(/[A-Z0-9]+/g) ?? []) addCompanySigla(c.id, tok)
 
   const reconciliation = [...siglaModels.entries()]
-    .map(([sigla, models]) => ({ sigla, count: models.size, company: labelToCompany.get(sigla) ?? null }))
+    .map(([sigla, models]) => ({ sigla, count: models.size, companies: companiesBySigla.get(sigla)?.size ?? 0 }))
     .sort((a, b) => a.sigla.localeCompare(b.sigla))
-  const unassignedCount = reconciliation.filter(r => !r.company).length
+  const unassignedCount = reconciliation.filter(r => r.companies === 0).length
 
   const rows: CompanyRow[] = companies.map(c => {
     const agg = membersByCompany.get(c.id)
     const cc = c.notify_cc ?? ''
     const bcc = c.notify_bcc ?? ''
-    const label = c.exclusive_label ?? ''
-    const search = [c.name, c.erp_code, label, ...(agg?.haystack ?? [])]
+    const siglas = [...(siglasByCompany.get(c.id) ?? [])].sort()
+    const models = siglas.reduce((n, s) => n + (siglaModels.get(s)?.size ?? 0), 0)
+    const search = [c.name, c.erp_code, ...siglas, ...(agg?.haystack ?? [])]
       .filter(Boolean).join(' ').toLowerCase()
     return {
-      id: c.id, name: c.name, erp_code: c.erp_code, exclusive_label: c.exclusive_label,
-      models: modelCount(c.exclusive_label),
+      id: c.id, name: c.name, erp_code: c.erp_code, siglas,
+      models,
       userCount: agg?.count ?? 0,
       admins: agg?.admins ?? [],
       cc, bcc, search,
@@ -123,8 +129,8 @@ export default async function AdminCompaniesPage() {
               <div key={r.sigla} className="flex items-center gap-3 px-3 py-2">
                 <span className="w-20 font-mono text-sm font-medium text-stone-700">{r.sigla}</span>
                 <span className="flex-1 text-xs text-stone-400">{t('models_count', { n: r.count })}</span>
-                {r.company
-                  ? <span className="text-sm text-stone-600">{r.company}</span>
+                {r.companies > 0
+                  ? <span className="text-sm text-stone-600">{t('owned_by_n', { n: r.companies })}</span>
                   : <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">{t('unassigned')}</span>}
               </div>
             ))}

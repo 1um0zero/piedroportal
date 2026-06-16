@@ -1014,7 +1014,9 @@
       "add_model": "Modell hinzufügen",
       "search_models": "Modelle suchen…",
       "no_free_models": "Keine verfügbaren Modelle gefunden.",
-      "add_hint": "Es werden nur Modelle angezeigt, die nicht exklusiv für eine andere Firma sind. Durch Hinzufügen wird das Modell exklusiv für diese Firma (alle Farben)."
+      "add_hint": "Es werden nur Modelle angezeigt, die nicht exklusiv für eine andere Firma sind. Durch Hinzufügen wird das Modell exklusiv für diese Firma (alle Farben).",
+      "no_company_siglas": "Noch keine Siglen — unten hinzufügen.",
+      "owned_by_n": "{n} Firmen"
     },
     "order": {
       "title": "Galerie-Reihenfolge",

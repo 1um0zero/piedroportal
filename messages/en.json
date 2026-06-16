@@ -1014,7 +1014,9 @@
       "add_model": "Add a model",
       "search_models": "Search models…",
       "no_free_models": "No available models match.",
-      "add_hint": "Only models not exclusive to another company are listed. Adding makes the model exclusive to this company (all colours)."
+      "add_hint": "Only models not exclusive to another company are listed. Adding makes the model exclusive to this company (all colours).",
+      "no_company_siglas": "No siglas yet — add one below.",
+      "owned_by_n": "{n} companies"
     },
     "order": {
       "title": "Gallery order",

@@ -19,6 +19,15 @@ export default async function CompanyDetailPage({ params }: Props) {
     .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc').eq('id', id).single()
   if (!company) notFound()
 
+  // The company's siglas live in company_exclusives (N:N). Include any stray
+  // legacy `exclusive_label` value so nothing is lost while it's deprecated.
+  const { data: ceRows } = await service
+    .from('company_exclusives').select('label').eq('company_id', id)
+  const siglas = [...new Set([
+    ...((ceRows ?? []).map(r => (r.label ?? '').trim().toUpperCase())),
+    ...((company.exclusive_label ?? '').trim().toUpperCase() ? [(company.exclusive_label as string).trim().toUpperCase()] : []),
+  ].filter(Boolean))].sort()
+
   // Members of this company (+ admin flag) and all users (for the add picker).
   const { data: memberRows } = await service
     .from('user_companies')
@@ -37,10 +46,9 @@ export default async function CompanyDetailPage({ params }: Props) {
     id: p.id, email: p.email ?? '', full_name: p.full_name ?? '',
   }))
 
-  const label = (company.exclusive_label ?? '').trim().toUpperCase()
-
-  // Build per-model (style_name) exclusivity from all product rows.
-  const styleSigla = new Map<string, string>()  // style → sigla ('' = free)
+  // Build per-model (style_name) exclusivity from all product rows. A style is
+  // "free" only when NONE of its colour rows carry any sigla.
+  const styleSigla = new Map<string, Set<string>>()  // style → siglas (empty set = free)
   let offset = 0
   const PAGE = 1000
   while (true) {
@@ -50,23 +58,22 @@ export default async function CompanyDetailPage({ params }: Props) {
     for (const r of data) {
       const style = r.style_name as string | null
       if (!style) continue
-      const sigla = ((r.exclusive as string | null) ?? '').trim().toUpperCase()
-      // A style counts as exclusive if ANY of its colour rows carries a sigla.
-      if (sigla) styleSigla.set(style, sigla)
-      else if (!styleSigla.has(style)) styleSigla.set(style, '')
+      if (!styleSigla.has(style)) styleSigla.set(style, new Set())
+      const set = styleSigla.get(style)!
+      for (const tok of ((r.exclusive as string | null) ?? '').toUpperCase().match(/[A-Z0-9]+/g) ?? []) set.add(tok)
     }
     if (data.length < PAGE) break
     offset += PAGE
   }
 
-  const assignedModels: string[] = []
+  // Styles assigned per sigla (for this company's siglas) + the free pool.
+  const assignedBySigla: Record<string, string[]> = Object.fromEntries(siglas.map(s => [s, []]))
   const freeModels: string[] = []
-  for (const [style, sigla] of styleSigla) {
-    if (label && sigla === label) assignedModels.push(style)
-    else if (!sigla) freeModels.push(style)
-    // styles owned by another company's sigla are intentionally hidden here.
+  for (const [style, set] of styleSigla) {
+    if (set.size === 0) { freeModels.push(style); continue }
+    for (const s of siglas) if (set.has(s)) assignedBySigla[s].push(style)
   }
-  assignedModels.sort((a, b) => a.localeCompare(b))
+  for (const s of siglas) assignedBySigla[s].sort((a, b) => a.localeCompare(b))
   freeModels.sort((a, b) => a.localeCompare(b))
 
   return (
@@ -83,8 +90,9 @@ export default async function CompanyDetailPage({ params }: Props) {
         initialBcc={company.notify_bcc ?? ''}
       />
       <CompanyExclusiveModels
-        company={company}
-        assignedModels={assignedModels}
+        companyId={company.id}
+        siglas={siglas}
+        assignedBySigla={assignedBySigla}
         freeModels={freeModels}
       />
     </div>

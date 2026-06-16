@@ -5,18 +5,19 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { nz } from '@/lib/format'
 import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
+import { siglaColor } from '@/lib/exclusive-colors'
 
 export type CompanyRow = {
   id: string
   name: string
   erp_code: string
-  exclusive_label: string | null
+  siglas: string[]
   models: number
   userCount: number
   admins: string[]
   cc: string
   bcc: string
-  /** Pre-built lowercase haystack: name + erp + label + every member name & email. */
+  /** Pre-built lowercase haystack: name + erp + siglas + every member name & email. */
   search: string
 }
 
@@ -30,7 +31,7 @@ function sortVal(r: CompanyRow, key: string): string | number {
     case 'users': return r.userCount
     case 'admins': return r.admins.length
     case 'copies': return (r.cc ? 1 : 0) + (r.bcc ? 1 : 0)
-    case 'label': return r.exclusive_label || '￿'
+    case 'label': return r.siglas[0] || '￿'
     case 'models': return r.models
     default: return r.name
   }
@@ -43,10 +44,10 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
   const [sort, setSort] = useState<Sort>({ key: 'name', dir: 'asc' })
 
   const labelOptions = useMemo(
-    () => [...new Set(rows.map(r => (r.exclusive_label ?? '').trim()).filter(Boolean))].sort(),
+    () => [...new Set(rows.flatMap(r => r.siglas))].sort(),
     [rows],
   )
-  const hasNone = useMemo(() => rows.some(r => !(r.exclusive_label ?? '').trim()), [rows])
+  const hasNone = useMemo(() => rows.some(r => r.siglas.length === 0), [rows])
 
   const filtered = useMemo(() => {
     const tokens = q.toLowerCase().split(/\s+/).filter(Boolean)
@@ -56,8 +57,8 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
       // e.g. "voet elst" → "voetmax - locaties elst".
       out = out.filter(r => tokens.every(tok => r.search.includes(tok)))
     }
-    if (labelFilter === NONE) out = out.filter(r => !(r.exclusive_label ?? '').trim())
-    else if (labelFilter) out = out.filter(r => (r.exclusive_label ?? '').trim() === labelFilter)
+    if (labelFilter === NONE) out = out.filter(r => r.siglas.length === 0)
+    else if (labelFilter) out = out.filter(r => r.siglas.includes(labelFilter))
     return out
   }, [q, labelFilter, rows])
 
@@ -138,8 +139,14 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
                     : <span className="text-stone-300">—</span>}
                 </td>
                 <td className="px-4 py-3">
-                  {c.exclusive_label
-                    ? <span className="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-mono font-medium text-gold">{c.exclusive_label}</span>
+                  {c.siglas.length
+                    ? <div className="flex flex-wrap gap-1">
+                        {c.siglas.map(s => {
+                          const color = siglaColor(s)
+                          return <span key={s} className="rounded-full px-2.5 py-0.5 text-xs font-mono font-medium"
+                            style={{ backgroundColor: `${color}22`, color: '#44403c' }}>{s}</span>
+                        })}
+                      </div>
                     : <span className="text-stone-300">—</span>}
                 </td>
                 <td className="px-4 py-3 text-stone-500 tabular-nums">{nz(c.models)}</td>
