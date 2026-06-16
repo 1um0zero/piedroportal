@@ -350,6 +350,23 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     switchSection(ctxSection)
   }, [showHero, ctxSection]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // When an exclusive collection (e.g. Livingstone / LIV) is activated, the
+  // current section may hold none of its models — they are typically adult
+  // styles while the gallery defaults to KIDS, so the filtered grid would come
+  // up empty and the nav entry would look broken. Jump to the first section
+  // that actually carries the collection.
+  useEffect(() => {
+    if (!showHero || !exclusiveFilter) return
+    const hasHere = exclusives.some(
+      (p) => p.section === section && exclusiveTokens(p.exclusive).includes(exclusiveFilter),
+    )
+    if (hasHere) return
+    const target = SECTIONS.find((s) =>
+      exclusives.some((p) => p.section === s && exclusiveTokens(p.exclusive).includes(exclusiveFilter)),
+    )
+    if (target && target !== section) setCtxSection(target)
+  }, [showHero, exclusiveFilter, exclusives, section]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
     || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0
