@@ -5,7 +5,7 @@ import {
   type ReactNode,
 } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { isPiedroAdmin, isBranchAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import type { Profile } from '@/types'
 
 interface AuthCtx {
@@ -13,8 +13,8 @@ interface AuthCtx {
   isAdmin: boolean
   hasCompany: boolean
   isLoggedIn: boolean
-  // May place orders: belongs to a company, is a Piedro admin, or a branch admin
-  // ordering on behalf of the branch's clients.
+  // May place orders: belongs to a company, is a Piedro admin, or branch
+  // admin/staff ordering on behalf of their branch office's clients.
   canOrder: boolean
 }
 
@@ -80,7 +80,8 @@ export function AuthProvider({ children, initialProfile, initialLoggedIn, initia
       isLoggedIn,
       isAdmin:    isPiedroAdmin(profile?.role),
       hasCompany,
-      canOrder:   hasCompany || isPiedroAdmin(profile?.role) || isBranchAdmin(profile?.role),
+      canOrder:   hasCompany || isPiedroAdmin(profile?.role) || isBranchAdmin(profile?.role)
+                  || (isBranchStaff(profile?.role) && !!profile?.branch_id),
     }}>
       {children}
     </Ctx.Provider>

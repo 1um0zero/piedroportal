@@ -3,17 +3,24 @@ import { createServiceClient } from './supabase/service'
 export type BranchCompany = { id: string; name: string; erp_code: string }
 
 /**
- * Branch offices a user administers (rows in `branch_admins`). This — not the
- * profiles.role string — is the authoritative source of branch-admin membership.
+ * Branch offices a user may order on behalf of. Two sources, unioned:
+ *   - branch_admins rows — a branch_admin administers (orders + manages) these.
+ *   - profiles.branch_id — a branch_staff belongs to this single branch and may
+ *     register orders for its clients (no admin powers).
+ * The role string is NOT the authoritative source for branch_admin membership
+ * (that is the branch_admins table); it only gates the branch_staff branch_id.
  */
 export async function getAdminBranchIds(userId: string): Promise<string[]> {
   const service = createServiceClient()
-  const { data, error } = await service
-    .from('branch_admins')
-    .select('branch_id')
-    .eq('user_id', userId)
-  if (error || !data) return []
-  return data.map(r => r.branch_id as string)
+  const [{ data: admins }, { data: profile }] = await Promise.all([
+    service.from('branch_admins').select('branch_id').eq('user_id', userId),
+    service.from('profiles').select('role, branch_id').eq('id', userId).single(),
+  ])
+  const ids = new Set((admins ?? []).map(r => r.branch_id as string))
+  if (profile?.role === 'branch_staff' && profile.branch_id) {
+    ids.add(profile.branch_id as string)
+  }
+  return [...ids]
 }
 
 /**

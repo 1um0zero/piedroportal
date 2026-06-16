@@ -26,3 +26,13 @@ export function isSuperAdmin(role?: string | null): boolean {
 export function isBranchAdmin(role?: string | null): boolean {
   return role === 'branch_admin'
 }
+
+/**
+ * A branch_staff may register orders on behalf of the clients of the single
+ * branch office they belong to (profiles.branch_id), WITHOUT any back-office
+ * admin powers. The clients/models they may order for are resolved the same way
+ * as a branch_admin's — see getAdminBranchIds in src/lib/branch-admin.ts.
+ */
+export function isBranchStaff(role?: string | null): boolean {
+  return role === 'branch_staff'
+}
