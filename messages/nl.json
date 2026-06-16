@@ -138,6 +138,7 @@
   },
   "nav": {
     "gallery": "OSB",
+    "back": "Terug",
     "orders": "Bestellingen",
     "wishlist": "Verlanglijst",
     "login": "Inloggen",

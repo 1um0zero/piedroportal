@@ -316,7 +316,7 @@ export default function ProductDetail({ product, siblings }: Props) {
       <Link href="/gallery"
         className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-800
                    border border-stone-200 hover:border-stone-300 px-4 py-2 rounded-lg transition-colors">
-        ← {tn('gallery')}
+        ← {tn('back')}
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-10 lg:gap-14">

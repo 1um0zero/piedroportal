@@ -138,6 +138,7 @@
   },
   "nav": {
     "gallery": "Pair-by-Pair",
+    "back": "Back",
     "orders": "Orders",
     "wishlist": "Wishlist",
     "login": "Login",
