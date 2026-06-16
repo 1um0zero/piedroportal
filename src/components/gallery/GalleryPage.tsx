@@ -136,6 +136,23 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     getMyExclusiveProducts().then(setExclusives).catch(() => {})
   }, [])
 
+  // ── Livingstone (LIV) collection controls ──
+  // Inside the Livingstone view the catalogue is section-agnostic, but a set of
+  // section chips (MEN/WOMEN, KIDS later) narrows it — all on by default, so we
+  // track which are toggled OFF. Inside a normal section a single Livingstone
+  // chip (default off) restricts the grid to that section's LIV models only.
+  const isLiv = (p: Product) => exclusiveTokens(p.exclusive).includes('LIV')
+  const livSectionsAvailable = useMemo(
+    () => SECTIONS.filter((s) => exclusives.some((p) => p.section === s && isLiv(p))),
+    [exclusives], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  const [livHidden, setLivHidden] = useState<Section[]>([])  // sections toggled off in the LIV view
+  const [livOnly, setLivOnly] = useState(false)              // LIV-only chip inside a normal section
+  // Entering the Livingstone view starts with every section chip on.
+  useEffect(() => { if (exclusiveFilter) setLivHidden([]) }, [exclusiveFilter])
+  const toggleLivSection = (s: Section) =>
+    setLivHidden((h) => (h.includes(s) ? h.filter((x) => x !== s) : [...h, s]))
+
   // ── Restore browse state on mount (after returning from a product page) ──
   // Done in an effect (not in useState initialisers) to avoid an SSR/hydration
   // mismatch: the server always renders the default section.
@@ -207,20 +224,28 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     headerReady.current = true
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const dedupById = (list: Product[]) => {
+    const seen = new Set<string>()
+    return list.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
+  }
   const sectionProducts = useMemo(() => {
-    // Exclusive collection view (e.g. Livingstone) is a SEPARATE, section-agnostic
-    // catalogue: the only filter is `exclusive` carrying the token — KIDS/MEN/WOMEN
-    // is ignored, so all matching models show together regardless of section.
+    // Livingstone collection view — a SEPARATE, section-agnostic catalogue: every
+    // LIV model, narrowed only by the MEN/WOMEN chips (sections toggled off live
+    // in `livHidden`). KIDS/MEN/WOMEN tabs don't apply here.
     if (exclusiveFilter) {
-      const all = exclusives.filter((p) => exclusiveTokens(p.exclusive).includes(exclusiveFilter))
-      const seen = new Set<string>()
-      return all.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
+      return dedupById(exclusives.filter((p) => isLiv(p) && !livHidden.includes(p.section)))
+    }
+    // Normal section. The LIV-only chip shows just this section's Livingstone
+    // models; otherwise LIV is excluded entirely (never mixed into the section)
+    // while other exclusive collections the user owns stay overlaid as before.
+    if (livOnly) {
+      return dedupById(exclusives.filter((p) => isLiv(p) && p.section === section))
     }
     const base = cache[section] ?? []
-    const extra = exclusives.filter((p) => p.section === section)
+    const extra = exclusives.filter((p) => p.section === section && !isLiv(p))
     const seen = new Set(base.map((p) => p.id))
     return extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
-  }, [cache, section, exclusives, exclusiveFilter])
+  }, [cache, section, exclusives, exclusiveFilter, livHidden, livOnly]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])
@@ -330,6 +355,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   async function switchSection(s: Section) {
     setSection(s)
     setFilters(EMPTY)
+    setLivOnly(false)  // the LIV-only chip is per-section; clear it on switch
     if (cache[s]) return
     setLoading(true)
     try {
@@ -357,7 +383,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   const hasFilters = filters.closures.length > 0 || filters.types.length > 0 || filters.colours.length > 0
     || filters.constructions.length > 0 || filters.widths.length > 0 || filters.sizes.length > 0
     || filters.search || filters.onlyNew || filters.onlyWishlist || filters.onlyDiabetics || filters.category > 0
-    || filters.styles.length > 0 || !!exclusiveFilter
+    || filters.styles.length > 0 || !!exclusiveFilter || livOnly
 
   const [showWishlist, setShowWishlist] = useState(false)
 
@@ -441,8 +467,15 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
         hasNew={hasNew}
         hasDiabetics={hasDiabetics}
         hasFilters={!!hasFilters}
-        onClear={() => { setFilters(EMPTY); setCtxExclusive('') }}
+        onClear={() => { setFilters(EMPTY); setCtxExclusive(''); setLivOnly(false) }}
         resultCount={filtered.length}
+        exclusiveMode={!!exclusiveFilter}
+        livSectionsAvailable={livSectionsAvailable}
+        livHidden={livHidden}
+        onToggleLivSection={toggleLivSection}
+        livAvailableHere={!exclusiveFilter && livSectionsAvailable.includes(section)}
+        livOnly={livOnly}
+        onToggleLivOnly={() => setLivOnly((v) => !v)}
         showWishlist={showWishlist}
         onToggleBuildWishlist={() => setShowWishlist(s => !s)}
       />

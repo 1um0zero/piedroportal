@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import type { Locale } from '@/types'
+import type { Locale, Section } from '@/types'
 import { translateFilterValueSync } from '@/lib/filter-translations'
 import { displayWidth } from '@/lib/width-display'
 import type { Filters } from './GalleryPage'
+
+const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = { KIDS: 'kids', MEN: 'men', WOMEN: 'women' }
 
 type Props = {
   filters: Filters
@@ -26,6 +28,14 @@ type Props = {
   wishlistCount: number
   showWishlist: boolean
   onToggleBuildWishlist: () => void
+  // Livingstone (LIV) collection controls — see GalleryPage.
+  exclusiveMode: boolean                       // inside the Livingstone view
+  livSectionsAvailable: Section[]              // sections that actually have LIV models
+  livHidden: Section[]                         // LIV-view section chips toggled off
+  onToggleLivSection: (s: Section) => void
+  livAvailableHere: boolean                    // current normal section has LIV models
+  livOnly: boolean                             // LIV-only chip state in a normal section
+  onToggleLivOnly: () => void
 }
 
 // ── Size range buckets ────────────────────────────────────────────────────────
@@ -255,6 +265,8 @@ export default function GalleryFilters({
   optClosures, optTypes, optColours, optConstructions, optWidths, optSizes, optSizesEU, optSizesUK,
   hasNew, hasDiabetics, hasFilters, onClear, resultCount, wishlistCount,
   showWishlist, onToggleBuildWishlist,
+  exclusiveMode, livSectionsAvailable, livHidden, onToggleLivSection,
+  livAvailableHere, livOnly, onToggleLivOnly,
 }: Props) {
   const t = useTranslations('gallery.filters')
   const tg = useTranslations('gallery')
@@ -288,6 +300,36 @@ export default function GalleryFilters({
     <div className="space-y-2">
       {/* Always-visible bar */}
       <div className="flex flex-wrap items-center gap-2">
+
+        {/* Livingstone (LIV) chips. Inside the LIV collection: one chip per
+            available section (MEN/WOMEN, all on by default) to narrow it. Inside
+            a normal section that has LIV models: a single Livingstone chip
+            (default off) that swaps the grid to that section's LIV models only. */}
+        {exclusiveMode ? (
+          livSectionsAvailable.map((s) => {
+            const on = !livHidden.includes(s)
+            return (
+              <button
+                key={s}
+                onClick={() => onToggleLivSection(s)}
+                aria-pressed={on}
+                className={`h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
+                  ${on ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+              >
+                {tg(SECTION_KEY[s])}
+              </button>
+            )
+          })
+        ) : livAvailableHere ? (
+          <button
+            onClick={onToggleLivOnly}
+            aria-pressed={livOnly}
+            className={`h-9 px-3 text-xs font-semibold uppercase tracking-wider rounded-lg border transition-all
+              ${livOnly ? 'bg-gold text-white border-gold shadow-sm' : 'text-stone-500 border-stone-200 hover:border-gold/60 hover:text-gold bg-white'}`}
+          >
+            Livingstone
+          </button>
+        ) : null}
 
         {/* Filters toggle */}
         <button
