@@ -83,8 +83,8 @@ map1 raw'data,b,1
       ! Portal Piedro - este programa e exclusivo do portal.
       ! O token e o ERP_API_TOKEN definido no Vercel; sem ele o programa
       ! nao arranca (em alternativa pode vir do portal.cfg, [PORTAL] url/token).
-      cfg'portal'url$ = "https://piedroportal.vercel.app"
-      cfg'portal'token$ = ""                   ! TODO: colar o ERP_API_TOKEN
+      cfg'portal'url$ = "https://portal.piedro.pt"             ! dominio canonico (vercel.app faz 307 e o xcall HTTP perde o Bearer no redirect)
+      cfg'portal'token$ = ""                   ! TODO: ERP_API_TOKEN (env Vercel)
 
       if FN'portal'config()=0 then
          xcall sbxmsg, 0, "Falta configurar o token do Portal (cfg'portal'token$ no CL000 ou portal.cfg).", "Portal nao configurado", 0, EXCLAMACAO
