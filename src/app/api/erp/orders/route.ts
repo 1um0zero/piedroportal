@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isErpAuthorized } from '@/lib/erp/auth'
 import { toErpOrder, ERP_CONTRACT_VERSION } from '@/lib/erp/order-contract'
+import { ensureCommentsPt } from '@/lib/erp/translate-comments'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,6 +71,10 @@ export async function GET(req: Request) {
 
   const { data: orders, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Fill/refresh the PT translation cache for any comments that need it (the
+  // grid reads comments_pt). Best-effort; mutates rows in place.
+  await ensureCommentsPt(orders ?? [], service)
 
   // Resolve company erp_code in one extra query (no reliance on a companies FK embed).
   const companyIds = [...new Set((orders ?? []).map(o => o.company_id).filter(Boolean))]
