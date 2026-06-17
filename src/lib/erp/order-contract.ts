@@ -37,6 +37,7 @@ export interface ErpOrder {
   width: { left: string | null; right: string | null }
   comments: string | null
   comments_pt: string | null        // PT translation (cached); falls back to comments
+  pdf_url: string | null            // direct signed URL to the order PDF, read-only (or null)
   tracking: { code: string | null; link: string | null }   // written by the ERP, echoed back
   additions: ErpAddition[]          // normalized 1:N list (only present items)
   created_at: string | null
@@ -81,6 +82,7 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     width: { left: row.width_left ?? null, right: row.width_right ?? null },
     comments: row.comments ?? null,
     comments_pt: row.comments_pt ?? null,
+    pdf_url: row.pdf_signed ?? null,
     tracking: { code: row.tracking_code ?? null, link: row.tracking_link ?? null },
     additions: explodeAdditions(additions),
     created_at: row.created_at ?? null,

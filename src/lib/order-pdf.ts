@@ -14,14 +14,14 @@ function pathFor(orderId: string) {
 
 // Batch-sign the PDFs for a list of order ids (one Storage call).
 // Returns a map id -> signed URL; ids without a retrievable PDF are omitted.
-export async function signOrderPdfs(orderIds: string[]): Promise<Record<string, string>> {
+export async function signOrderPdfs(orderIds: string[], expiresSeconds: number = EXPIRES_SECONDS): Promise<Record<string, string>> {
   const ids = [...new Set(orderIds)].filter(Boolean)
   if (ids.length === 0) return {}
 
   const service = createServiceClient()
   const { data, error } = await service.storage
     .from(BUCKET)
-    .createSignedUrls(ids.map(pathFor), EXPIRES_SECONDS)
+    .createSignedUrls(ids.map(pathFor), expiresSeconds)
   if (error || !data) return {}
 
   const map: Record<string, string> = {}

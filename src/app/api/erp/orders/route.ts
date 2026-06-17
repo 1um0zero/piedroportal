@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { isErpAuthorized } from '@/lib/erp/auth'
 import { toErpOrder, ERP_CONTRACT_VERSION } from '@/lib/erp/order-contract'
 import { ensureCommentsPt } from '@/lib/erp/translate-comments'
+import { signOrderPdfs } from '@/lib/order-pdf'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,6 +76,11 @@ export async function GET(req: Request) {
   // Fill/refresh the PT translation cache for any comments that need it (the
   // grid reads comments_pt). Best-effort; mutates rows in place.
   await ensureCommentsPt(orders ?? [], service)
+
+  // Direct, read-only signed URLs to each order's PDF (8h — a working day), so
+  // the grid link opens just the PDF (no editable portal page). Mutates rows.
+  const pdfMap = await signOrderPdfs((orders ?? []).filter(o => o.pdf_url).map(o => o.id), 8 * 60 * 60)
+  for (const o of orders ?? []) (o as Record<string, unknown>).pdf_signed = pdfMap[o.id] ?? null
 
   // Resolve company erp_code in one extra query (no reliance on a companies FK embed).
   const companyIds = [...new Set((orders ?? []).map(o => o.company_id).filter(Boolean))]
