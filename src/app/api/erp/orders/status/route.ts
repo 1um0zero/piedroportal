@@ -69,8 +69,15 @@ export async function POST(req: Request) {
   }
   if (typeof body.approval_date === 'string') update.approval_date = body.approval_date
   if (typeof body.production_state === 'string' && body.production_state) {
-    // "delivered" is a terminal production state, not in_production.
-    update.status = /deliver/i.test(body.production_state) ? 'delivered' : 'in_production'
+    const ps = body.production_state.toLowerCase().replace(/\s+/g, '_')
+    if (/deliver/.test(ps)) {
+      update.status = 'delivered'                       // terminal
+    } else if (ps === 'order_received' || ps === 'received' || ps === 'registered') {
+      // Received by the factory/console but NOT yet in production. Only the
+      // production_state records "received"; the order stays approved.
+    } else {
+      update.status = 'in_production'                   // real production stages
+    }
   }
 
   const service = createServiceClient()
