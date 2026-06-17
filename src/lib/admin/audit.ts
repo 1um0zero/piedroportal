@@ -8,7 +8,7 @@ import { createServiceClient } from '@/lib/supabase/service'
  * through the service client because the table is RLS-locked to service only.
  */
 export async function logAdminAction(entry: {
-  actorId: string
+  actorId: string | null          // null for non-portal actors (e.g. the A-Shell ERP)
   actorRole?: string | null
   action: string
   orderId?: string | null

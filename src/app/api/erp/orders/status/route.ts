@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isErpAuthorized } from '@/lib/erp/auth'
+import { logAdminAction } from '@/lib/admin/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,11 @@ export const dynamic = 'force-dynamic'
  *   piedro_notes?: string,
  *   erp_order_ref?: string,      // a-shell console order nº(s), e.g. "24000123/24000124"
  *   tracking_code?: string,      // carrier tracking code (a-shell actions 5/6)
- *   tracking_link?: string       // full tracking URL (built ERP-side)
+ *   tracking_link?: string,      // full tracking URL (built ERP-side)
+ *   actor_source?: string,       // audit: where the write came from, e.g. "cl000"
+ *   actor_user?: string,         // audit: A-Shell operator code (adm'user$)
+ *   actor_name?: string,         // audit: A-Shell operator name
+ *   automated?: boolean          // audit: true if run unattended (cron) vs operator-launched
  * }
  * Only the provided fields are updated. orders.status is kept in sync.
  */
@@ -73,6 +78,22 @@ export async function POST(req: Request) {
     .from('orders').update(update).eq('id', orderId).select('id')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data?.length) return NextResponse.json({ error: 'order not found' }, { status: 404 })
+
+  // Audit trail — who/what/how, for full traceability of ERP writes. The actor
+  // is the A-Shell operator (not a portal auth user, so actor_id stays null).
+  await logAdminAction({
+    actorId: null,
+    actorRole: 'erp',
+    action: 'erp_order_update',
+    orderId,
+    details: {
+      source: typeof body.actor_source === 'string' ? body.actor_source : 'a-shell',
+      ashell_user: typeof body.actor_user === 'string' ? body.actor_user : null,
+      ashell_user_name: typeof body.actor_name === 'string' ? body.actor_name : null,
+      automated: body.automated === true || body.automated === 'true' || body.automated === '1',
+      updated: Object.keys(update),
+    },
+  })
 
   return NextResponse.json({ ok: true, id: orderId })
 }
