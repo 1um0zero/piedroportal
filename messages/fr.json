@@ -81,6 +81,7 @@
     "label_patient": "Patient",
     "label_model": "Modèle",
     "pdf_attached": "PDF joint.",
+    "reply_to_customer": "Répondre au client ici",
     "subject_new_user": "Nouvel utilisateur — {email}",
     "heading_new_user": "Nouvel utilisateur enregistré",
     "label_name": "Nom",

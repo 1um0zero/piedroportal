@@ -146,7 +146,7 @@ const splitEmails = (s?: string | null) =>
   (s ?? '').split(/[,;\s]+/).map(e => e.trim()).filter(Boolean)
 const uniq = (arr: string[]) => [...new Set(arr.map(e => e.toLowerCase()))]
 
-function orderEmailHtml(t: EmailT, heading: string, ref: string, company: string, patient: string, model: string, intro?: string) {
+function orderEmailHtml(t: EmailT, heading: string, ref: string, company: string, patient: string, model: string, intro?: string, customerReply?: string) {
   return `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
     <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
     <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 ${intro ? '12' : '20'}px">${escapeHtml(heading)}</h2>
@@ -157,6 +157,10 @@ function orderEmailHtml(t: EmailT, heading: string, ref: string, company: string
       <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_patient'))}</td><td style="padding:8px 0">${escapeHtml(patient)}</td></tr>
       <tr><td style="padding:8px 0;color:#78716C">${escapeHtml(t('label_model'))}</td><td style="padding:8px 0">${escapeHtml(model)}</td></tr>
     </table>
+    ${customerReply ? `<div style="margin-top:20px;padding:12px 16px;background:#FAF8F4;border-left:3px solid #C9A96E;border-radius:6px">
+      <p style="font-size:12px;color:#78716C;margin:0 0 4px">${escapeHtml(t('reply_to_customer'))}</p>
+      <p style="font-size:14px;font-weight:500;color:#1C1917;margin:0"><a href="mailto:${escapeHtml(customerReply)}" style="color:#9A7A42;text-decoration:none">${escapeHtml(customerReply)}</a></p>
+    </div>` : ''}
     <p style="font-size:12px;color:#A8A29E;margin-top:24px">${escapeHtml(t('pdf_attached'))}</p>
   </div>`
 }
@@ -237,19 +241,20 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     ])
     const internalSet = new Set(toEmails.map(e => e.toLowerCase()))
 
-    // (1) Internal notification to the order desk — Cc the client (ordering user +
-    // company Cc) so the desk can reply-all if they have questions about the order.
+    // (1) Internal notification to the order desk. The client is NOT Cc'd here
+    // (that caused the client to receive two messages per order — this internal
+    // one plus their own confirmation below). Instead the client's address is
+    // shown in the body ("reply to customer here") and set as Reply-To, so the
+    // desk can still reply straight to the client without duplicating the email.
     if (toEmails.length) {
-      const clientCc = uniq([
-        ...(userEmail ? [userEmail] : []),
-        ...splitEmails(comp?.notify_cc),
-      ]).filter(e => !internalSet.has(e))
+      const customerReply = userEmail && !internalSet.has(userEmail.toLowerCase())
+        ? userEmail : undefined
       const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
       const { error } = await resend.emails.send({
         from: emailFrom, to: toEmails,
-        cc: clientCc.length ? clientCc : undefined,
+        replyTo: customerReply,
         subject: t('subject_internal', { ref }),
-        html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
+        html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId, undefined, customerReply),
         attachments: [attachment],
       })
       if (error) errors.push(`internal: ${error.message}`)
