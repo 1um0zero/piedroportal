@@ -78,6 +78,10 @@ map1 portal'fields$
    map2 cfg'portal'url$,s,200
    map2 cfg'portal'token$,s,500
 
+! [claude] Modo de escrita no Portal: 1 = LIVE (escreve estados/ack), 0 = VALIDACAO
+! (le tudo, nao escreve nada). Default 0 = seguro. Cada .bas atribui no arranque.
+map1 claude'live,b,1
+
 !------------------------------------------------------------
 ! Conversao dos codigos optionset antigos (Dataverse) para os
 ! textos do portal - para o codigo existente que ainda guarda

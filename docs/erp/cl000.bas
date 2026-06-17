@@ -57,6 +57,7 @@ map1 size'fields1,b,4,sizeof(ST_shoe'additions1.fields$)
 map1 size'fields3,b,4,sizeof(ST_shoe'additions3.fields$)
 
 map1 response$,s,0
+map1 cmd'linha$,s,80                     ! [claude] CMDLIN completo (para detetar "LIVE")
 map1 parametros'externos$
    map2 pe'debug$,s,1
 
@@ -72,7 +73,12 @@ map1 raw'data,b,1
 !{EVENTWAIT}
 !--------------------------
 
-      parametros'externos$ = CMDLIN
+      cmd'linha$ = CMDLIN
+      parametros'externos$ = cmd'linha$                 ! mantem pe'debug$ = 1o caracter (compat)
+
+      ! [claude] Modo de escrita: LIVE so quando o programa e chamado com o
+      ! argumento "LIVE" no CMDLIN. Sem argumento => VALIDACAO (le, nao escreve).
+      claude'live = (instr(1, ucs(cmd'linha$), "LIVE")>0)
 
       if pe'debug$#"" then
          TRACE.PRINT "MODO DEBUG: nada sera atualizado no Portal"
@@ -91,8 +97,19 @@ map1 raw'data,b,1
          end
       endif
 
+      ! [claude] Aviso do modo de escrita. LIVE pede confirmacao (escreve a serio).
+      if claude'live then
+         xcall sbxmsg, MSG'EXIT, "MODO LIVE: importar vai ESCREVER no Portal (estados + ack)." + CRLF$ + "Continuar?", "Modo LIVE", OK_CANCEL, EXCLAMACAO
+         if MSG'EXIT#0 then
+            end
+         endif
+      else
+         TRACE.PRINT "MODO VALIDACAO: le do Portal mas NAO escreve nada (correr com argumento LIVE para escrever)."
+      endif
+
       call FN'lista'transportadoras$(LISTA_XTREE, lista'transportadoras$, so'links=1)
 
+      dataverse'label$ = "PIEDRO Portal 2.0"               ! [claude] titulo da janela
       call dataverse_load'dialog(dataverse'dlgid,dataverse'label$)
       call xtree'dataverse(XTROP_CREATE)
 
