@@ -734,7 +734,9 @@
       "dispatch_overdue": "{n} dagen over verwachte verzending",
       "dispatch_done": "Geleverd",
       "stock_tag": "Voorraad",
-      "stock_line": "{models} modellen · {pairs} paar"
+      "stock_line": "{models} modellen · {pairs} paar",
+      "col_clinician": "Behandelaar",
+      "col_delivery": "Levering"
     },
     "users": {
       "title": "Gebruikersbeheer",

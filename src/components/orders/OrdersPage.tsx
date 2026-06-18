@@ -7,21 +7,11 @@ import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
-import { APPROVAL_STATES, PRODUCTION_STATES, isOnProductionTrail } from '@/lib/order-status'
+import { PRODUCTION_STATES, isOnProductionTrail } from '@/lib/order-status'
 import { ProductionTrail } from './ProductionTrail'
 import { nz } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
-
-const STATUS_STYLES: Record<string, string> = {
-  draft:         'bg-stone-100 text-stone-500',
-  submitted:     'bg-blue-50 text-blue-600',
-  approved:      'bg-green-50 text-green-600',
-  in_production: 'bg-amber-50 text-amber-600',
-  shipped:       'bg-purple-50 text-purple-600',
-  delivered:     'bg-teal-50 text-teal-600',
-  cancelled:     'bg-red-50 text-red-400',
-}
 
 const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
@@ -35,6 +25,8 @@ type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   orders: any[]
   isAdmin: boolean
+  /** Admin/staff/company-admin view: shows Clinician (+ Company) instead of Patient/Ref. */
+  canSeeClinician?: boolean
   currentUserId?: string
   age?: string
   from?: string
@@ -44,29 +36,59 @@ type Props = {
 
 const AGE_OPTIONS = ['3m', '6m', '12m', 'all'] as const
 
-// Countdown to expected dispatch: green with room, orange when close, red (and
-// "+n") when overdue. Delivered orders freeze into a filled dot.
-function DispatchBadge({ o, t }: {
+// Days until expected dispatch — plain text (no chip), shown in the Delivery
+// column before an order is delivered. Green with room, orange when close, red
+// (and "+n") when overdue.
+function DispatchDays({ o, t }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   o: any
   t: (k: string, v?: Record<string, string | number>) => string
 }) {
   const n = daysUntil(o.expected_dispatch_date)
-  if (n === null) return null
-  const delivered = o.status === 'delivered' || o.production_state === 'delivered'
-  if (delivered) {
-    return <span title={t('dispatch_done')} className="shrink-0 w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-  }
+  if (n === null) return <span className="text-stone-300">—</span>
   const overdue = n < 0
-  const cls = overdue ? 'bg-red-100 text-red-700'
-    : n <= 3 ? 'bg-orange-100 text-orange-700'
-      : 'bg-emerald-100 text-emerald-700'
+  const cls = overdue ? 'text-red-600' : n <= 3 ? 'text-orange-600' : 'text-stone-500'
   return (
     <span title={overdue ? t('dispatch_overdue', { n: -n }) : t('dispatch_in', { n })}
-      className={`shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${cls}`}>
-      {overdue ? `+${-n}` : n}<span className="font-medium opacity-70 ml-0.5">d</span>
+      className={`tabular-nums font-medium ${cls}`}>
+      {overdue ? `+${-n}` : n}<span className="font-normal opacity-60 ml-0.5">d</span>
     </span>
   )
+}
+
+// Gold emblem on the Unit cell when the order carries additions (replaces the
+// old standalone Additions column).
+function AdditionsMark({ title }: { title: string }) {
+  return (
+    <span title={title} className="text-gold inline-flex shrink-0">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <line x1="3" y1="8" x2="21" y2="8" /><line x1="3" y1="16" x2="21" y2="16" />
+        <circle cx="9" cy="8" r="2.3" fill="white" /><circle cx="15" cy="16" r="2.3" fill="white" />
+      </svg>
+    </span>
+  )
+}
+
+// Approval/cancel mark next to the Piedro order number: elegant green check
+// (approved), amber outline triangle (on hold), thin red cross (cancelled).
+function OrderStatusMark({ o, title }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  o: any
+  title?: string
+}) {
+  const st = o.status as string | undefined
+  const ap = o.approval_state as string | undefined
+  const cancelled = st === 'cancelled' || ap === 'refused'
+  const pending = !cancelled && PENDING_STATES.has(ap ?? '')
+  const approved = !cancelled && !pending &&
+    (ap === 'approved' || st === 'approved' || st === 'in_production' || st === 'delivered')
+  const svg = { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none',
+    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  if (cancelled) return <span title={title} className="inline-flex shrink-0"><svg {...svg} stroke="#dc2626" strokeWidth={1.5}><path d="M6 6l12 12M18 6 6 18" /></svg></span>
+  if (pending)   return <span title={title} className="inline-flex shrink-0"><svg {...svg} stroke="#d97706" strokeWidth={1.5}><path d="M12 4.5 21 20H3z" /><line x1="12" y1="10.5" x2="12" y2="14.5" /><line x1="12" y1="17" x2="12" y2="17" /></svg></span>
+  if (approved)  return <span title={title} className="inline-flex shrink-0"><svg {...svg} stroke="#059669" strokeWidth={2}><path d="M5 12.5 10 17.5 19.5 7" /></svg></span>
+  return null
 }
 
 // "New" = an order submitted and not yet processed by staff (the validation queue):
@@ -97,7 +119,7 @@ function hasAdditions(adds: Record<string, unknown> | null | undefined): boolean
   return false
 }
 
-export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m', from, to, showDispatch = false }: Props) {
+export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, currentUserId, age = '3m', from, to, showDispatch = false }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -108,6 +130,9 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
   const tp = useTranslations('admin.production')
   const tu = useTranslations('order')
   const isAdminPath = pathname.startsWith('/admin')
+  // Staff-style view (Piedro admin, staff, company admin): Clinician + Company,
+  // never the patient name. Regular users see Patient / Ref instead.
+  const staffView = isAdmin || canSeeClinician
   const searchParams = useSearchParams()
   const [search, setSearch]       = useState('')
   // Single active chip/filter: '' (all) | new | pending | approved | in_production | refused | <status>
@@ -373,14 +398,14 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
-                <th className="px-4 py-3 text-left">{t('col_product')}</th>
-                <th className="px-4 py-3 text-left">{t('col_piedro_order')}</th>
-                <th className="px-4 py-3 text-left">{t('col_patient')}</th>
-                {isAdmin && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
-                <th className="px-4 py-3 text-left">{t('col_status')}</th>
                 <th className="px-4 py-3 text-left">{t('col_date')}</th>
+                <th className="px-4 py-3 text-left">{t('col_product')}</th>
                 <th className="px-4 py-3 text-left">{t('col_unit')}</th>
-                <th className="px-4 py-3 text-left">{t('col_additions')}</th>
+                {staffView && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
+                <th className="px-4 py-3 text-left">{staffView ? t('col_clinician') : t('col_patient')}</th>
+                <th className="px-4 py-3 text-left">{t('col_piedro_order')}</th>
+                <th className="px-4 py-3 text-left">{t('col_status')}</th>
+                <th className="px-4 py-3 text-left">{t('col_delivery')}</th>
                 <th className="px-4 py-3 text-left">{t('col_pdf')}</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -388,7 +413,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 10 : 9}
+                  <td colSpan={staffView ? 10 : 9}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     {t('no_orders')}
                   </td>
@@ -405,6 +430,17 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                   <tr key={o.id} className="hover:bg-stone-50 transition-colors cursor-pointer"
                     onClick={() => router.push(detailHref as Parameters<typeof router.push>[0])}>
 
+                    {/* Date — year shown only for orders before the current year */}
+                    <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
+                      {o.created_at
+                        ? (() => {
+                            const d = new Date(o.created_at)
+                            return d.toLocaleDateString(locale, d.getFullYear() < currentYear
+                              ? { day:'2-digit', month:'short', year:'numeric' }
+                              : { day:'2-digit', month:'short' })
+                          })()
+                        : '—'}
+                    </td>
                     {/* Product */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -446,21 +482,15 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                         </div>
                       </div>
                     </td>
-                    {/* Piedro Order # — the ERP order number used to communicate with Piedro */}
-                    <td className="px-4 py-3">
-                      {o.piedro_order_id
-                        ? <span className="font-semibold text-stone-700 tabular-nums">{o.piedro_order_id}</span>
-                        : <span className="text-stone-300">—</span>}
+                    {/* Unit (+ additions mark — replaces the old Additions column) */}
+                    <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5">
+                        {o.unit && UNIT_KEYS[o.unit] ? tu(UNIT_KEYS[o.unit]) : (o.unit ?? '—')}
+                        {hasAdditions(o.additions) && <AdditionsMark title={t('additions_yes')} />}
+                      </span>
                     </td>
-                    {/* Patient */}
-                    <td className="px-4 py-3">
-                      <p className="text-stone-700 truncate max-w-[150px]">
-                        {o.patient_name ?? '—'}
-                      </p>
-                      <p className="text-xs text-stone-400">{o.reference_customer ?? ''}</p>
-                    </td>
-                    {/* Company (admin only) */}
-                    {isAdmin && (
+                    {/* Company — staff view only */}
+                    {staffView && (
                       <td className="px-4 py-3">
                         <p className="text-stone-700 text-sm truncate max-w-[180px]">
                           {company?.name ?? '—'}
@@ -468,82 +498,73 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                         <p className="text-xs text-stone-400">{company?.erp_code ?? ''}</p>
                       </td>
                     )}
-                    {/* Status — current state: production (VSI) > approval (Piedro) > portal status.
-                        Anomaly: in production but NOT approved → flag the approval state in red. */}
+                    {/* Clinician (staff/company-admin) | Patient + Ref (user) */}
                     <td className="px-4 py-3">
-                      <div className="flex items-start gap-1.5">
-                        {isUrgent && <span title={t('urgent_only')} className="mt-1.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />}
-                        <div className="flex flex-col items-start gap-1">
+                      {staffView ? (
+                        <p className="text-stone-700 truncate max-w-[170px]">{o.clinician ?? '—'}</p>
+                      ) : (
+                        <>
+                          <p className="text-stone-700 truncate max-w-[150px]">{o.patient_name ?? '—'}</p>
+                          <p className="text-xs text-stone-400 truncate max-w-[150px]">{o.reference_customer ?? ''}</p>
+                        </>
+                      )}
+                    </td>
+                    {/* Piedro Order # — ERP order number with an approval/cancel mark.
+                        While still empty, a "New" order shows its badge here. */}
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const apTitle = o.approval_state ? (ta.has(o.approval_state) ? ta(o.approval_state) : o.approval_state) : undefined
+                        if (o.piedro_order_id) {
+                          return (
+                            <span className="inline-flex items-center gap-1.5">
+                              <span className="font-semibold text-stone-700 tabular-nums">{o.piedro_order_id}</span>
+                              <OrderStatusMark o={o} title={apTitle} />
+                            </span>
+                          )
+                        }
+                        if (isNewOrder(o)) {
+                          return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600">{t('metric_new')}</span>
+                        }
+                        return (
+                          <span className="inline-flex items-center gap-1.5 text-stone-300">
+                            —<OrderStatusMark o={o} title={apTitle} />
+                          </span>
+                        )
+                      })()}
+                    </td>
+                    {/* Status — production trail (factory journey). Off-trail states
+                        (fitting/dispatched) show a chip; non-production orders a dash. */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        {isUrgent && <span title={t('urgent_only')} className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         {(() => {
-                          const isDelivered = o.status === 'delivered' || o.production_state === 'delivered'
-                          // Production trail — the connected icon journey for orders on the
-                          // factory path; keep the carrier link beneath it when delivered.
                           if (isOnProductionTrail(o.production_state)) {
-                            return (
-                              <>
-                                <ProductionTrail state={o.production_state!} label={v => (tp.has(v) ? tp(v) : v)} />
-                                {isDelivered && o.tracking_link && (
-                                  <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
-                                    onClick={e => e.stopPropagation()}
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-teal-700 hover:text-teal-800 transition-colors">
-                                    {t('tracking')} ↗
-                                  </a>
-                                )}
-                              </>
-                            )
+                            return <ProductionTrail state={o.production_state!} label={v => (tp.has(v) ? tp(v) : v)} size={17} />
                           }
-                          // Delivered with a carrier link → show "Tracking" as a link instead of the badge.
-                          if (isDelivered && o.tracking_link) {
-                            return (
-                              <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
-                                onClick={e => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors">
-                                {t('tracking')} ↗
-                              </a>
-                            )
-                          }
-                          // Off-trail production states (fitting / dispatched) → chip.
                           if (o.production_state) {
                             const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
                             return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{p ? tp(p.value) : o.production_state}</span>
                           }
-                          if (o.approval_state && o.approval_state !== 'registered') {
-                            const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
-                            return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${a?.color ?? 'bg-stone-100 text-stone-500'}`}>{a ? ta(a.value) : o.approval_state}</span>
-                          }
-                          return <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${STATUS_STYLES[o.status] ?? 'bg-stone-100 text-stone-500'}`}>{ts.has(o.status) ? ts(o.status) : o.status}</span>
+                          return <span className="text-stone-300 text-xs">—</span>
                         })()}
-                        {o.production_state && o.approval_state && o.approval_state !== 'approved' && (() => {
-                          const a = APPROVAL_STATES.find(s => s.value === o.approval_state)
-                          return <span title="In production but not approved"
-                            className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-50 text-red-600 border border-red-200">
-                            ⚠ {a ? ta(a.value) : o.approval_state}
-                          </span>
-                        })()}
-                        </div>
-                        {showDispatch && <DispatchBadge o={o} t={t} />}
                       </div>
                     </td>
-                    {/* Date — year shown only for orders before the current year */}
-                    <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
-                      {o.created_at
-                        ? (() => {
-                            const d = new Date(o.created_at)
-                            return d.toLocaleDateString(locale, d.getFullYear() < currentYear
-                              ? { day:'2-digit', month:'short', year:'numeric' }
-                              : { day:'2-digit', month:'short' })
-                          })()
-                        : '—'}
-                    </td>
-                    {/* Unit */}
-                    <td className="px-4 py-3 text-stone-500 text-xs">
-                      {o.unit && UNIT_KEYS[o.unit] ? tu(UNIT_KEYS[o.unit]) : (o.unit ?? '—')}
-                    </td>
-                    {/* Additions */}
-                    <td className="px-4 py-3">
-                      {hasAdditions(o.additions)
-                        ? <span className="inline-flex px-2 py-0.5 text-[10px] font-semibold rounded-full bg-gold/10 text-gold-dark">{t('additions_yes')}</span>
-                        : <span className="text-stone-300 text-xs">—</span>}
+                    {/* Delivery — days-to-dispatch (plain text) until delivered, then the
+                        carrier tracking link (+ invoice number once the ERP sends it). */}
+                    <td className="px-4 py-3 text-xs whitespace-nowrap">
+                      {(o.status === 'delivered' || o.production_state === 'delivered') ? (
+                        o.tracking_link ? (
+                          <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 font-medium text-teal-700 hover:text-teal-800 transition-colors">
+                            {t('tracking')} ↗
+                          </a>
+                        ) : (
+                          <span className="text-emerald-600 font-medium">{t('dispatch_done')}</span>
+                        )
+                      ) : (
+                        showDispatch ? <DispatchDays o={o} t={t} /> : <span className="text-stone-300">—</span>
+                      )}
                     </td>
                     {/* PDF */}
                     <td className="px-4 py-3">

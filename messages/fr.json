@@ -734,7 +734,9 @@
       "dispatch_overdue": "{n} jours de retard sur l’expédition",
       "dispatch_done": "Livré",
       "stock_tag": "Stock",
-      "stock_line": "{models} modèles · {pairs} paires"
+      "stock_line": "{models} modèles · {pairs} paires",
+      "col_clinician": "Clinicien",
+      "col_delivery": "Livraison"
     },
     "users": {
       "title": "Gestion des utilisateurs",

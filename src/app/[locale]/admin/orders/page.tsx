@@ -6,7 +6,7 @@ import { getStockOrderRows } from '@/app/actions/stock'
 import OrdersPage from '@/components/orders/OrdersPage'
 
 const SELECT = `
-  id, user_id, dataverse_id, status, approval_state, production_state, piedro_order_id, unit, patient_name, reference_customer, quantity,
+  id, user_id, dataverse_id, status, approval_state, production_state, piedro_order_id, unit, patient_name, clinician, reference_customer, quantity,
   created_at, updated_at, size_left, size_right, additions, comments, pdf_url,
   products(id, style_name, colour_id, color_name, closure, picture_name, section),
   companies(id, name, erp_code)
@@ -79,5 +79,5 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))
   all.forEach(o => { o.pdf_url = o.pdf_url ? (signed[o.id] ?? null) : null })
 
-  return <OrdersPage orders={all} isAdmin={true} currentUserId={scope.userId} age={age} from={sp.from} to={sp.to} showDispatch={true} />
+  return <OrdersPage orders={all} isAdmin={true} canSeeClinician={true} currentUserId={scope.userId} age={age} from={sp.from} to={sp.to} showDispatch={true} />
 }

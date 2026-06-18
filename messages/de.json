@@ -734,7 +734,9 @@
       "dispatch_overdue": "{n} Tage über dem Versandtermin",
       "dispatch_done": "Geliefert",
       "stock_tag": "Lager",
-      "stock_line": "{models} Modelle · {pairs} Paar"
+      "stock_line": "{models} Modelle · {pairs} Paar",
+      "col_clinician": "Behandler",
+      "col_delivery": "Lieferung"
     },
     "users": {
       "title": "Benutzerverwaltung",

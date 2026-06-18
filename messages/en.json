@@ -734,7 +734,9 @@
       "dispatch_overdue": "{n} days past expected dispatch",
       "dispatch_done": "Delivered",
       "stock_tag": "Stock",
-      "stock_line": "{models} models · {pairs} pairs"
+      "stock_line": "{models} models · {pairs} pairs",
+      "col_clinician": "Clinician",
+      "col_delivery": "Delivery"
     },
     "users": {
       "title": "User Management",
