@@ -7,7 +7,8 @@ import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
-import { APPROVAL_STATES, PRODUCTION_STATES } from '@/lib/order-status'
+import { APPROVAL_STATES, PRODUCTION_STATES, isOnProductionTrail } from '@/lib/order-status'
+import { ProductionTrail } from './ProductionTrail'
 import { nz } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
@@ -474,8 +475,24 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                         {isUrgent && <span title={t('urgent_only')} className="mt-1.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         <div className="flex flex-col items-start gap-1">
                         {(() => {
-                          // Delivered with a carrier link → show "Tracking" as a link instead of the badge.
                           const isDelivered = o.status === 'delivered' || o.production_state === 'delivered'
+                          // Production trail — the connected icon journey for orders on the
+                          // factory path; keep the carrier link beneath it when delivered.
+                          if (isOnProductionTrail(o.production_state)) {
+                            return (
+                              <>
+                                <ProductionTrail state={o.production_state!} label={v => (tp.has(v) ? tp(v) : v)} />
+                                {isDelivered && o.tracking_link && (
+                                  <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
+                                    onClick={e => e.stopPropagation()}
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-teal-700 hover:text-teal-800 transition-colors">
+                                    {t('tracking')} ↗
+                                  </a>
+                                )}
+                              </>
+                            )
+                          }
+                          // Delivered with a carrier link → show "Tracking" as a link instead of the badge.
                           if (isDelivered && o.tracking_link) {
                             return (
                               <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
@@ -485,6 +502,7 @@ export default function OrdersPage({ orders, isAdmin, currentUserId, age = '3m',
                               </a>
                             )
                           }
+                          // Off-trail production states (fitting / dispatched) → chip.
                           if (o.production_state) {
                             const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
                             return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{p ? tp(p.value) : o.production_state}</span>

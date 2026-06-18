@@ -24,3 +24,22 @@ export const PRODUCTION_STATES = [
 
 export type ApprovalState   = (typeof APPROVAL_STATES)[number]['value']
 export type ProductionState = (typeof PRODUCTION_STATES)[number]['value']
+
+// Ordered factory journey, used by the /orders production trail. This is the
+// canonical linear flow an order travels through the VSI shop floor. States
+// outside this list (e.g. 'fitting' from external production) are shown as a
+// plain chip instead — they're branches, not steps on the main path.
+export const PRODUCTION_SEQUENCE = [
+  'order_received',
+  'in_preparation',
+  'modeling',
+  'preparing',
+  'cutting',
+  'stitching',
+  'mounting',
+  'finishing',
+  'delivered',
+] as const
+
+export const isOnProductionTrail = (state: string | null | undefined): boolean =>
+  !!state && (PRODUCTION_SEQUENCE as readonly string[]).includes(state)
