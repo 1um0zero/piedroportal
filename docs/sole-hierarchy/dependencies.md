@@ -1,7 +1,14 @@
 # ZSM sole dependencies — per-model spec (WORKING DRAFT)
 
 > Source: Anabela e-mail, "initial list" relayed by Jorge 2026-06-15.
-> Status: **initial / unverified** — complementary info & corrections expected.
+> Status (ZSM section): **CONFIRMED 2026-06-17** — second Anabela e-mail (post ZSM meeting)
+> restates the exact same model lists (ZSM-1 = 6, ZSM-2 = 36) + prefab colours, and adds two
+> firm requirements: (a) ZSM users must see ONLY ZSM models (Piedro catalogue hidden);
+> (b) the Sole Sheet is given as ONE FLAT list of "type + colour" (≈129 entries), identical for
+> both options. Field labels confirmed: "Amendment Prefab **Sneaker** Sole" (ZSM-1) /
+> "Amendment Prefab **Runner** Sole" (ZSM-2) + "Amendment Sole Sheet". NL given; FR/DE still needed.
+> ZSM go-live: client tests now (Jun 2026), big launch September 2026.
+> (Adults/Kids sections below remain initial/unverified.)
 > This is the model→profile map that the legacy portal never had. See
 > docs/legacy/additions-builder.js and memory project-sole-hierarchy / project-zsm-additions.
 
