@@ -190,7 +190,11 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   // A signed-in client with exclusives gets a single gold chip to isolate their
   // own exclusive models in the current section (back-office uses sigla chips).
   const [myStylesOnly, setMyStylesOnly] = useState(false)
+  // Exclusive-only clients already see only their own models, so the "my styles"
+  // isolation chip would be a no-op — only offer it to clients who also see the
+  // general catalogue.
   const myStylesAvailable = exclusiveView === 'client'
+    && seesGeneral
     && !exclusiveFilter
     && exclusives.some((p) => p.section === section && siglasOf(p).length > 0)
 
