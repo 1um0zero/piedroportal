@@ -466,9 +466,11 @@
       "plastic_fitting_shoes": "Probeschuhe aus Plastik",
       "urgent": "dringend",
       "comments": "Comments",
-      "zsm_prefab": "ZSM Prefab",
-      "zsm_sole": "ZSM Sole",
-      "zsm_colour": "ZSM Colour"
+      "zsm_prefab": "Anpassung Prefab-Sohle",
+      "zsm_prefab_colour": "↳ Prefab-Sohle",
+      "zsm_sheet": "Anpassung Sohlenplatte",
+      "zsm_sheet_type": "↳ Sohlenplatte",
+      "zsm_sheet_colour": "↳ Farbe"
     },
     "options": {
       "lining": {

@@ -466,9 +466,11 @@
       "plastic_fitting_shoes": "Plastic Fitting shoes",
       "urgent": "Urgent",
       "comments": "Comments",
-      "zsm_prefab": "ZSM Prefab",
-      "zsm_sole": "ZSM Sole",
-      "zsm_colour": "ZSM Colour"
+      "zsm_prefab": "Amendment Prefab Sole",
+      "zsm_prefab_colour": "↳ Prefab Sole",
+      "zsm_sheet": "Amendment Sole Sheet",
+      "zsm_sheet_type": "↳ Sole Sheet",
+      "zsm_sheet_colour": "↳ Colour"
     },
     "options": {
       "lining": {

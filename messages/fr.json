@@ -466,9 +466,11 @@
       "plastic_fitting_shoes": "Chaussure d'essayage en plastique",
       "urgent": "Urgent",
       "comments": "Observations",
-      "zsm_prefab": "ZSM Prefab",
-      "zsm_sole": "ZSM Sole",
-      "zsm_colour": "ZSM Colour"
+      "zsm_prefab": "Modification semelle préfabriquée",
+      "zsm_prefab_colour": "↳ Semelle préfabriquée",
+      "zsm_sheet": "Modification plaque de semelle",
+      "zsm_sheet_type": "↳ Plaque de semelle",
+      "zsm_sheet_colour": "↳ Couleur"
     },
     "options": {
       "lining": {

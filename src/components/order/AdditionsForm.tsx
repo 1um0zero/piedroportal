@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
+import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
+import { ZSM_PREFAB_OPTIONS, zsmSheetColours, type ZsmGroup } from './zsm-profiles'
 import { soleImages } from './sole-images'
 import SoleStage from './SoleStage'
 import { GlbViewer } from './GlbViewer'
@@ -27,6 +28,7 @@ type Props = {
   missing?: MissingRequired[]  // required children flagged empty on a failed advance
   soleProfile?: string | null  // sole group key for this model → restricts sole-amendment options
   section?: string | null      // product section (KIDS/MEN/WOMEN) → picks gender-specific sole photos
+  zsmGroup?: ZsmGroup | null   // ZSM model → show ZSM prefab/sole-sheet block (replaces PU/EVA + amend_sole)
 }
 
 // ── Chip components ───────────────────────────────────────────────────────────
@@ -340,7 +342,7 @@ function SelectCombo({ values, value, onChange, t, fieldKey }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, isNew, missing, soleProfile = null, section = null }: Props) {
+export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, isNew, missing, soleProfile = null, section = null, zsmGroup = null }: Props) {
   const t = useTranslations('additions')
   // Field keys flagged as missing-required on the last failed "Review and confirm".
   const missingKeys = new Set((missing ?? []).map(m => m.fieldKey))
@@ -411,6 +413,27 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return !!(side === 'l' ? sv.l : sv.r)
   }
 
+  // ZSM dynamic option lists: prefab colours by the model's group; sole-sheet colours
+  // by the currently selected sheet type for this side. null → not a ZSM list field.
+  function zsmOptionValues(field: AdditionField, side: 'l' | 'r'): string[] | null {
+    if (field.key === 'zsm_prefab_colour') return zsmGroup ? ZSM_PREFAB_OPTIONS[zsmGroup] : []
+    if (field.key === 'zsm_sheet_colour') {
+      const sv = additions['zsm_sheet_type'] as SidedVal | null
+      return zsmSheetColours((sv?.[side] as string | null) ?? null)
+    }
+    return null
+  }
+
+  // Set the Sole Sheet type and clear the (now possibly invalid) Colour, atomically,
+  // honouring the PAIR mirror.
+  function setSheetTypeAndResetColour(side: 'l' | 'r', value: unknown) {
+    const curType = (additions['zsm_sheet_type'] as SidedVal) ?? { l: null, r: null }
+    const curCol  = (additions['zsm_sheet_colour'] as SidedVal) ?? { l: null, r: null }
+    const nextType = unit === 'PAIR' ? { l: value, r: value } : { ...curType, [side]: value }
+    const nextCol  = unit === 'PAIR' ? { l: null, r: null }   : { ...curCol,  [side]: null }
+    onChange({ ...additions, zsm_sheet_type: nextType, zsm_sheet_colour: nextCol })
+  }
+
   function renderControl(field: AdditionField, side: 'l' | 'r', disabled = false) {
     const sv = additions[field.key] as SidedVal | null
     const val = sv?.[side] ?? null
@@ -422,8 +445,14 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
 
     if (field.type === 'mm')
       return <MmInput values={field.values ?? []} value={val} onChange={setVal} />
-    // Sole-amendment option fields: restrict to the model's profile (full list if unprofiled).
-    const optVals = allowedSoleValues(soleProfile, field.key, (field.values ?? []) as string[])
+    // ZSM option fields have model/selection-dependent lists; fall back to the sole-profile
+    // restriction (or the full config list) for every other option field.
+    const zsmVals = zsmOptionValues(field, side)
+    const optVals = zsmVals ?? allowedSoleValues(soleProfile, field.key, (field.values ?? []) as string[])
+    // Changing the Sole Sheet type must reset the dependent Colour (its allowed set changes).
+    const onPick = field.key === 'zsm_sheet_type'
+      ? (v: unknown) => setSheetTypeAndResetColour(side, v)
+      : setVal
     if (field.type === 'image' && field.images)
       return <ImageChips values={optVals} value={val} onChange={setVal} images={field.images}
         label={(v) => translateOptionValue(field.key, v, t)} />
@@ -432,9 +461,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       // restricted set; otherwise fall back to text chips (keeps unprofiled models unchanged).
       const swatch = soleProfile ? soleImages(field.key, section) : {}
       if ((optVals as string[]).some(v => swatch[v]))
-        return <SoleSwatch values={optVals} value={val} onChange={setVal} images={swatch}
+        return <SoleSwatch values={optVals} value={val} onChange={onPick} images={swatch}
           label={(v) => translateOptionValue(field.key, v, t)} />
-      return <OptionChips values={optVals} value={val} onChange={setVal} collapse={field.collapse}
+      return <OptionChips values={optVals} value={val} onChange={onPick} collapse={field.collapse}
         label={(v) => translateOptionValue(field.key, v, t)} />
     }
     if (field.type === 'toggle')
@@ -555,6 +584,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               if (field.side === 'global') return renderGlobal(field)
               // Hidden by the model's sole profile (controlled field or its parent toggle).
               if (soleFieldHidden(soleProfile, field.key, (field.values ?? []) as string[])) return null
+              // Hidden by ZSM status: ZSM fields on non-ZSM models, or the PU/EVA + amend_sole
+              // fields that the ZSM block replaces on ZSM models.
+              if (zsmFieldHidden(zsmGroup, field.key)) return null
               const fieldLabel = getFieldLabel(field, t)
               const isSubField = fieldLabel.startsWith('↳')
               const cleanLabel = fieldLabel.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')

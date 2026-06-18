@@ -1,6 +1,15 @@
 // Config-driven additions form — sourced from Power Pages JS + Dataverse picklist metadata
 
 import { soleFieldHidden } from './sole-profiles'
+import { ZSM_SHEET_TYPES, ZSM_ALL_SHEET_COLOURS, ZSM_ALL_PREFAB_OPTIONS, ZSM_FIELD_KEY_SET, ZSM_REPLACED_KEYS, type ZsmGroup } from './zsm-profiles'
+
+/** Whether a field should be hidden for this model's ZSM status.
+ *  - non-ZSM model: hide all ZSM-specific fields.
+ *  - ZSM model: hide the normal sole-amendment fields the ZSM block replaces. */
+export function zsmFieldHidden(zsmGroup: ZsmGroup | null, fieldKey: string): boolean {
+  if (zsmGroup) return ZSM_REPLACED_KEYS.has(fieldKey)
+  return ZSM_FIELD_KEY_SET.has(fieldKey)
+}
 
 export type FieldType = 'mm' | 'option' | 'toggle' | 'text' | 'image'
 export type SideType  = 'both' | 'global'
@@ -111,6 +120,15 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'sole_type',    type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['EVA Black','EVA Taupe','EVA Grey','EVA White','EVA Lightweight Black','EVA Lightweight Taupe','Sportive Black','Sportive Beige','Sportive Grey','Sportive White','EVA Lightweight Amber','EVA Lightweight Off-White','Full Rubber Black','Full Rubber Amber','Full Rubber Blue','Full Rubber Pink','Full Rubber White','EVA Brown'], dataverseKey: 'cr56f_6evawedgecolour' },
       { key: 'spoiler',      type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['Black','Dark Brown','Light Grey','Dark Grey','Dark Blue','Red','Amber','Cobalt'], dataverseKey: 'cr56f_6spoiler' },
       { key: 'runner_sole',  type: 'option', side: 'both', collapse: true, conditionalOn: 'amend_sole', values: ['Piedro Runner Black','Piedro Runner Amber','Rubber Black','Rubber Amber','Fish Black','Fish Amber','Tire Black','Tire Amber','EVA Nora Astro Star Lightweight Black','EVA Nora Astro Star Lightweight Amber','EVA Lightweight Port Flex Black','EVA Lightweight Port Flex Amber','Lightweight Vibram Sole Black','Lightweight Vibram Sole Brown','Lightweight Sole Forli Uomo','Full Rubber Sole Montana Black','Full Rubber Sole Montana Brown','Nora Sole Plate Blue with Light Body Colour','Nora Sole Plate Black with Light Body Colour','Nora Sole Plate Black with Black Body Colour'], dataverseKey: 'cr56f_6runnersole' },
+      // ZSM Prefab Sole + Sole Sheet — ZSM (B-prefix) models ONLY; these REPLACE the
+      // PU/EVA Bumper + Amendment Sole fields above (which AdditionsForm hides on ZSM
+      // models). Option lists are model/selection-dependent (see zsm-profiles.ts), so
+      // the `values` here are the full superset for config/PDF; the form narrows them.
+      { key: 'zsm_prefab',        type: 'toggle', side: 'both', dataverseKey: 'cr56f_7zsmprefabsoleamendement' },
+      { key: 'zsm_prefab_colour', type: 'option', side: 'both', collapse: true, conditionalOn: 'zsm_prefab', values: ZSM_ALL_PREFAB_OPTIONS, dataverseKey: 'cr56f_7zsmprefabsole' },
+      { key: 'zsm_sheet',         type: 'toggle', side: 'both', dataverseKey: 'cr56f_7zsmsolesheetamendement' },
+      { key: 'zsm_sheet_type',    type: 'option', side: 'both', collapse: true, conditionalOn: 'zsm_sheet', values: ZSM_SHEET_TYPES, dataverseKey: 'cr56f_7zsmsolesheet' },
+      { key: 'zsm_sheet_colour',  type: 'option', side: 'both', collapse: true, conditionalOn: 'zsm_sheet', values: ZSM_ALL_SHEET_COLOURS, dataverseKey: 'cr56f_7zsmsolesheetcolour' },
       // Float & Wedge with L/R sub-options
       { key: 'sole_float',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_3solefloat' },
       { key: 'sf_medial',    type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'sole_float', dataverseKey: 'cr56f_3sf_medial' },
@@ -265,6 +283,7 @@ export function getMissingRequiredAdditions(
   unit: string,
   addsExclude: string | null | undefined,
   soleProfile: string | null = null,
+  zsmGroup: ZsmGroup | null = null,
 ): MissingRequired[] {
   const sides = activeSidesFor(unit)
   const missing: MissingRequired[] = []
@@ -276,6 +295,8 @@ export function getMissingRequiredAdditions(
       if (!field.conditionalOn || field.side === 'global') continue
       // Hidden by the model's sole profile → never required (would block submit invisibly).
       if (soleFieldHidden(soleProfile, field.key, (field.values ?? []) as string[])) continue
+      // Hidden by ZSM status (ZSM fields on non-ZSM, or replaced fields on ZSM) → not required.
+      if (zsmFieldHidden(zsmGroup, field.key)) continue
       for (const side of sides) {
         if (!isSidedParentActive(additions, field.conditionalOn, side)) continue
         if (!isChildFilled(additions, field.key, side)) {

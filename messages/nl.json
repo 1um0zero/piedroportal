@@ -466,9 +466,11 @@
       "plastic_fitting_shoes": "Plastic Passchoenen",
       "urgent": "Spoed",
       "comments": "Opmerkingen",
-      "zsm_prefab": "ZSM Prefab",
-      "zsm_sole": "ZSM Sole",
-      "zsm_colour": "ZSM Colour"
+      "zsm_prefab": "Aanpassing Prefab Zool",
+      "zsm_prefab_colour": "↳ Prefab Zool",
+      "zsm_sheet": "Aanpassing Zoolplaat",
+      "zsm_sheet_type": "↳ Zoolplaat",
+      "zsm_sheet_colour": "↳ Kleur"
     },
     "options": {
       "lining": {
