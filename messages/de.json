@@ -190,8 +190,8 @@
       "cat_8": "Next Steps",
       "cat_9": "Sandalen",
       "cat_10": "Sneaker",
-      "diabetics": "Diabetiker",
-      "diabetics_hint": "Nur Modelle für diabetische/empfindliche Füße zeigen",
+      "diabetics": "Empfindliche Füße",
+      "diabetics_hint": "Ortho Soft Collection — nur Modelle für empfindliche Füße zeigen",
       "my_styles": "Meine Modelle"
     },
     "badges": {
@@ -225,7 +225,8 @@
     "colours": "Verfügbare Farben",
     "also_available": "Auch erhältlich in {closure}",
     "order": "Dieses Modell bestellen",
-    "diabetic": "Geeignet für Diabetiker",
+    "diabetic": "Geeignet für empfindliche Füße",
+    "soft_legend": "Ortho Soft Collection — für empfindliche Füße",
     "pending_approval": "Konto wartet auf Genehmigung",
     "exclusive": "Exklusives Modell"
   },

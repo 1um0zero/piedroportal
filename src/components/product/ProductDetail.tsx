@@ -340,8 +340,12 @@ export default function ProductDetail({ product, siblings }: Props) {
                                bg-gold text-white rounded">NEW</span>
             )}
             {selected.diabetics && (
-              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase
-                               bg-stone-700 text-white rounded-full">{t('diabetic')}</span>
+              <span title={t('soft_legend')}
+                className="inline-flex items-center gap-2 pl-2 pr-3 py-1 text-[11px] font-semibold
+                           bg-[#eef5fb] text-[#3f6f94] ring-1 ring-[#cfe3f0] rounded-full">
+                <span className="w-4 h-4 rounded-full bg-[#cfe3f0] ring-1 ring-[#a9cce4]" />
+                {t('diabetic')}
+              </span>
             )}
             <button onClick={() => toggle(selected.id)}
               className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0
@@ -356,6 +360,12 @@ export default function ProductDetail({ product, siblings }: Props) {
               </svg>
             </button>
           </div>
+
+          {selected.diabetics && (
+            <p className="text-xs text-stone-500 -mt-1.5">
+              <span className="font-semibold text-[#3f6f94]">S</span> = {t('soft_legend')}
+            </p>
+          )}
 
           {/* Main image */}
           <div className="relative aspect-square"

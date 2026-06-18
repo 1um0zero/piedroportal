@@ -190,8 +190,8 @@
       "cat_8": "Next Steps",
       "cat_9": "Sandalen",
       "cat_10": "Sneakers",
-      "diabetics": "Diabetisch",
-      "diabetics_hint": "Toon alleen modellen voor diabetische/gevoelige voeten",
+      "diabetics": "Gevoelige voeten",
+      "diabetics_hint": "Ortho Soft Collection — toon alleen modellen voor gevoelige voeten",
       "my_styles": "Mijn modellen"
     },
     "badges": {
@@ -225,7 +225,8 @@
     "colours": "Beschikbare Kleuren",
     "also_available": "Ook beschikbaar in {closure}",
     "order": "Dit model bestellen",
-    "diabetic": "Geschikt voor diabetici",
+    "diabetic": "Geschikt voor gevoelige voeten",
+    "soft_legend": "Ortho Soft Collection — voor gevoelige voeten",
     "pending_approval": "Account in afwachting van goedkeuring",
     "exclusive": "Exclusief model"
   },

@@ -113,8 +113,8 @@ export default function ProductCard({ product, showWishlist = false, onNavigate,
           <span className="absolute top-2 left-2 z-10 px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase bg-gold text-white rounded shadow-sm">NEW</span>
         )}
         {product.diabetics && (
-          <span title={tp('diabetic')} aria-label={tp('diabetic')}
-            className={`absolute z-10 px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase bg-stone-700 text-white rounded-full shadow-sm ${isNew(product) ? 'top-2 left-14' : 'top-2 left-2'}`}>D</span>
+          <span title={tp('soft_legend')} aria-label={tp('soft_legend')}
+            className={`absolute z-10 w-5 h-5 inline-flex items-center justify-center text-[11px] font-extrabold bg-[#eef5fb] text-[#3f6f94] ring-1 ring-[#cfe3f0] rounded-full shadow-sm ${isNew(product) ? 'top-2 left-14' : 'top-2 left-2'}`}>S</span>
         )}
       </div>
 

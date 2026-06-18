@@ -190,8 +190,8 @@
       "cat_8": "Next Steps",
       "cat_9": "Sandals",
       "cat_10": "Trainers",
-      "diabetics": "Diabetics",
-      "diabetics_hint": "Show only diabetic & sensitive-foot models",
+      "diabetics": "Sensitive feet",
+      "diabetics_hint": "Ortho Soft Collection — show only sensitive-foot models",
       "my_styles": "My styles"
     },
     "badges": {
@@ -225,7 +225,8 @@
     "colours": "Available Colours",
     "also_available": "Also available in {closure}",
     "order": "Order this model",
-    "diabetic": "Suitable for diabetics",
+    "diabetic": "Suitable for sensitive feet",
+    "soft_legend": "Ortho Soft Collection — for sensitive feet",
     "pending_approval": "Account pending approval",
     "exclusive": "Exclusive model"
   },

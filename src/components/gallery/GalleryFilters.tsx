@@ -493,7 +493,7 @@ export default function GalleryFilters({
                   <button onClick={() => setFilters((f) => ({ ...f, onlyDiabetics: !f.onlyDiabetics }))}
                     title={t('diabetics_hint')}
                     className={`h-9 px-3 text-xs font-bold rounded-lg border transition-all
-                      ${filters.onlyDiabetics ? 'bg-stone-700 text-white border-stone-700' : 'text-stone-600 border-stone-300 hover:border-stone-500 hover:bg-stone-50'}`}>
+                      ${filters.onlyDiabetics ? 'bg-[#3f6f94] text-white border-[#3f6f94]' : 'text-[#3f6f94] border-[#cfe3f0] hover:border-[#a9cce4] hover:bg-[#eef5fb]'}`}>
                     {t('diabetics')}
                   </button>
                 )}

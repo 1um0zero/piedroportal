@@ -190,8 +190,8 @@
       "cat_8": "Next Steps",
       "cat_9": "Sandales",
       "cat_10": "Baskets",
-      "diabetics": "Diabétique",
-      "diabetics_hint": "Afficher uniquement les modèles pied diabétique/sensible",
+      "diabetics": "Pieds sensibles",
+      "diabetics_hint": "Ortho Soft Collection — afficher uniquement les modèles pour pieds sensibles",
       "my_styles": "Mes modèles"
     },
     "badges": {
@@ -225,7 +225,8 @@
     "colours": "Couleurs Disponibles",
     "also_available": "Aussi disponible en {closure}",
     "order": "Commander ce modèle",
-    "diabetic": "Adapté aux diabétiques",
+    "diabetic": "Adapté aux pieds sensibles",
+    "soft_legend": "Ortho Soft Collection — pour pieds sensibles",
     "pending_approval": "Compte en attente d'approbation",
     "exclusive": "Modèle exclusif"
   },
