@@ -161,6 +161,28 @@ export async function getUserExclusiveLabels(userId: string): Promise<string[]> 
 }
 
 /**
+ * Whether the user may see the general Piedro catalogue (the legacy "*" rule).
+ * A user with no company sees it (normal/pending). With companies, it's the
+ * most-permissive union: visible if ANY of their companies sees it. Only an
+ * exclusive-only client (all companies `sees_general_catalogue = false`, e.g.
+ * ZSM) is restricted to their own exclusive models. Resilient to migration 038
+ * not being applied yet (treats a missing column as "sees general").
+ */
+export async function userSeesGeneralCatalogue(userId: string): Promise<boolean> {
+  const service = createServiceClient()
+  const { data, error } = await service
+    .from('user_companies')
+    .select('companies (sees_general_catalogue)')
+    .eq('user_id', userId)
+
+  if (error || !data || data.length === 0) return true
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const flags = (data as any[]).map((uc) => uc.companies?.sees_general_catalogue)
+  // Any true (or null/undefined → treat as true) means the user sees the general set.
+  return flags.some((f) => f !== false)
+}
+
+/**
  * Check if user has any company associated
  */
 export async function hasAnyCompany(userId: string): Promise<boolean> {

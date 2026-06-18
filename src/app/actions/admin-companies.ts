@@ -105,6 +105,26 @@ export async function updateCompanyNotify(
   return { ok: true }
 }
 
+/**
+ * Toggle whether a company sees the general Piedro catalogue (the "*" rule).
+ * false = exclusive-only (sees only its own exclusive models, e.g. ZSM).
+ */
+export async function setCompanySeesGeneralCatalogue(
+  companyId: string,
+  seesGeneral: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('companies').update({ sees_general_catalogue: seesGeneral }).eq('id', companyId)
+  if (error) return { error: error.message }
+
+  revalidate(companyId)
+  return { ok: true }
+}
+
 // ── Model ↔ company exclusivity (applies to the whole model = all colours) ──────
 
 /**

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product, Section } from '@/types'
 import { useWishlist } from '@/contexts/WishlistContext'
-import { getMyExclusiveProducts } from '@/app/actions/catalogue'
+import { getMyExclusiveProducts, getMyCatalogueAccess } from '@/app/actions/catalogue'
 import ProductCard from './ProductCard'
 import GalleryFilters from './GalleryFilters'
 import GalleryHero from './GalleryHero'
@@ -134,6 +134,13 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
   // The cached public set never contains exclusive models. For the signed-in
   // user we fetch the exclusive products their companies own and overlay them.
   const [exclusives, setExclusives] = useState<Product[]>([])
+  // The "*" rule: exclusive-only clients (e.g. ZSM) don't see the general catalogue,
+  // only their own exclusive overlay. Default true so the cached general set shows
+  // until we know otherwise (and for admins/anonymous/normal customers).
+  const [seesGeneral, setSeesGeneral] = useState(true)
+  useEffect(() => {
+    getMyCatalogueAccess().then((a) => setSeesGeneral(a.seesGeneral)).catch(() => {})
+  }, [])
   useEffect(() => {
     getMyExclusiveProducts().then(setExclusives).catch(() => {})
   }, [])
@@ -285,11 +292,13 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
     if (myStylesOnly) {
       return dedupById(exclusives.filter((p) => p.section === section && siglasOf(p).length > 0))
     }
-    const base = cache[section] ?? []
+    // Exclusive-only clients ("*" rule) never see the general catalogue — only
+    // their own exclusive overlay for this section.
+    const base = seesGeneral ? (cache[section] ?? []) : []
     const extra = exclusives.filter((p) => p.section === section && siglasOf(p).length > 0)
     const seen = new Set(base.map((p) => p.id))
     return extra.length === 0 ? base : [...base, ...extra.filter((p) => !seen.has(p.id))]
-  }, [cache, section, exclusives, exclusiveFilter, livHidden, selectedSiglas, myStylesOnly])
+  }, [cache, section, exclusives, exclusiveFilter, livHidden, selectedSiglas, myStylesOnly, seesGeneral])
 
   // ── Options for each dimension (apply all OTHER active filters) ──
   const forClosure      = useMemo(() => applyFilters(sectionProducts, filters, 'closures'),      [sectionProducts, filters])

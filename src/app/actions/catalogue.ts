@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getUserExclusiveLabels } from '@/lib/user-companies'
+import { getUserExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
 import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { isPiedroAdmin, isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import { isExclusiveVisible } from '@/lib/exclusive'
@@ -63,4 +63,22 @@ export async function getMyExclusiveProducts(): Promise<Product[]> {
 
   return ((data ?? []) as unknown as (Product & { exclusive: string })[])
     .filter((p) => isExclusiveVisible(p.exclusive, labelSet, isAdmin))
+}
+
+/**
+ * Whether the signed-in user sees the general Piedro catalogue (the "*" rule).
+ * Admins and anonymous visitors always do; an exclusive-only client (e.g. ZSM)
+ * does not — the gallery then shows only their exclusive overlay. See
+ * userSeesGeneralCatalogue + docs/legacy/gallery-catalogue.liquid.
+ */
+export async function getMyCatalogueAccess(): Promise<{ seesGeneral: boolean }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { seesGeneral: true }
+
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (isPiedroAdmin(profile?.role) || isBranchAdmin(profile?.role) || isBranchStaff(profile?.role)) {
+    return { seesGeneral: true }
+  }
+  return { seesGeneral: await userSeesGeneralCatalogue(user.id) }
 }

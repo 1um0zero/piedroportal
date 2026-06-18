@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
 import CompanyExclusiveModels from '@/components/admin/CompanyExclusiveModels'
 import CompanyNotifyForm from '@/components/admin/CompanyNotifyForm'
+import CompanyCatalogueAccess from '@/components/admin/CompanyCatalogueAccess'
 import CompanyMembers, { type Member, type UserOption } from '@/components/admin/CompanyMembers'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
@@ -16,7 +17,7 @@ export default async function CompanyDetailPage({ params }: Props) {
 
   const service = createServiceClient()
   const { data: company } = await service
-    .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc').eq('id', id).single()
+    .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc, sees_general_catalogue').eq('id', id).single()
   if (!company) notFound()
 
   // The company's siglas live in company_exclusives (N:N). Include any stray
@@ -88,6 +89,10 @@ export default async function CompanyDetailPage({ params }: Props) {
         companyId={company.id}
         initialCc={company.notify_cc ?? ''}
         initialBcc={company.notify_bcc ?? ''}
+      />
+      <CompanyCatalogueAccess
+        companyId={company.id}
+        initial={company.sees_general_catalogue !== false}
       />
       <CompanyExclusiveModels
         companyId={company.id}

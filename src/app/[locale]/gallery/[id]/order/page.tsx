@@ -2,10 +2,10 @@ import { notFound } from 'next/navigation'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getUserCompanies, getUserExclusiveLabels } from '@/lib/user-companies'
+import { getUserCompanies, getUserExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
 import { getBranchAdminCompanies } from '@/lib/branch-admin'
 import { isPiedroAdmin } from '@/lib/roles'
-import { isExclusiveVisible } from '@/lib/exclusive'
+import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
 import { closuresAhead } from '@/lib/dispatch'
 import OrderForm from '@/components/order/OrderForm'
@@ -81,6 +81,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
     const labels = new Set(user ? await getUserExclusiveLabels(user.id) : [])
     if (!isExclusiveVisible(exclusive, labels, false)) notFound()
   }
+  // Exclusive-only clients (the "*" rule, e.g. ZSM) may not order general models.
+  const isGeneral = exclusiveTokens(exclusive).length === 0
+  if (isGeneral && user && !isAdmin && !(await userSeesGeneralCatalogue(user.id))) notFound()
 
   // Load draft data if draftId is provided (duplicate/edit flow).
   // Security: only the order's owner (or a piedro_admin) may load it — never leak

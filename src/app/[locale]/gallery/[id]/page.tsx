@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
-import { getUserExclusiveLabels } from '@/lib/user-companies'
+import { getUserExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
-import { isExclusiveVisible } from '@/lib/exclusive'
+import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import ProductDetail from '@/components/product/ProductDetail'
 import type { Product } from '@/types'
 
@@ -19,14 +19,16 @@ async function getProduct(id: string): Promise<Product | null> {
 }
 
 /** The current visitor's exclusivity context (siglas + admin flag). */
-async function getVisibility(): Promise<{ labels: Set<string>; isAdmin: boolean }> {
+async function getVisibility(): Promise<{ labels: Set<string>; isAdmin: boolean; seesGeneral: boolean }> {
   const sb = await createServerClient()
   const { data: { user } } = await sb.auth.getUser()
-  if (!user) return { labels: new Set(), isAdmin: false }
+  if (!user) return { labels: new Set(), isAdmin: false, seesGeneral: true }
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  const isAdmin = isPiedroAdmin(profile?.role)
   return {
     labels: new Set(await getUserExclusiveLabels(user.id)),
-    isAdmin: isPiedroAdmin(profile?.role),
+    isAdmin,
+    seesGeneral: isAdmin ? true : await userSeesGeneralCatalogue(user.id),
   }
 }
 
@@ -76,8 +78,13 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound()
 
   // Customer-exclusive models 404 for anyone outside the owning company (admins see all).
-  const { labels, isAdmin } = await getVisibility()
-  const visible = (p: { exclusive?: string | null }) => isExclusiveVisible(p.exclusive, labels, isAdmin)
+  // Exclusive-only clients (the "*" rule, e.g. ZSM) also 404 on general models.
+  const { labels, isAdmin, seesGeneral } = await getVisibility()
+  const visible = (p: { exclusive?: string | null }) => {
+    if (!isExclusiveVisible(p.exclusive, labels, isAdmin)) return false
+    const isGeneral = exclusiveTokens(p.exclusive).length === 0
+    return isGeneral ? (isAdmin || seesGeneral) : true
+  }
   if (!visible(product)) notFound()
 
   const siblings = (await getSiblings(product)).filter(visible)

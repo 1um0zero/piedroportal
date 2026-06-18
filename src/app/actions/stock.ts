@@ -5,8 +5,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { revalidatePath } from 'next/cache'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import type { OrderStatus } from '@/types'
-import { getUserCompanyIds, getUserExclusiveLabels } from '@/lib/user-companies'
-import { isExclusiveVisible } from '@/lib/exclusive'
+import { getUserCompanyIds, getUserExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
+import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
 import { addWorkingDays } from '@/lib/dispatch'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
@@ -56,10 +56,12 @@ export async function getStockProducts(): Promise<StockProduct[]> {
 
   let isAdmin = false
   let labelSet = new Set<string>()
+  let seesGeneral = true
   if (user) {
     const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
     isAdmin = isPiedroAdminRole(profile?.role)
     labelSet = new Set(await getUserExclusiveLabels(user.id))
+    seesGeneral = isAdmin ? true : await userSeesGeneralCatalogue(user.id)
   }
 
   const service = createServiceClient()
@@ -74,6 +76,8 @@ export async function getStockProducts(): Promise<StockProduct[]> {
 
   const products = ((prodRows ?? []) as unknown as (Product & { exclusive: string | null })[])
     .filter((p) => isExclusiveVisible(p.exclusive, labelSet, isAdmin))
+    // Exclusive-only clients ("*" rule, e.g. ZSM) don't see general stock models.
+    .filter((p) => seesGeneral || exclusiveTokens(p.exclusive).length > 0)
   if (products.length === 0) return []
 
   const ids = products.map((p) => p.id)
