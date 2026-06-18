@@ -55,6 +55,25 @@ B5756, B5757, B5730, B5731, B5752, B5753
 
 ---
 
+## Sole-sheet WEIGHT grouping (from ZSM "ZOLEN" catalogue page, Anabela 2026-06-17)
+
+The ZSM physical catalogue splits the soles into two weight families. Anabela proposed
+using this as the top level of the selector (instead of, or above, Jorge's Type/Thickness/
+Colour idea). Proposed UI = 3-level cascade **Weight → Type(incl. thickness) → Colour**
+(thickness kept inside the type name — it depends on the type, not worth a 4th cascade;
+matches the flat email list + legacy storage cr56f_7zsmsolesheet + …colour). Swatch photos
+per type (mirror the rocker ImageChips / planned sole swatch grid).
+
+- **Middelgewicht (Middle weight) — 12 types:** EVA Lavero Soft 6 mm, EVA Lavero Soft 8 mm,
+  EVA Mandorlo 6 mm, Optimum 6 mm, Vibram 8870 5 mm, Vibram 8860 6 mm,
+  EVA Rubber Astro Star 4 mm, EVA Rubber Astro Star 6 mm, EVA Rubber Astrolight Delta 4 mm,
+  EVA Rubber Astrolight Delta 6 mm, EVA Rubber Anna 4 mm, EVA Rubber Anna 6 mm.
+- **Zwaargewicht (Heavy weight) — 8 types:** Lavero Flex Rubber 4 mm, Lavero Flex Rubber 6 mm,
+  Rubber Tire 6 mm, Vibram 2002 6 mm, Jony Sole 6 mm, Astrolight Delta 6 mm, Tire 8 mm,
+  Sportflex 8 mm.
+
+(The colour subset per type is the table below; the weight grouping does not change it.)
+
 ## Sole-sheet list — type → allowed colours (shared by both options)
 
 20 sole-sheet types, each with its own permitted colour set. Selecting a type should
