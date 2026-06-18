@@ -56,15 +56,15 @@ function DispatchDays({ o, t }: {
   )
 }
 
-// Gold emblem on the Unit cell when the order carries additions (replaces the
-// old standalone Additions column).
+// Gold filled emblem on the Unit cell when the order carries additions
+// (replaces the old standalone Additions column). A clear "+" badge.
 function AdditionsMark({ title }: { title: string }) {
   return (
-    <span title={title} className="text-gold inline-flex shrink-0">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <line x1="3" y1="8" x2="21" y2="8" /><line x1="3" y1="16" x2="21" y2="16" />
-        <circle cx="9" cy="8" r="2.3" fill="white" /><circle cx="15" cy="16" r="2.3" fill="white" />
+    <span title={title}
+      className="inline-flex shrink-0 items-center justify-center w-[18px] h-[18px] rounded-full bg-gold text-white shadow-sm">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth={3.5} strokeLinecap="round" aria-hidden="true">
+        <line x1="12" y1="6" x2="12" y2="18" /><line x1="6" y1="12" x2="18" y2="12" />
       </svg>
     </span>
   )
@@ -401,7 +401,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                 <th className="px-4 py-3 text-left">{t('col_date')}</th>
                 <th className="px-4 py-3 text-left">{t('col_product')}</th>
                 <th className="px-4 py-3 text-left">{t('col_unit')}</th>
-                {staffView && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
+                {isAdmin && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
                 <th className="px-4 py-3 text-left">{staffView ? t('col_clinician') : t('col_patient')}</th>
                 <th className="px-4 py-3 text-left">{t('col_piedro_order')}</th>
                 <th className="px-4 py-3 text-left">{t('col_status')}</th>
@@ -413,7 +413,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={staffView ? 10 : 9}
+                  <td colSpan={isAdmin ? 10 : 9}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     {t('no_orders')}
                   </td>
@@ -483,14 +483,14 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                       </div>
                     </td>
                     {/* Unit (+ additions mark — replaces the old Additions column) */}
-                    <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5">
+                    <td className="px-3 py-3 text-stone-500 text-xs">
+                      <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                         {o.unit && UNIT_KEYS[o.unit] ? tu(UNIT_KEYS[o.unit]) : (o.unit ?? '—')}
                         {hasAdditions(o.additions) && <AdditionsMark title={t('additions_yes')} />}
                       </span>
                     </td>
-                    {/* Company — staff view only */}
-                    {staffView && (
+                    {/* Company — Piedro admin only (a company admin sees a single company) */}
+                    {isAdmin && (
                       <td className="px-4 py-3">
                         <p className="text-stone-700 text-sm truncate max-w-[180px]">
                           {company?.name ?? '—'}
@@ -498,16 +498,12 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         <p className="text-xs text-stone-400">{company?.erp_code ?? ''}</p>
                       </td>
                     )}
-                    {/* Clinician (staff/company-admin) | Patient + Ref (user) */}
+                    {/* Clinician (staff) | Patient (user) — Ref shown to everyone */}
                     <td className="px-4 py-3">
-                      {staffView ? (
-                        <p className="text-stone-700 truncate max-w-[170px]">{o.clinician ?? '—'}</p>
-                      ) : (
-                        <>
-                          <p className="text-stone-700 truncate max-w-[150px]">{o.patient_name ?? '—'}</p>
-                          <p className="text-xs text-stone-400 truncate max-w-[150px]">{o.reference_customer ?? ''}</p>
-                        </>
-                      )}
+                      <p className="text-stone-700 truncate max-w-[170px]">
+                        {staffView ? (o.clinician ?? '—') : (o.patient_name ?? '—')}
+                      </p>
+                      <p className="text-xs text-stone-400 truncate max-w-[170px]">{o.reference_customer ?? ''}</p>
                     </td>
                     {/* Piedro Order # — ERP order number with an approval/cancel mark.
                         While still empty, a "New" order shows its badge here. */}
