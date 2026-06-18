@@ -63,22 +63,19 @@ const GLYPHS: Record<string, ReactNode> = {
       <path d="M16 17h4M4 13h4" />
     </>
   ),
-  // cutting — scissors
+  // cutting — leather clicking knife
   cutting: (
     <>
-      <circle cx="6" cy="6" r="3" />
-      <path d="M8.12 8.12 12 12" />
-      <path d="M20 4 8.12 15.88" />
-      <circle cx="6" cy="18" r="3" />
-      <path d="M14.8 14.8 20 20" />
+      <path d="M3.5 20.5 13 11" />
+      <path d="M13 11l5.3-5.3a1.7 1.7 0 0 0-2.4-2.4L10.6 8.6Z" />
+      <path d="M3.5 20.5H2.6v-.9" />
     </>
   ),
-  // stitching — spool of thread
+  // stitching — rows of stitches in leather
   stitching: (
     <>
-      <rect x="7" y="3" width="10" height="3" rx="1" />
-      <rect x="7" y="18" width="10" height="3" rx="1" />
-      <path d="M9 6v12M15 6v12M9 9.5h6M9 12h6M9 14.5h6" />
+      <path d="M3 9c5-3.3 13-3.3 18 0" strokeDasharray="2.4 2.6" />
+      <path d="M3 15c5-3.3 13-3.3 18 0" strokeDasharray="2.4 2.6" />
     </>
   ),
   // mounting — a boot on its last
