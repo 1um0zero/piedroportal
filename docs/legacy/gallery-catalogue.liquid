@@ -1,0 +1,756 @@
+<script type="text/javascript" src="~/jscolourtransaltions.js"></script>
+
+{% include 'Portal Web API Wrapper' %}
+
+{% fetchxml images %}
+<fetch version="1.0" output-format="xml-platform" mapping="logical" distinct="true">
+  <entity name="cr56f_wpp_style_colors">
+    <attribute name="cr56f_wpp_style_colorsid" />
+    <attribute name="cr56f_stylecolorid" />
+    <attribute name="cr56f_style_id" />
+    <attribute name="cr56f_color_name" />
+    <attribute name="cr56f_closure" />
+    <attribute name="cr56f_colorbasic" />
+    <attribute name="cr56f_picture" />
+    <filter type="and">
+      <condition attribute="cr56f_hidden" operator="ne" value="1" />
+    </filter>
+    <link-entity name="cr56f_wpp_styles" from="cr56f_wpp_stylesid" to="cr56f_style_id" link-type="inner" alias="style">
+      <attribute name="cr56f_wpp_stylesid" />
+      <attribute name="cr56f_name" />
+      <attribute name="cr56f_gender" />
+      <attribute name="cr56f_type" />
+      <attribute name="cr56f_constructionlist" />
+      <attribute name="cr56f_widthlist" />
+      <attribute name="cr56f_diabetics" />
+      <attribute name="cr56f_sizefirst" />
+      <attribute name="cr56f_sizelast" />
+      <attribute name="cr56f_priority" />
+      <attribute name="cr56f_sibling" />
+      <attribute name="cr56f_exclusive" />
+      <attribute name="cr56f_category" />
+      <order attribute="cr56f_priority" />
+      <order attribute="cr56f_name" />
+    </link-entity>
+  </entity>
+</fetch>
+{% endfetchxml %}
+
+{% assign NewStyles = "" %}
+{% assign NewWord = "NEW" %}
+
+{% if request.params.model == null or request.params.model == "" %}
+  {% assign model_filter = "" %}
+{% else %}
+  {% assign google_filter = request.params.model | split: "?utm_" | First %}
+  {% assign search_filter = google_filter[0] %}
+  {% assign search_array = search_filter | split: "," %}
+  {% assign gender_filter = "" %}
+  {% assign wishlist = "" %}
+  {% assign user_exclusive_filter = "" %}
+  {% assign exclusive_filter = "" %}
+  {% assign request.params.exclusive = "" %}
+  {% assign gender_filter = "" %}
+  {% assign category_filter = 0 %}
+  {% assign category_label = "" %}
+  {% assign construction_filter = "" %}
+  {% assign type_filter = "" %}
+  {% assign width_filter = "" %}
+  {% assign closure_filter = "" %}
+  {% assign diabetics_filter = "" %}
+  {% assign size_filter = "" %}
+  {% assign color_filter = "" %}
+{% endif %}
+
+{% if model_filter == "" %}
+{% assign wishlist = "" %}
+{% assign wish_filter = "" %}
+{% assign user_exclusive_filter = "" %}
+{% assign exclusive_filter = "" %}
+
+{% if user.description %}
+  {% assign wishlist = user.description %}
+{% endif %}
+
+{% if user.adx_profilealertinstructions %}
+  {% assign user_exclusive_filter = user.adx_profilealertinstructions %}
+{% endif %}
+
+{% if request.params.exclusive != null and request.params.exclusive != "" %}
+  {% assign exclusive_filter = request.params.exclusive %}
+
+  {% if user %}
+    {% if user_exclusive_filter != "" %}
+      {% unless user_exclusive_filter contains exclusive_filter %}
+        {% assign user_exclusive_filter = "########" %}
+      {% endunless %}
+    {% endif %}
+  {% else %}
+    {% assign user_exclusive_filter = exclusive_filter %}
+  {% endif %}
+{% else %}
+  {% assign request.params.exclusive = "" %}
+{% endif %}
+
+{% if request.params.gender == null or request.params.gender == "" %}
+  {% assign gender_filter = "" %}
+{% else %}
+  {% assign gender_filter = request.params.gender %}
+{% endif %}
+
+{% if request.params.category == null or request.params.category == "" %}
+  {% assign category_filter = 0 %}
+{% else %}
+  {% assign category_filter = request.params.category %}
+{% endif %}
+
+{% case category_filter %}
+  {% when 1 %}
+    {% assign category_label = "Sportive" %}
+  {% when 2 %}
+    {% assign category_label = "Biker boots" %}
+  {% when 3 %}
+    {% assign category_label = "Classic" %}
+  {% when 4 %}
+    {% assign category_label = "Diabetic and Sensitive Foot" %}
+  {% when 5 %}
+    {% assign category_label = "First Steps" %}
+  {% when 6 %}
+    {% assign category_label = "Flexible" %}
+  {% when 7 %}
+    {% assign category_label = "High Tops & Mid Tops" %}
+  {% when 8 %}
+    {% assign category_label = "Next Steps" %}
+  {% when 9 %}
+    {% assign category_label = "Sandals" %}
+  {% when 10 %}
+    {% assign category_label = "Trainers" %}
+  {% else %}
+    {% if category_filter > 0 %}
+      {% assign category_label = "Category: " | append: category_filter | string %}
+    {% else %}
+      {% assign category_label = "" %}
+    {% endif %}
+  {% endcase %}
+
+{% if request.params.search == null or request.params.search == "" %}
+  {% assign search_filter = "" %}
+  {% assign search_array = "" %}
+{% else %}
+  {% if request.params.search == "wl:" %}
+    {% assign wish_filter = "." %}
+    {% assign search_filter = wishlist %}
+  {% else %}
+    {% assign search_filter = request.params.search %}
+  {% endif %}
+  {% assign search_array = search_filter | split: "," %}
+{% endif %}
+
+{% if request.params.construction == null or request.params.construction == "" %}
+{% assign construction_filter = "" %}
+{% else %}
+{% assign construction_filter = request.params.construction | split: "," %}
+{% endif %}
+
+{% if request.params.type == null or request.params.type == "" %}
+{% assign type_filter = "" %}
+{% else %}
+{% assign type_filter = request.params.type | split: "," %}
+{% endif %}
+
+{% if request.params.width == null or request.params.width == "" %}
+{% assign width_filter = "" %}
+{% else %}
+{% assign width_filter = request.params.width | split: "," %}
+{% endif %}
+
+{% if request.params.closure == null or request.params.closure == "" %}
+{% assign closure_filter = "" %}
+{% else %}
+{% assign closure_filter = request.params.closure | split: "," %}
+{% endif %}
+
+{% if request.params.diabetics == null or request.params.diabetics == "" %}
+{% assign diabetics_filter = "" %}
+{% else %}
+{% assign diabetics_filter = request.params.diabetics %}
+{% endif %}
+
+{% if request.params.size == null or request.params.size == "" %}
+{% assign size_filter = "" %}
+{% else %}
+{% assign size_filter = request.params.size | split: "," %}
+{% endif %}
+
+{% if request.params.color == null or request.params.color == "" %}
+{% assign color_filter = "" %}
+{% else %}
+{% assign color_filter = request.params.color | split: "," %}
+{% endif %}
+{% endif %}
+
+{% assign  all_params = "gender:" | concat: gender_filter | concat: "_search:" | concat: search_filter | concat: "_closure:" | concat: closure_filter | concat: "_construction:" | concat: construction_filter | concat: "_type:" | concat: type_filter  | concat: "_width:" | concat: width_filter | concat: "_color:" | concat: color_filter | concat: "_size:" | concat: size_filter | concat: "_exclusive:" | concat: exclusive_filter %}
+
+<div class="row sectionBlockLayout text-start"
+  style="display: flex; flex-wrap: wrap; margin: 0px; min-height: auto; padding: 8px;">
+  <div class="container" style="display: flex; flex-wrap: wrap;">
+
+
+    <div class="col-lg-6 columnBlockLayout"
+      style="flex-grow: 1; display: flex; flex-direction: column; min-width: 250px; word-break: break-word; padding: 16px; margin: 10px 0px;">
+      <h1 class="siteTitle" style="text-align: left; font-weight: 800; color: var(--portalThemeColor1);">
+        {% case gender_filter %}
+        {% when "979580000" %}
+        KIDS {{category_label}}
+        {% assign selected_kids = "selected" %}
+        {% assign selected_men = "" %}
+        {% assign selected_women = "" %}
+        {% assign filter_width_options = "1&frac12;, 2&frac12;, 3&frac12;, 4&frac12;, 5&frac12;, 6&frac12;, 8&frac12;, N, R, W" | split: ", " %}
+        {% assign filter_construction_options = "Rehabilitation, Stability, AFO, Reverse Lasted" | split: ", " %}
+        {% assign filter_size_options = "15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 45, 46" | split: ", " %}
+        {% assign filter_color_options = "Beige, Black, Blue, Brown, Fuchsia, Green, Grey, Pink, Purple, Red, White, Multi" | split: ", " %}
+        {% assign filter_closure_options = "Lace, Velcro, Buckle" | split: ", " %}
+        {% assign filter_type_options = "Shoes, Boot, Sandal" | split: ", " %}
+        {% assign filter_type_labels = "Shoe, Boot, Sandal" | split: ", " %}
+
+        {% assign NewStyles = "2212.,2212K.,2213.,2213K.,2269.,2269K.,2270.,2270K.,2272.,2272K.,2312.,2312K.,2314.,2314K.,2315.,2316.,2316K.,2134.,2134K.,2090.,2090K.,2138.,2138K.,2091.,2091K.,2092.,2092K.,1700.,1700K.,1701.,1701K.,1702.,1702K.,1906.,1906K.,1900.,1900K.,1903.,1903K.,1901.,1901K.,1902.,1902K.,1904.,1904K.,1905.,1905K.,1800.,1800K.,2601.,2601K.," %}
+
+        {% when "979580001" %}
+        MEN {{category_label}}
+        {% assign selected_kids = "" %}
+        {% assign selected_men = "selected" %}
+        {% assign selected_women = "" %}
+        {% assign filter_width_options = "E, G, H, I, K, M" | split: ", " %}
+        {% assign filter_construction_options = "Rehabilitation, Stability" | split: ", " %}
+        {% assign filter_size_options = "5, 5&frac12;, 6, 6&frac12;, 7, 7&frac12;, 8, 8&frac12;, 9, 9&frac12;, 10, 10&frac12;, 11, 11&frac12;, 12, 12&frac12;, 13, 13&frac12;" | split: ", " %}
+        {% assign filter_color_options = "Beige, Black, Blue, Brown, Green, Grey, White, Multi" | split: ", " %}
+        {% assign filter_closure_options = "Lace, Velcro" | split: ", " %}
+        {% assign filter_type_options = "Shoes, Boot" | split: ", " %}
+        {% assign filter_type_labels = "Shoe, Boot" | split: ", " %}
+        {% when "979580002" %}
+        WOMEN {{category_label}}
+        {% assign selected_kids = "" %}
+        {% assign selected_men = "" %}
+        {% assign selected_women = "selected" %}
+        {% assign filter_width_options = "EE, GG, GH, HK, KM, F, H, J, K, M" | split: ", " %}
+        {% assign filter_construction_options = "Rehabilitation, Stability" | split: ", " %}
+        {% assign filter_size_options = "3, 3&frac12;, 4, 4&frac12;, 5, 5&frac12;, 6, 6&frac12;, 7, 7&frac12;, 8, 8&frac12;, 9, 9&frac12;" | split: ", " %}
+        {% assign filter_color_options = "Beige, Black, Blue, Brown, Green, Pink, Red, White, Multi" | split: ", " %}
+        {% assign filter_closure_options = "Lace, Velcro, Buckle, Twist Lock System" | split: ", " %}
+        {% assign filter_type_options = "Shoes, Boot, Sandal" | split: ", " %}
+        {% assign filter_type_labels = "Shoe, Boot, Sandal" | split: ", " %}
+
+        {% assign NewStyles = "4400.,4571.,4621.," %}
+
+        {% else %}
+        {{category_label}}
+        {% assign filter_width_options = "1&frac12;, 2&frac12;, 3&frac12;, 4&frac12;, 5&frac12;, 6&frac12;, 8&frac12;, N, R, W, EE, GG, GH, HK, KM, F, H, J, K, M" | split: ", " %}
+        {% assign filter_construction_options = "Rehabilitation, Stability, , AFO, Reverse Lasted" | split: ", " %}
+        {% assign filter_size_options = "15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 45, 46, 3, 3&frac12;, 4, 4&frac12;, 5, 5&frac12;, 6, 6&frac12;, 7, 7&frac12;, 8, 8&frac12;, 9, 9&frac12;" | split: ", " %}
+        {% assign filter_color_options = "Beige, Black, Blue, Brown, Fuchsia, Green, Grey, Pink, Purple, Red, White, Multi" | split: ", " %}
+        {% assign filter_closure_options = "Lace, Velcro, Buckle, Twist Lock System" | split: ", " %}
+        {% assign filter_type_options = "Shoes, Boot, Sandal" | split: ", " %}
+        {% assign filter_type_labels = "Shoe, Boot, Sandal" | split: ", " %}
+        {% endcase %}
+      </h1>
+
+      {%- assign filtered_colour_options = "" -%}
+
+      {%- if selected_women == "selected" -%}
+      <table style="width: 100%; table-layout: auto">
+        <tr><td>
+          <a href=./?gender=979580002&search=4621&closure=&construction=&type=&width=&color=&size= target="_self">
+          <img  src="/banner_pairbypair_woman.jpeg"
+                alt="" style="object-fit: fill; width: 100%; height: auto;">
+          </a>
+        </td></tr>
+      </table>
+      {%- endif -%}
+
+      <table style="width: 100%; table-layout: fixed">
+        {%- assign col_counter = 0 -%}
+        {%- for item in images.results.entities -%}
+
+          {%- assign go_ahead = 0 -%}
+
+          {%- if item["style.cr56f_exclusive"] %}
+            {% assign exclusivo = item["style.cr56f_exclusive"] %}
+          {% else %}
+            {% assign exclusivo = "" %}
+          {% endif %}
+
+          {% if exclusivo == "" %}
+            {% if user_exclusive_filter == "" and exclusive_filter == "" -%}
+              {%- assign go_ahead = 1 -%}
+            {% else %}
+              {% if user_exclusive_filter contains "*" and exclusive_filter == "" -%}
+                {%- assign go_ahead = 1 -%}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            {% if exclusive_filter != "" and exclusivo contains exclusive_filter -%}
+              {% if user_exclusive_filter != "" and user_exclusive_filter contains exclusivo -%}
+                {%- assign go_ahead = 1 -%}
+              {% endif %}
+            {% else %}
+              {% if exclusive_filter == "" -%}
+                {% if user_exclusive_filter != "" and user_exclusive_filter contains exclusivo -%}
+                  {%- assign go_ahead = 1 -%}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+          {%- if go_ahead == 1 -%}
+          {%- if search_filter != "" -%}
+            {%- assign go_ahead = 0 -%}
+
+            {%- capture search_text -%}
+              {{item["cr56f_stylecolorid"]}}{{item["cr56f_color_name"]}}
+            {%- endcapture -%}
+
+            {%- assign search_text = search_text | upcase -%}
+
+            {%- for filter in search_array -%}
+              {%- assign filterup = filter | upcase -%}
+              {%- if search_text contains filterup -%}
+                {%- assign go_ahead = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+          {%- endif -%}
+
+          {%- if (gender_filter != "" and gender_filter != item["style.cr56f_gender"].Value) -%}
+            {%- assign go_ahead = 0 -%}
+          {%- endif -%}
+
+          {%- if (diabetics_filter != "" and item["style.cr56f_diabetics"] != diabetics_filter) -%}
+            {%- assign go_ahead = 0 -%}
+          {%- endif -%}
+
+          {%- if (category_filter > 0 and item["style.cr56f_category"] != category_filter) -%}
+            {%- assign go_ahead = 0 -%}
+          {%- elsif (model_filter == "" and category_filter == 0 and item["style.cr56f_category"] == "125") -%}
+              {%- assign go_ahead = 0 -%}
+          {%- endif -%}
+
+          {%- if size_filter != "" -%}
+            {%- assign filter_ok = 0 -%}
+            {%- for filter in size_filter -%}
+              {%- if (item["style.cr56f_sizefirst"] <= filter and item["style.cr56f_sizelast"] >= filter) -%}
+                {%- assign filter_ok = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if go_ahead == 1 -%}
+              {%- assign go_ahead = filter_ok -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if type_filter != "" -%}
+            {%- assign filter_ok = 0 -%}
+            {%- for filter in type_filter -%}
+              {%- if item["style.cr56f_type"] == filter -%}
+                {%- assign filter_ok = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if go_ahead == 1 -%}
+              {%- assign go_ahead = filter_ok -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if construction_filter != "" -%}
+            {%- assign filter_ok = 0 -%}
+            {%- for filter in construction_filter -%}
+              {%- if item["style.cr56f_constructionlist"] contains filter -%}
+                {%- assign filter_ok = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if go_ahead == 1 -%}
+              {%- assign go_ahead = filter_ok -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if width_filter != "" -%}
+            {%- assign filter_ok = 0 -%}
+            {%- for filter in width_filter -%}
+              {%- if item["style.cr56f_widthlist"] contains filter -%}
+                {%- assign filter_ok = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if go_ahead == 1 -%}
+              {%- assign go_ahead = filter_ok -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if closure_filter != "" -%}
+            {%- assign filter_ok = 0 -%}
+            {%- for filter in closure_filter -%}
+              {%- assign upcasefilter = filter | upcase -%}
+              {%- if item["cr56f_closure"] contains upcasefilter -%}
+                {%- assign filter_ok = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if go_ahead == 1 -%}
+              {%- assign go_ahead = filter_ok -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if color_filter != "" -%}
+            {%- assign filter_ok = 0 -%}
+            {%- for filter in color_filter -%}
+              {%- if item["cr56f_colorbasic"] contains filter -%}
+                {%- assign filter_ok = 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if go_ahead == 1 -%}
+              {%- assign go_ahead = filter_ok -%}
+            {%- endif -%}
+          {%- else -%}
+              {%- assign filtered_colour_options = filtered_colour_options | concat: item["cr56f_colorbasic"] | concat: ", " -%}
+          {%- endif -%}
+
+          {%- if go_ahead == 1 -%}
+            {%- if col_counter == 0 -%}
+              <tr>
+            {%- endif -%}
+            {% assign col_counter = col_counter | plus: 1 %}
+
+<td style="position: relative; padding: 5px; border:8px #ffffff solid; background-color: #f5f5f5; vertical-align:top">
+
+  <!-- Bloco clicável com imagem e destaque -->
+  <a href="/stylesdetails/?id={{ item['style.cr56f_wpp_stylesid'] }}&colour_id={{ item['cr56f_wpp_style_colorsid'] }}&style_name={{ item['style.cr56f_name'] }}&sibling={{ item['style.cr56f_sibling'] }}&galeria_filter={{ all_params }}" target="_self">
+
+    <div class="ms_lay1_card_img"
+         style="position: relative; min-height: 150px; display: flex; justify-content: center; align-items: flex-start; overflow: hidden; border-radius: 4px;">
+
+      {%- if item["cr56f_picture"] -%}
+        <img src="/Image/download.aspx?entity=cr56f_wpp_style_colors&attribute=cr56f_picture&ID={{ item['cr56f_wpp_style_colorsid'] }}"
+             alt=""
+             style="object-fit: contain; width: 150px; height: 150px; margin: 0 auto; display: block;">
+      {% endif %}
+
+{%- assign currentStyle = item['cr56f_stylecolorid'] | append: ',' -%}
+{%- assign baseStyle = currentStyle | split: '.' | first | append: '.,' -%}
+{% assign newstatus = "" %}
+
+{% if NewStyles contains currentStyle %}
+{% assign newstatus = "NEW" %}
+{% elsif NewStyles contains baseStyle %}
+{% assign newstatus = "NEW" %}
+{% endif %}
+
+{% if newstatus != "" %}
+      <!-- Texto sobreposto no canto superior direito -->
+      <h4 class="destaque"
+          style="position: absolute; top: 5px; right: 5px; margin: 0; background-color:#43a076; color:#fff; padding:4px 8px; border-radius:4px;">
+        {{NewWord}}
+      </h4>
+{% endif %}
+    </div>
+  </a>
+
+  <!-- Conteúdo abaixo da imagem -->
+  <div style="position: relative; margin-top: 10px;">
+    {%- assign style_colour = item["cr56f_stylecolorid"] -%}
+    {%- if wishlist contains style_colour -%}
+      <span class="heart selected" id="wl:{{ style_colour }}" onclick="toggleHeart(this, '{{user.contactid}}')">&#10084;</span>
+    {%- else -%}
+      <span class="heart" id="wl:{{ style_colour }}" onclick="toggleHeart(this, '{{user.contactid}}')">&#9825;</span>
+    {%- endif -%}
+
+    <h4>{{ item["cr56f_stylecolorid"] }}</h4>
+
+    <p>
+      {%- assign shoe_colour = item["cr56f_color_name"] -%}
+      <script>
+        showme("{{shoe_colour}}", 0)
+      </script>
+    </p>
+  </div>
+</td>
+            {% if col_counter == 4 %}
+              </tr>
+            {% assign col_counter = 0 %}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- if wish_filter == "." -%}
+            {%- assign search_filter = "" -%}
+            {%- assign wish_filter = "" -%}
+        {%- endif -%}
+
+        {%- if col_counter > 0 -%}
+          </tr>
+        {%- endif -%}
+      </table>
+    </div>
+
+  <!-- {%- if color_filter == "" -%}
+    {%- assign filter_color_options = filter_color_options | uniq -%}
+    {%- assign array_filtered = filtered_colour_options | split: ", " -%}
+  {%- endif -%} -->
+
+    <div class="col-lg-1 columnBlockLayout"
+      style="flex-grow: 1; display: flex; flex-direction: column; min-width: 250px; word-break: break-word; padding: 16px; margin: 60px 0px; overflow: auto;">
+      <form>
+      <div id="gallery-filter" class="content-panel card">
+      <div class="card-body">
+        <ul id="entitylist-filters" class=" list-unstyled ">
+          <!-- gender dropdown -->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="0" for="dropdown_0">
+              Catalogue
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <li class="entitylist-filter-option" role="presentation">
+                <div class="input-group entitylist-filter-option-text">
+                  <span class="input-group-text"><span class="fa fa-filter" aria-hidden="true"></span></span>
+                  <select class="form-control form-select gender" id="dropdown_gender" onchange="beforeSubmit(this, 1)">
+                    <option value="979580000" {{selected_kids}}>KIDS</option>
+                    <option value="979580001" {{selected_men}}>MEN</option>
+                    <option value="979580002" {{selected_women}}>WOMEN</option>
+                  </select>
+                </div>
+              </li>
+            </ul>
+          </li></p>
+
+          <!-- search -->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <ul class="list-unstyled" role="presentation">
+              <input class="text form-control lookup form-control " name="search" placeholder="search by ref and/or name" id="lookup_search" value="{{search_filter}}" onchange="this.form.submit()">
+            </ul>
+            </li>
+            <!-- <div class="float-end"> -->
+              <button class="btn btn-entitylist-filter-submit float-end" onclick="beforeSubmit(this, 1)">
+                <i class="fa fa-search"></i>
+            </button>
+            <!-- </div> -->
+          </p>
+
+          <!-- wishlist -->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <button class="btn btn-entitylist-filter-submit float-end" onclick="beforeSubmit(this, 2)">wishlist &#10084;
+            </button>
+          </li>
+          </p>
+
+          <!-- new -->
+           {% if Newstyles != "" %}
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <button class="btn btn-entitylist-filter-submit float-end destaque" onclick="beforeSubmit(this, 3, '{{NewStyles}}')">{{NewWord}}
+            </button>
+          </li>
+          </p>
+           {% endif %}
+
+          {%- if exclusive_filter contains "*" -%}
+             <p><li class="entitylist-filter-option-group list-inline-item">
+              <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {%- if exclusive_filter != "" -%}
+                  {%- assign checked = "checked" -%}
+                {%- else -%}
+                  {%- assign checked = "" -%}
+                {%- endif -%}
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="exclusive">
+                    <label class="entitylist-filter-option-group-label h4" data-filter-id="7" for="multiple_6">
+                      <input type="checkbox" value="Only Exclusive styles" class="exclusive" {{checked}} onclick="beforeSubmit(this, 1)">
+                      Only Exclusive styles
+                    </label>
+                  </div>
+                </li>
+              </div>
+            </ul>
+            </li></p>
+          {%- endif -%}
+
+          <!-- closure filter -->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="1" for="multiple_0">
+              Closure
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {% for checkbox in filter_closure_options %}
+                  {%- assign checked = "" -%}
+                  {%- if closure_filter != "" -%}
+                    {%- if closure_filter contains checkbox -%}
+                      {%- assign checked = "checked" -%}
+                    {%- endif -%}
+                  {%- endif -%}
+
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="closures">
+                    <label>
+                      <input type="checkbox" value="{{checkbox}}" class="closure" {{checked}} onclick="beforeSubmit(this, 1)">
+                      {{checkbox}}
+                    </label>
+                  </div>
+                </li>
+                {% endfor %}
+              </div>
+            </ul>
+          </li></p>
+
+          <!-- construction filter LOOP-->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="2" for="multiple_1">
+              Construction Style
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {% for checkbox in filter_construction_options %}
+                  {%- assign checked = "" -%}
+                  {%- if construction_filter != "" -%}
+                    {%- if construction_filter contains checkbox -%}
+                      {%- assign checked = "checked" -%}
+                    {%- endif -%}
+                  {%- endif -%}
+
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="constructions">
+                    <label>
+                      <input type="checkbox" value="{{checkbox}}" class="construction" {{checked}} onclick="beforeSubmit(this, 1)">
+                      {{checkbox}}
+                    </label>
+                  </div>
+                </li>
+                {% endfor %}
+              </div>
+            </ul>
+          </li></p>
+          <!-- type filter -->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="3" for="multiple_2">
+              Model
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {% for checkbox in filter_type_options %}
+                  {%- assign checked = "" -%}
+                  {%- if type_filter != "" -%}
+                    {%- if type_filter contains checkbox -%}
+                      {%- assign checked = "checked" -%}
+                    {%- endif -%}
+                  {%- endif -%}
+
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="types">
+                    <label>
+                      <input type="checkbox" value="{{checkbox}}" class="type" {{checked}} onclick="beforeSubmit(this, 1)">
+                      {{checkbox}}
+                    </label>
+                  </div>
+                </li>
+                {% endfor %}
+              </div>
+            </ul>
+          </li></p>
+          <!-- width filter LOOP-->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="4" for="multiple_3">
+              Width
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {% for checkbox in filter_width_options %}
+                  {%- assign checked = "" -%}
+                  {%- if width_filter != "" -%}
+                    {%- if width_filter contains checkbox -%}
+                      {%- assign checked = "checked" -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="widths">
+                    <label>
+                      <input type="checkbox" value="{{checkbox}}" class="width" {{checked}} onclick="beforeSubmit(this, 1)">
+                      {{checkbox}}
+                    </label>
+                  </div>
+                </li>
+                {% endfor %}
+              </div>
+            </ul>
+          </li></p>
+          <!-- color filter LOOP-->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="5" for="multiple_4">
+              Colour
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {% for checkbox in filter_color_options %}
+                  {%- assign checked = "" -%}
+                  {%- if color_filter != "" -%}
+                    {%- if color_filter contains checkbox -%}
+                      {%- assign checked = "checked" -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="colors">
+                    <label>
+                      <input type="checkbox" value="{{checkbox}}" class="color"  {{checked}} onclick="beforeSubmit(this, 1)">
+                      {{checkbox}}
+                    </label>
+                  </div>
+                </li>
+                {% endfor %}
+              </div>
+            </ul>
+          </li></p>
+          <!-- size filter LOOP-->
+          <p><li class="entitylist-filter-option-group list-inline-item">
+            <label class="entitylist-filter-option-group-label h4" data-filter-id="6" for="multiple_5">
+              Size
+            </label>
+            <ul class="list-unstyled" role="presentation">
+              <div class="entitylist-filter-option-group-box-overflow">
+                {% for checkbox in filter_size_options %}
+                  {%- assign checked = "" -%}
+                  {%- if size_filter != "" -%}
+                    {%- if size_filter contains checkbox -%}
+                      {%- assign checked = "checked" -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                <li class="entitylist-filter-option" role="presentation">
+                  <div class="checkbox" id="sizes">
+                    <label>
+                      <input type="checkbox" value="{{checkbox}}" class="size" {{checked}} onclick="beforeSubmit(this, 1)">
+                      {{checkbox}}
+                    </label>
+                  </div>
+                </li>
+                {%- endfor -%}
+              </div>
+            </ul>
+          </li></p>
+
+          <div class="float-end">
+            <input type="hidden" id="gender"  name="gender" value="{{gender_filter}}">
+            <input type="hidden" id="exclusive"  name="exclusive" value="{{request.params.exclusive}}">
+            <input type="hidden" id="closure"  name="closure" value="">
+            <input type="hidden" id="construction"  name="construction" value="">
+            <input type="hidden" id="type"  name="type" value="">
+            <input type="hidden" id="width"  name="width" value="">
+            <input type="hidden" id="color"  name="color" value="">
+            <input type="hidden" id="size"  name="size" value="">
+            <button class="btn btn-default btn-entitylist-filter-submit" onclick="beforeSubmit(this)">
+              Filter
+            </button>
+          </div>
+        </ul>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
