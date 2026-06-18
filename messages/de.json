@@ -402,7 +402,12 @@
       "xtra_laces": "Extra Pair of Laces",
       "no_logo": "No Piedro Logo",
       "plastic_fit": "Plastic Fitting Shoes",
-      "urgent": "Urgent"
+      "urgent": "Urgent",
+      "zsm_prefab": "Anpassung Prefab-Sohle",
+      "zsm_prefab_colour": "↳ Prefab-Sohle",
+      "zsm_sheet": "Anpassung Sohlenplatte",
+      "zsm_sheet_type": "↳ Sohlenplatte",
+      "zsm_sheet_colour": "↳ Farbe"
     },
     "fields": {
       "lateral_joint_width": "laterale Gelenkbreite (mm)",
@@ -465,12 +470,7 @@
       "no_piedro_logo": "No Piedro logo",
       "plastic_fitting_shoes": "Probeschuhe aus Plastik",
       "urgent": "dringend",
-      "comments": "Comments",
-      "zsm_prefab": "Anpassung Prefab-Sohle",
-      "zsm_prefab_colour": "↳ Prefab-Sohle",
-      "zsm_sheet": "Anpassung Sohlenplatte",
-      "zsm_sheet_type": "↳ Sohlenplatte",
-      "zsm_sheet_colour": "↳ Farbe"
+      "comments": "Comments"
     },
     "options": {
       "lining": {

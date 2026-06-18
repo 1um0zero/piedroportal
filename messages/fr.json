@@ -402,7 +402,12 @@
       "xtra_laces": "Extra Pair of Laces",
       "no_logo": "No Piedro Logo",
       "plastic_fit": "Plastic Fitting Shoes",
-      "urgent": "Urgent"
+      "urgent": "Urgent",
+      "zsm_prefab": "Modification semelle préfabriquée",
+      "zsm_prefab_colour": "↳ Semelle préfabriquée",
+      "zsm_sheet": "Modification plaque de semelle",
+      "zsm_sheet_type": "↳ Plaque de semelle",
+      "zsm_sheet_colour": "↳ Couleur"
     },
     "fields": {
       "lateral_joint_width": "Largeur de l'articulation latérale (mm)",
@@ -465,12 +470,7 @@
       "no_piedro_logo": "Pas de logo Piedro",
       "plastic_fitting_shoes": "Chaussure d'essayage en plastique",
       "urgent": "Urgent",
-      "comments": "Observations",
-      "zsm_prefab": "Modification semelle préfabriquée",
-      "zsm_prefab_colour": "↳ Semelle préfabriquée",
-      "zsm_sheet": "Modification plaque de semelle",
-      "zsm_sheet_type": "↳ Plaque de semelle",
-      "zsm_sheet_colour": "↳ Couleur"
+      "comments": "Observations"
     },
     "options": {
       "lining": {

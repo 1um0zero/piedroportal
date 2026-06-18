@@ -402,7 +402,12 @@
       "xtra_laces": "Extra paar veters",
       "no_logo": "Geen Piedro Logo",
       "plastic_fit": "Plastic Passchoenen",
-      "urgent": "Spoed"
+      "urgent": "Spoed",
+      "zsm_prefab": "Aanpassing Prefab Zool",
+      "zsm_prefab_colour": "↳ Prefab Zool",
+      "zsm_sheet": "Aanpassing Zoolplaat",
+      "zsm_sheet_type": "↳ Zoolplaat",
+      "zsm_sheet_colour": "↳ Kleur"
     },
     "fields": {
       "lateral_joint_width": "Lateraal Bal Verbreding (mm)",
@@ -465,12 +470,7 @@
       "no_piedro_logo": "Geen Piedro Logo",
       "plastic_fitting_shoes": "Plastic Passchoenen",
       "urgent": "Spoed",
-      "comments": "Opmerkingen",
-      "zsm_prefab": "Aanpassing Prefab Zool",
-      "zsm_prefab_colour": "↳ Prefab Zool",
-      "zsm_sheet": "Aanpassing Zoolplaat",
-      "zsm_sheet_type": "↳ Zoolplaat",
-      "zsm_sheet_colour": "↳ Kleur"
+      "comments": "Opmerkingen"
     },
     "options": {
       "lining": {
