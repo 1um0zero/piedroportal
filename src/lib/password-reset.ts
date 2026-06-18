@@ -91,6 +91,36 @@ export async function requestPasswordReset(email: string, fallbackLocale: string
 }
 
 /**
+ * Mint a set-password token and return the ready-to-share link WITHOUT sending an
+ * email. Used by the back-office when a customer can't receive our reset mail
+ * (e.g. their mail server quarantines it) so staff can hand the link over by
+ * phone/WhatsApp. Same token mechanics as requestPasswordReset (hash-only, single
+ * use), but no dedupe and a configurable (longer) TTL.
+ */
+export async function createSetPasswordLink(
+  userId: string,
+  opts?: { ttlMs?: number },
+): Promise<{ link: string; expiresAt: string } | null> {
+  const service = createServiceClient()
+  const { data: profile } = await service
+    .from('profiles').select('id, preferred_locale').eq('id', userId).maybeSingle()
+  if (!profile?.id) return null
+
+  const ttl = opts?.ttlMs ?? 24 * 60 * 60 * 1000 // 24h — admins may send it ahead of a call
+  const expiresAt = new Date(Date.now() + ttl).toISOString()
+  const raw = randomBytes(32).toString('base64url')
+  const { error } = await service.from('password_reset_tokens').insert({
+    token_hash: sha256(raw), user_id: profile.id, expires_at: expiresAt,
+  })
+  if (error) { console.error('access link token insert:', error.message); return null }
+
+  const loc = LOCALES.includes(profile.preferred_locale as Loc) ? (profile.preferred_locale as Loc) : 'en'
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
+  const prefix = loc === 'en' ? '' : `/${loc}`
+  return { link: `${site}${prefix}/set-password?token=${encodeURIComponent(raw)}`, expiresAt }
+}
+
+/**
  * Atomically claim + consume a token and set the new password. Single-use is
  * enforced by the conditional update (used_at IS NULL).
  */

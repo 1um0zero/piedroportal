@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction } from '@/app/actions/admin-users'
+import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction, generateAccessLinkAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
 import { isPiedroAdmin } from '@/lib/roles'
 import AdminUsersGrid from './AdminUsersGrid'
@@ -53,14 +53,19 @@ type RowProps = {
   addCompany: (userId: string, companyId: string) => void
   removeCompany: (userId: string, companyId: string) => void
   deleteUser: (userId: string, label: string) => void
+  generateLink: (userId: string) => void
+  linkLoading: string | null
+  linkData: { id: string; link: string } | null
 }
 
-function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany, deleteUser }: RowProps) {
+function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany, deleteUser, generateLink, linkLoading, linkData }: RowProps) {
   const t = useTranslations('admin.users')
   const isExpanded = expandedUser === u.id
   const userCompanyIds = new Set(u.companies.map(c => c.company_id))
   const [searchQuery, setSearchQuery] = useState('')
   const [showAll, setShowAll] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const showLink = linkData?.id === u.id
 
   // Filter companies: search always searches all, but assigned stay at top
   let filteredCompanies: Company[]
@@ -89,6 +94,21 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
           <p className="text-sm font-medium text-stone-800 truncate">{u.full_name || '—'}</p>
           <p className="text-xs text-stone-400 truncate">{u.email}</p>
         </div>
+        {/* Generate a direct login link (email-bypass) for support cases */}
+        <button
+          onClick={() => generateLink(u.id)}
+          disabled={linkLoading === u.id}
+          title={t('access_link_title')}
+          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-stone-300 hover:text-gold hover:bg-gold/10 transition-colors disabled:opacity-50">
+          {linkLoading === u.id ? (
+            <span className="w-3.5 h-3.5 border-2 border-stone-200 border-t-gold rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+          )}
+        </button>
         {/* Safe delete — server refuses if the user has any orders */}
         {!isPiedroAdmin(u.role) && (
           <button
@@ -111,6 +131,28 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
           </span>
         )}
       </div>
+
+      {/* Generated access link — copy & hand to the customer directly */}
+      {showLink && linkData && (
+        <div className="p-3 bg-gold/5 border border-gold/20 rounded-lg space-y-2">
+          <p className="text-[11px] font-semibold text-stone-600 uppercase tracking-wide">{t('access_link_title')}</p>
+          <p className="text-xs text-stone-500">{t('access_link_desc')}</p>
+          <div className="flex items-center gap-2">
+            <input
+              readOnly
+              value={linkData.link}
+              onFocus={e => e.target.select()}
+              className="flex-1 min-w-0 px-2.5 py-1.5 text-xs bg-white border border-stone-200 rounded-lg text-stone-700 font-mono"
+            />
+            <button
+              onClick={() => { navigator.clipboard.writeText(linkData.link); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+              className="shrink-0 px-3 py-1.5 text-[11px] font-semibold rounded-lg bg-gold text-white hover:bg-gold-dark transition-colors">
+              {copied ? t('access_link_copied') : t('access_link_copy')}
+            </button>
+          </div>
+          <p className="text-[11px] text-stone-400">{t('access_link_expires')}</p>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {/* Role chips (super_admin is assigned via CLI, shown as a static badge) */}
@@ -262,6 +304,17 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
   const [expandedUser, setExpandedUser] = useState<string | null>(null)
   const [view, setView] = useState<'cards' | 'grid'>('cards')
   const [q, setQ] = useState('')
+  const [linkLoading, setLinkLoading] = useState<string | null>(null)
+  const [linkData, setLinkData] = useState<{ id: string; link: string } | null>(null)
+
+  async function generateLink(userId: string) {
+    setLinkLoading(userId); setMsg(null)
+    if (linkData?.id === userId) { setLinkData(null); setLinkLoading(null); return } // toggle off
+    const result = await generateAccessLinkAction(userId)
+    setLinkLoading(null)
+    if (result.ok && result.link) setLinkData({ id: userId, link: result.link })
+    else setMsg({ id: userId, ok: false, text: result.error })
+  }
 
   async function changeRole(userId: string, role: UserRole) {
     setSaving(userId); setMsg(null)
@@ -368,6 +421,9 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     addCompany,
     removeCompany,
     deleteUser,
+    generateLink,
+    linkLoading,
+    linkData,
   }
 
   return (

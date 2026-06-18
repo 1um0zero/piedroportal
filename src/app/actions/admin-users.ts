@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
+import { createSetPasswordLink } from '@/lib/password-reset'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
 
@@ -86,6 +87,26 @@ export async function deleteUserAction(
   const { error: authErr } = await service.auth.admin.deleteUser(userId)
   if (authErr) return { error: authErr.message }
   return { ok: true }
+}
+
+/**
+ * Generate a direct set-password / login link for a user (no email sent), so
+ * staff can deliver it by phone/WhatsApp when the customer's mail server blocks
+ * our reset emails. Returns the link + expiry. 24h, single-use.
+ */
+export async function generateAccessLinkAction(
+  userId: string,
+): Promise<{ ok?: boolean; link?: string; expiresAt?: string; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
+
+  const result = await createSetPasswordLink(userId)
+  if (!result) return { error: 'Could not generate link' }
+  return { ok: true, link: result.link, expiresAt: result.expiresAt }
 }
 
 export async function toggleCompanyAdminAction(
