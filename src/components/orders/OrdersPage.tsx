@@ -398,16 +398,16 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
-                <th className="px-4 py-3 text-left">{t('col_date')}</th>
-                <th className="px-4 py-3 text-left">{t('col_product')}</th>
-                <th className="px-4 py-3 text-left">{t('col_unit')}</th>
-                {isAdmin && <th className="px-4 py-3 text-left">{t('col_company')}</th>}
-                <th className="px-4 py-3 text-left">{staffView ? t('col_clinician') : t('col_patient')}</th>
-                <th className="px-4 py-3 text-left">{t('col_piedro_order')}</th>
-                <th className="px-4 py-3 text-left">{t('col_status')}</th>
-                <th className="px-4 py-3 text-left">{t('col_delivery')}</th>
-                <th className="px-4 py-3 text-left">{t('col_pdf')}</th>
-                <th className="px-4 py-3"></th>
+                <th className="px-2.5 py-3 text-left">{t('col_date')}</th>
+                <th className="px-2.5 py-3 text-left">{t('col_product')}</th>
+                <th className="px-2.5 py-3 text-left">{t('col_unit')}</th>
+                {isAdmin && <th className="px-2.5 py-3 text-left">{t('col_company')}</th>}
+                <th className="px-2.5 py-3 text-left">{staffView ? t('col_clinician') : t('col_patient')}</th>
+                <th className="px-2.5 py-3 text-left">{t('col_piedro_order')}</th>
+                <th className="px-2.5 py-3 text-left">{t('col_status')}</th>
+                <th className="px-2.5 py-3 text-left">{t('col_delivery')}</th>
+                <th className="px-2.5 py-3 text-left">{t('col_pdf')}</th>
+                <th className="px-2.5 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
@@ -431,7 +431,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                     onClick={() => router.push(detailHref as Parameters<typeof router.push>[0])}>
 
                     {/* Date — year shown only for orders before the current year */}
-                    <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">
+                    <td className="px-2.5 py-3 text-stone-500 text-xs whitespace-nowrap">
                       {o.created_at
                         ? (() => {
                             const d = new Date(o.created_at)
@@ -442,18 +442,18 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         : '—'}
                     </td>
                     {/* Product */}
-                    <td className="px-4 py-3">
+                    <td className="px-2.5 py-3">
                       <div className="flex items-center gap-3">
                         {product?.picture_name ? (
-                          <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-stone-50 shrink-0">
+                          <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-stone-50 shrink-0">
                             <Image
                               src={productImageUrl(product.picture_name)}
                               alt={product.style_name ?? ''}
-                              fill sizes="40px" className="object-contain p-0.5"
+                              fill sizes="36px" className="object-contain p-0.5"
                             />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-stone-100 shrink-0
+                          <div className="w-9 h-9 rounded-lg bg-stone-100 shrink-0
                                           flex items-center justify-center text-xs text-stone-400">
                             {product?.style_name?.slice(0, 4) ?? '—'}
                           </div>
@@ -491,23 +491,23 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                     </td>
                     {/* Company — Piedro admin only (a company admin sees a single company) */}
                     {isAdmin && (
-                      <td className="px-4 py-3">
-                        <p className="text-stone-700 text-sm truncate max-w-[180px]">
+                      <td className="px-2.5 py-3">
+                        <p className="text-stone-700 text-sm truncate max-w-[130px]">
                           {company?.name ?? '—'}
                         </p>
                         <p className="text-xs text-stone-400">{company?.erp_code ?? ''}</p>
                       </td>
                     )}
                     {/* Clinician (staff) | Patient (user) — Ref shown to everyone */}
-                    <td className="px-4 py-3">
-                      <p className="text-stone-700 truncate max-w-[170px]">
+                    <td className="px-2.5 py-3">
+                      <p className="text-stone-700 truncate max-w-[130px]">
                         {staffView ? (o.clinician ?? '—') : (o.patient_name ?? '—')}
                       </p>
-                      <p className="text-xs text-stone-400 truncate max-w-[170px]">{o.reference_customer ?? ''}</p>
+                      <p className="text-xs text-stone-400 truncate max-w-[130px]">{o.reference_customer ?? ''}</p>
                     </td>
                     {/* Piedro Order # — ERP order number with an approval/cancel mark.
                         While still empty, a "New" order shows its badge here. */}
-                    <td className="px-4 py-3">
+                    <td className="px-2.5 py-3">
                       {(() => {
                         const apTitle = o.approval_state ? (ta.has(o.approval_state) ? ta(o.approval_state) : o.approval_state) : undefined
                         if (o.piedro_order_id) {
@@ -530,12 +530,12 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                     </td>
                     {/* Status — production trail (factory journey). Off-trail states
                         (fitting/dispatched) show a chip; non-production orders a dash. */}
-                    <td className="px-4 py-3">
+                    <td className="px-2.5 py-3">
                       <div className="flex items-center gap-1.5">
                         {isUrgent && <span title={t('urgent_only')} className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         {(() => {
                           if (isOnProductionTrail(o.production_state)) {
-                            return <ProductionTrail state={o.production_state!} label={v => (tp.has(v) ? tp(v) : v)} size={17} />
+                            return <ProductionTrail state={o.production_state!} label={v => (tp.has(v) ? tp(v) : v)} size={15} />
                           }
                           if (o.production_state) {
                             const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
@@ -547,7 +547,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                     </td>
                     {/* Delivery — days-to-dispatch (plain text) until delivered, then the
                         carrier tracking link (+ invoice number once the ERP sends it). */}
-                    <td className="px-4 py-3 text-xs whitespace-nowrap">
+                    <td className="px-2.5 py-3 text-xs whitespace-nowrap">
                       {(o.status === 'delivered' || o.production_state === 'delivered') ? (
                         o.tracking_link ? (
                           <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
@@ -563,7 +563,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                       )}
                     </td>
                     {/* PDF */}
-                    <td className="px-4 py-3">
+                    <td className="px-2.5 py-3">
                       {o.pdf_url ? (
                         <a href={o.pdf_url} target="_blank" rel="noopener noreferrer"
                           title={t('download_pdf')}
