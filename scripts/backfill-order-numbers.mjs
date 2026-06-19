@@ -65,7 +65,7 @@ const orders = []
   const PAGE = 1000
   for (;;) {
     const { data, error } = await sb.from('orders')
-      .select('id, dataverse_id, order_seq, created_at')
+      .select('id, dataverse_id, order_seq, created_at, status')
       .order('created_at', { ascending: true })
       .range(from, from + PAGE - 1)
     if (error) { console.error(error); process.exit(1) }
@@ -80,28 +80,37 @@ console.log(`✓ ${orders.length} portal orders loaded`)
 const updates = []        // { id, order_seq }
 let migratedFilled = 0, migratedMissing = 0, alreadySet = 0
 
+let skippedDrafts = 0
 for (const o of orders) {
   if (o.order_seq != null) { alreadySet++; continue }
-  if (o.dataverse_id) {
-    const seq = dvSeq.get(o.dataverse_id)
-    if (seq != null) { updates.push({ id: o.id, order_seq: seq }); migratedFilled++ }
-    else migratedMissing++   // migrated but no name in DV — handle as native below
+  // Drafts are unfinished — a number is consumed only on SUBMIT, never for a draft.
+  if (o.status === 'draft') { skippedDrafts++; continue }
+  if (o.dataverse_id && dvSeq.has(o.dataverse_id)) {
+    updates.push({ id: o.id, order_seq: dvSeq.get(o.dataverse_id) }); migratedFilled++
+  } else if (o.dataverse_id) {
+    migratedMissing++   // migrated but no name in DV — handle as native below
   }
 }
 
 // Native (no dataverse_id) + migrated-without-name: continue the sequence by created_at.
-let next = legacyMax
+// Drafts already excluded above. Start from the higher of the legacy max and the
+// max already assigned in the DB, so re-runs continue past existing numbers (never
+// reuse a number a previous run already handed out).
+const dbMax = orders.reduce((m, o) => (o.order_seq != null && o.order_seq > m ? o.order_seq : m), 0)
+let next = Math.max(legacyMax, dbMax)
+const continuationStart = next + 1
 const natives = orders
-  .filter(o => o.order_seq == null && (!o.dataverse_id || !dvSeq.has(o.dataverse_id)))
+  .filter(o => o.order_seq == null && o.status !== 'draft' && (!o.dataverse_id || !dvSeq.has(o.dataverse_id)))
   .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
 for (const o of natives) updates.push({ id: o.id, order_seq: ++next })
 const finalMax = Math.max(legacyMax, next)
 
 console.log('\n── Plan ──────────────────────────────────────')
 console.log(`  already numbered      : ${alreadySet}`)
+console.log(`  skipped drafts        : ${skippedDrafts}  (stay unnumbered until submit)`)
 console.log(`  migrated → from DV name: ${migratedFilled}`)
 console.log(`  migrated, no DV name   : ${migratedMissing}  (numbered as continuation)`)
-console.log(`  native → continuation  : ${natives.length}  (${legacyMax + 1} … ${next})`)
+console.log(`  native → continuation  : ${natives.length}  (${continuationStart} … ${next})`)
 console.log(`  TOTAL to update        : ${updates.length}`)
 console.log(`  sequence will setval to: ${finalMax}`)
 
