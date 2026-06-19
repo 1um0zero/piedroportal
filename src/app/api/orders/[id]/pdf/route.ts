@@ -9,6 +9,7 @@ import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { getAdminScope } from '@/lib/admin/scope'
 import { displayWidthByConstruction } from '@/lib/width-display'
 import { productImageUrl } from '@/lib/products/image-url'
+import { orderNumber } from '@/lib/format'
 import { rateLimit } from '@/lib/rate-limit'
 import type { Locale } from '@/types'
 
@@ -19,7 +20,7 @@ import type { Locale } from '@/types'
 // originally received.
 const WATERMARK = 'NOT THE ORIGINAL\n(MIGRATED ORDER)'
 
-const SELECT = `id, status, unit, quantity, reference_customer, patient_name, clinician,
+const SELECT = `id, order_seq, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   diff_sizes_pairs, additions, comments, created_at, pdf_url, user_id, company_id, locale,
   products(colour_id, color_name, closure, picture_name, style_name),
@@ -92,7 +93,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const tr = (v: string | null) => (v && trMap[v]) || v
 
     const pdfProps: OrderPdfProps = {
-      reference: order.reference_customer, status: order.status, unit: order.unit,
+      reference: order.reference_customer,
+      orderNumber: order.order_seq != null ? `#${orderNumber(order.order_seq)}` : null,
+      status: order.status, unit: order.unit,
       clinician: order.clinician, patient_name: order.patient_name, quantity: order.quantity,
       construction_left: tr(order.construction_left), construction_right: tr(order.construction_right),
       width_left: order.width_left ? displayWidthByConstruction(order.width_left, order.construction_left, locale) : order.width_left,

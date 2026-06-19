@@ -200,7 +200,9 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const tr = (v: string | null) => (v && trMap[v]) || v
 
     const pdfProps: OrderPdfProps = {
-      reference: row.reference_customer, status: row.status, unit: row.unit,
+      reference: row.reference_customer,
+      orderNumber: orderSeq != null ? `#${orderNumber(orderSeq)}` : null,
+      status: row.status, unit: row.unit,
       clinician: row.clinician, patient_name: row.patient_name, quantity: row.quantity,
       construction_left: tr(row.construction_left), construction_right: tr(row.construction_right),
       width_left: row.width_left ? displayWidthByConstruction(row.width_left, row.construction_left, loc) : row.width_left,

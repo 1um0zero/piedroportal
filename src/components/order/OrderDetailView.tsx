@@ -125,6 +125,77 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
     setTranslating(false)
   }
 
+  // Order number + creation date — shown at the top of the Customer card.
+  const createdLabel = new Date(order.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' })
+  const orderNoNode = (
+    <div className="-mt-1 mb-1">
+      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{tOrder('order_number_label')}</p>
+      <p className="text-lg font-bold text-stone-900 tabular-nums">
+        {order.order_seq != null ? `#${orderNumber(order.order_seq)}` : (order.reference_customer ?? '—')}
+        <span className="ml-2 text-sm font-normal text-stone-400">— {createdLabel}</span>
+      </p>
+    </div>
+  )
+
+  // ── Admin validation panel — rendered directly under the Customer card.
+  // Piedro Order # + Approval sit side by side; production shows the current stage
+  // read-only (it is driven by the ERP/A-Shell, never set by hand here); Internal
+  // Notes is hidden for now (the column is kept in the DB and saved untouched).
+  const adminPanel = isAdmin ? (
+    <div className="bg-white rounded-[14px] p-5 space-y-5" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Piedro Admin</h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Piedro Order # */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">
+            Piedro Order # <span className="text-red-400">*</span>
+          </label>
+          <input value={piedroId} onChange={e => setPiedroId(e.target.value)}
+            placeholder="Required before approving"
+            className="w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
+        </div>
+
+        {/* Approval state — dropdown to the right of Piedro Order # */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Approval State</label>
+          <select value={approvalSt} onChange={e => setApprovalSt(e.target.value as ApprovalState)}
+            className="w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold">
+            {APPROVAL_STATES.map(s => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Production state — read-only current stage (set by the factory via the ERP) */}
+      {isApprovedOrBeyond && (
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Production State</label>
+          <div>
+            {productionMeta ? (
+              <span className="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700">
+                {productionMeta.label}
+              </span>
+            ) : (
+              <span className="text-xs text-stone-400">—</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button onClick={() => start(() => handleSave())} disabled={!canSave}
+          className="px-6 py-2.5 bg-stone-800 text-white text-sm font-semibold rounded-xl hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          {saving ? 'Saving…' : 'CONFIRM changes'}
+        </button>
+        {dirty && !piedroId.trim() && (
+          <span className="text-xs text-red-500">⚠ Piedro Order # is required to save.</span>
+        )}
+      </div>
+    </div>
+  ) : null
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-5">
 
@@ -150,20 +221,10 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
         </Link>
       )}
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-xs text-stone-400 mb-1">{tOrder('order_number_label')}</p>
-          <h1 className="text-2xl font-bold text-stone-900 tabular-nums">
-            {order.order_seq != null ? `#${orderNumber(order.order_seq)}` : (order.reference_customer ?? '—')}
-          </h1>
-          {order.order_seq != null && order.reference_customer && (
-            <p className="text-sm text-stone-500 mt-0.5">{order.reference_customer}</p>
-          )}
-          <p className="text-sm text-stone-500 mt-0.5">{new Date(order.created_at).toLocaleDateString(locale, { day:'2-digit', month:'long', year:'numeric' })}</p>
-          {order.piedro_order_id && <p className="text-sm font-semibold text-stone-700 mt-1">Piedro Order: {order.piedro_order_id}</p>}
-        </div>
-        <div className="flex items-center gap-2 flex-wrap justify-end">
+      {/* Top action bar — the order number + date now live inside the Customer card
+          (OrderSummary headingNode); Piedro Order # and Approval live in the admin
+          panel below, so the header carries only the actions + current status. */}
+      <div className="flex items-center justify-end gap-2 flex-wrap">
           {/* A draft is unfinished — let the owner reopen it in the order form to
               edit and actually submit it (the detail view itself is read-only). */}
           {!isAdmin && order.status === 'draft' && product?.id && (
@@ -226,7 +287,6 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
               {tOrder('pdf_migrated')}
             </a>
           )}
-        </div>
       </div>
 
       {msg && (
@@ -235,81 +295,12 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
         </div>
       )}
 
-      {/* ── Admin panel (validation) ─────────────────────────────────────── */}
-      {isAdmin && (
-        <div className="bg-white rounded-[14px] p-5 space-y-5" style={{ boxShadow: 'var(--shadow-card)' }}>
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Piedro Admin</h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Piedro Order # */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">
-                Piedro Order # <span className="text-red-400">*</span>
-              </label>
-              <input value={piedroId} onChange={e => setPiedroId(e.target.value)}
-                placeholder="Required before approving"
-                className="w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
-            </div>
-
-            {/* Internal notes */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Internal Notes</label>
-              <input value={piedroNotes} onChange={e => setPiedroNotes(e.target.value)}
-                placeholder="Factory notes…"
-                className="w-full h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
-            </div>
-          </div>
-
-          {/* Approval state */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Approval State</label>
-            <div className="flex flex-wrap gap-2">
-              {APPROVAL_STATES.map(s => (
-                <button key={s.value}
-                  onClick={() => setApprovalSt(s.value)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all
-                    ${approvalSt === s.value
-                      ? `${s.color} border-current ring-2 ring-current/20`
-                      : 'text-stone-500 border-stone-200 hover:border-stone-400 bg-white'}`}>
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Production state — only once approved & handed to the factory */}
-          {isApprovedOrBeyond && (
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">Production State</label>
-              <div className="flex flex-wrap gap-2">
-                {PRODUCTION_STATES.map(s => (
-                  <button key={s.value}
-                    onClick={() => setProductionSt(productionSt === s.value ? '' : s.value)}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all
-                      ${productionSt === s.value
-                        ? 'bg-amber-500 text-white border-amber-500'
-                        : 'text-stone-500 border-stone-200 hover:border-stone-400 bg-white'}`}>
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            <button onClick={() => start(() => handleSave())} disabled={!canSave}
-              className="px-6 py-2.5 bg-stone-800 text-white text-sm font-semibold rounded-xl hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? 'Saving…' : 'CONFIRM changes'}
-            </button>
-            {dirty && !piedroId.trim() && (
-              <span className="text-xs text-red-500">⚠ Piedro Order # is required to save.</span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Order body — same structure as the registration Confirmation step ── */}
+      {/* ── Order body — Customer card (with the order nº + the admin panel right
+          under it) followed by Specifications and Additions, same structure as the
+          registration Confirmation step. ── */}
       <OrderSummary
+        headingNode={orderNoNode}
+        afterCustomer={adminPanel}
         companyName={company?.name ?? '—'}
         clinician={order.clinician}
         patientName={order.patient_name}

@@ -57,6 +57,9 @@ type SidedVal = { l: unknown; r: unknown }
 
 export type OrderPdfProps = {
   reference: string | null
+  /** The portal order number (e.g. "#4669") — shown top-right. Falls back to the
+   *  customer reference when absent (drafts / very old rows). */
+  orderNumber?: string | null
   status: string
   unit: string
   clinician: string | null
@@ -85,7 +88,7 @@ export type OrderPdfProps = {
 }
 
 export function OrderPdf({
-  reference, status, unit, clinician, patient_name, quantity,
+  reference, orderNumber, status, unit, clinician, patient_name, quantity,
   construction_left, construction_right, width_left, width_right,
   size_left, size_right, additions, comments, created_at,
   companyName, productColourId, productColorName, productClosure, productImageUrl,
@@ -200,7 +203,7 @@ export function OrderPdf({
             </Text>
           </View>
           <View style={s.refBlock}>
-            <Text style={s.refNum}>{reference ?? t('additions.empty_value')}</Text>
+            <Text style={s.refNum}>{orderNumber ?? reference ?? t('additions.empty_value')}</Text>
             <Text style={s.refDate}>{date}</Text>
             <View style={s.badge}><Text style={s.badgeText}>{status}</Text></View>
           </View>

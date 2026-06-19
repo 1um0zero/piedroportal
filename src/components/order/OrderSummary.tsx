@@ -38,6 +38,10 @@ export type OrderSummaryProps = {
   onEditAdditions?: () => void
   /** Panel only — extra content under the comments (e.g. translation tools). */
   commentsFooter?: React.ReactNode
+  /** Detail only — small heading at the top of the Customer card (e.g. "Nr. #4669 — date"). */
+  headingNode?: React.ReactNode
+  /** Detail only — content inserted right after the Customer+Product card (e.g. the admin panel). */
+  afterCustomer?: React.ReactNode
 }
 
 type SidedVal = { l: unknown; r: unknown }
@@ -47,6 +51,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
     companyName, clinician, patientName, reference, product, unit, quantity,
     constrLeft = '', constrRight = '', widthLeft = '', widthRight = '',
     sizeLeft = '', sizeRight = '', comments, onEditAdditions, commentsFooter,
+    headingNode, afterCustomer,
   } = props
   const additions = props.additions ?? {}
   const diffSizesPairs = props.diffSizesPairs ?? []
@@ -181,6 +186,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Customer */}
         <div className="bg-white rounded-[14px] p-5 space-y-2" style={{ boxShadow: 'var(--shadow-card)' }}>
+          {headingNode}
           <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t('customer')}</h3>
           <p className="font-semibold text-stone-900">{companyName}</p>
           {clinician   && <p className="text-xs text-stone-500">{t('clinician')}: {clinician}</p>}
@@ -229,6 +235,8 @@ export default function OrderSummary(props: OrderSummaryProps) {
           )}
         </div>
       </div>
+
+      {afterCustomer}
 
       {/* Specifications */}
       {(constrLeft || constrRight || widthLeft || widthRight || sizeLeft || sizeRight || (unit === 'DIFF_SIZES' && diffSizesPairs.some(p => p.size))) && (
