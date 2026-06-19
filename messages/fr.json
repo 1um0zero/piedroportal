@@ -183,7 +183,7 @@
       "cat_1": "Sportif",
       "cat_2": "Bottes biker",
       "cat_3": "Classique",
-      "cat_4": "Pied diabétique & sensible",
+      "cat_4": "Soft Collection — pied sensible",
       "cat_5": "First Steps",
       "cat_6": "Flexible",
       "cat_7": "High & Mid Tops",
@@ -193,9 +193,6 @@
       "diabetics": "Pieds sensibles",
       "diabetics_hint": "Ortho Soft Collection — afficher uniquement les modèles pour pieds sensibles",
       "my_styles": "Mes modèles"
-    },
-    "badges": {
-      "diabetic": "Diabétique"
     },
     "results": "{count} modèles",
     "loading": "Chargement…",
@@ -824,7 +821,7 @@
       "exclusive_none": "— Non exclusif —",
       "exclusive_unassigned": "{label} (sigle non attribué)",
       "exclusive_hint": "S'applique à tout le modèle (toutes les couleurs). Seuls les utilisateurs de la société choisie peuvent le voir et le commander.",
-      "diabetics": "Diabétiques",
+      "diabetics": "Soft Collection (pied sensible)",
       "constructions": "Constructions",
       "add_construction": "+ Ajouter une construction",
       "no_constructions": "Aucune construction.",
@@ -1146,7 +1143,7 @@
       "title": "Nouveau chez Piedro !",
       "body": [
         "Nous élargissons continuellement notre gamme avec les meilleures chaussures orthopédiques, des nouveaux modèles de saison aux lignes innovantes.",
-        "Nous présentons avec fierté la nouvelle collection Piedro Ortho Soft, spécialement développée pour le pied sensible et diabétique. Un mélange parfait de confort, de soin et de style, avec le soutien sur lequel vous pouvez compter."
+        "Nous présentons avec fierté la nouvelle collection Piedro Ortho Soft, spécialement développée pour le pied sensible. Un mélange parfait de confort, de soin et de style, avec le soutien sur lequel vous pouvez compter."
       ],
       "cta": "Voir la collection Piedro Ortho Soft →"
     },

@@ -183,7 +183,7 @@
       "cat_1": "Sportlich",
       "cat_2": "Bikerstiefel",
       "cat_3": "Klassisch",
-      "cat_4": "Diabetischer & sensibler Fuß",
+      "cat_4": "Soft Collection — empfindlicher Fuß",
       "cat_5": "First Steps",
       "cat_6": "Flexibel",
       "cat_7": "High & Mid Tops",
@@ -193,9 +193,6 @@
       "diabetics": "Empfindliche Füße",
       "diabetics_hint": "Ortho Soft Collection — nur Modelle für empfindliche Füße zeigen",
       "my_styles": "Meine Modelle"
-    },
-    "badges": {
-      "diabetic": "Diabetisch"
     },
     "results": "{count} Modelle",
     "loading": "Wird geladen…",
@@ -824,7 +821,7 @@
       "exclusive_none": "— Nicht exklusiv —",
       "exclusive_unassigned": "{label} (nicht zugewiesenes Kürzel)",
       "exclusive_hint": "Gilt für das gesamte Modell (alle Farben). Nur Benutzer der gewählten Firma können es sehen und bestellen.",
-      "diabetics": "Diabetiker",
+      "diabetics": "Soft Collection (empfindlicher Fuß)",
       "constructions": "Konstruktionen",
       "add_construction": "+ Konstruktion hinzufügen",
       "no_constructions": "Noch keine Konstruktionen.",
@@ -1146,7 +1143,7 @@
       "title": "Neu bei Piedro!",
       "body": [
         "Wir erweitern unser Sortiment kontinuierlich mit den besten orthopädischen Schuhen, von frischen Saisonmodellen bis zu innovativen neuen Linien.",
-        "Mit Stolz präsentieren wir die neue Piedro Ortho Soft Kollektion, speziell entwickelt für den empfindlichen und diabetischen Fuß. Eine perfekte Kombination aus Komfort, Pflege und Stil – mit der Unterstützung, auf die Sie sich verlassen können."
+        "Mit Stolz präsentieren wir die neue Piedro Ortho Soft Kollektion, speziell entwickelt für den empfindlichen Fuß. Eine perfekte Kombination aus Komfort, Pflege und Stil – mit der Unterstützung, auf die Sie sich verlassen können."
       ],
       "cta": "Piedro Ortho Soft Kollektion ansehen →"
     },

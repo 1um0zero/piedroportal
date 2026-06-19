@@ -183,7 +183,7 @@
       "cat_1": "Sportief",
       "cat_2": "Bikerboots",
       "cat_3": "Klassiek",
-      "cat_4": "Diabetische & gevoelige voet",
+      "cat_4": "Soft Collection — gevoelige voet",
       "cat_5": "First Steps",
       "cat_6": "Flexibel",
       "cat_7": "High & Mid Tops",
@@ -193,9 +193,6 @@
       "diabetics": "Gevoelige voeten",
       "diabetics_hint": "Ortho Soft Collection — toon alleen modellen voor gevoelige voeten",
       "my_styles": "Mijn modellen"
-    },
-    "badges": {
-      "diabetic": "Diabetisch"
     },
     "results": "{count} modellen",
     "loading": "Laden…",
@@ -824,7 +821,7 @@
       "exclusive_none": "— Niet exclusief —",
       "exclusive_unassigned": "{label} (niet-toegewezen code)",
       "exclusive_hint": "Geldt voor het hele model (alle kleuren). Alleen gebruikers van het gekozen bedrijf zien en bestellen het.",
-      "diabetics": "Diabetici",
+      "diabetics": "Soft Collection (gevoelige voet)",
       "constructions": "Constructies",
       "add_construction": "+ Constructie toevoegen",
       "no_constructions": "Nog geen constructies.",
@@ -1146,7 +1143,7 @@
       "title": "Nieuw bij Piedro!",
       "body": [
         "Wij breiden ons assortiment continu uit met de beste orthopedische schoenen, van frisse seizoensmodellen tot innovatieve nieuwe lijnen.",
-        "Met trots presenteren wij de nieuwe Piedro Ortho Soft Collectie, speciaal ontwikkeld voor de gevoelige en diabetische voet. Een perfecte combinatie van comfort, zorg en stijl, met de ondersteuning waar u op kan vertrouwen."
+        "Met trots presenteren wij de nieuwe Piedro Ortho Soft Collectie, speciaal ontwikkeld voor de gevoelige voet. Een perfecte combinatie van comfort, zorg en stijl, met de ondersteuning waar u op kan vertrouwen."
       ],
       "cta": "Bekijk de Piedro Ortho Soft Collectie →"
     },
