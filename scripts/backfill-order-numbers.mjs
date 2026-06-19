@@ -9,7 +9,7 @@
  *     with no rupture and no collision with any (even unimported) legacy number.
  *  3. setval(order_seq_counter, final max) so the next submit gets max+1.
  *
- * Run AFTER migration 038. Usage: node scripts/backfill-order-numbers.mjs [--dry-run]
+ * Run AFTER migration 039. Usage: node scripts/backfill-order-numbers.mjs [--dry-run]
  */
 import { readFileSync } from 'fs'
 import { resolve } from 'path'

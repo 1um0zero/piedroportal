@@ -1,4 +1,4 @@
--- Migration 038 — human-readable sequential order number (restores the Dataverse legacy)
+-- Migration 039 — human-readable sequential order number (restores the Dataverse legacy)
 --
 -- The Power Pages / Dataverse portal gave every order a name "YYYY-MM-DD-NNNN",
 -- where NNNN was a GLOBAL sequential counter (independent of the date) the staff
