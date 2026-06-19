@@ -16,6 +16,12 @@ export const dynamic = 'force-dynamic'
  *   pending=1 (default)  only orders not yet exported (erp_exported_at IS NULL)
  *   all=1                include already-exported orders (overrides pending)
  *   status=submitted     CSV of statuses to include (default: submitted,approved)
+ *   include_vsi_direct=1 also pull VSI-direct orders: accounts whose erp_code
+ *                        starts with "08" (Voetmax/ZSM/Tallermade…) are billed
+ *                        by VSI, never approved at Piedro and never get a Piedro
+ *                        Order — so they must surface as soon as `submitted`.
+ *                        When set, the status filter becomes:
+ *                        approved (any account) OR submitted (08-account).
  *   since=<ISO>          only orders updated at/after this timestamp
  *   piedro_order=<csv>   CSV of Piedro Order numbers; * = wildcard (e.g. 65*).
  *                        Mirrors the a-shell console filter: when present, the
@@ -40,6 +46,7 @@ export async function GET(req: Request) {
     .split(',').map(s => s.trim()).filter(Boolean)
   const hasOrderFilter = piedroTerms.length > 0
   const all = url.searchParams.get('all') === '1'
+  const includeVsiDirect = url.searchParams.get('include_vsi_direct') === '1'
   const pendingParam = url.searchParams.get('pending')
   const pending = !all && (hasOrderFilter ? pendingParam === '1' : pendingParam !== '0')
   const since = url.searchParams.get('since')
@@ -57,7 +64,20 @@ export async function GET(req: Request) {
     .order('created_at', { ascending: true })
     .limit(limit)
 
-  if (statuses.length) query = query.in('status', statuses)
+  if (includeVsiDirect) {
+    // VSI-direct accounts (erp_code "08…") are never approved at Piedro: bring
+    // them in as soon as `submitted`, alongside the normal approved orders.
+    const { data: vsiCompanies } = await service
+      .from('companies').select('id').ilike('erp_code', '08%')
+    const vsiIds = (vsiCompanies ?? []).map(c => c.id)
+    query = query.or(
+      vsiIds.length
+        ? `status.eq.approved,and(status.eq.submitted,company_id.in.(${vsiIds.join(',')}))`
+        : 'status.eq.approved'
+    )
+  } else if (statuses.length) {
+    query = query.in('status', statuses)
+  }
   if (pending) query = query.is('erp_exported_at', null)
   if (since) query = query.gte('updated_at', since)
   if (hasOrderFilter) {
