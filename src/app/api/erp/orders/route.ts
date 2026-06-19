@@ -22,6 +22,11 @@ export const dynamic = 'force-dynamic'
  *                        Order — so they must surface as soon as `submitted`.
  *                        When set, the status filter becomes:
  *                        approved (any account) OR submitted (08-account).
+ *   submitted_exclude_account=<csv>  CSV of erp_codes (e.g. 000145,000154).
+ *                        Status filter becomes: approved (any account) OR
+ *                        submitted (any account EXCEPT the listed ones). Stopgap
+ *                        for VSI-direct visibility until a companies.vsi_direct
+ *                        flag exists.
  *   since=<ISO>          only orders updated at/after this timestamp
  *   piedro_order=<csv>   CSV of Piedro Order numbers; * = wildcard (e.g. 65*).
  *                        Mirrors the a-shell console filter: when present, the
@@ -64,6 +69,13 @@ export async function GET(req: Request) {
     .order('created_at', { ascending: true })
     .limit(limit)
 
+  // Stopgap until a real companies.vsi_direct flag exists: pull approved orders
+  // (any account) plus submitted orders from every account EXCEPT the listed
+  // Piedro accounts (e.g. 000145, 000154) — so VSI-direct clients' unapproved
+  // orders surface without dragging in Piedro's own not-yet-approved orders.
+  const submittedExclude = (url.searchParams.get('submitted_exclude_account') ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+
   if (includeVsiDirect) {
     // VSI-direct accounts (erp_code "08…") are never approved at Piedro: bring
     // them in as soon as `submitted`, alongside the normal approved orders.
@@ -74,6 +86,15 @@ export async function GET(req: Request) {
       vsiIds.length
         ? `status.eq.approved,and(status.eq.submitted,company_id.in.(${vsiIds.join(',')}))`
         : 'status.eq.approved'
+    )
+  } else if (submittedExclude.length) {
+    const { data: exCompanies } = await service
+      .from('companies').select('id').in('erp_code', submittedExclude)
+    const exIds = (exCompanies ?? []).map(c => c.id)
+    query = query.or(
+      exIds.length
+        ? `status.eq.approved,and(status.eq.submitted,company_id.not.in.(${exIds.join(',')}))`
+        : 'status.eq.approved,status.eq.submitted'
     )
   } else if (statuses.length) {
     query = query.in('status', statuses)
