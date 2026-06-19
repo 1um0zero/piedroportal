@@ -281,7 +281,9 @@ export async function setProductActive(
   const { error } = await service.from('products').update({ active }).eq('id', id)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/products')
+  // No revalidatePath: the products list updates its row optimistically. A
+  // revalidate here would re-run the whole (paginated) server fetch, which is
+  // what made the badge take seconds to settle after a click.
   return { ok: true }
 }
 
@@ -305,8 +307,30 @@ export async function setProductNew(
   const { error } = await service.from('products').update({ is_new }).eq('id', id)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/products')
-  return { ok: true }
+  return { ok: true } // see setProductActive: no revalidate, list updates optimistically
+}
+
+/** Toggle the Soft Collection flag (products.diabetics) — the blue "S" dot in the gallery. */
+export async function setProductDiabetics(
+  id: string,
+  diabetics: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const scope = await assertBackoffice()
+  if (typeof scope === 'string') return { error: scope }
+
+  const service = createServiceClient()
+
+  if (!scope.allModels) {
+    const { data: current } = await service
+      .from('products').select('style_name').eq('id', id).maybeSingle()
+    if (!current || !scope.canModel(current.style_name as string))
+      return { error: 'This model is out of your scope' }
+  }
+
+  const { error } = await service.from('products').update({ diabetics }).eq('id', id)
+  if (error) return { error: error.message }
+
+  return { ok: true } // see setProductActive: no revalidate, list updates optimistically
 }
 
 // ── Delete a product image slot ───────────────────────────────────────────────

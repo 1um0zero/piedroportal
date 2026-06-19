@@ -928,7 +928,17 @@
       "new_no": "Not NEW",
       "col_new": "New",
       "new_badge": "New",
-      "toggle_new_hint": "Toggle the NEW badge in the gallery"
+      "toggle_new_hint": "Toggle the NEW badge in the gallery",
+      "col_soft": "Soft",
+      "all_soft": "All (soft)",
+      "soft_yes": "Soft only",
+      "soft_no": "Non-soft",
+      "soft_badge": "Soft Collection",
+      "toggle_soft_hint": "Toggle the Soft Collection (S) badge in the gallery",
+      "edit_mode_on": "Edit mode: on",
+      "edit_mode_off": "Edit mode",
+      "edit_mode_hint": "Enable inline editing of the highlighted columns",
+      "edit_mode_note": "Editing on — highlighted columns are editable. Click a badge to toggle it."
     },
     "branches": {
       "title": "Branch offices",

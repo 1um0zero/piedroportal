@@ -928,7 +928,17 @@
       "new_no": "Nicht NEU",
       "col_new": "Neu",
       "new_badge": "Neu",
-      "toggle_new_hint": "NEU-Badge in der Galerie umschalten"
+      "toggle_new_hint": "NEU-Badge in der Galerie umschalten",
+      "col_soft": "Soft",
+      "all_soft": "Alle (soft)",
+      "soft_yes": "Nur Soft",
+      "soft_no": "Nicht-Soft",
+      "soft_badge": "Soft Collection",
+      "toggle_soft_hint": "Das Soft-Collection-(S)-Badge in der Galerie umschalten",
+      "edit_mode_on": "Bearbeitungsmodus: ein",
+      "edit_mode_off": "Bearbeitungsmodus",
+      "edit_mode_hint": "Inline-Bearbeitung der hervorgehobenen Spalten aktivieren",
+      "edit_mode_note": "Bearbeitung ein — hervorgehobene Spalten sind bearbeitbar. Klicken Sie auf ein Badge zum Umschalten."
     },
     "branches": {
       "title": "Niederlassungen",

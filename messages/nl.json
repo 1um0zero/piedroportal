@@ -928,7 +928,17 @@
       "new_no": "Niet NIEUW",
       "col_new": "Nieuw",
       "new_badge": "Nieuw",
-      "toggle_new_hint": "NIEUW-badge in de galerij aan/uit"
+      "toggle_new_hint": "NIEUW-badge in de galerij aan/uit",
+      "col_soft": "Soft",
+      "all_soft": "Alle (soft)",
+      "soft_yes": "Alleen soft",
+      "soft_no": "Niet-soft",
+      "soft_badge": "Soft Collection",
+      "toggle_soft_hint": "De Soft Collection (S)-badge in de galerij in-/uitschakelen",
+      "edit_mode_on": "Bewerkmodus: aan",
+      "edit_mode_off": "Bewerkmodus",
+      "edit_mode_hint": "Inline bewerken van de gemarkeerde kolommen inschakelen",
+      "edit_mode_note": "Bewerken aan — gemarkeerde kolommen zijn bewerkbaar. Klik op een badge om te wisselen."
     },
     "branches": {
       "title": "Filialen",

@@ -928,7 +928,17 @@
       "new_no": "Pas NEW",
       "col_new": "Nouveau",
       "new_badge": "New",
-      "toggle_new_hint": "Activer le badge NEW dans la galerie"
+      "toggle_new_hint": "Activer le badge NEW dans la galerie",
+      "col_soft": "Soft",
+      "all_soft": "Tous (soft)",
+      "soft_yes": "Soft uniquement",
+      "soft_no": "Non-soft",
+      "soft_badge": "Collection Soft",
+      "toggle_soft_hint": "Activer/désactiver le badge Collection Soft (S) dans la galerie",
+      "edit_mode_on": "Mode édition : activé",
+      "edit_mode_off": "Mode édition",
+      "edit_mode_hint": "Activer l'édition en ligne des colonnes en surbrillance",
+      "edit_mode_note": "Édition activée — les colonnes en surbrillance sont modifiables. Cliquez sur un badge pour le basculer."
     },
     "branches": {
       "title": "Filiales",

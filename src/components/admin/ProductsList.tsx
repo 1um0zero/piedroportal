@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
-import { setProductActive, setProductNew } from '@/app/actions/admin-products'
+import { setProductActive, setProductNew, setProductDiabetics } from '@/app/actions/admin-products'
 import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
 import { matchesAny } from '@/lib/search'
 
@@ -23,6 +23,7 @@ export type ProductRow = {
   exclusive: string | null
   is_stock: boolean
   is_new: boolean
+  diabetics: boolean
   created_at: string
 }
 
@@ -66,8 +67,10 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const [fExclusive, setFExclusive] = useState('')
   const [fStock, setFStock] = useState('')   // '' all | 'yes' | 'no'
   const [fNew, setFNew] = useState('')       // '' all | 'yes' | 'no'
+  const [fSoft, setFSoft] = useState('')     // '' all | 'yes' | 'no'
   const [fAdded, setFAdded] = useState('')   // '' all | 'today' | '7d' | '30d'
   const [onlyInactive, setOnlyInactive] = useState(false)
+  const [editMode, setEditMode] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
   const [page, setPage] = useState(0)
   const [busy, setBusy] = useState<string | null>(null)
@@ -95,30 +98,36 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
       if (fStock === 'no'  &&  p.is_stock) return false
       if (fNew === 'yes' && !p.is_new) return false
       if (fNew === 'no'  &&  p.is_new) return false
+      if (fSoft === 'yes' && !p.diabetics) return false
+      if (fSoft === 'no'  &&  p.diabetics) return false
       if (!needle) return true
       return matchesAny([p.colour_id, p.style_name, p.color_name, p.closure, p.type, companyName(p)], needle)
     })
     return [...out].sort((a, b) =>
       compareValues((a as Record<string, unknown>)[sort.key], (b as Record<string, unknown>)[sort.key], sort.dir))
-  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, fNew, fAdded, sort]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rows, q, onlyInactive, fSection, fClosure, fType, fExclusive, fStock, fNew, fSoft, fAdded, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSort = (key: string) => setSort(s => nextSort(s, key))
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE)
   const pages = Math.ceil(filtered.length / PAGE)
 
-  async function toggle(id: string, active: boolean) {
+  // Optimistic flag toggle: flip the row immediately, then persist; revert on error.
+  async function toggleFlag(
+    id: string,
+    key: 'active' | 'is_new' | 'diabetics',
+    next: boolean,
+    persist: (id: string, v: boolean) => Promise<{ error?: string }>,
+  ) {
     setBusy(id)
-    const res = await setProductActive(id, active)
-    if (!res.error) setRows(prev => prev.map(p => p.id === id ? { ...p, active } : p))
+    setRows(prev => prev.map(p => p.id === id ? { ...p, [key]: next } : p))
+    const res = await persist(id, next)
+    if (res.error) setRows(prev => prev.map(p => p.id === id ? { ...p, [key]: !next } : p))
     setBusy(null)
   }
 
-  async function toggleNew(id: string, is_new: boolean) {
-    setBusy(id)
-    const res = await setProductNew(id, is_new)
-    if (!res.error) setRows(prev => prev.map(p => p.id === id ? { ...p, is_new } : p))
-    setBusy(null)
-  }
+  const toggle     = (id: string, active: boolean)    => toggleFlag(id, 'active',    active,    setProductActive)
+  const toggleNew  = (id: string, is_new: boolean)    => toggleFlag(id, 'is_new',    is_new,    setProductNew)
+  const toggleSoft = (id: string, diabetics: boolean) => toggleFlag(id, 'diabetics', diabetics, setProductDiabetics)
 
   return (
     <div className="space-y-4">
@@ -151,6 +160,13 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           labels={{ yes: t('new_yes'), no: t('new_no') }}
         />
         <FilterSelect
+          value={fSoft}
+          onChange={v => { setFSoft(v); setPage(0) }}
+          allLabel={t('all_soft')}
+          options={['yes', 'no']}
+          labels={{ yes: t('soft_yes'), no: t('soft_no') }}
+        />
+        <FilterSelect
           value={fAdded}
           onChange={v => { setFAdded(v); setPage(0) }}
           allLabel={t('added_all')}
@@ -162,7 +178,23 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           {t('inactive_only')}
         </label>
         <span className="text-xs text-stone-400">{t('count_of', { shown: filtered.length, total: rows.length })}</span>
+        <button
+          onClick={() => setEditMode(v => !v)}
+          title={t('edit_mode_hint')}
+          className={`ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+            editMode
+              ? 'bg-gold text-white hover:bg-gold-dark'
+              : 'border border-stone-200 text-stone-600 hover:bg-stone-50'
+          }`}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          {editMode ? t('edit_mode_on') : t('edit_mode_off')}
+        </button>
       </div>
+      {editMode && (
+        <p className="text-xs text-gold-dark">{t('edit_mode_note')}</p>
+      )}
 
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
         <table className="w-full text-sm">
@@ -177,7 +209,8 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
               <SortableTh label={t('col_type')} sortKey="type" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_exclusive')} sortKey="exclusive" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_stock')} sortKey="is_stock" sort={sort} onSort={onSort} />
-              <SortableTh label={t('col_new')} sortKey="is_new" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_soft')} sortKey="diabetics" sort={sort} onSort={onSort} className={editMode ? 'bg-gold/10' : ''} />
+              <SortableTh label={t('col_new')} sortKey="is_new" sort={sort} onSort={onSort} className={editMode ? 'bg-gold/10' : ''} />
               <SortableTh label={t('col_added')} sortKey="created_at" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_active')} sortKey="active" sort={sort} onSort={onSort} />
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
@@ -210,14 +243,40 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                     ? <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-dark">{t('stock_badge')}</span>
                     : <span className="text-stone-300">—</span>}
                 </td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => toggleNew(p.id, !p.is_new)}
-                    disabled={busy === p.id}
-                    title={t('toggle_new_hint')}
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${p.is_new ? 'bg-gold text-white' : 'bg-stone-100 text-stone-400'}`}>
-                    {t('new_badge')}
-                  </button>
+                <td className={`px-4 py-2 ${editMode ? 'bg-gold/5' : ''}`}>
+                  {editMode ? (
+                    <button
+                      onClick={() => toggleSoft(p.id, !p.diabetics)}
+                      disabled={busy === p.id}
+                      title={t('toggle_soft_hint')}
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-extrabold ring-1 transition-colors ${
+                        p.diabetics
+                          ? 'bg-[#eef5fb] text-[#3f6f94] ring-[#cfe3f0]'
+                          : 'bg-stone-100 text-stone-400 ring-stone-200'
+                      }`}>
+                      S
+                    </button>
+                  ) : p.diabetics ? (
+                    <span title={t('soft_badge')} aria-label={t('soft_badge')}
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#eef5fb] text-[11px] font-extrabold text-[#3f6f94] ring-1 ring-[#cfe3f0]">S</span>
+                  ) : (
+                    <span className="text-stone-300">—</span>
+                  )}
+                </td>
+                <td className={`px-4 py-2 ${editMode ? 'bg-gold/5' : ''}`}>
+                  {editMode ? (
+                    <button
+                      onClick={() => toggleNew(p.id, !p.is_new)}
+                      disabled={busy === p.id}
+                      title={t('toggle_new_hint')}
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${p.is_new ? 'bg-gold text-white' : 'bg-stone-100 text-stone-400'}`}>
+                      {t('new_badge')}
+                    </button>
+                  ) : p.is_new ? (
+                    <span className="rounded-full bg-gold px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white">{t('new_badge')}</span>
+                  ) : (
+                    <span className="text-stone-300">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap text-xs text-stone-500">
                   {p.created_at.slice(0, 10)}
