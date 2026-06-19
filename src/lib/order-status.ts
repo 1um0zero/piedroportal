@@ -38,8 +38,9 @@ export const PRODUCTION_SEQUENCE = [
   'stitching',
   'mounting',
   'finishing',
-  'delivered',
 ] as const
 
+// 'delivered' lives in the Delivery column (tracking), not as a trail step —
+// but a delivered order still renders the whole trail as complete.
 export const isOnProductionTrail = (state: string | null | undefined): boolean =>
-  !!state && (PRODUCTION_SEQUENCE as readonly string[]).includes(state)
+  !!state && ((PRODUCTION_SEQUENCE as readonly string[]).includes(state) || state === 'delivered')

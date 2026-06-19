@@ -472,10 +472,10 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                           ) : (
                             <>
                               <p className="font-medium text-stone-800 truncate">
-                                {product?.style_name ?? '—'}
+                                {product?.colour_id ?? product?.style_name ?? '—'}
                               </p>
                               <p className="text-xs text-stone-400 truncate">
-                                {product?.colour_id} · {product?.closure}
+                                {product?.closure ?? ''}
                               </p>
                             </>
                           )}

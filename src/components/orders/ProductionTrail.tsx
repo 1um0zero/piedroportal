@@ -105,14 +105,17 @@ const GLYPHS: Record<string, ReactNode> = {
 }
 
 export function ProductionTrail({ state, label, size = 14, className }: Props) {
-  const current = (PRODUCTION_SEQUENCE as readonly string[]).indexOf(state)
+  // 'delivered' = production finished: every step done, no current pulse.
+  const current = state === 'delivered'
+    ? PRODUCTION_SEQUENCE.length
+    : (PRODUCTION_SEQUENCE as readonly string[]).indexOf(state)
   if (current < 0) return null // off-trail (fitting/dispatched) — parent shows a chip
 
   return (
     <div
       className={`flex items-center ${className ?? ''}`}
       role="img"
-      aria-label={`${label(state)} — ${current + 1}/${PRODUCTION_SEQUENCE.length}`}
+      aria-label={`${label(state)} — ${Math.min(current + 1, PRODUCTION_SEQUENCE.length)}/${PRODUCTION_SEQUENCE.length}`}
     >
       {PRODUCTION_SEQUENCE.map((step, i) => {
         const done = i < current
