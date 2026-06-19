@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
 import { PRODUCTION_STATES, isOnProductionTrail } from '@/lib/order-status'
 import { ProductionTrail } from './ProductionTrail'
-import { nz } from '@/lib/format'
+import { nz, orderNumber } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
 
@@ -203,7 +203,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
       else if (active)               { if (o.status !== active) return false }
       if (urgentFilter && !isUrgent(o)) return false
       if (search && !matchesAny(
-        [o.piedro_order_id, o.products?.style_name, o.products?.colour_id, o.patient_name, o.reference_customer, o.companies?.name],
+        [o.piedro_order_id, o.order_seq != null ? orderNumber(o.order_seq) : null, o.order_seq != null ? String(o.order_seq) : null, o.products?.style_name, o.products?.colour_id, o.patient_name, o.reference_customer, o.companies?.name],
         search,
       )) return false
       return true
@@ -398,6 +398,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
+                <th className="px-2.5 py-3 text-left">{t('col_number')}</th>
                 <th className="px-2.5 py-3 text-left">{t('col_date')}</th>
                 <th className="px-2.5 py-3 text-left">{t('col_product')}</th>
                 <th className="px-2.5 py-3 text-left">{t('col_unit')}</th>
@@ -413,7 +414,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 10 : 9}
+                  <td colSpan={isAdmin ? 11 : 10}
                     className="px-4 py-12 text-center text-stone-400 text-sm">
                     {t('no_orders')}
                   </td>
@@ -430,6 +431,10 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                   <tr key={o.id} className="hover:bg-stone-50 transition-colors cursor-pointer"
                     onClick={() => router.push(detailHref as Parameters<typeof router.push>[0])}>
 
+                    {/* Order № — the restored legacy sequential number; stock orders have none */}
+                    <td className="px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap">
+                      {o.order_seq != null ? `#${orderNumber(o.order_seq)}` : '—'}
+                    </td>
                     {/* Date — year shown only for orders before the current year */}
                     <td className="px-2.5 py-3 text-stone-500 text-xs whitespace-nowrap">
                       {o.created_at

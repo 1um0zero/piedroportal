@@ -19,3 +19,27 @@ export function nz(value: number | null | undefined, locale?: string): string {
   if (value == null || Number.isNaN(value) || value === 0) return DASH
   return locale ? value.toLocaleString(locale) : String(value)
 }
+
+/**
+ * The visible, human-readable order number — the portal's restored version of the
+ * legacy Dataverse "NNNN" sequence (stored in orders.order_seq). We keep it as a
+ * plain integer in the DB (the date is NOT stored — it was what made the legacy ID
+ * so wide) and only zero-pad to 4 digits for display, matching the legacy look
+ * (e.g. 124 → "0124"). Numbers that outgrow 4 digits print in full. A null seq
+ * (unnumbered draft) returns the dash.
+ */
+export function orderNumber(seq: number | null | undefined): string {
+  if (seq == null) return DASH
+  return String(seq).padStart(4, '0')
+}
+
+/**
+ * The legacy long form "YYYY-MM-DD-NNNN", composed on demand from the order's
+ * creation date + its sequence. Use only where the old format is explicitly
+ * wanted; elsewhere prefer the bare orderNumber().
+ */
+export function orderNumberFull(seq: number | null | undefined, createdAt: string | null | undefined): string {
+  if (seq == null) return DASH
+  const datePart = createdAt ? createdAt.slice(0, 10) : ''
+  return datePart ? `${datePart}-${orderNumber(seq)}` : orderNumber(seq)
+}

@@ -7,6 +7,7 @@ import OrderSummary from './OrderSummary'
 import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
 import { cancelOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
+import { orderNumber } from '@/lib/format'
 
 const PORTAL_STATUS_BADGE: Record<string, string> = {
   draft: 'bg-stone-100 text-stone-500', submitted: 'bg-blue-50 text-blue-600',
@@ -97,7 +98,7 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
   // "Email client" shortcut: opens the staff member's mail client pre-addressed to
   // the orderer (Cc the order desk + company), referencing the Piedro Order so a
   // question about this order can go out in one click. No patient data in subject.
-  const emailRef = (piedroId || order.reference_customer || order.id?.slice(0, 8)) ?? ''
+  const emailRef = (piedroId || (order.order_seq != null ? `#${orderNumber(order.order_seq)}` : '') || order.reference_customer || order.id?.slice(0, 8)) ?? ''
   const mailtoCc = [deskEmail, clientCc].map(s => (s ?? '').trim()).filter(Boolean).join(',')
   const mailtoHref = clientEmail
     ? `mailto:${encodeURIComponent(clientEmail)}?` + [
@@ -152,8 +153,13 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs text-stone-400 mb-1">Order</p>
-          <h1 className="text-2xl font-bold text-stone-900">{order.reference_customer ?? '—'}</h1>
+          <p className="text-xs text-stone-400 mb-1">{tOrder('order_number_label')}</p>
+          <h1 className="text-2xl font-bold text-stone-900 tabular-nums">
+            {order.order_seq != null ? `#${orderNumber(order.order_seq)}` : (order.reference_customer ?? '—')}
+          </h1>
+          {order.order_seq != null && order.reference_customer && (
+            <p className="text-sm text-stone-500 mt-0.5">{order.reference_customer}</p>
+          )}
           <p className="text-sm text-stone-500 mt-0.5">{new Date(order.created_at).toLocaleDateString(locale, { day:'2-digit', month:'long', year:'numeric' })}</p>
           {order.piedro_order_id && <p className="text-sm font-semibold text-stone-700 mt-1">Piedro Order: {order.piedro_order_id}</p>}
         </div>

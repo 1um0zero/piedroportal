@@ -9,7 +9,7 @@ import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
 // Base select — always works
-const SELECT_BASE = `id, user_id, status, unit, quantity, reference_customer, patient_name, clinician,
+const SELECT_BASE = `id, user_id, order_seq, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   diff_sizes_pairs, additions, comments, created_at, pdf_url,
   products(id, colour_id, color_name, closure, picture_name, style_name),

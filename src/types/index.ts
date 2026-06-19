@@ -99,6 +99,9 @@ export interface OrderLine {
 
 export interface Order {
   id: string
+  /** Sequential, human-readable order number (the restored Dataverse "NNNN").
+   *  Assigned on submit; null for drafts. See src/lib/format.ts → orderNumber(). */
+  order_seq: number | null
   user_id: string
   company_id: string
   status: OrderStatus

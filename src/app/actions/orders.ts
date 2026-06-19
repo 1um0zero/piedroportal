@@ -12,6 +12,7 @@ import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
 import { escapeHtml } from '@/lib/escape-html'
 import { displayWidthByConstruction } from '@/lib/width-display'
 import { addWorkingDays } from '@/lib/dispatch'
+import { orderNumber } from '@/lib/format'
 import { getTranslations } from 'next-intl/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { Resend } from 'resend'
@@ -82,6 +83,19 @@ async function computeDispatchDate(
   return addWorkingDays(new Date().toISOString(), days, closures)
 }
 
+/**
+ * Pull the next global order number from the order_seq_counter sequence. Called
+ * once, atomically, when an order is SUBMITTED (never for drafts) so the visible
+ * sequence stays gap-free. Continues the legacy Dataverse "NNNN" numbering. A null
+ * result (RPC missing/migration not run) must not block the order — the number is
+ * a label, not a gate.
+ */
+async function nextOrderSeq(service: ReturnType<typeof createServiceClient>): Promise<number | null> {
+  const { data, error } = await service.rpc('next_order_number')
+  if (error) { console.error('next_order_number RPC failed:', error.message); return null }
+  return typeof data === 'number' ? data : null
+}
+
 export async function insertOrderAction(
   row:     OrderRow,
   pdfMeta?: PdfMeta,   // provided only when status === 'submitted'
@@ -119,9 +133,11 @@ export async function insertOrderAction(
   // user_id and status are forced server-side and never trusted from the client.
   const service = createServiceClient()
   const expected_dispatch_date = await computeDispatchDate(service, row.status, row.additions)
+  // A submitted order gets its sequential number now; a draft stays unnumbered.
+  const order_seq = row.status === 'submitted' ? await nextOrderSeq(service) : null
   const { data, error } = await service
     .from('orders')
-    .insert({ ...row, user_id: user.id, status: row.status, expected_dispatch_date })
+    .insert({ ...row, user_id: user.id, status: row.status, expected_dispatch_date, order_seq })
     .select('id')
     .single()
 
@@ -134,7 +150,7 @@ export async function insertOrderAction(
   const orderId: string = data.id
 
   if (row.status === 'submitted' && pdfMeta) {
-    const pdfResult = await generatePdf(orderId, row, pdfMeta, service, user.id, user.email)
+    const pdfResult = await generatePdf(orderId, row, pdfMeta, service, user.id, user.email, order_seq)
     return { id: orderId, ...pdfResult }
   }
   return { id: orderId }
@@ -166,7 +182,7 @@ function orderEmailHtml(t: EmailT, heading: string, ref: string, company: string
 }
 
 // ── Shared PDF generation helper ──────────────────────────────────────────────
-async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>, userId: string, userEmail?: string): Promise<{ pdf_url?: string; pdfError?: string; emailError?: string }> {
+async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, service: ReturnType<typeof createServiceClient>, userId: string, userEmail?: string, orderSeq?: number | null): Promise<{ pdf_url?: string; pdfError?: string; emailError?: string }> {
   try {
     // Translate the categorical values (closure, constructions) into the order's
     // locale for the PDF — same DB translations the gallery uses.
@@ -214,7 +230,9 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     // Two localized emails: (1) internal notification to the Piedro order desk
     // (in the admin-set locale), (2) confirmation to the ordering user (in the
     // order's locale) with optional user/company Cc/Bcc. All values HTML-escaped.
-    const ref     = row.reference_customer ?? orderId.slice(0, 8)
+    // The portal order number is the canonical visible reference; fall back to the
+    // client's own reference, then a short id slice for very old/edge rows.
+    const ref     = (orderSeq != null ? `#${orderNumber(orderSeq)}` : null) ?? row.reference_customer ?? orderId.slice(0, 8)
     const patient = row.patient_name ?? '—'
     const resend = getResend()
     if (!resend) return { pdf_url: pdfPath, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
@@ -355,9 +373,13 @@ export async function updateOrderAction(
   // error). Only a returned id proves the order is persisted — PDF/email come
   // strictly after this.
   const expected_dispatch_date = await computeDispatchDate(service, row.status, row.additions)
+  // Draft → submit: assign the sequential number now (the draft had none). Re-saving
+  // a draft as draft leaves order_seq untouched (column omitted from the update).
+  const assignedSeq = row.status === 'submitted' ? await nextOrderSeq(service) : null
+  const numberPatch = row.status === 'submitted' ? { order_seq: assignedSeq } : {}
   const { data: updated, error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id, status: row.status, expected_dispatch_date })
+    .update({ ...row, user_id: user.id, status: row.status, expected_dispatch_date, ...numberPatch })
     .eq('id', draftId)
     .eq('user_id', user.id)
     .select('id')
@@ -367,7 +389,7 @@ export async function updateOrderAction(
   }
 
   if (row.status === 'submitted' && pdfMeta) {
-    const pdfResult = await generatePdf(draftId, row, pdfMeta, service, user.id, user.email)
+    const pdfResult = await generatePdf(draftId, row, pdfMeta, service, user.id, user.email, assignedSeq)
     return { id: draftId, ...pdfResult }
   }
   return { id: draftId }
