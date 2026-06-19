@@ -41,9 +41,12 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
   const company = (Array.isArray(order.companies) ? order.companies[0] : order.companies) as any
 
   const [piedroId,    setPiedroId]    = useState<string>(order.piedro_order_id ?? '')
-  const [piedroNotes, setPiedroNotes] = useState<string>(order.piedro_notes ?? '')
+  // Internal notes is hidden in the UI for now (kept in the DB, saved untouched);
+  // production state is read-only here (driven by the ERP) — both keep their value
+  // without a setter so the saved payload is unchanged.
+  const [piedroNotes] = useState<string>(order.piedro_notes ?? '')
   const [approvalSt,  setApprovalSt]  = useState<ApprovalState>(order.approval_state ?? 'registered')
-  const [productionSt,setProductionSt]= useState<ProductionState | ''>(order.production_state ?? '')
+  const [productionSt] = useState<ProductionState | ''>(order.production_state ?? '')
   const [saving, setSaving]   = useState(false)
   const [msg, setMsg]         = useState('')
   const [msgErr, setMsgErr]   = useState(false)
