@@ -1,5 +1,7 @@
 import { createServiceClient } from './supabase/service'
 import { exclusiveTokens } from './exclusive'
+import { getBranchAdminCompanyIds } from './branch-admin'
+import { isBranchAdmin, isBranchStaff } from './roles'
 
 export type UserCompany = {
   user_id: string
@@ -180,6 +182,38 @@ export async function userSeesGeneralCatalogue(userId: string): Promise<boolean>
   const flags = (data as any[]).map((uc) => uc.companies?.sees_general_catalogue)
   // Any true (or null/undefined → treat as true) means the user sees the general set.
   return flags.some((f) => f !== false)
+}
+
+/**
+ * The full set of exclusive siglas a user may see, branch-augmented.
+ *
+ * = the user's own company siglas (getUserExclusiveLabels), PLUS — for a
+ * branch_admin/branch_staff — LIV and the siglas of every client company linked
+ * to the branches they consult. This is the SINGLE source of truth shared by the
+ * gallery overlay (getMyExclusiveProducts) and the product-detail visibility
+ * guard, so a card that shows in the gallery never 404s on its detail page.
+ */
+export async function getVisibleExclusiveLabels(
+  userId: string,
+  role: string | null | undefined,
+): Promise<Set<string>> {
+  const labels = new Set(await getUserExclusiveLabels(userId))
+  if (isBranchAdmin(role) || isBranchStaff(role)) {
+    labels.add('LIV')
+    const companyIds = await getBranchAdminCompanyIds(userId)
+    if (companyIds.length) {
+      const service = createServiceClient()
+      const { data: ce } = await service
+        .from('company_exclusives')
+        .select('label')
+        .in('company_id', companyIds)
+      for (const r of (ce ?? []) as { label: string }[]) {
+        const l = (r.label ?? '').trim().toUpperCase()
+        if (l) labels.add(l)
+      }
+    }
+  }
+  return labels
 }
 
 /**

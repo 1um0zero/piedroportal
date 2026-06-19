@@ -2,9 +2,9 @@ import { notFound } from 'next/navigation'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getUserCompanies, getUserExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
+import { getUserCompanies, getVisibleExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
 import { getBranchAdminCompanies } from '@/lib/branch-admin'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
 import { closuresAhead } from '@/lib/dispatch'
@@ -76,14 +76,18 @@ export default async function OrderPage({ params, searchParams }: Props) {
 
   // Customer-exclusive models: only owning-company users (or piedro_admin) may order.
   // `exclusive` may list several siglas — visible on a token intersection.
+  // Branch admin/staff order on behalf of their branches' clients, so they see
+  // those clients' exclusives and the general catalogue (mirrors the gallery +
+  // detail-page guards so a visible card never 404s at the order step).
+  const isBranch = isBranchAdmin(profile?.role) || isBranchStaff(profile?.role)
   const exclusive = (product as unknown as { exclusive?: string | null }).exclusive
   if (exclusive && !isAdmin) {
-    const labels = new Set(user ? await getUserExclusiveLabels(user.id) : [])
+    const labels = user ? await getVisibleExclusiveLabels(user.id, profile?.role) : new Set<string>()
     if (!isExclusiveVisible(exclusive, labels, false)) notFound()
   }
   // Exclusive-only clients (the "*" rule, e.g. ZSM) may not order general models.
   const isGeneral = exclusiveTokens(exclusive).length === 0
-  if (isGeneral && user && !isAdmin && !(await userSeesGeneralCatalogue(user.id))) notFound()
+  if (isGeneral && user && !isAdmin && !isBranch && !(await userSeesGeneralCatalogue(user.id))) notFound()
 
   // Load draft data if draftId is provided (duplicate/edit flow).
   // Security: only the order's owner (or a piedro_admin) may load it — never leak

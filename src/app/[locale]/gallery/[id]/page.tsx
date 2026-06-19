@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
-import { getUserExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
-import { isPiedroAdmin } from '@/lib/roles'
+import { getVisibleExclusiveLabels, userSeesGeneralCatalogue } from '@/lib/user-companies'
+import { isPiedroAdmin, isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import ProductDetail from '@/components/product/ProductDetail'
 import type { Product } from '@/types'
@@ -25,10 +25,14 @@ async function getVisibility(): Promise<{ labels: Set<string>; isAdmin: boolean;
   if (!user) return { labels: new Set(), isAdmin: false, seesGeneral: true }
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
   const isAdmin = isPiedroAdmin(profile?.role)
+  // Branch admin/staff see the general catalogue (and their branches' exclusives),
+  // mirroring getMyExclusiveProducts/getMyCatalogueAccess so a card visible in the
+  // gallery never 404s here.
+  const isBranch = isBranchAdmin(profile?.role) || isBranchStaff(profile?.role)
   return {
-    labels: new Set(await getUserExclusiveLabels(user.id)),
+    labels: await getVisibleExclusiveLabels(user.id, profile?.role),
     isAdmin,
-    seesGeneral: isAdmin ? true : await userSeesGeneralCatalogue(user.id),
+    seesGeneral: isAdmin || isBranch ? true : await userSeesGeneralCatalogue(user.id),
   }
 }
 
