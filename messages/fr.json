@@ -237,6 +237,7 @@
     "right_foot": "Pied droit seulement",
     "submit": "Soumettre la Commande",
     "save_draft": "Enregistrer le Brouillon",
+    "discard": "Supprimer",
     "edit_draft": "Modifier et envoyer",
     "order_number_label": "N° de commande",
     "pdf_migrated": "PDF (migré)",

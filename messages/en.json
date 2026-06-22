@@ -237,6 +237,7 @@
     "right_foot": "Right foot only",
     "submit": "Submit Order",
     "save_draft": "Save Draft",
+    "discard": "Discard",
     "edit_draft": "Edit & submit",
     "order_number_label": "Order nr.",
     "pdf_migrated": "PDF (migrated)",

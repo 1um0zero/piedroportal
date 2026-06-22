@@ -339,8 +339,13 @@ export async function updateOrderAction(
   }
 
   // Validate company ownership (admins exempt — they may act on any company).
+  // The same authorization set is reused below to check the existing order, so a
+  // piedro_admin / branch admin / colleague of the order's company may submit a
+  // draft they did not personally create (mirrors insertOrderAction + the page
+  // guard, which both allow ordering on behalf of a company).
   const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
   const isPiedroAdmin = isPiedroAdminRole(profile?.role)
+  let allowed = new Set<string>()
   if (!isPiedroAdmin) {
     // A user may order for a company they belong to (user_companies) OR, as a
     // branch admin, for any client linked to a branch office they administer.
@@ -348,7 +353,7 @@ export async function updateOrderAction(
       getUserCompanyIds(user.id),
       getBranchAdminCompanyIds(user.id),
     ])
-    const allowed = new Set([...ownIds, ...branchIds])
+    allowed = new Set([...ownIds, ...branchIds])
     if (!row.company_id || !allowed.has(row.company_id)) {
       return { error: 'You do not have access to this company' }
     }
@@ -356,15 +361,20 @@ export async function updateOrderAction(
 
   const service = createServiceClient()
 
-  // Verify order exists and belongs to user
+  // Fetch the existing order (service role bypasses RLS) and authorize: the
+  // owner, a piedro_admin, or a user allowed to act for the order's company.
   const { data: existing, error: fetchErr } = await service
     .from('orders')
-    .select('status, user_id')
+    .select('status, user_id, company_id')
     .eq('id', draftId)
-    .eq('user_id', user.id)
     .single()
 
   if (fetchErr || !existing) return { error: 'Order not found or access denied' }
+
+  const ownsRow = existing.user_id === user.id
+  if (!isPiedroAdmin && !ownsRow && !(existing.company_id && allowed.has(existing.company_id))) {
+    return { error: 'Order not found or access denied' }
+  }
 
   // Security: Only draft orders can be updated by users
   if (existing.status !== 'draft') {
@@ -379,11 +389,12 @@ export async function updateOrderAction(
   // a draft as draft leaves order_seq untouched (column omitted from the update).
   const assignedSeq = row.status === 'submitted' ? await nextOrderSeq(service) : null
   const numberPatch = row.status === 'submitted' ? { order_seq: assignedSeq } : {}
+  // Preserve the original owner — when an admin/branch admin submits a draft they
+  // did not create, ownership must stay with the creator, not transfer to them.
   const { data: updated, error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id, status: row.status, expected_dispatch_date, ...numberPatch })
+    .update({ ...row, user_id: existing.user_id, status: row.status, expected_dispatch_date, ...numberPatch })
     .eq('id', draftId)
-    .eq('user_id', user.id)
     .select('id')
     .maybeSingle()
   if (error || !updated?.id) {
