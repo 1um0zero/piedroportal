@@ -554,9 +554,10 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         {isUrgent && <span title={t('urgent_only')} className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         {(() => {
                           if (isOnProductionTrail(o.production_state)) {
-                            // Regular clients see the simplified 3-step journey;
-                            // staff keep the full shop-floor sequence.
-                            if (!staffView) {
+                            // Clients (incl. company admins) see the simplified
+                            // 3-step journey; only Piedro back-office keeps the full
+                            // shop-floor sequence.
+                            if (!isAdmin) {
                               const ci = userTrailIndex(o.production_state)
                               if (ci < 0) return <span className="text-stone-300 text-xs">—</span>
                               return <ProductionTrail state={o.production_state!} sequence={USER_PRODUCTION_SEQUENCE} current={ci} label={v => (tp.has(v) ? tp(v) : v)} size={15} />
@@ -591,7 +592,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                           </span>
                         )
                       ) : (
-                        (staffView && showDispatch) ? <DispatchDays o={o} t={t} /> : <span className="text-stone-300">—</span>
+                        (isAdmin && showDispatch) ? <DispatchDays o={o} t={t} /> : <span className="text-stone-300">—</span>
                       )}
                     </td>
                     {/* PDF */}
