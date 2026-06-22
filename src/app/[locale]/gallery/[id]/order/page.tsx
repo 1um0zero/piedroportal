@@ -45,6 +45,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
 
   let companies: Company[] = []
   let userCompany: Company | null = null
+  // Companies the user may act for — used below to authorize loading an existing
+  // draft created by a colleague/branch client (mirrors updateOrderAction).
+  const allowedCompanyIds = new Set<string>()
 
   if (isAdmin) {
     // Piedro admins see all companies
@@ -60,6 +63,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
     const byId = new Map<string, Company>()
     for (const c of userCompanies) byId.set(c.id, { id: c.id, name: c.name, erp_code: c.erp_code })
     for (const c of branchCompanies) byId.set(c.id, { id: c.id, name: c.name, erp_code: c.erp_code })
+    for (const cid of byId.keys()) allowedCompanyIds.add(cid)
     const merged = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
 
     if (merged.length === 1) {
@@ -90,8 +94,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
   if (isGeneral && user && !isAdmin && !isBranch && !(await userSeesGeneralCatalogue(user.id))) notFound()
 
   // Load draft data if draftId is provided (duplicate/edit flow).
-  // Security: only the order's owner (or a piedro_admin) may load it — never leak
-  // another user's/company's order + patient data via a guessed ?draft= id.
+  // Security: only the order's owner, a piedro_admin, or a user allowed to act for
+  // the order's company may load it — never leak another user's/company's order +
+  // patient data via a guessed ?draft= id.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let draftData: Record<string, any> | null = null
   if (draftId && user) {
@@ -101,8 +106,17 @@ export default async function OrderPage({ params, searchParams }: Props) {
       .select('user_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,company_id')
       .eq('id', draftId)
       .single()
-    if (data && (data.user_id === user.id || isAdmin)) draftData = data
+    const mayLoad = !!data && (
+      data.user_id === user.id || isAdmin ||
+      (!!data.company_id && allowedCompanyIds.has(data.company_id))
+    )
+    if (mayLoad) draftData = data
   }
+  // Only treat this as an editable draft when the order actually exists and is
+  // accessible. A stale/deleted ?draft= id (or one belonging to someone else)
+  // falls back to a fresh order — the form submits via insert instead of failing
+  // with "Order not found" on a row that is gone. Cached form state still shows.
+  const effectiveDraftId = draftData ? draftId : undefined
 
   // Warn the buyer if the factory is closed within the dispatch window (so they
   // know their expected dispatch may be later than usual).
@@ -127,7 +141,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
       userCompany={userCompany}
       companies={companies}
       isAdmin={isAdmin}
-      draftId={draftId}
+      draftId={effectiveDraftId}
       draftData={draftData}
     />
   )
