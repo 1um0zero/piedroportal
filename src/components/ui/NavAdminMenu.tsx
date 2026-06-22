@@ -33,6 +33,7 @@ export default function NavAdminMenu() {
 
   const items: Array<{ href: string; label: string }> = [
     { href: '/admin/adoption',     label: t('adoption') },
+    { href: '/admin/drafts',       label: t('drafts') },
     { href: '/admin/companies',    label: t('companies') },
     { href: '/admin/branches',     label: t('branches') },
     { href: '/admin/users',        label: t('users') },

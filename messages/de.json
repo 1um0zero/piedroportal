@@ -159,7 +159,8 @@
     "grand_opening": "Grand Opening",
     "email": "E-Mail",
     "chat_feedback": "Assistent-Feedback",
-    "adoption": "Live-Akzeptanz"
+    "adoption": "Live-Akzeptanz",
+    "drafts": "Entwürfe"
   },
   "gallery": {
     "kids": "Kinder",
@@ -1083,6 +1084,14 @@
       "size": "Größe",
       "noStock": "Noch keine Modelle auf Lager. Fügen Sie oben eines hinzu.",
       "order_link": "Bestellung aufgeben"
+    },
+    "drafts": {
+      "title": "Entwürfe",
+      "subtitle": "Nicht eingereichte Entwurfsbestellungen, privat für jeden Ersteller. Nur zur Ansicht — Entwürfe bleiben außerhalb der Bestellungsanalyse.",
+      "search_placeholder": "Modell, Patient, Ref, Firma, Ersteller suchen…",
+      "count": "{count} Entwürfe",
+      "col_owner": "Erstellt von",
+      "empty": "Keine Entwürfe"
     }
   },
   "adminTranslations": {

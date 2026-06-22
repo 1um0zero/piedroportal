@@ -159,7 +159,8 @@
     "grand_opening": "Grand Opening",
     "email": "Email",
     "chat_feedback": "Assistant feedback",
-    "adoption": "Live adoption"
+    "adoption": "Live adoption",
+    "drafts": "Drafts"
   },
   "gallery": {
     "kids": "Kids",
@@ -1083,6 +1084,14 @@
       "size": "Size",
       "noStock": "No models in stock yet. Add one above.",
       "order_link": "Place an order"
+    },
+    "drafts": {
+      "title": "Drafts",
+      "subtitle": "Unsubmitted draft orders, private to each creator. Consultation only — drafts stay out of the Orders analysis.",
+      "search_placeholder": "Search style, patient, ref, company, owner…",
+      "count": "{count} drafts",
+      "col_owner": "Created by",
+      "empty": "No drafts"
     }
   },
   "adminTranslations": {

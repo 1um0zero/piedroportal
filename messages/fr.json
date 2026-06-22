@@ -159,7 +159,8 @@
     "grand_opening": "Grand Opening",
     "email": "E-mail",
     "chat_feedback": "Retour assistant",
-    "adoption": "Adoption en direct"
+    "adoption": "Adoption en direct",
+    "drafts": "Brouillons"
   },
   "gallery": {
     "kids": "Enfants",
@@ -1083,6 +1084,14 @@
       "size": "Pointure",
       "noStock": "Aucun modèle en stock pour le moment. Ajoutez-en un ci-dessus.",
       "order_link": "Passer une commande"
+    },
+    "drafts": {
+      "title": "Brouillons",
+      "subtitle": "Commandes en brouillon non soumises, privées à chaque créateur. Consultation seule — les brouillons restent hors de l'analyse des Commandes.",
+      "search_placeholder": "Rechercher modèle, patient, réf, société, créateur…",
+      "count": "{count} brouillons",
+      "col_owner": "Créé par",
+      "empty": "Aucun brouillon"
     }
   },
   "adminTranslations": {

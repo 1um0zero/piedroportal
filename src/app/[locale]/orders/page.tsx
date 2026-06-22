@@ -120,9 +120,13 @@ export default async function OrdersRoute({ searchParams }: Props) {
     toISO: useRange ? `${sp.to}T23:59:59` : undefined,
     cutoffISO: cutoff,
   })
-  const orders = [...allOrders, ...stockRows].sort(
-    (a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''),
-  )
+  // Drafts are private to their creator: a company/branch admin viewing the whole
+  // company must NOT see colleagues' drafts (their own still show). Regular users
+  // only fetch their own orders, so this is a no-op for them.
+  // See project_draft_on_behalf_future.
+  const orders = [...allOrders, ...stockRows]
+    .filter(o => o.status !== 'draft' || o.user_id === user.id)
+    .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
   await attachOrderExtras(orders, service)
   // Users see the dispatch counter only if Piedro turned it on for everyone.
   const showDispatch = (await getSettings(['dispatch_show_all'])).dispatch_show_all === '1'

@@ -159,7 +159,8 @@
     "grand_opening": "Grand Opening",
     "email": "E-mail",
     "chat_feedback": "Assistent-feedback",
-    "adoption": "Live adoptie"
+    "adoption": "Live adoptie",
+    "drafts": "Concepten"
   },
   "gallery": {
     "kids": "Kinderen",
@@ -1083,6 +1084,14 @@
       "size": "Maat",
       "noStock": "Nog geen modellen in voorraad. Voeg er hierboven een toe.",
       "order_link": "Bestelling plaatsen"
+    },
+    "drafts": {
+      "title": "Concepten",
+      "subtitle": "Niet-ingediende conceptbestellingen, privé voor elke maker. Alleen ter inzage — concepten blijven buiten de Bestellingen-analyse.",
+      "search_placeholder": "Zoek model, patiënt, ref, bedrijf, maker…",
+      "count": "{count} concepten",
+      "col_owner": "Aangemaakt door",
+      "empty": "Geen concepten"
     }
   },
   "adminTranslations": {

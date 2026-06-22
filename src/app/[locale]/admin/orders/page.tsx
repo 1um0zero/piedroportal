@@ -41,6 +41,9 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     let q = service
       .from('orders')
       .select(SELECT)
+      // Drafts are private to their creator and live in /admin/drafts — they must
+      // not pollute the back-office Orders analysis. See project_draft_on_behalf_future.
+      .neq('status', 'draft')
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
     if (useRange) q = q.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
