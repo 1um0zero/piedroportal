@@ -43,7 +43,6 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
   const PER_PAGE = 50
 
   const filtered = useMemo(() => {
-    setPage(1)
     if (!search) return drafts
     return drafts.filter(o => matchesAny(
       [o.products?.style_name, o.products?.colour_id, o.patient_name, o.reference_customer, o.clinician, o.companies?.name, o.owner_email],
@@ -76,7 +75,7 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
           </svg>
-          <input type="search" value={search} onChange={e => setSearch(e.target.value)}
+          <input type="search" value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder={t('search_placeholder')}
             className="h-9 pl-8 pr-3 text-sm bg-white border border-stone-200 rounded-lg w-64
                        focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-all" />
