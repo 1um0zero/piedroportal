@@ -6,7 +6,7 @@ type OrderLike = { id: string; status?: string; production_state?: string | null
 type Svc = ReturnType<typeof createServiceClient>
 
 async function attachColumn(
-  orders: OrderLike[], service: Svc, column: 'tracking_link' | 'expected_dispatch_date', ids: string[],
+  orders: OrderLike[], service: Svc, column: 'tracking_link' | 'tracking_code' | 'expected_dispatch_date', ids: string[],
 ): Promise<void> {
   if (!ids.length) return
   const map = new Map<string, string | null>()
@@ -27,5 +27,6 @@ async function attachColumn(
 export async function attachOrderExtras(orders: OrderLike[], service: Svc): Promise<void> {
   const delivered = orders.filter(o => o.status === 'delivered' || o.production_state === 'delivered').map(o => o.id)
   await attachColumn(orders, service, 'tracking_link', delivered)
+  await attachColumn(orders, service, 'tracking_code', delivered)
   await attachColumn(orders, service, 'expected_dispatch_date', orders.map(o => o.id))
 }

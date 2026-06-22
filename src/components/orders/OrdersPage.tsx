@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
-import { PRODUCTION_STATES, isOnProductionTrail } from '@/lib/order-status'
+import { PRODUCTION_STATES, isOnProductionTrail, PRODUCTION_SEQUENCE, USER_PRODUCTION_SEQUENCE, userTrailIndex } from '@/lib/order-status'
 import { ProductionTrail } from './ProductionTrail'
 import { nz, orderNumber } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
@@ -53,6 +53,20 @@ function DispatchDays({ o, t }: {
       className={`tabular-nums font-medium ${cls}`}>
       {overdue ? `+${-n}` : n}<span className="font-normal opacity-60 ml-0.5">d</span>
     </span>
+  )
+}
+
+// Carrier truck glyph for the Delivery column.
+function TruckGlyph({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1" />
+      <path d="M14 9h4l3 3v5a1 1 0 0 1-1 1h-1" />
+      <path d="M9 18h2" />
+      <circle cx="6.5" cy="18" r="1.8" />
+      <circle cx="16.5" cy="18" r="1.8" />
+    </svg>
   )
 }
 
@@ -540,7 +554,14 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         {isUrgent && <span title={t('urgent_only')} className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         {(() => {
                           if (isOnProductionTrail(o.production_state)) {
-                            return <ProductionTrail state={o.production_state!} label={v => (tp.has(v) ? tp(v) : v)} size={15} />
+                            // Regular clients see the simplified 3-step journey;
+                            // staff keep the full shop-floor sequence.
+                            if (!staffView) {
+                              const ci = userTrailIndex(o.production_state)
+                              if (ci < 0) return <span className="text-stone-300 text-xs">—</span>
+                              return <ProductionTrail state={o.production_state!} sequence={USER_PRODUCTION_SEQUENCE} current={ci} label={v => (tp.has(v) ? tp(v) : v)} size={15} />
+                            }
+                            return <ProductionTrail state={o.production_state!} sequence={PRODUCTION_SEQUENCE} label={v => (tp.has(v) ? tp(v) : v)} size={15} />
                           }
                           if (o.production_state) {
                             const p = PRODUCTION_STATES.find(s => s.value === o.production_state)
@@ -550,21 +571,27 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         })()}
                       </div>
                     </td>
-                    {/* Delivery — days-to-dispatch (plain text) until delivered, then the
-                        carrier tracking link (+ invoice number once the ERP sends it). */}
+                    {/* Delivery — once dispatched, the carrier truck: a link to the
+                        tracking page showing the tracking code when present, else the
+                        truck alone. Before dispatch, staff see days-to-dispatch;
+                        clients see nothing (delivery times are intentionally hidden). */}
                     <td className="px-2.5 py-3 text-xs whitespace-nowrap">
                       {(o.status === 'delivered' || o.production_state === 'delivered') ? (
                         o.tracking_link ? (
                           <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
                             onClick={e => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 font-medium text-teal-700 hover:text-teal-800 transition-colors">
-                            {t('tracking')} ↗
+                            title={o.tracking_code ?? t('tracking')}
+                            className="inline-flex items-center gap-1.5 font-medium text-teal-700 hover:text-teal-800 transition-colors">
+                            <TruckGlyph />
+                            {o.tracking_code && <span className="tabular-nums">{o.tracking_code}</span>}
                           </a>
                         ) : (
-                          <span className="text-emerald-600 font-medium">{t('dispatch_done')}</span>
+                          <span title={t('dispatch_done')} className="inline-flex text-emerald-600">
+                            <TruckGlyph />
+                          </span>
                         )
                       ) : (
-                        showDispatch ? <DispatchDays o={o} t={t} /> : <span className="text-stone-300">—</span>
+                        (staffView && showDispatch) ? <DispatchDays o={o} t={t} /> : <span className="text-stone-300">—</span>
                       )}
                     </td>
                     {/* PDF */}

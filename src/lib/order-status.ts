@@ -44,3 +44,28 @@ export const PRODUCTION_SEQUENCE = [
 // but a delivered order still renders the whole trail as complete.
 export const isOnProductionTrail = (state: string | null | undefined): boolean =>
   !!state && ((PRODUCTION_SEQUENCE as readonly string[]).includes(state) || state === 'delivered')
+
+// Regular clients see a simplified 3-step journey — the detailed shop-floor
+// stages are collapsed into "in preparation". (Staff keep the full sequence.)
+export const USER_PRODUCTION_SEQUENCE = [
+  'order_received',
+  'in_preparation',
+  'finishing',
+] as const
+
+// Map a real production state onto the simplified client trail, returning the
+// current index within USER_PRODUCTION_SEQUENCE (or its length when delivered).
+export const userTrailIndex = (state: string | null | undefined): number => {
+  switch (state) {
+    case 'order_received': return 0
+    case 'in_preparation':
+    case 'modeling':
+    case 'preparing':
+    case 'cutting':
+    case 'stitching':
+    case 'mounting':       return 1
+    case 'finishing':      return 2
+    case 'delivered':      return USER_PRODUCTION_SEQUENCE.length
+    default:               return -1
+  }
+}

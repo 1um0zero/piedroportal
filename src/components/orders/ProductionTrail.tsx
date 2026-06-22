@@ -17,6 +17,10 @@ type Props = {
   /** icon edge size in px (trail scales with it). Default 14 (list view). */
   size?: number
   className?: string
+  /** Override the trail steps (e.g. the simplified client sequence). */
+  sequence?: readonly string[]
+  /** Override the current step index (when `state` isn't a member of `sequence`). */
+  current?: number
 }
 
 function Glyph({ children, size }: { children: ReactNode; size: number }) {
@@ -104,20 +108,21 @@ const GLYPHS: Record<string, ReactNode> = {
   ),
 }
 
-export function ProductionTrail({ state, label, size = 14, className }: Props) {
+export function ProductionTrail({ state, label, size = 14, className, sequence, current: currentOverride }: Props) {
+  const seq = sequence ?? PRODUCTION_SEQUENCE
   // 'delivered' = production finished: every step done, no current pulse.
-  const current = state === 'delivered'
-    ? PRODUCTION_SEQUENCE.length
-    : (PRODUCTION_SEQUENCE as readonly string[]).indexOf(state)
+  const current = currentOverride ?? (state === 'delivered'
+    ? seq.length
+    : (seq as readonly string[]).indexOf(state))
   if (current < 0) return null // off-trail (fitting/dispatched) — parent shows a chip
 
   return (
     <div
       className={`flex items-center ${className ?? ''}`}
       role="img"
-      aria-label={`${label(state)} — ${Math.min(current + 1, PRODUCTION_SEQUENCE.length)}/${PRODUCTION_SEQUENCE.length}`}
+      aria-label={`${label(state)} — ${Math.min(current + 1, seq.length)}/${seq.length}`}
     >
-      {PRODUCTION_SEQUENCE.map((step, i) => {
+      {seq.map((step, i) => {
         const done = i < current
         const isCurrent = i === current
         return (
