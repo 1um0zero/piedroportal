@@ -1,6 +1,6 @@
 # UK Market — Design (branch-driven, portal-owned)
 
-> Status: DESIGN ONLY (2026-06-23). Not built. Source of truth = the Portal.
+> Status: BUILT (2026-06-23, commit 0310821). Source of truth = the Portal.
 > Dataverse is fully retired as an import source — nothing more comes from it;
 > UK is a new, portal-managed reality.
 
