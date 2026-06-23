@@ -11,6 +11,9 @@ import Footer from '@/components/ui/Footer'
 import CookieNotice from '@/components/ui/CookieNotice'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ImpersonationProvider } from '@/contexts/ImpersonationContext'
+import ImpersonationBanner from '@/components/impersonation/ImpersonationBanner'
+import { getImpersonation } from '@/lib/impersonation'
 import { GallerySectionProvider } from '@/contexts/GallerySectionContext'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import WelcomeModal from '@/components/welcome/WelcomeModal'
@@ -54,24 +57,31 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   const contact = await getContactInfo()
+  const imp = await getImpersonation()
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <AuthProvider initialProfile={profile} initialLoggedIn={!!user} initialHasCompany={hasCompany}>
-        <WishlistProvider>
-          <GallerySectionProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar locale={locale} />
-              <div className="flex-1">{children}</div>
-              <Footer contact={contact} />
-              {user && <ChatWidget />}
-              {user && <WelcomeModal />}
-              <CookieNotice />
-              <PageViewTracker />
-              <Analytics />
-            </div>
-          </GallerySectionProvider>
-        </WishlistProvider>
+        <ImpersonationProvider
+          active={!!imp}
+          adminName={imp?.adminName ?? null}
+          targetName={imp?.targetName ?? null}>
+          <WishlistProvider>
+            <GallerySectionProvider>
+              <div className="flex flex-col min-h-screen">
+                <ImpersonationBanner locale={locale} />
+                <Navbar locale={locale} />
+                <div className="flex-1">{children}</div>
+                <Footer contact={contact} />
+                {user && <ChatWidget />}
+                {user && !imp && <WelcomeModal />}
+                <CookieNotice />
+                <PageViewTracker />
+                <Analytics />
+              </div>
+            </GallerySectionProvider>
+          </WishlistProvider>
+        </ImpersonationProvider>
       </AuthProvider>
     </NextIntlClientProvider>
   )

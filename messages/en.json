@@ -1482,5 +1482,17 @@
     "type_warehouse": "Warehouse",
     "type_showroom": "Showroom",
     "type_other": "Other"
+  },
+  "impersonation": {
+    "banner_label": "You are using the portal as {name}",
+    "back": "Back to my account",
+    "returning": "Returning…",
+    "view_as": "View as",
+    "view_as_hint": "Use the portal with this user’s real permissions",
+    "starting": "Starting…",
+    "confirm_title": "You are acting as another user",
+    "confirm_body": "You are using the portal as {name}. This will change real data on their account. Continue?",
+    "confirm_ok": "Yes, continue",
+    "confirm_cancel": "Cancel"
   }
 }

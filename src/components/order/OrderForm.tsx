@@ -14,6 +14,7 @@ import OrderSummary from './OrderSummary'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
 import { displayWidth, sortWidths } from '@/lib/width-display'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
+import { useImpersonation } from '@/contexts/ImpersonationContext'
 
 
 type Unit    = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT' | 'DIFF_SIZES'
@@ -118,6 +119,7 @@ function SizeInput({ sizes, value, onChange, label, side, onBlurAfterSnap }: {
 export default function OrderForm({ product, userId, userProfile, userCompany, companies, isAdmin, draftId, draftData, closuresAhead = [] }: Props) {
   const t  = useTranslations('order')
   const ta = useTranslations('additions')
+  const { guard } = useImpersonation()
   const locale = useLocale()
   const router = useRouter()
   const d = draftData  // shorthand for pre-fill
@@ -354,6 +356,8 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
   // ── Submit — uses Server Action to avoid client-side auth issues ──
   async function handleSubmit(status: 'draft' | 'submitted') {
+    // When acting as another user, confirm before writing to their account.
+    if (!(await guard())) return
     setError(''); setSubmitting(true)
     try {
       const companyId = selectedCompanyId || userCompany?.id || null
@@ -436,6 +440,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
 
   async function handleDiscard() {
     if (!draftId) return
+    if (!(await guard())) return
     setDiscarding(true)
     try {
       const result = await deleteOrderAction(draftId)

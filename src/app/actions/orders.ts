@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import { getAdminScope } from '@/lib/admin/scope'
 import { logAdminAction } from '@/lib/admin/audit'
+import { getImpersonation } from '@/lib/impersonation'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { getSettings } from '@/lib/settings'
@@ -96,6 +97,22 @@ async function nextOrderSeq(service: ReturnType<typeof createServiceClient>): Pr
   return typeof data === 'number' ? data : null
 }
 
+/**
+ * When the acting user is an admin impersonating someone (act-as), record the
+ * data change in the audit trail attributed to the REAL admin on behalf of the
+ * target. No-op for ordinary users. The order mutation itself already runs under
+ * the target's session, so this is purely the on-behalf paper trail.
+ */
+async function logOnBehalf(action: string, orderId: string | null, details?: Record<string, unknown>): Promise<void> {
+  const imp = await getImpersonation()
+  if (!imp) return
+  await logAdminAction({
+    actorId: imp.adminId, actorRole: 'piedro_admin',
+    action, orderId, impersonatedAsUserId: imp.targetId,
+    details: { target_name: imp.targetName, ...details },
+  })
+}
+
 export async function insertOrderAction(
   row:     OrderRow,
   pdfMeta?: PdfMeta,   // provided only when status === 'submitted'
@@ -148,6 +165,7 @@ export async function insertOrderAction(
     return { error: error ? `${error.message} [${error.code}]` : 'The order could not be saved.' }
   }
   const orderId: string = data.id
+  await logOnBehalf(`order_${row.status === 'submitted' ? 'submit' : 'draft'}_on_behalf`, orderId, { company_id: row.company_id })
 
   if (row.status === 'submitted' && pdfMeta) {
     const pdfResult = await generatePdf(orderId, row, pdfMeta, service, user.id, user.email, order_seq)
@@ -392,6 +410,7 @@ export async function updateOrderAction(
   if (error || !updated?.id) {
     return { error: error ? `${error.message} [${error.code}]` : 'The order could not be saved.' }
   }
+  await logOnBehalf(`order_${row.status === 'submitted' ? 'submit' : 'draft'}_on_behalf`, draftId, { company_id: row.company_id })
 
   if (row.status === 'submitted' && pdfMeta) {
     const pdfResult = await generatePdf(draftId, row, pdfMeta, service, user.id, user.email, assignedSeq)
@@ -425,6 +444,7 @@ export async function duplicateOrderAction(
     .select('id, product_id')
     .single()
   if (insertErr || !copy) return { error: insertErr?.message ?? 'Duplicate failed' }
+  await logOnBehalf('order_duplicate_on_behalf', copy.id)
 
   return { id: copy.id, productId: copy.product_id }
 }
@@ -468,6 +488,7 @@ export async function deleteOrderAction(
 
   const { error } = await service.from('orders').delete().eq('id', orderId)
   if (error) return { error: error.message }
+  await logOnBehalf('order_delete_on_behalf', orderId)
   return { ok: true }
 }
 

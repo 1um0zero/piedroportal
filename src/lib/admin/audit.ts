@@ -12,16 +12,21 @@ export async function logAdminAction(entry: {
   actorRole?: string | null
   action: string
   orderId?: string | null
+  // Set when the actor performed this action while impersonating another user
+  // (act-as). The mutation runs under the target's session, so the actor here is
+  // the REAL admin and impersonatedAsUserId is the user they acted on behalf of.
+  impersonatedAsUserId?: string | null
   details?: Record<string, unknown>
 }): Promise<void> {
   try {
     const service = createServiceClient()
     const { error } = await service.from('admin_actions').insert({
-      actor_id:   entry.actorId,
-      actor_role: entry.actorRole ?? null,
-      action:     entry.action,
-      order_id:   entry.orderId ?? null,
-      details:    entry.details ?? null,
+      actor_id:        entry.actorId,
+      actor_role:      entry.actorRole ?? null,
+      action:          entry.action,
+      order_id:        entry.orderId ?? null,
+      impersonated_as: entry.impersonatedAsUserId ?? null,
+      details:         entry.details ?? null,
     })
     if (error) console.error('logAdminAction insert error', error)
   } catch (e) {

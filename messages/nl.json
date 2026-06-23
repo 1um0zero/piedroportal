@@ -1482,5 +1482,17 @@
     "type_warehouse": "Magazijn",
     "type_showroom": "Showroom",
     "type_other": "Overig"
+  },
+  "impersonation": {
+    "banner_label": "U gebruikt het portaal als {name}",
+    "back": "Terug naar mijn account",
+    "returning": "Terugkeren…",
+    "view_as": "Bekijk als",
+    "view_as_hint": "Gebruik het portaal met de echte rechten van deze gebruiker",
+    "starting": "Starten…",
+    "confirm_title": "U handelt als een andere gebruiker",
+    "confirm_body": "U gebruikt het portaal als {name}. Dit wijzigt echte gegevens op hun account. Doorgaan?",
+    "confirm_ok": "Ja, doorgaan",
+    "confirm_cancel": "Annuleren"
   }
 }

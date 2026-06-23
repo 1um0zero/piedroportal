@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { Link, useRouter, usePathname } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { duplicateOrderAction, deleteOrderAction } from '@/app/actions/orders'
+import { useImpersonation } from '@/contexts/ImpersonationContext'
 import { PRODUCTION_STATES, isOnProductionTrail, PRODUCTION_SEQUENCE, USER_PRODUCTION_SEQUENCE, userTrailIndex } from '@/lib/order-status'
 import { ProductionTrail } from './ProductionTrail'
 import { nz, orderNumber } from '@/lib/format'
@@ -137,6 +138,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
+  const { guard } = useImpersonation()
   const t  = useTranslations('admin.orders')
   const tc = useTranslations('admin.common')
   const ts = useTranslations('dashboard.status')
@@ -173,6 +175,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
 
   async function handleDelete(orderId: string) {
     if (!confirm(t('delete_confirm'))) return
+    if (!(await guard())) return
     setDeleting(orderId)
     try {
       const res = await deleteOrderAction(orderId)
@@ -196,6 +199,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   // sitting in the list next to repeat/delete.
 
   async function handleRepeat(orderId: string, productId: string) {
+    if (!(await guard())) return
     setRepeating(orderId)
     try {
       const result = await duplicateOrderAction(orderId)

@@ -1482,5 +1482,17 @@
     "type_warehouse": "Entrepôt",
     "type_showroom": "Showroom",
     "type_other": "Autre"
+  },
+  "impersonation": {
+    "banner_label": "Vous utilisez le portail en tant que {name}",
+    "back": "Revenir à mon compte",
+    "returning": "Retour…",
+    "view_as": "Voir comme",
+    "view_as_hint": "Utiliser le portail avec les permissions réelles de cet utilisateur",
+    "starting": "Démarrage…",
+    "confirm_title": "Vous agissez en tant qu’un autre utilisateur",
+    "confirm_body": "Vous utilisez le portail en tant que {name}. Cela modifiera de vraies données sur son compte. Continuer ?",
+    "confirm_ok": "Oui, continuer",
+    "confirm_cancel": "Annuler"
   }
 }

@@ -8,10 +8,11 @@
  */
 
 import { useCallback, useMemo, useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Sort, nextSort, compareValues, SortableTh } from '@/components/ui/table-controls'
 import { isPiedroAdmin } from '@/lib/roles'
 import { updateUserLocaleAction } from '@/app/actions/admin-users'
+import { startImpersonation } from '@/app/actions/impersonation'
 
 const LOCALES = ['en', 'nl', 'fr', 'de'] as const
 type Locale = typeof LOCALES[number]
@@ -27,6 +28,7 @@ const COLUMNS = [
   { id: 'branch',      width: 130 },
   { id: 'status',      width: 110 },
   { id: 'created_at',  width: 110 },
+  { id: 'act',         width: 110 },
 ] as const
 const MIN_COL_WIDTH = 50
 
@@ -112,6 +114,22 @@ function ColResizer({ onResize }: { onResize: (delta: number) => void }) {
 
 export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; branches: BranchOpt[] }) {
   const t = useTranslations('admin.users')
+  const ti = useTranslations('impersonation')
+  const locale = useLocale()
+  const [impersonating, setImpersonating] = useState<string | null>(null)
+
+  // Step into a user's real session to validate their permissions. Hard-reload
+  // to the gallery so the server re-reads the swapped session cookies.
+  const viewAs = async (userId: string) => {
+    setImpersonating(userId)
+    const res = await startImpersonation(userId)
+    if (res.error) {
+      setImpersonating(null)
+      alert(res.error)
+      return
+    }
+    window.location.replace(`/${locale}/gallery`)
+  }
   const [sort, setSort] = useState<Sort>({ key: 'created_at', dir: 'desc' })
   const [search, setSearch] = useState('')
   const [fRole, setFRole] = useState('')
@@ -252,7 +270,10 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
                 <HeaderFilter value={fStatus} onChange={setFStatus} allLabel={t('grid_all')} options={statusOptions} />
                 <ColResizer onResize={d => resizeCol('status', d)} />
               </SortableTh>
-              <SortableTh label={t('grid_col_created')} sortKey="created_at" sort={sort} onSort={onSort} className="relative" />
+              <SortableTh label={t('grid_col_created')} sortKey="created_at" sort={sort} onSort={onSort} className="relative">
+                <ColResizer onResize={d => resizeCol('created_at', d)} />
+              </SortableTh>
+              <th className="px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-stone-400">{ti('view_as')}</th>
             </tr>
           </thead>
           <tbody>
@@ -303,11 +324,24 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
                   <td className="px-4 py-2 text-stone-500 whitespace-nowrap">
                     {new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {isPiedroAdmin(u.role) ? (
+                      <span className="text-xs text-stone-300">—</span>
+                    ) : (
+                      <button
+                        onClick={() => viewAs(u.id)}
+                        disabled={impersonating === u.id}
+                        title={ti('view_as_hint')}
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg border border-gold/40 text-gold hover:bg-gold/10 disabled:opacity-50">
+                        {impersonating === u.id ? ti('starting') : ti('view_as')}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               )
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-stone-400">{t('grid_no_results')}</td></tr>
+              <tr><td colSpan={10} className="px-4 py-10 text-center text-sm text-stone-400">{t('grid_no_results')}</td></tr>
             )}
           </tbody>
         </table>
