@@ -16,7 +16,7 @@ const SELECT_BASE = `id, user_id, order_seq, status, unit, quantity, reference_c
   companies(id, name, notify_cc)`
 
 // Extended select — requires SQL migrations to have been run
-const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state`
+const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date`
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 

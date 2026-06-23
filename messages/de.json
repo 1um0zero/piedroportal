@@ -241,6 +241,8 @@
     "discard": "Verwerfen",
     "edit_draft": "Bearbeiten & senden",
     "order_number_label": "Bestellnr.",
+    "tracking_label": "Track & Trace",
+    "tracking_open": "Sendungsverfolgung öffnen",
     "pdf_migrated": "PDF (migriert)",
     "email_client": "Kunde anschreiben",
     "email_client_subject": "Piedro-Bestellung {ref}",

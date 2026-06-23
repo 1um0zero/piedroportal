@@ -241,6 +241,8 @@
     "discard": "Supprimer",
     "edit_draft": "Modifier et envoyer",
     "order_number_label": "N° de commande",
+    "tracking_label": "Suivi (Track & Trace)",
+    "tracking_open": "Ouvrir le suivi",
     "pdf_migrated": "PDF (migré)",
     "email_client": "E-mailer le client",
     "email_client_subject": "Commande Piedro {ref}",

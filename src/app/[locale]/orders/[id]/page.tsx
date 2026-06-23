@@ -16,7 +16,7 @@ const SELECT_BASE = `id, order_seq, status, unit, quantity, reference_customer, 
   products(id, colour_id, color_name, closure, picture_name, style_name),
   companies(id, name)`
 
-const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state`
+const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date`
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 

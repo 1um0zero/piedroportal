@@ -241,6 +241,8 @@
     "discard": "Verwijderen",
     "edit_draft": "Bewerken & versturen",
     "order_number_label": "Ordernr.",
+    "tracking_label": "Track & Trace",
+    "tracking_open": "Tracking openen",
     "pdf_migrated": "PDF (gemigreerd)",
     "email_client": "Klant e-mailen",
     "email_client_subject": "Piedro-order {ref}",
