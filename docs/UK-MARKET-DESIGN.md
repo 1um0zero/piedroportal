@@ -43,25 +43,44 @@ in `src/lib/exclusive.ts`. No new tables.
 
 ## UI — branch detail (`/admin/branches/[id]`, token-scoped branch only)
 
-Three panels, **piedro_admin only** (UK staff are read-only):
+Two panels, **piedro_admin only** (UK staff are read-only):
 
 1. **Clients** — search companies; assign/unassign. Assign sets
-   `exclusive_label += UK` + `sees_general_catalogue=true` (= the legacy `UK *`),
-   and links `branch_companies` for on-behalf. Lists current UK clients.
-2. **Styles** — search styles; assign sets `products.exclusive += UK` on every
-   colour of the style; unassign clears `UK`. Shows colour count + state
-   (none / partial / full UK).
-3. **Colours** — within a style (or a colour search), toggle individual
-   `colour_id` rows to UK. Covers mixed styles (e.g. `2089.9980` UK, `2089.4437`
-   general). The Styles panel is just "all colours" of this.
+   `exclusive_label += UK` + `sees_general_catalogue=true` (= the legacy `UK *`)
+   **and creates the `branch_companies` link** (CONFIRMED 2026-06-23: at UK launch
+   the staff register orders **on-behalf** of UK clients, so the link is required,
+   not optional). Lists current UK clients.
+
+2. **Models — expandable Style → Colour grid.** This corrects the original
+   branch_office simplification: association was style-only, but exclusivity is
+   really per **Style.Colour**. So the grid lists styles, each **expandable to its
+   colours**; you select specific colours OR tick "all colours" of a style. A
+   style row shows state **none / partial / full UK** and an indeterminate tick
+   when partial. Assign/unassign materializes `products.exclusive += / -= UK` on
+   the affected colour rows. Covers mixed styles (e.g. `2089.9980` UK,
+   `2089.4437` general) and the common "all of this style" case in one control.
+
+> Note: this expand-to-colour grid is the correct shape for ANY customer
+> exclusivity (ZSM, KIV…), not just UK — the style-only `branch_models` grid was
+> a launch-time shortcut. For UK we drive it purely via `products.exclusive`
+> (token-scoped branch), not `branch_models`.
 
 ## Server actions (new, piedro_admin-guarded)
 - `assignCompanyToUk(companyId)` / `removeCompanyFromUk(companyId)`
-- `assignStyleToUk(styleName)` / `removeStyleFromUk(styleName)`
-- `assignColourToUk(colourId)` / `removeColourFromUk(colourId)`
+  — token on the company **+** `branch_companies` link (on-behalf).
+- `setColoursUk(colourIds[], on)` — add/remove `UK` on a batch of colour rows
+  (the grid sends the colours of a style, or a subset). "All colours" = the
+  style's full colour set.
 
-Each adds/removes the `UK` token (additive) and revalidates. Warn before
-overwriting a row that already carries a *different* customer sigla.
+Each adds/removes the `UK` token (additive, via `exclusiveTokens`) and
+revalidates. Warn before overwriting a row that already carries a *different*
+customer sigla.
+
+## Import path (Excel / cr56f_exclusive)
+UK products may also arrive via the existing Excel import: the `cr56f_exclusive`
+column carries `UK` and, since every import row is a `colour_id`, the marking is
+inherently per **Style.Colour** — no special handling. The branch grid above is
+the interactive equivalent for products already in the catalogue.
 
 ## What already exists (no work)
 - `branches.exclusive_label` + token-scoped back-office scope + read-only guards
