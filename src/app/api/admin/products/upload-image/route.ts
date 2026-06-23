@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { requireBackoffice } from '@/lib/admin/guard'
+import { requireCatalogueWrite } from '@/lib/admin/guard'
 import { createServiceClient } from '@/lib/supabase/service'
 import { normalizeToPng } from '@/lib/products/normalize-image'
 
@@ -19,7 +19,7 @@ const BUCKET = 'products'
  * FormData: file, colourId, index (1..99)
  */
 export async function POST(request: NextRequest) {
-  const auth = await requireBackoffice()
+  const auth = await requireCatalogueWrite()
   if ('error' in auth) return auth.error
 
   const form = await request.formData()

@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireBackofficePage } from '@/lib/admin/scope'
+import { requireCatalogueWritePage } from '@/lib/admin/scope'
 import StyleOrderer, { type StyleItem } from '@/components/admin/StyleOrderer'
 import type { Section } from '@/types'
 
@@ -17,7 +17,7 @@ type Row = {
 }
 
 export default async function StyleOrderPage() {
-  const scope = await requireBackofficePage()
+  const scope = await requireCatalogueWritePage()
   const t = await getTranslations('admin.order')
 
   const service = createServiceClient()

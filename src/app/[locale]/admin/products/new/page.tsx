@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireBackofficePage } from '@/lib/admin/scope'
+import { requireCatalogueWritePage } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import ProductForm, { type ExclusiveCompany } from '@/components/admin/ProductForm'
 
 export default async function NewProductPage() {
-  const scope = await requireBackofficePage()
+  const scope = await requireCatalogueWritePage()
   const t = await getTranslations('admin.products')
 
   let companies: ExclusiveCompany[] | undefined

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
+import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import type { UserRole } from '@/types'
 
 /**
@@ -9,7 +10,11 @@ import type { UserRole } from '@/types'
  * which catalogue models (= products.style_name) a user may see/manage.
  *
  *   - piedro_admin      → allModels=true, canModel() always true.
- *   - branch_staff with a branch:
+ *   - branch_staff on a TOKEN-SCOPED branch (branches.exclusive_label set, e.g. UK):
+ *       canModel(s) = the style has any colour that is general OR carries the
+ *       branch sigla — reusing the client token engine (src/lib/exclusive.ts).
+ *       readonlyCatalogue=true (these staff consult, they don't manage models).
+ *   - branch_staff on a legacy branch (exclusive_label NULL):
  *       sees_full_catalogue=true  → canModel(s) = !models.has(s)  (list is exclusions)
  *       sees_full_catalogue=false → canModel(s) =  models.has(s)  (list is inclusions)
  *   - branch_staff without a branch → empty scope (canModel always false).
@@ -20,6 +25,8 @@ export interface AdminScope {
   branchId: string | null
   allModels: boolean
   canModel(styleName: string | null | undefined): boolean
+  /** Token-scoped (e.g. UK) staff consult the catalogue but cannot manage it. */
+  readonlyCatalogue: boolean
 }
 
 /**
@@ -38,20 +45,41 @@ export async function getAdminScope(): Promise<AdminScope | null> {
   const role = profile?.role as UserRole | undefined
   // super_admin (infra/technical) is a superset of piedro_admin (operational).
   if (isPiedroAdmin(role)) {
-    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true }
+    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: false }
   }
 
   if (role === 'branch_staff') {
     const branchId = (profile?.branch_id as string | null) ?? null
     if (!branchId) {
       // Staff not yet attached to a branch — no catalogue access.
-      return { userId: user.id, role, branchId: null, allModels: false, canModel: () => false }
+      return { userId: user.id, role, branchId: null, allModels: false, canModel: () => false, readonlyCatalogue: true }
     }
 
-    const [{ data: branch }, { data: rows }] = await Promise.all([
-      service.from('branches').select('sees_full_catalogue').eq('id', branchId).single(),
-      service.from('branch_models').select('style_name').eq('branch_id', branchId),
-    ])
+    const { data: branch } = await service
+      .from('branches').select('sees_full_catalogue, exclusive_label').eq('id', branchId).single()
+
+    // ── Token-scoped branch (e.g. UK): general catalogue + own sigla ──────────
+    const token = (branch?.exclusive_label as string | null ?? '').trim()
+    if (token) {
+      const labels = new Set<string>(exclusiveTokens(token))
+      labels.add('LIV') // Livingstone classification is visible to every back-office user
+      // Precompute the set of styles with at least one visible colour. A style is
+      // visible when any of its rows is general or carries the branch sigla — the
+      // exact same gate the client gallery applies, but rolled up to style_name so
+      // every existing canModel() caller keeps working unchanged.
+      const { data: prods } = await service.from('products').select('style_name, exclusive')
+      const visibleStyles = new Set<string>()
+      for (const p of (prods ?? []) as { style_name: string | null; exclusive: string | null }[]) {
+        if (p.style_name && isExclusiveVisible(p.exclusive, labels, false)) visibleStyles.add(p.style_name)
+      }
+      const canModel = (styleName: string | null | undefined): boolean =>
+        !!styleName && visibleStyles.has(styleName)
+      return { userId: user.id, role, branchId, allModels: false, canModel, readonlyCatalogue: true }
+    }
+
+    // ── Legacy branch: style_name inclusion/exclusion list ────────────────────
+    const { data: rows } = await service
+      .from('branch_models').select('style_name').eq('branch_id', branchId)
     const seesFull = branch?.sees_full_catalogue ?? true
     const models = new Set((rows ?? []).map(r => r.style_name as string))
 
@@ -60,7 +88,7 @@ export async function getAdminScope(): Promise<AdminScope | null> {
       return seesFull ? !models.has(styleName) : models.has(styleName)
     }
     // allModels is true only for a full-catalogue branch with no exclusions.
-    return { userId: user.id, role, branchId, allModels: seesFull && models.size === 0, canModel }
+    return { userId: user.id, role, branchId, allModels: seesFull && models.size === 0, canModel, readonlyCatalogue: false }
   }
 
   // Regular users / company_admins have no back-office access.
@@ -76,6 +104,17 @@ export async function requireBackofficePage(): Promise<AdminScope> {
   if (!scope) redirect('/gallery')
   // A branch_staff with no branch attached has no usable scope.
   if (scope.role === 'branch_staff' && !scope.branchId) redirect('/gallery')
+  return scope
+}
+
+/**
+ * Server-component guard for catalogue-MANAGEMENT pages (import, edit, reorder,
+ * image upload). Requires back-office access AND a non-read-only scope, so
+ * token-scoped branch staff (e.g. UK) are sent back to the products list.
+ */
+export async function requireCatalogueWritePage(): Promise<AdminScope> {
+  const scope = await requireBackofficePage()
+  if (scope.readonlyCatalogue) redirect('/admin/products')
   return scope
 }
 

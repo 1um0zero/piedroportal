@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { requireBackofficePage } from '@/lib/admin/scope'
+import { requireCatalogueWritePage } from '@/lib/admin/scope'
 import ProductImport from '@/components/admin/ProductImport'
 
 export default async function ImportProductsPage() {
-  await requireBackofficePage()
+  await requireCatalogueWritePage()
   const t = await getTranslations('admin.products')
 
   return (

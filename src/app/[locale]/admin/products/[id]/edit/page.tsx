@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireBackofficePage } from '@/lib/admin/scope'
+import { requireCatalogueWritePage } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import ProductForm, { type ExclusiveCompany } from '@/components/admin/ProductForm'
 import type { Product } from '@/types'
@@ -23,7 +23,7 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params
-  const scope = await requireBackofficePage()
+  const scope = await requireCatalogueWritePage()
 
   const service = createServiceClient()
   const { data } = await service.from('products').select('*').eq('id', id).single()

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { requireBackoffice } from '@/lib/admin/guard'
+import { requireCatalogueWrite } from '@/lib/admin/guard'
 import { fetchAllExisting } from '@/app/actions/admin-products'
 import {
   listSheets, parseProducts, diffAgainstExisting, suggestSheetMode,
@@ -9,7 +9,7 @@ import {
 const SAMPLE = 50
 
 export async function POST(request: NextRequest) {
-  const auth = await requireBackoffice()
+  const auth = await requireCatalogueWrite()
   if ('error' in auth) return auth.error
   const { scope } = auth
 

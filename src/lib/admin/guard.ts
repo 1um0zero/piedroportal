@@ -32,3 +32,15 @@ export async function requireBackoffice(): Promise<{ scope: AdminScope } | { err
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   return { scope }
 }
+
+/**
+ * Like requireBackoffice but additionally rejects token-scoped branches (e.g. UK),
+ * which may consult the catalogue but not mutate it. Use on import/upload routes.
+ */
+export async function requireCatalogueWrite(): Promise<{ scope: AdminScope } | { error: NextResponse }> {
+  const res = await requireBackoffice()
+  if ('error' in res) return res
+  if (res.scope.readonlyCatalogue)
+    return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
+  return res
+}

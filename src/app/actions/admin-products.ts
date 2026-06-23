@@ -17,6 +17,9 @@ async function assertBackoffice(): Promise<AdminScope | string> {
   const scope = await getAdminScope()
   if (!scope) return 'Not authenticated'
   if (scope.role === 'branch_staff' && !scope.branchId) return 'Not authorized'
+  // Token-scoped branches (e.g. UK) consult the catalogue but cannot manage it.
+  // Every assertBackoffice caller in this module is a mutation.
+  if (scope.readonlyCatalogue) return 'Not authorized'
   return scope
 }
 
