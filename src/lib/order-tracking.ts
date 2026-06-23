@@ -19,14 +19,19 @@ async function attachColumn(
 }
 
 /**
- * Attach `tracking_link` (delivered orders) and `expected_dispatch_date` (all
- * orders) from separate, tolerant queries — kept out of the main SELECT so the
- * orders pages keep working before those columns exist (run supabase-add-tracking.sql
- * and supabase-dispatch.sql to add them).
+ * Attach `tracking_link` / `tracking_code` and `expected_dispatch_date` from
+ * separate, tolerant queries — kept out of the main SELECT so the orders pages
+ * keep working before those columns exist (run supabase-add-tracking.sql and
+ * supabase-dispatch.sql to add them).
+ *
+ * Tracking is fetched for ALL orders, not just delivered ones: the carrier
+ * (UPS) assigns the tracking number at DISPATCH, well before the order is
+ * flagged delivered, so an in-production/shipped order can already carry a
+ * usable Track & Trace. Whether to surface it is the caller's call.
  */
 export async function attachOrderExtras(orders: OrderLike[], service: Svc): Promise<void> {
-  const delivered = orders.filter(o => o.status === 'delivered' || o.production_state === 'delivered').map(o => o.id)
-  await attachColumn(orders, service, 'tracking_link', delivered)
-  await attachColumn(orders, service, 'tracking_code', delivered)
-  await attachColumn(orders, service, 'expected_dispatch_date', orders.map(o => o.id))
+  const ids = orders.map(o => o.id)
+  await attachColumn(orders, service, 'tracking_link', ids)
+  await attachColumn(orders, service, 'tracking_code', ids)
+  await attachColumn(orders, service, 'expected_dispatch_date', ids)
 }

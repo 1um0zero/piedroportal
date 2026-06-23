@@ -577,20 +577,23 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         truck alone. Before dispatch, staff see days-to-dispatch;
                         clients see nothing (delivery times are intentionally hidden). */}
                     <td className="px-2.5 py-3 text-xs whitespace-nowrap">
-                      {(o.status === 'delivered' || o.production_state === 'delivered') ? (
-                        o.tracking_link ? (
-                          <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
-                            onClick={e => e.stopPropagation()}
-                            title={o.tracking_code ?? t('tracking')}
-                            className="inline-flex items-center gap-1.5 font-medium text-teal-700 hover:text-teal-800 transition-colors">
-                            <TruckGlyph />
-                            {o.tracking_code && <span className="tabular-nums">{o.tracking_code}</span>}
-                          </a>
-                        ) : (
-                          <span title={t('dispatch_done')} className="inline-flex text-emerald-600">
-                            <TruckGlyph />
-                          </span>
-                        )
+                      {/* A tracking link exists from dispatch onward (UPS assigns it
+                          before delivery), so show it as soon as it's present —
+                          regardless of delivered status. Delivered without a link
+                          still shows the truck alone. Otherwise: staff see the
+                          dispatch countdown; clients see nothing. */}
+                      {o.tracking_link ? (
+                        <a href={o.tracking_link} target="_blank" rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          title={o.tracking_code ?? t('tracking')}
+                          className="inline-flex items-center gap-1.5 font-medium text-teal-700 hover:text-teal-800 transition-colors">
+                          <TruckGlyph />
+                          {o.tracking_code && <span className="tabular-nums">{o.tracking_code}</span>}
+                        </a>
+                      ) : (o.status === 'delivered' || o.production_state === 'delivered') ? (
+                        <span title={t('dispatch_done')} className="inline-flex text-emerald-600">
+                          <TruckGlyph />
+                        </span>
                       ) : (
                         (isAdmin && showDispatch) ? <DispatchDays o={o} t={t} /> : <span className="text-stone-300">—</span>
                       )}
