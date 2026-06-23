@@ -66,6 +66,7 @@ export interface Branch {
   code: string | null
   sees_full_catalogue: boolean
   handles_unassigned_clients?: boolean  // catch-all: owns every client not linked to any branch
+  exclusive_label?: string | null  // when set (e.g. 'UK'), branch is TOKEN-SCOPED: staff see general + this sigla, read-only; managed via the Style→Colour grid
   notify_email: string | null   // where this branch's order copies are sent
   notify_locale: string | null  // language for this branch's copies (en/nl/fr/de)
   created_at?: string

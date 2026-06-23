@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
+import { exclusiveTokens } from '@/lib/exclusive'
 
 // ── Auth helper (piedro_admin only) ───────────────────────────────────────────
 
@@ -218,6 +219,109 @@ export async function addBranchAdmin(
 
   revalidate(branchId)
   revalidatePath('/admin/users')
+  return { ok: true }
+}
+
+// ── Token-scoped branch (e.g. UK): Style.Colour + client exclusivity ───────────
+// A token-scoped branch (branches.exclusive_label, e.g. 'UK') manages exclusivity
+// directly: assigning a Style.Colour stamps products.exclusive with the sigla;
+// assigning a client stamps companies.exclusive_label (+ sees_general_catalogue)
+// AND links branch_companies so the branch's staff order on its behalf. The token
+// is additive — a row may carry several siglas (e.g. 'LIV UK').
+
+async function branchToken(branchId: string): Promise<string | null> {
+  const service = createServiceClient()
+  const { data } = await service.from('branches').select('exclusive_label').eq('id', branchId).single()
+  const t = (data?.exclusive_label ?? '').trim().toUpperCase()
+  return t || null
+}
+
+/** Re-serialise a token set, with `token` added or removed. Returns null when empty. */
+function applyToken(current: string | null | undefined, token: string, on: boolean): string | null {
+  const toks = new Set(exclusiveTokens(current))
+  if (on) toks.add(token); else toks.delete(token)
+  return toks.size ? [...toks].join(' ') : null
+}
+
+/** Add/remove the branch sigla on a batch of Style.Colour rows (by colour_id). */
+export async function setBranchColoursExclusive(
+  branchId: string,
+  colourIds: string[],
+  on: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+  const token = await branchToken(branchId)
+  if (!token) return { error: 'Branch is not token-scoped' }
+  if (!colourIds.length) return { ok: true }
+
+  const service = createServiceClient()
+  const { data: rows, error } = await service
+    .from('products').select('id, exclusive').in('colour_id', colourIds)
+  if (error) return { error: error.message }
+
+  for (const r of (rows ?? []) as { id: string; exclusive: string | null }[]) {
+    const next = applyToken(r.exclusive, token, on)
+    const { error: upErr } = await service.from('products').update({ exclusive: next }).eq('id', r.id)
+    if (upErr) return { error: upErr.message }
+  }
+
+  revalidate(branchId)
+  revalidatePath('/admin/products')
+  revalidatePath('/gallery')
+  return { ok: true }
+}
+
+/** Assign a client to the branch: stamp the sigla (+ sees general) and link it. */
+export async function assignBranchExclusiveClient(
+  branchId: string,
+  companyId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+  const token = await branchToken(branchId)
+  if (!token) return { error: 'Branch is not token-scoped' }
+
+  const service = createServiceClient()
+  const { data: company } = await service
+    .from('companies').select('exclusive_label').eq('id', companyId).single()
+  const nextLabel = applyToken(company?.exclusive_label, token, true)
+  const { error: cErr } = await service.from('companies')
+    .update({ exclusive_label: nextLabel, sees_general_catalogue: true }).eq('id', companyId)
+  if (cErr) return { error: cErr.message }
+
+  // On-behalf: the branch's staff register orders for this client.
+  const { error: lErr } = await service.from('branch_companies')
+    .upsert({ branch_id: branchId, company_id: companyId }, { onConflict: 'branch_id,company_id' })
+  if (lErr) return { error: lErr.message }
+
+  revalidate(branchId)
+  revalidatePath('/admin/companies')
+  return { ok: true }
+}
+
+/** Unassign a client: drop the sigla and the on-behalf link (keeps other siglas). */
+export async function removeBranchExclusiveClient(
+  branchId: string,
+  companyId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+  const token = await branchToken(branchId)
+  if (!token) return { error: 'Branch is not token-scoped' }
+
+  const service = createServiceClient()
+  const { data: company } = await service
+    .from('companies').select('exclusive_label').eq('id', companyId).single()
+  const nextLabel = applyToken(company?.exclusive_label, token, false)
+  const { error: cErr } = await service.from('companies')
+    .update({ exclusive_label: nextLabel }).eq('id', companyId)
+  if (cErr) return { error: cErr.message }
+
+  await service.from('branch_companies').delete().eq('branch_id', branchId).eq('company_id', companyId)
+
+  revalidate(branchId)
+  revalidatePath('/admin/companies')
   return { ok: true }
 }
 

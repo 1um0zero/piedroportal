@@ -6,7 +6,9 @@ import { useRouter } from '@/i18n/navigation'
 import {
   updateBranch, deleteBranch, setBranchModel, removeBranchModel, assignUserBranch,
   addBranchCompany, removeBranchCompany, addBranchAdmin, removeBranchAdmin,
+  assignBranchExclusiveClient, removeBranchExclusiveClient,
 } from '@/app/actions/admin-branches'
+import BranchExclusiveGrid, { type GridStyle } from '@/components/admin/BranchExclusiveGrid'
 import type { Branch } from '@/types'
 
 export type BranchUser = {
@@ -31,12 +33,19 @@ type Props = {
   allCompanies: BranchCompanyOption[]
   assignedCompanyIds: string[]
   branchAdminIds: string[]
+  exclusiveToken?: string | null
+  gridStyles?: GridStyle[]
+  exclusiveClientIds?: string[]
 }
 
 export default function BranchDetail({
   branch, allModels, assignedModels, users,
   allCompanies, assignedCompanyIds, branchAdminIds,
+  exclusiveToken = null, gridStyles = [], exclusiveClientIds = [],
 }: Props) {
+  // A token-scoped branch (e.g. UK) manages exclusivity directly: a Style→Colour
+  // grid instead of branch_models, and clients carry the branch sigla (+ link).
+  const isToken = !!exclusiveToken
   const t = useTranslations('admin.branches')
   const tc = useTranslations('admin.common')
   const router = useRouter()
@@ -112,7 +121,11 @@ export default function BranchDetail({
   }
 
   // ── Clients (companies) ───────────────────────────────────────────────────────
-  const [clients, setClients] = useState<Set<string>>(new Set(assignedCompanyIds))
+  // Token branch: clients = companies carrying the sigla (assigning also links them
+  // for on-behalf). Legacy branch: just the branch_companies on-behalf links.
+  const [clients, setClients] = useState<Set<string>>(
+    new Set(isToken ? exclusiveClientIds : assignedCompanyIds),
+  )
   const [clientQ, setClientQ] = useState('')
   const [busyClient, setBusyClient] = useState<string | null>(null)
 
@@ -128,13 +141,17 @@ export default function BranchDetail({
 
   async function addClient(companyId: string) {
     setBusyClient(companyId)
-    const res = await addBranchCompany(branch.id, companyId)
+    const res = isToken
+      ? await assignBranchExclusiveClient(branch.id, companyId)
+      : await addBranchCompany(branch.id, companyId)
     setBusyClient(null)
     if (!res.error) { setClients(prev => new Set(prev).add(companyId)); setClientQ('') }
   }
   async function removeClient(companyId: string) {
     setBusyClient(companyId)
-    const res = await removeBranchCompany(branch.id, companyId)
+    const res = isToken
+      ? await removeBranchExclusiveClient(branch.id, companyId)
+      : await removeBranchCompany(branch.id, companyId)
     setBusyClient(null)
     if (!res.error) setClients(prev => { const n = new Set(prev); n.delete(companyId); return n })
   }
@@ -177,26 +194,32 @@ export default function BranchDetail({
               className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none" />
           </div>
         </div>
-        <div>
-          <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t('field_catalogue')}</label>
-          <div className="space-y-2">
-            <label className="flex items-start gap-2 cursor-pointer">
-              <input type="radio" name="catmode" checked={seesFull} onChange={() => setSeesFull(true)} className="mt-1" />
-              <span className="text-sm text-stone-700">{t('mode_full')} <span className="text-stone-400">— {t('mode_full_hint')}</span></span>
-            </label>
-            <label className="flex items-start gap-2 cursor-pointer">
-              <input type="radio" name="catmode" checked={!seesFull} onChange={() => setSeesFull(false)} className="mt-1" />
-              <span className="text-sm text-stone-700">{t('mode_limited')} <span className="text-stone-400">— {t('mode_limited_hint')}</span></span>
-            </label>
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t('clients')}</label>
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input type="checkbox" checked={handlesUnassigned} onChange={e => setHandlesUnassigned(e.target.checked)} className="mt-1" />
-            <span className="text-sm text-stone-700">{t('catch_all')} <span className="text-stone-400">— {t('catch_all_hint')}</span></span>
-          </label>
-        </div>
+        {isToken ? (
+          <p className="text-xs text-gold bg-gold/5 rounded-lg px-3 py-2">{t('token_branch_note', { token: exclusiveToken! })}</p>
+        ) : (
+          <>
+            <div>
+              <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t('field_catalogue')}</label>
+              <div className="space-y-2">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="radio" name="catmode" checked={seesFull} onChange={() => setSeesFull(true)} className="mt-1" />
+                  <span className="text-sm text-stone-700">{t('mode_full')} <span className="text-stone-400">— {t('mode_full_hint')}</span></span>
+                </label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="radio" name="catmode" checked={!seesFull} onChange={() => setSeesFull(false)} className="mt-1" />
+                  <span className="text-sm text-stone-700">{t('mode_limited')} <span className="text-stone-400">— {t('mode_limited_hint')}</span></span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t('clients')}</label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={handlesUnassigned} onChange={e => setHandlesUnassigned(e.target.checked)} className="mt-1" />
+                <span className="text-sm text-stone-700">{t('catch_all')} <span className="text-stone-400">— {t('catch_all_hint')}</span></span>
+              </label>
+            </div>
+          </>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
             <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">{t('field_notify_email')}</label>
@@ -223,29 +246,33 @@ export default function BranchDetail({
         </div>
       </section>
 
-      {/* Models */}
-      <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('models')}</h2>
-          <p className="text-xs text-stone-400">
-            {seesFull ? t('models_exclude_hint') : t('models_include_hint')} · {t('selected_n', { n: assigned.size })}
-          </p>
-        </div>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder={t('search_models')}
-          className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none" />
-        <div className="max-h-80 overflow-y-auto rounded-lg border border-stone-100 divide-y divide-stone-50">
-          {filteredModels.map(m => {
-            const on = assigned.has(m)
-            return (
-              <label key={m} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-stone-50">
-                <input type="checkbox" checked={on} disabled={busyModel === m} onChange={() => toggleModel(m)} />
-                <span className="text-sm text-stone-700 font-mono">{m}</span>
-              </label>
-            )
-          })}
-          {filteredModels.length === 0 && <p className="px-3 py-4 text-sm text-stone-400">{t('no_models')}</p>}
-        </div>
-      </section>
+      {/* Models — token branch: Style→Colour grid; legacy: branch_models list */}
+      {isToken ? (
+        <BranchExclusiveGrid branchId={branch.id} token={exclusiveToken!} styles={gridStyles} />
+      ) : (
+        <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('models')}</h2>
+            <p className="text-xs text-stone-400">
+              {seesFull ? t('models_exclude_hint') : t('models_include_hint')} · {t('selected_n', { n: assigned.size })}
+            </p>
+          </div>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder={t('search_models')}
+            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none" />
+          <div className="max-h-80 overflow-y-auto rounded-lg border border-stone-100 divide-y divide-stone-50">
+            {filteredModels.map(m => {
+              const on = assigned.has(m)
+              return (
+                <label key={m} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-stone-50">
+                  <input type="checkbox" checked={on} disabled={busyModel === m} onChange={() => toggleModel(m)} />
+                  <span className="text-sm text-stone-700 font-mono">{m}</span>
+                </label>
+              )
+            })}
+            {filteredModels.length === 0 && <p className="px-3 py-4 text-sm text-stone-400">{t('no_models')}</p>}
+          </div>
+        </section>
+      )}
 
       {/* Staff */}
       <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
@@ -287,10 +314,12 @@ export default function BranchDetail({
       <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('clients')}</h2>
-          <p className="text-xs text-stone-400">{t('clients_hint')} · {t('selected_n', { n: clients.size })}</p>
+          <p className="text-xs text-stone-400">
+            {isToken ? t('clients_exclusive_hint', { token: exclusiveToken! }) : t('clients_hint')} · {t('selected_n', { n: clients.size })}
+          </p>
         </div>
 
-        {branch.handles_unassigned_clients && (
+        {!isToken && branch.handles_unassigned_clients && (
           <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">{t('catch_all_active')}</p>
         )}
 
