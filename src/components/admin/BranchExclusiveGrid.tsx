@@ -87,7 +87,7 @@ export default function BranchExclusiveGrid({ branchId, token, styles }: Props) 
                   ref={el => { if (el) el.indeterminate = st === 'partial' }}
                   onChange={() => apply(s.colours.map(c => c.id), st !== 'full')}
                 />
-                <button type="button" onClick={() => setOpen(p => { const n = new Set(p); n.has(s.style) ? n.delete(s.style) : n.add(s.style); return n })}
+                <button type="button" onClick={() => setOpen(p => { const n = new Set(p); if (n.has(s.style)) n.delete(s.style); else n.add(s.style); return n })}
                   className="flex-1 flex items-center gap-2 text-left min-w-0">
                   <span className="text-stone-300 text-xs w-3">{isOpen ? '▾' : '▸'}</span>
                   <span className="text-sm text-stone-700 font-mono truncate">{s.style}</span>
