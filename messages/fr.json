@@ -799,7 +799,11 @@
       "awaiting_hint": "Ces utilisateurs se sont inscrits mais n'ont pas encore confirmé leur e-mail, ils ne se sont donc jamais connectés. Si notre e-mail de confirmation n'est pas arrivé (les boîtes Microsoft 365 le classent souvent en indésirable), utilisez le bouton de lien de connexion pour leur fournir directement un lien de mot de passe.",
       "not_confirmed": "Non confirmé",
       "last_login": "Dernière connexion : {when}",
-      "last_login_never": "Jamais connecté"
+      "last_login_never": "Jamais connecté",
+      "grid_col_last_login": "Dernière connexion",
+      "grid_status_awaiting": "En attente de confirmation",
+      "never_short": "jamais",
+      "weeks_inactive_short": "{count} sem"
     },
     "products": {
       "title": "Produits",

@@ -8,9 +8,9 @@
  */
 
 import { useCallback, useMemo, useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations, useLocale, useNow } from 'next-intl'
 import { Sort, nextSort, compareValues, SortableTh } from '@/components/ui/table-controls'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchStaff, isBranchAdmin } from '@/lib/roles'
 import { updateUserLocaleAction } from '@/app/actions/admin-users'
 import { startImpersonation } from '@/app/actions/impersonation'
 
@@ -27,6 +27,7 @@ const COLUMNS = [
   { id: 'n_companies', width: 50  },
   { id: 'branch',      width: 130 },
   { id: 'status',      width: 110 },
+  { id: 'last_login',  width: 110 },
   { id: 'created_at',  width: 110 },
   { id: 'act',         width: 110 },
 ] as const
@@ -49,9 +50,14 @@ type UserRow = {
   branch_id: string | null
   created_at: string
   preferred_locale: string | null
+  confirmed: boolean
+  last_sign_in: string | null
 }
 
 type BranchOpt = { id: string; name: string }
+
+const isBranchRole = (role: string) => isBranchStaff(role) || isBranchAdmin(role)
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 const ROLE_COLORS: Record<UserRole, string> = {
   user:          'bg-stone-100 text-stone-600',
@@ -116,7 +122,14 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
   const t = useTranslations('admin.users')
   const ti = useTranslations('impersonation')
   const locale = useLocale()
+  const now = useNow()
   const [impersonating, setImpersonating] = useState<string | null>(null)
+
+  // Whole weeks since the user last signed in; null if they never logged in.
+  const weeksInactive = useCallback((u: UserRow): number | null => {
+    if (!u.last_sign_in) return null
+    return Math.floor((now.getTime() - new Date(u.last_sign_in).getTime()) / WEEK_MS)
+  }, [now])
 
   // Step into a user's real session to validate their permissions. Hard-reload
   // to the gallery so the server re-reads the swapped session cookies.
@@ -169,7 +182,10 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
   const branchName = useMemo(() => new Map(branches.map(b => [b.id, b.name])), [branches])
 
   const status = (u: UserRow) =>
-    isPiedroAdmin(u.role) ? 'admin' : u.companies.length > 0 ? 'active' : 'pending'
+    isPiedroAdmin(u.role) ? 'admin'
+      : !u.confirmed ? 'awaiting'
+      : (u.companies.length > 0 || isBranchRole(u.role)) ? 'active'
+      : 'pending'
 
   // Filter options derived from the data actually present
   const roleOptions = useMemo(() =>
@@ -185,6 +201,7 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
   const branchOptions = useMemo(() =>
     branches.map(b => ({ value: b.id, label: b.name })), [branches])
   const statusOptions = [
+    { value: 'awaiting', label: t('grid_status_awaiting') },
     { value: 'pending', label: t('grid_status_pending') },
     { value: 'active',  label: t('grid_status_active') },
     { value: 'admin',   label: t('grid_status_admin') },
@@ -211,12 +228,14 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
         case 'n_companies': return u.companies.length
         case 'branch':     return u.branch_id ? (branchName.get(u.branch_id) ?? '') : ''
         case 'status':     return status(u)
+        // Sort by inactivity: never-logged-in counts as most inactive.
+        case 'last_login': return weeksInactive(u) ?? Number.POSITIVE_INFINITY
         case 'created_at': return u.created_at
         default:           return ''
       }
     }
     return [...filtered].sort((a, b) => compareValues(value(a), value(b), sort.dir))
-  }, [effUsers, search, fRole, fLocale, fCompany, fBranch, fStatus, sort, branchName])
+  }, [effUsers, search, fRole, fLocale, fCompany, fBranch, fStatus, sort, branchName, weeksInactive])
 
   const onSort = (key: string) => setSort(prev => nextSort(prev, key))
 
@@ -270,6 +289,9 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
                 <HeaderFilter value={fStatus} onChange={setFStatus} allLabel={t('grid_all')} options={statusOptions} />
                 <ColResizer onResize={d => resizeCol('status', d)} />
               </SortableTh>
+              <SortableTh label={t('grid_col_last_login')} sortKey="last_login" sort={sort} onSort={onSort} align="right" className="relative">
+                <ColResizer onResize={d => resizeCol('last_login', d)} />
+              </SortableTh>
               <SortableTh label={t('grid_col_created')} sortKey="created_at" sort={sort} onSort={onSort} className="relative">
                 <ColResizer onResize={d => resizeCol('created_at', d)} />
               </SortableTh>
@@ -315,12 +337,26 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
                   <td className="px-4 py-2 text-stone-600 truncate">{u.branch_id ? (branchName.get(u.branch_id) ?? '—') : '—'}</td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span className={`inline-flex items-center gap-1.5 text-xs ${
-                      st === 'admin' ? 'text-gold' : st === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
+                      st === 'admin' ? 'text-gold' : st === 'active' ? 'text-green-600' : st === 'awaiting' ? 'text-red-600' : 'text-amber-600'}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${
-                        st === 'admin' ? 'bg-gold' : st === 'active' ? 'bg-green-400' : 'bg-amber-400'}`} />
+                        st === 'admin' ? 'bg-gold' : st === 'active' ? 'bg-green-400' : st === 'awaiting' ? 'bg-red-400' : 'bg-amber-400'}`} />
                       {t(`grid_status_${st}`)}
                     </span>
                   </td>
+                  {(() => {
+                    const w = weeksInactive(u)
+                    // Colour by inactivity: yellow from 2 weeks, red beyond 4.
+                    const cls = w == null ? 'text-red-500 font-medium'
+                      : w > 4 ? 'text-red-600 font-semibold'
+                      : w >= 2 ? 'text-amber-600 font-medium'
+                      : 'text-stone-400'
+                    return (
+                      <td className={`px-4 py-2 text-right whitespace-nowrap ${cls}`}
+                        title={u.last_sign_in ? new Date(u.last_sign_in).toLocaleString(locale) : t('last_login_never')}>
+                        {w == null ? t('never_short') : t('weeks_inactive_short', { count: w })}
+                      </td>
+                    )
+                  })()}
                   <td className="px-4 py-2 text-stone-500 whitespace-nowrap">
                     {new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
@@ -341,7 +377,7 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
               )
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={10} className="px-4 py-10 text-center text-sm text-stone-400">{t('grid_no_results')}</td></tr>
+              <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-stone-400">{t('grid_no_results')}</td></tr>
             )}
           </tbody>
         </table>
