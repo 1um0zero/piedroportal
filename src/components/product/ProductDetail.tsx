@@ -172,7 +172,7 @@ export default function ProductDetail({ product, siblings }: Props) {
   const tn = useTranslations('nav')
   const ts = useTranslations('stock')
   const locale = useLocale() as Locale
-  const { canOrder, isLoggedIn } = useAuth()
+  const { canOrder, isLoggedIn, isAdmin } = useAuth()
   const user = isLoggedIn
   const { ids, toggle }     = useWishlist()
   const [showLogin, setShowLogin] = useState(false)
@@ -309,12 +309,15 @@ export default function ProductDetail({ product, siblings }: Props) {
                    font-semibold text-sm hover:bg-gold-dark transition-colors uppercase tracking-wide">
         {t('order')}
       </Link>
-      {/* CUSTOM (custom-made shoes) — beta entry; same permission as OSB ordering */}
-      <Link href={`/gallery/${selected.id}/custom`}
-        className="inline-flex items-center px-6 py-3 rounded-xl border border-gold text-gold
-                   font-semibold text-sm hover:bg-gold/10 transition-colors uppercase tracking-wide">
-        Custom-made
-      </Link>
+      {/* CUSTOM (custom-made shoes) — BETA, admin-only while under construction.
+          Not exposed to clients until promoted out of beta. */}
+      {isAdmin && (
+        <Link href={`/gallery/${selected.id}/custom`}
+          className="inline-flex items-center px-6 py-3 rounded-xl border border-gold text-gold
+                     font-semibold text-sm hover:bg-gold/10 transition-colors uppercase tracking-wide">
+          Custom-made (beta)
+        </Link>
+      )}
     </div>
   )
 

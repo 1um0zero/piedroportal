@@ -28,6 +28,10 @@ export default async function CustomOrderPage({ params }: Props) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   const admin = isPiedroAdmin(profile?.role)
 
+  // CUSTOM is a BETA under construction — admin-only until promoted. Guard the
+  // route server-side so a non-admin can't reach it by typing the URL.
+  if (!admin) notFound()
+
   let companies: Company[] = []
   let userCompany: Company | null = null
   if (admin) {
