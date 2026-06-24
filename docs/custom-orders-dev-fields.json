@@ -1,0 +1,2414 @@
+[
+  {
+    "name": "cr56f_120leg_ankle_circumferencelf",
+    "type": "Integer",
+    "label": "22.120 leg_ankle_circumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_120leg_ankle_circumferencerf",
+    "type": "Integer",
+    "label": "22.120 leg_ankle_circumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_150leg_ankle_circumferencelf",
+    "type": "Integer",
+    "label": "22.150 leg_ankle_circumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_150leg_ankle_circumferencerf",
+    "type": "Integer",
+    "label": "22.150 leg_ankle_circumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_1toe_shape_square",
+    "type": "Boolean",
+    "label": "25.1 toe_shape_square",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_1toe_shape_squarename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_200leg_ankle_circumferencelf",
+    "type": "Integer",
+    "label": "22.200 leg_ankle_circumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_200leg_ankle_circumferencerf",
+    "type": "Integer",
+    "label": "22.200 leg_ankle_circumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_250leg_ankle_circumferencelf",
+    "type": "Integer",
+    "label": "22.250 leg_ankle_circumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_250leg_ankle_circumferencerf",
+    "type": "Integer",
+    "label": "22.250 leg_ankle_circumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_2toe_shape_pointed",
+    "type": "Boolean",
+    "label": "25.2 toe_shape_pointed",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_2toe_shape_pointedname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_300leg_ankle_circumferencelf",
+    "type": "Integer",
+    "label": "22.300 leg_ankle_circumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_300leg_ankle_circumferencerf",
+    "type": "Integer",
+    "label": "22.300 leg_ankle_circumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_350leg_ankle_circumferencelf",
+    "type": "Integer",
+    "label": "22.350 leg_ankle_circumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_350leg_ankle_circumferencerf",
+    "type": "Integer",
+    "label": "22.350 leg_ankle_circumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_3toe_shape_rounded",
+    "type": "Boolean",
+    "label": "25.3 toe_shape_rounded",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_3toe_shape_roundedname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_4toe_shape_nature",
+    "type": "Boolean",
+    "label": "25.4 toe_shape_nature",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_4toe_shape_naturename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_ball_laterallf",
+    "type": "Integer",
+    "label": "332 ball_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_ball_lateralrf",
+    "type": "Integer",
+    "label": "332 ball_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_ball_mediallf",
+    "type": "Integer",
+    "label": "332 ball_medial LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_ball_medialrf",
+    "type": "Integer",
+    "label": "332 ball_medial RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_clinicist",
+    "type": "String",
+    "label": "1 clinicist",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure",
+    "type": "Lookup",
+    "label": "1 closure",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_laces",
+    "type": "Boolean",
+    "label": "44 closure_laces",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_lacesname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_velcro",
+    "type": "Boolean",
+    "label": "44 closure_velcro",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_velcro_list",
+    "type": "Picklist",
+    "label": "44 closure_velcro_list",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_velcro_listname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_velcro_longer",
+    "type": "Integer",
+    "label": "44 closure_velcro_longer",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_velcro_wider",
+    "type": "Integer",
+    "label": "44 closure_velcro_wider",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closure_velcroname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_closurename",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_collar_extra_padding",
+    "type": "Boolean",
+    "label": "47 collar_extra_padding",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_collar_extra_padding_options",
+    "type": "Picklist",
+    "label": "47 collar_extra_padding_options",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_collar_extra_padding_optionsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_collar_extra_paddingname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_customer",
+    "type": "Lookup",
+    "label": "1 customer",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_customername",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_customerref",
+    "type": "String",
+    "label": "1 customer ref",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_customeryominame",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_extra_pair_laces",
+    "type": "Boolean",
+    "label": "51 extra_pair_laces",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_extra_pair_lacesname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_eyelets",
+    "type": "Picklist",
+    "label": "44 eyelets",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_eyeletsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare",
+    "type": "Boolean",
+    "label": "619 flare",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_back",
+    "type": "Boolean",
+    "label": "342 flare_back",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_back_laterallf",
+    "type": "Integer",
+    "label": "342 flare_back_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_back_lateralrf",
+    "type": "Integer",
+    "label": "342 flare_back_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_back_mediallf",
+    "type": "Integer",
+    "label": "342 flare_back_medial LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_back_medialrf",
+    "type": "Integer",
+    "label": "342 flare_back_medial RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_backname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_front",
+    "type": "Boolean",
+    "label": "343 flare_front",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_front_laterallf",
+    "type": "Integer",
+    "label": "343 flare_front_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_front_lateralrf",
+    "type": "Integer",
+    "label": "343 flare_front_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_front_mediallf",
+    "type": "Integer",
+    "label": "343 flare_front_medial LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_front_medialrf",
+    "type": "Integer",
+    "label": "343 flare_front_medial RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flare_frontname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flarelf",
+    "type": "Boolean",
+    "label": "619 flare LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flarelfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flarename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flarerf",
+    "type": "Boolean",
+    "label": "619 flare RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_flarerfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_foot_sizelf",
+    "type": "Integer",
+    "label": "211 foot_size LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_foot_sizerf",
+    "type": "Integer",
+    "label": "211 foot_size RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge",
+    "type": "Boolean",
+    "label": "613 fully_hollow_wedge",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_lateral",
+    "type": "Boolean",
+    "label": "613 fully_hollow_wedge_lateral",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_lateralname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_medial",
+    "type": "Boolean",
+    "label": "613 fully_hollow_wedge_medial",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_medial_laterallf",
+    "type": "Boolean",
+    "label": "613 fully_hollow_wedge_medial_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_medial_laterallfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_medial_lateralrf",
+    "type": "Boolean",
+    "label": "613 fully_hollow_wedge_medial_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_medial_lateralrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedge_medialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_fully_hollow_wedgename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel",
+    "type": "Boolean",
+    "label": "611 heel",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_heightlf",
+    "type": "Integer",
+    "label": "218 heel_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_heightrf",
+    "type": "Integer",
+    "label": "218 heel_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_lateral",
+    "type": "Boolean",
+    "label": "611 heel_lateral",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_laterallf",
+    "type": "Integer",
+    "label": "331 heel_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_lateralname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_lateralrf",
+    "type": "Integer",
+    "label": "331 heel_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medial",
+    "type": "Boolean",
+    "label": "611 heel_medial",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medial_laterallf",
+    "type": "Boolean",
+    "label": "611 heel_medial_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medial_laterallfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medial_lateralrf",
+    "type": "Boolean",
+    "label": "611 heel_medial_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medial_lateralrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_mediallf",
+    "type": "Integer",
+    "label": "331 heel_medial LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heel_medialrf",
+    "type": "Integer",
+    "label": "331 heel_medial RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heelname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_height",
+    "type": "Boolean",
+    "label": "615 height",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heightlf",
+    "type": "Boolean",
+    "label": "615 height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heightlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heightname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heightrf",
+    "type": "Boolean",
+    "label": "615 height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_heightrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge",
+    "type": "Boolean",
+    "label": "612 hollow_wedge",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_lateral",
+    "type": "Boolean",
+    "label": "612 hollow_wedge_lateral",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_lateralname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_medial",
+    "type": "Boolean",
+    "label": "612 hollow_wedge_medial",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_medial_laterallf",
+    "type": "Boolean",
+    "label": "612 hollow_wedge_medial_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_medial_laterallfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_medial_lateralrf",
+    "type": "String",
+    "label": "612 hollow_wedge_medial_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedge_medialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hollow_wedgename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hooks",
+    "type": "Picklist",
+    "label": "44 hooks",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_hooksname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_i_toe_heightlf",
+    "type": "Integer",
+    "label": "23 I_toe_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_i_toe_heightrf",
+    "type": "Integer",
+    "label": "23 I_toe_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_ii_toe_heightlf",
+    "type": "Integer",
+    "label": "23 II_toe_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_ii_toe_heightrf",
+    "type": "Integer",
+    "label": "23 II_toe_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_iii_toe_heightlf",
+    "type": "Integer",
+    "label": "23 III_toe_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_iii_toe_heightrf",
+    "type": "Integer",
+    "label": "23 III_toe_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_instep_cirumferencelf",
+    "type": "Integer",
+    "label": "214 instep_cirumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_instep_cirumferencerf",
+    "type": "Integer",
+    "label": "214 instep_cirumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_invoicedate",
+    "type": "DateTime",
+    "label": "invoice date",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_invoicenumber",
+    "type": "String",
+    "label": "invoice number",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_inwards",
+    "type": "Boolean",
+    "label": "619 inwards",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_inwardslf",
+    "type": "Boolean",
+    "label": "619 inwards LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_inwardslfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_inwardsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_inwardsrf",
+    "type": "Boolean",
+    "label": "619 inwards RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_inwardsrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_iv_toe_heightlf",
+    "type": "Integer",
+    "label": "23 IV_toe_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_iv_toe_heightrf",
+    "type": "Integer",
+    "label": "23 IV_toe_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_joint_cirumferencelf",
+    "type": "Integer",
+    "label": "213 joint_cirumference LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_joint_cirumferencerf",
+    "type": "Integer",
+    "label": "213 joint_cirumference RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_last_heightlf",
+    "type": "Integer",
+    "label": "2 last_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_last_heightrf",
+    "type": "Integer",
+    "label": "2 last_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_leg_shorter",
+    "type": "Picklist",
+    "label": "35 leg_shorter",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_leg_shorter_difference",
+    "type": "Integer",
+    "label": "35 leg_shorter_difference",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_leg_shortername",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_lining_anti_slip_heel",
+    "type": "Boolean",
+    "label": "43 lining_anti_slip_heel",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_lining_anti_slip_heelname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_lining_perforated",
+    "type": "Boolean",
+    "label": "43 lining_perforated",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_lining_perforatedname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_lining_rest",
+    "type": "Picklist",
+    "label": "43 lining_rest",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_lining_restname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_lining_upper",
+    "type": "Picklist",
+    "label": "43 lining_upper",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_lining_uppername",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_long_heel_girthlf",
+    "type": "Integer",
+    "label": "215 long_heel_girth LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_long_heel_girthrf",
+    "type": "Integer",
+    "label": "215 long_heel_girth RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_measurement_back",
+    "type": "Boolean",
+    "label": "616 measurement_back",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_measurement_backname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_measurement_side",
+    "type": "Boolean",
+    "label": "616 measurement_side",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_measurement_sidename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_micro_corklf",
+    "type": "Boolean",
+    "label": "31 micro_cork LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_micro_corklfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_micro_corkrf",
+    "type": "Boolean",
+    "label": "31 micro_cork RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_micro_corkrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiform_corklf",
+    "type": "Boolean",
+    "label": "31 multiform_cork LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiform_corklfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiform_corkrf",
+    "type": "Boolean",
+    "label": "31 multiform_cork RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiform_corkrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiformlf",
+    "type": "Boolean",
+    "label": "31 multiform LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiformlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiformrf",
+    "type": "Boolean",
+    "label": "31 multiform RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_multiformrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_name",
+    "type": "String",
+    "label": "order_id",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_order_piedro",
+    "type": "String",
+    "label": "order_piedro",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_order_production",
+    "type": "String",
+    "label": "order_production",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_patient",
+    "type": "String",
+    "label": "1 patient",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_pdforderlink",
+    "type": "String",
+    "label": "PDF order link",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_pfs_heel_heightlf",
+    "type": "Integer",
+    "label": "24 pfs_heel_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_pfs_heel_heightrf",
+    "type": "Integer",
+    "label": "24 pfs_heel_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_pfs_heightlf",
+    "type": "Integer",
+    "label": "24 pfs_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_pfs_heightrf",
+    "type": "Integer",
+    "label": "24 pfs_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_plastercast",
+    "type": "Boolean",
+    "label": "2 plastercast",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_plastercastname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_plastic_fitting_shoes",
+    "type": "Boolean",
+    "label": "24 plastic_fitting_shoes",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_plastic_fitting_shoesname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_production",
+    "type": "Picklist",
+    "label": "production",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_productionname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_qty",
+    "type": "Integer",
+    "label": "Qty",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_rocker_heellf",
+    "type": "Integer",
+    "label": "341 rocker_heel LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_heelrf",
+    "type": "Integer",
+    "label": "341 rocker_heel RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_jointlf",
+    "type": "Integer",
+    "label": "341 rocker_joint LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_jointrf",
+    "type": "Integer",
+    "label": "341 rocker_joint RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_removable_carbon_insole",
+    "type": "Boolean",
+    "label": "341.617 rocker_removable_carbon_insole",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_removable_carbon_insolename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_sole_stiffening",
+    "type": "Boolean",
+    "label": "341.617 rocker_sole_stiffening",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_sole_stiffeningname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_solelf",
+    "type": "Picklist",
+    "label": "341 rocker_sole LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_solelfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_solerf",
+    "type": "Picklist",
+    "label": "341 rocker_sole RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_solerfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_toeslf",
+    "type": "Integer",
+    "label": "341 rocker_toes LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rocker_toesrf",
+    "type": "Integer",
+    "label": "341 rocker_toes RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_rounded",
+    "type": "Boolean",
+    "label": "619 rounded",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_roundedlf",
+    "type": "Boolean",
+    "label": "619 rounded LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_roundedlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_roundedname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_roundedrf",
+    "type": "Boolean",
+    "label": "619 rounded RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_roundedrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sach_heel",
+    "type": "Boolean",
+    "label": "619 sach_heel",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sach_heellf",
+    "type": "Boolean",
+    "label": "619 sach_heel LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sach_heellfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sach_heelname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sach_heelrf",
+    "type": "Boolean",
+    "label": "619 sach_heel RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sach_heelrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_send_email",
+    "type": "Boolean",
+    "label": "send_email",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_send_emailname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sharp_heel_edge",
+    "type": "Boolean",
+    "label": "2 sharp_heel_edge",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sharp_heel_edgename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_shoe_unit",
+    "type": "Picklist",
+    "label": "1 shoe_unit",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_shoe_unitname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_short_heel_girthlf",
+    "type": "Integer",
+    "label": "216 short_heel_girth LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_short_heel_girthrf",
+    "type": "Integer",
+    "label": "216 short_heel_girth RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_eva_wedge_colour",
+    "type": "Picklist",
+    "label": "618 sole_eva_wedge_colour",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_eva_wedge_colourname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_pueva_bumper",
+    "type": "Boolean",
+    "label": "618 sole_pueva_bumper",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_pueva_bumper_options",
+    "type": "Picklist",
+    "label": "618 sole_pueva_bumper_options",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_pueva_bumper_optionsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_pueva_bumpername",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_runner",
+    "type": "Boolean",
+    "label": "618 sole_runner",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_runner_options",
+    "type": "Picklist",
+    "label": "618 sole_runner_options",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_runner_optionsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_sole_runnername",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_state_approval",
+    "type": "Picklist",
+    "label": "state",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_state_approvalname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_step",
+    "type": "Integer",
+    "label": "step",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_first_layer_backlf",
+    "type": "Integer",
+    "label": "621 stiffener_first_layer_back LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_first_layer_backrf",
+    "type": "Integer",
+    "label": "621 stiffener_first_layer_back RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_first_layer_laterallf",
+    "type": "Integer",
+    "label": "621 stiffener_first_layer_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_first_layer_lateralrf",
+    "type": "Integer",
+    "label": "621 stiffener_first_layer_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_first_layer_mediallf",
+    "type": "Integer",
+    "label": "621 stiffener_first_layer_medial LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_first_layer_medialrf",
+    "type": "Integer",
+    "label": "621 stiffener_first_layer_medial RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_second_layer_backlf",
+    "type": "Integer",
+    "label": "621 stiffener_second_layer_back LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_second_layer_backrf",
+    "type": "Integer",
+    "label": "621 stiffener_second_layer_back RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_second_layer_laterallf",
+    "type": "String",
+    "label": "621 stiffener_second_layer_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_second_layer_lateralrf",
+    "type": "String",
+    "label": "621 stiffener_second_layer_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_second_layer_mediallf",
+    "type": "Integer",
+    "label": "621 stiffener_second_layer_medial LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffener_second_layer_medialrf",
+    "type": "Integer",
+    "label": "621 stiffener_second_layer_medial RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffenerlf",
+    "type": "Lookup",
+    "label": "621 stiffener LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffenerlfname",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffenerrf",
+    "type": "Lookup",
+    "label": "621 stiffener RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stiffenerrfname",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stretch_medial_lateral_side",
+    "type": "Boolean",
+    "label": "45 stretch_medial_lateral_side",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stretch_medial_lateral_sidename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stretch_upper",
+    "type": "Boolean",
+    "label": "45 stretch_upper",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stretch_uppername",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_style",
+    "type": "Lookup",
+    "label": "0 style",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_style_color",
+    "type": "Lookup",
+    "label": "0 style_color",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_style_colorname",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_stylename",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_padding_lateral_mmlf",
+    "type": "Integer",
+    "label": "330 supplement_high_padding_lateral_mmLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_padding_lateral_mmrf",
+    "type": "Integer",
+    "label": "330 supplement_high_padding_lateral_mmRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_padding_medial_mmlf",
+    "type": "Integer",
+    "label": "330 supplement_high_padding_medial_mmLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_padding_medial_mmrf",
+    "type": "Integer",
+    "label": "330 supplement_high_padding_medial_mmRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_paddinglf",
+    "type": "Boolean",
+    "label": "330 supplement_high_paddingLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_paddinglfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_paddingrf",
+    "type": "Boolean",
+    "label": "330 supplement_high_paddingRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_high_paddingrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_lateral_mmlf",
+    "type": "Picklist",
+    "label": "321 supplement_lateral_mmLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_lateral_mmlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_lateral_mmrf",
+    "type": "Picklist",
+    "label": "321 supplement_lateral_mmRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_lateral_mmrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_materiallf",
+    "type": "Picklist",
+    "label": "31 supplement_materialLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_materiallfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_materialrf",
+    "type": "Picklist",
+    "label": "31 supplement_materialRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_materialrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_medial_mmlf",
+    "type": "Picklist",
+    "label": "322 supplement_medial_mmLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_medial_mmlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_medial_mmrf",
+    "type": "Picklist",
+    "label": "322 supplement_medial_mmRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplement_medial_mmrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplementlf",
+    "type": "Picklist",
+    "label": "320 supplementLF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplementlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplementrf",
+    "type": "Picklist",
+    "label": "320 supplementRF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_supplementrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_thomas_heel",
+    "type": "Boolean",
+    "label": "619 thomas_heel",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_thomas_heel_lateral",
+    "type": "Boolean",
+    "label": "619 thomas_heel_lateral",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_thomas_heel_lateralname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_thomas_heel_medial",
+    "type": "Boolean",
+    "label": "619 thomas_heel_medial",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_thomas_heel_medialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_thomas_heelname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe",
+    "type": "Integer",
+    "label": "333 toe",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_depthlf",
+    "type": "Integer",
+    "label": "217 toe_depth LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_depthrf",
+    "type": "Integer",
+    "label": "217 toe_depth RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_external_protective_cap",
+    "type": "Boolean",
+    "label": "622 toe_external_protective_cap",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_external_protective_capname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_front_material",
+    "type": "Picklist",
+    "label": "622 toe_front_material",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_front_materialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_frontlf",
+    "type": "Boolean",
+    "label": "622 toe_front LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_frontlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_frontrf",
+    "type": "Boolean",
+    "label": "622 toe_front RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_frontrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_heightlf",
+    "type": "Integer",
+    "label": "2 toe_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_heightrf",
+    "type": "Integer",
+    "label": "2 toe_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_jumplf",
+    "type": "Integer",
+    "label": "212 toe_jump LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_jumprf",
+    "type": "Integer",
+    "label": "212 toe_jump RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_normal_material",
+    "type": "Picklist",
+    "label": "622 toe_normal_material",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_normal_materialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_normallf",
+    "type": "Boolean",
+    "label": "622 toe_normal LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_normallfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_normalrf",
+    "type": "Boolean",
+    "label": "622 toe_normal RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_normalrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_not_applicablelf",
+    "type": "Boolean",
+    "label": "622 toe_not_applicable LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_not_applicablelfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_not_applicablerf",
+    "type": "Boolean",
+    "label": "622 toe_not_applicable RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_not_applicablerfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_shape",
+    "type": "Picklist",
+    "label": "25 toe_shape",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_shapename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_short_material",
+    "type": "Picklist",
+    "label": "622 toe_short_material",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_short_materialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_shortlf",
+    "type": "Boolean",
+    "label": "622 toe_short LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_shortlfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_shortrf",
+    "type": "Boolean",
+    "label": "622 toe_short RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_shortrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_wing_material",
+    "type": "Picklist",
+    "label": "622 toe_wing_material",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_wing_materialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_winglf",
+    "type": "Boolean",
+    "label": "622 toe_wing LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_winglfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_wingrf",
+    "type": "Boolean",
+    "label": "622 toe_wing RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_toe_wingrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_extra_padding",
+    "type": "Boolean",
+    "label": "48 tongue_extra_padding",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_extra_padding_options",
+    "type": "Picklist",
+    "label": "48 tongue_extra_padding_options",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_extra_padding_optionsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_extra_paddingname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_incision",
+    "type": "Boolean",
+    "label": "48 tongue_incision",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_incisionname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_reinforcement",
+    "type": "Boolean",
+    "label": "48 tongue_reinforcement",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_reinforcement_options",
+    "type": "Picklist",
+    "label": "48 tongue_reinforcement_options",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_reinforcement_optionsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_reinforcementname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_velcro",
+    "type": "Boolean",
+    "label": "48 tongue_velcro",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_velcro_options",
+    "type": "Picklist",
+    "label": "48 tongue_velcro_options",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_velcro_optionsname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_velcroname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_watertongue",
+    "type": "Boolean",
+    "label": "48 tongue_watertongue",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_tongue_watertonguename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_trackingcode",
+    "type": "String",
+    "label": "Tracking Code",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_trackinglink",
+    "type": "String",
+    "label": "Tracking Link",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upper_heightlf",
+    "type": "Integer",
+    "label": "41 upper_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upper_heightrf",
+    "type": "Integer",
+    "label": "41 upper_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather01",
+    "type": "Lookup",
+    "label": "42 upper leather 01",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather01name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather02",
+    "type": "Lookup",
+    "label": "42 upper leather 02",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather02name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather03",
+    "type": "Lookup",
+    "label": "42 upper leather 03",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather03name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather04",
+    "type": "Lookup",
+    "label": "42 upper leather 04",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather04name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather05",
+    "type": "Lookup",
+    "label": "42 upper leather 05",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather05name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather06",
+    "type": "Lookup",
+    "label": "42 upper leather 06",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather06name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather07",
+    "type": "Lookup",
+    "label": "42 upper leather 07",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather07name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather08",
+    "type": "Lookup",
+    "label": "42 upper leather 08",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather08name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather09",
+    "type": "Lookup",
+    "label": "42 upper leather 09",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather09name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather10",
+    "type": "Lookup",
+    "label": "42 upper leather 10",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather10name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather11",
+    "type": "Lookup",
+    "label": "42 upper leather 11",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather11name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather12",
+    "type": "Lookup",
+    "label": "42 upper leather 12",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather12name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather13",
+    "type": "Lookup",
+    "label": "42 upper leather 13",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather13name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather14",
+    "type": "Lookup",
+    "label": "42 upper leather 14",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather14name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather15",
+    "type": "Lookup",
+    "label": "42 upper leather 15",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather15name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather16",
+    "type": "Lookup",
+    "label": "42 upper leather 16",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather16name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather17",
+    "type": "Lookup",
+    "label": "42 upper leather 17",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather17name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather18",
+    "type": "Lookup",
+    "label": "42 upper leather 18",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather18name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather19",
+    "type": "Lookup",
+    "label": "42 upper leather 19",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather19name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather20",
+    "type": "Lookup",
+    "label": "42 upper leather 20",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_upperleather20name",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_urgent",
+    "type": "Boolean",
+    "label": "7 urgent",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_urgentname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_user",
+    "type": "Lookup",
+    "label": "user",
+    "req": "ApplicationRequired"
+  },
+  {
+    "name": "cr56f_username",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_useryominame",
+    "type": "String",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_v_toe_heightlf",
+    "type": "Integer",
+    "label": "23 V_toe_height LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_v_toe_heightrf",
+    "type": "Integer",
+    "label": "23 V_toe_height RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge",
+    "type": "Boolean",
+    "label": "614 wedge",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_lateral",
+    "type": "Boolean",
+    "label": "614 wedge_lateral",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_lateralname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_medial",
+    "type": "Boolean",
+    "label": "614 wedge_medial",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_medial_laterallf",
+    "type": "Boolean",
+    "label": "614 wedge_medial_lateral LF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_medial_laterallfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_medial_lateralrf",
+    "type": "Boolean",
+    "label": "614 wedge_medial_lateral RF",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_medial_lateralrfname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedge_medialname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wedgename",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wooden_last",
+    "type": "Boolean",
+    "label": "2 wooden_last",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_wooden_lastname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_x_blueprint",
+    "type": "Boolean",
+    "label": "x_blueprint",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_x_blueprintname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_x_footscan",
+    "type": "Boolean",
+    "label": "x_footscan",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_x_footscanname",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_zipper",
+    "type": "Picklist",
+    "label": "44 zipper",
+    "req": "None"
+  },
+  {
+    "name": "cr56f_zippername",
+    "type": "Virtual",
+    "label": "",
+    "req": "None"
+  }
+]

@@ -4,8 +4,38 @@
 > No schema or data was touched. SQL below is **not applied** — it is migration
 > `042` ready to run in Supabase SQL Editor *after* sign-off.
 >
-> **Pending input to finalise:** the field list + form jscript from the Power
-> Pages **Development** environment. See [§6 — How I pull it myself](#6-pulling-the-dev-environment-myself).
+> **UPDATE 2026-06-24 (overnight):** I now have **autonomous read access** to the
+> Dev environment (`https://orgc86abc8f.crm4.dynamics.com`) — the service
+> principal is already an Application User there (`WhoAmI` → 200). I pulled the
+> real structure myself; no copy-paste needed. Findings in [§0](#0-what-i-found-in-the-dev-environment).
+
+---
+
+## 0. What I found in the Dev environment
+
+Pulled live via OData from `orgc86abc8f.crm4.dynamics.com` (publisher prefix
+`cr56f_`, same as Production):
+
+- **The CUSTOM order table = `cr56f_wpp_custom_orders`** (entity set
+  `cr56f_wpp_custom_orderses`).
+- **402 custom attributes.** Full dump in
+  [`docs/custom-orders-dev-fields.json`](custom-orders-dev-fields.json).
+- The labels are **section-numbered** (`22.x leg_ankle_circumference`,
+  `25.x toe_shape_*`, `332 ball_lateral`, …) and **sided by `LF`/`RF` suffix**
+  (left foot / right foot) — the Dev equivalent of our `{l,r}`.
+- It is **far richer than PAIR**: not just additions but **anthropometric
+  measurements** — ankle/leg circumferences at multiple heights (120/150/200/
+  250/300/350 mm), ball widths, toe-shape booleans, etc. Mostly `Integer` (mm)
+  and `Boolean` (toggles), with `Virtual` companion fields (`*name`) = the
+  Power Pages display label for each option.
+
+**This decisively confirms the design choice:** 402 columns must NOT live on the
+shared `orders` row. Isolate. The `LF/RF` + section-number convention maps
+cleanly onto our existing `side ∈ {l,r,g}` + `section` model, so
+`order_additions` absorbs CUSTOM with no schema gymnastics.
+
+The form **jscript** (conditional show/require logic) is being pulled from
+`webresourceset` into `docs/custom-orders-jscript/`.
 
 ---
 
