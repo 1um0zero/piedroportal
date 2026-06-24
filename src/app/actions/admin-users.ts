@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
 import { createSetPasswordLink } from '@/lib/password-reset'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin' | 'staff_viewer'
 
 export async function updateUserRoleAction(
   userId: string,

@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslations, useLocale, useNow } from 'next-intl'
 import { Sort, nextSort, compareValues, SortableTh, GridFloatingNav } from '@/components/ui/table-controls'
-import { isPiedroAdmin, isBranchStaff, isBranchAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchStaff, isBranchAdmin, isStaffViewer } from '@/lib/roles'
 import { updateUserLocaleAction } from '@/app/actions/admin-users'
 import { startImpersonation } from '@/app/actions/impersonation'
 
@@ -33,7 +33,7 @@ const COLUMNS = [
 ] as const
 const MIN_COL_WIDTH = 50
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin' | 'staff_viewer'
 
 type UserCompany = {
   company_id: string
@@ -56,7 +56,8 @@ type UserRow = {
 
 type BranchOpt = { id: string; name: string }
 
-const isBranchRole = (role: string) => isBranchStaff(role) || isBranchAdmin(role)
+// Roles assigned by role (not by company): branch staff/admin + global staff_viewer.
+const isBranchRole = (role: string) => isBranchStaff(role) || isBranchAdmin(role) || isStaffViewer(role)
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 const ROLE_COLORS: Record<UserRole, string> = {
@@ -66,6 +67,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
   branch_staff:  'bg-emerald-50 text-emerald-600',
   branch_admin:  'bg-teal-50 text-teal-600',
   super_admin:   'bg-stone-800 text-white',
+  staff_viewer:  'bg-purple-50 text-purple-600',
 }
 
 /** Small select rendered under a column header. */

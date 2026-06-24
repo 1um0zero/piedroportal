@@ -1,5 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireBackofficePage } from '@/lib/admin/scope'
+import { requireOrdersViewPage } from '@/lib/admin/scope'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import { attachOrderExtras } from '@/lib/order-tracking'
 import { getStockOrderRows } from '@/app/actions/stock'
@@ -25,7 +25,7 @@ function ageCutoff(age: string): string | null {
 type Props = { searchParams: Promise<{ age?: string; from?: string; to?: string }> }
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
-  const scope = await requireBackofficePage()
+  const { scope } = await requireOrdersViewPage()
   const sp = await searchParams
   const age = sp.age ?? '3m'
   // A specific from–to period (both required) overrides the quick age window.

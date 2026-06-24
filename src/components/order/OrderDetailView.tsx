@@ -25,15 +25,20 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-export default function OrderDetailView({ order, isAdmin, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
+export default function OrderDetailView({ order, isAdmin, readOnly = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  order: any; isAdmin: boolean; prevId?: string | null; nextId?: string | null
+  order: any; isAdmin: boolean; readOnly?: boolean; prevId?: string | null; nextId?: string | null
   clientEmail?: string; clientCc?: string; deskEmail?: string
 }) {
   const router = useRouter()
   const locale = useLocale()
   const tOrder = useTranslations('order')
   const base = isAdmin ? '/admin/orders' : '/orders'
+  // The admin layout (full fields, neighbours) is gated by isAdmin; the WRITE
+  // controls additionally require canEdit — a staff_viewer (or branch_staff) opens
+  // the same detail read-only. Server actions already reject their writes; this
+  // just keeps dead controls off the screen.
+  const canEdit = isAdmin && !readOnly
   const [, start] = useTransition()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const product = (Array.isArray(order.products) ? order.products[0] : order.products) as any
@@ -60,7 +65,7 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
   const [showCancel, setShowCancel]   = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelling, setCancelling]   = useState(false)
-  const canCancel = isAdmin
+  const canCancel = canEdit
     && !order.production_state
     && (order.status === 'submitted' || order.status === 'approved')
 
@@ -144,7 +149,7 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
         </div>
 
         {/* Admin: Piedro Order # + Approval + Save */}
-        {isAdmin && (
+        {canEdit && (
           <div className="flex items-end gap-3 flex-wrap">
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-stone-600 uppercase tracking-wide">
@@ -251,7 +256,7 @@ export default function OrderDetailView({ order, isAdmin, prevId, nextId, client
               {productionMeta.label}
             </span>
           )}
-          {isAdmin && mailtoHref && (
+          {canEdit && mailtoHref && (
             <a href={mailtoHref}
               title={clientEmail}
               className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-300 rounded-lg hover:border-gold hover:text-gold-dark transition-colors">

@@ -9,16 +9,19 @@ import { signOutAction } from '@/app/[locale]/login/actions'
 type Props = {
   isAdmin:      boolean
   isBackoffice: boolean
+  isOperator?:  boolean   // back-office user who can act (admin/branch_staff), not a pure viewer
   isLoggedIn:   boolean
   locale:       string
   locales:      string[]
   newOrdersCount?: number
 }
 
-export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
+export function NavbarMobile({ isAdmin, isBackoffice, isOperator = false, isLoggedIn, locale, locales, newOrdersCount = 0 }: Props) {
   const [open, setOpen] = useState(false)
   const t = useTranslations('nav')
   const close = () => setOpen(false)
+  // A pure viewer (VSI staff) is back-office but not an operator: orders only.
+  const isViewerOnly = isBackoffice && !isOperator
 
   const linkCls = 'flex items-center py-3.5 text-sm font-semibold tracking-wider uppercase text-stone-700 hover:text-stone-900 border-b border-stone-50 transition-colors'
 
@@ -55,7 +58,7 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
 
               {/* STOCK is public like the gallery — browsing needs no login. Everyone
                   except piedro_admin (who gets /admin/stock below) sees this. */}
-              {!isAdmin && (
+              {!isAdmin && !isViewerOnly && (
                 <Link href="/stock" onClick={close} className={linkCls}>{t('stock')}</Link>
               )}
 
@@ -68,7 +71,9 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
 
               {isLoggedIn && isBackoffice && (
                 <>
-                  <Link href="/admin"          onClick={close} className={linkCls}>{t('dashboard')}</Link>
+                  {isOperator && (
+                    <Link href="/admin"          onClick={close} className={linkCls}>{t('dashboard')}</Link>
+                  )}
                   <Link href="/admin/orders"   onClick={close} className={linkCls}>
                     {t('orders_admin')}
                     {newOrdersCount > 0 && (
@@ -77,7 +82,9 @@ export function NavbarMobile({ isAdmin, isBackoffice, isLoggedIn, locale, locale
                       </span>
                     )}
                   </Link>
-                  <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
+                  {isOperator && (
+                    <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
+                  )}
                   {isAdmin && (
                     <>
                       <Link href="/admin/stock" onClick={close} className={linkCls}>{t('stock')}</Link>

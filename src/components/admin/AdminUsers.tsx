@@ -5,10 +5,10 @@ import { useTranslations, useLocale, useFormatter, useNow } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction, generateAccessLinkAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
 import { startImpersonation } from '@/app/actions/impersonation'
-import { isPiedroAdmin, isBranchStaff, isBranchAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchStaff, isBranchAdmin, isStaffViewer } from '@/lib/roles'
 import AdminUsersGrid from './AdminUsersGrid'
 
-type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
+type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin' | 'staff_viewer'
 
 type UserCompany = {
   company_id: string
@@ -29,9 +29,11 @@ type UserRow = {
   last_sign_in: string | null
 }
 
-/** Branch roles (staff/admin) operate via their branch, not a company — they
- *  must never be treated as "pending a company assignment". */
-const isBranchRole = (role: string) => isBranchStaff(role) || isBranchAdmin(role)
+/** Roles that don't need a company assignment, so must never be treated as
+ *  "pending approval": branch roles (operate via their branch) and the global
+ *  staff_viewer (read-only consultant of all orders). */
+const isNonCompanyRole = (role: string) =>
+  isBranchStaff(role) || isBranchAdmin(role) || isStaffViewer(role)
 
 type Company = { id: string; name: string }
 type BranchOpt = { id: string; name: string }
@@ -44,6 +46,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
   branch_staff:  'bg-emerald-50 text-emerald-600',
   branch_admin:  'bg-teal-50 text-teal-600',
   super_admin:   'bg-stone-800 text-white',
+  staff_viewer:  'bg-purple-50 text-purple-600',
 }
 
 type RowProps = {
@@ -212,7 +215,7 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
             <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg ${ROLE_COLORS[u.role]}`} title={t('role_managed_elsewhere')}>
               {t(`role_${u.role}`)}
             </span>
-          ) : (['user', 'branch_staff', 'piedro_admin'] as UserRole[]).map(role => (
+          ) : (['user', 'branch_staff', 'staff_viewer', 'piedro_admin'] as UserRole[]).map(role => (
             <button key={role}
               onClick={() => u.role !== role && changeRole(u.id, role)}
               disabled={saving === u.id}
@@ -455,11 +458,11 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
   // Gate A — not yet confirmed their email (never activated the account). Distinct
   // from "pending approval", which is a confirmed user still awaiting a company.
   const awaiting = visible.filter(u => !u.confirmed && !isPiedroAdmin(u.role))
-  // Pending = confirmed, company-based role (NOT branch staff/admin) with no company yet.
-  const pending  = visible.filter(u => u.confirmed && u.companies.length === 0 && !isPiedroAdmin(u.role) && !isBranchRole(u.role))
+  // Pending = confirmed, company-based role (NOT branch/viewer) with no company yet.
+  const pending  = visible.filter(u => u.confirmed && u.companies.length === 0 && !isPiedroAdmin(u.role) && !isNonCompanyRole(u.role))
   const admins   = visible.filter(u => isPiedroAdmin(u.role))
-  // Active = confirmed and either has a company or is a branch role (assigned via its branch).
-  const assigned = visible.filter(u => u.confirmed && !isPiedroAdmin(u.role) && (u.companies.length > 0 || isBranchRole(u.role)))
+  // Active = confirmed and either has a company or is a branch/viewer role (assigned by role).
+  const assigned = visible.filter(u => u.confirmed && !isPiedroAdmin(u.role) && (u.companies.length > 0 || isNonCompanyRole(u.role)))
 
   const rowProps = {
     companies,

@@ -7,7 +7,7 @@ import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { signOrderPdfs } from '@/lib/order-pdf'
 import { attachOrderExtras } from '@/lib/order-tracking'
 import { getSettings } from '@/lib/settings'
-import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
+import { isPiedroAdmin as isPiedroAdminRole, isStaffViewer } from '@/lib/roles'
 import { getStockOrderRows } from '@/app/actions/stock'
 import OrdersPage from '@/components/orders/OrdersPage'
 
@@ -41,8 +41,8 @@ export default async function OrdersRoute({ searchParams }: Props) {
 
   const isPiedroAdmin = isPiedroAdminRole(profile?.role)
 
-  // Piedro admins go to the back-office orders view
-  if (isPiedroAdmin) redirect('/admin/orders')
+  // Piedro admins and global viewers (VSI staff) go to the back-office orders view.
+  if (isPiedroAdmin || isStaffViewer(profile?.role)) redirect('/admin/orders')
 
   // Companies the user may see orders for as a branch admin (clients of the
   // branch office(s) they manage). A branch admin without a personal company is

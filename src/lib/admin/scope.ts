@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isSuperAdmin, isStaffViewer } from '@/lib/roles'
 import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import type { UserRole } from '@/types'
 
@@ -130,4 +130,33 @@ export async function requireSuperAdminPage(): Promise<AdminScope> {
   const scope = await getAdminScope()
   if (!scope || !isSuperAdmin(scope.role)) redirect('/gallery')
   return scope
+}
+
+/**
+ * Guard for the back-office ORDERS views (list + detail). Admits, in order:
+ *   - staff_viewer → global, read-only (canWrite=false): sees every order, no edits;
+ *   - piedro_admin/super_admin → global, read+write;
+ *   - branch_staff → model-scoped, read-only on the admin edit controls
+ *     (their writes were already server-rejected; canWrite=false keeps the UI honest).
+ * Everyone else is redirected to the gallery. Unlike requireBackofficePage this does
+ * NOT open products/drafts/etc. to staff_viewer — it is orders-only by construction.
+ */
+export async function requireOrdersViewPage(): Promise<{ scope: AdminScope; canWrite: boolean }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) redirect('/gallery')
+
+  const service = createServiceClient()
+  const { data: profile } = await service.from('profiles').select('role').eq('id', user.id).single()
+
+  if (isStaffViewer(profile?.role)) {
+    return {
+      scope: { userId: user.id, role: 'staff_viewer', branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: true },
+      canWrite: false,
+    }
+  }
+
+  // piedro_admin / super_admin (full) or branch_staff (model-scoped); others redirected.
+  const scope = await requireBackofficePage()
+  return { scope, canWrite: isPiedroAdmin(scope.role) }
 }

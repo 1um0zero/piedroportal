@@ -36,3 +36,19 @@ export function isBranchAdmin(role?: string | null): boolean {
 export function isBranchStaff(role?: string | null): boolean {
   return role === 'branch_staff'
 }
+
+/**
+ * A staff_viewer is a GLOBAL, READ-ONLY consultant of orders (e.g. VSI staff):
+ * may open the back-office orders list + detail for every order — including UK and
+ * VSI-direct — but cannot write anything and has no other back-office area
+ * (products, companies, users, settings…). Read-only is the new axis: the role
+ * grants SCOPE (global) without PERMISSION (write).
+ */
+export function isStaffViewer(role?: string | null): boolean {
+  return role === 'staff_viewer'
+}
+
+/** Who may open the back-office orders views: full admins + the global viewer. */
+export function canViewAllOrders(role?: string | null): boolean {
+  return isPiedroAdmin(role) || isStaffViewer(role)
+}

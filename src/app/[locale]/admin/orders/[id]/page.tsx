@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { requireBackofficePage } from '@/lib/admin/scope'
+import { requireOrdersViewPage } from '@/lib/admin/scope'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
 import { getSettings } from '@/lib/settings'
@@ -22,7 +22,7 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function AdminOrderDetailPage({ params }: Props) {
   const { id } = await params
-  const scope = await requireBackofficePage()
+  const { scope, canWrite } = await requireOrdersViewPage()
 
   const service = createServiceClient()
 
@@ -71,7 +71,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           ← {(await getTranslations('nav'))('orders')}
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={true} prevId={prevId} nextId={nextId}
+      <OrderDetailView order={order} isAdmin={true} readOnly={!canWrite} prevId={prevId} nextId={nextId}
         clientEmail={orderer?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
     </div>
   )

@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
-import { requireBackofficePage } from '@/lib/admin/scope'
-import { isPiedroAdmin } from '@/lib/roles'
+import { requireOrdersViewPage } from '@/lib/admin/scope'
 import { getStockOrderDetail } from '@/app/actions/stock'
 import StockOrderDetailView from '@/components/stock/StockOrderDetailView'
 
@@ -10,8 +9,8 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function AdminStockOrderPage({ params }: Props) {
   const { id } = await params
-  const scope = await requireBackofficePage()
+  const { canWrite } = await requireOrdersViewPage()
   const order = await getStockOrderDetail(id)
   if (!order) notFound()
-  return <StockOrderDetailView order={order} isAdmin={isPiedroAdmin(scope.role)} />
+  return <StockOrderDetailView order={order} isAdmin={canWrite} />
 }

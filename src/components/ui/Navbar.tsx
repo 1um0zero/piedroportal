@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isStaffViewer } from '@/lib/roles'
 import { routing } from '@/i18n/routing'
 import { signOutAction } from '@/app/[locale]/login/actions'
 import NavbarClient from './NavbarClient'
@@ -24,13 +24,18 @@ export default async function Navbar({ locale }: Props) {
 
   let isAdmin = false
   let isBackoffice = false
+  let isViewer = false     // staff_viewer: global read-only consultant of orders
+  let isOperator = false   // back-office users who can act (admin or branch_staff), not just view
   let profile: { role: string; full_name?: string; avatar_url?: string } | null = null
   if (user) {
     const { data } = await supabase
       .from('profiles').select('role, full_name, avatar_url').eq('id', user.id).single()
     profile = data
     isAdmin = isPiedroAdmin(profile?.role)
-    isBackoffice = isAdmin || profile?.role === 'branch_staff'
+    isViewer = isStaffViewer(profile?.role)
+    isOperator = isAdmin || profile?.role === 'branch_staff'
+    // "Backoffice" here = anyone whose home is the back-office orders view.
+    isBackoffice = isOperator || isViewer
   }
 
   // Livingstone (LIV) entry: visible to admin/staff or users whose company owns
@@ -87,7 +92,7 @@ export default async function Navbar({ locale }: Props) {
           <HeaderLivingstonLink visible={canSeeLiv} />
           {/* STOCK is public like the gallery — browsing needs no login; ordering gates
               later. Everyone except piedro_admin (who gets /admin/stock) sees this. */}
-          {!isAdmin && (
+          {!isAdmin && !isViewer && (
             <Link href="/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
               {t('stock')}
             </Link>
@@ -104,9 +109,13 @@ export default async function Navbar({ locale }: Props) {
           )}
           {user && isBackoffice && (
             <>
-              <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                {t('dashboard')}
-              </Link>
+              {/* Dashboard + products are for operators (admin/branch_staff); a pure
+                  viewer (VSI) gets the orders view only. */}
+              {isOperator && (
+                <Link href="/admin" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                  {t('dashboard')}
+                </Link>
+              )}
               <Link href="/admin/orders" className="relative text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('orders_admin')}
                 {newOrdersCount > 0 && (
@@ -115,9 +124,11 @@ export default async function Navbar({ locale }: Props) {
                   </span>
                 )}
               </Link>
-              <Link href="/admin/products" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
-                {t('products')}
-              </Link>
+              {isOperator && (
+                <Link href="/admin/products" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                  {t('products')}
+                </Link>
+              )}
               {isAdmin && (
                 <>
                   <Link href="/admin/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
@@ -181,6 +192,7 @@ export default async function Navbar({ locale }: Props) {
         <NavbarMobile
           isAdmin={isAdmin}
           isBackoffice={isBackoffice}
+          isOperator={isOperator}
           isLoggedIn={!!user}
           locale={locale}
           locales={[...routing.locales]}

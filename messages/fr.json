@@ -804,7 +804,8 @@
       "grid_status_awaiting": "En attente de confirmation",
       "never_short": "jamais",
       "weeks_inactive_short": "{count, plural, one {# semaine} other {# semaines}}",
-      "inactive_this_week": "cette semaine"
+      "inactive_this_week": "cette semaine",
+      "role_staff_viewer": "Consultant"
     },
     "products": {
       "title": "Produits",
