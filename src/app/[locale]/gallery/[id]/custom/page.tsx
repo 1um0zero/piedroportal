@@ -1,0 +1,49 @@
+import { notFound } from 'next/navigation'
+import { createClient as createPublicClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
+import { getUserCompanies } from '@/lib/user-companies'
+import { getBranchAdminCompanies } from '@/lib/branch-admin'
+import { isPiedroAdmin } from '@/lib/roles'
+import CustomOrderForm from '@/components/custom/CustomOrderForm'
+import type { Product } from '@/types'
+
+async function getProduct(id: string): Promise<Product | null> {
+  const sb = createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+  const { data } = await sb
+    .from('products')
+    .select('id,style_name,colour_id,color_name,closure,picture_name,constructions,size_first,size_last,size_unit,section,adds_exclude,exclusive')
+    .eq('id', id).single()
+  return (data as unknown as Product) ?? null
+}
+
+type Company = { id: string; name: string; erp_code: string }
+type Props = { params: Promise<{ locale: string; id: string }> }
+
+export default async function CustomOrderPage({ params }: Props) {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) notFound()  // CUSTOM ordering requires login, same as OSB
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const admin = isPiedroAdmin(profile?.role)
+
+  let companies: Company[] = []
+  let userCompany: Company | null = null
+  if (admin) {
+    const { data } = await supabase.from('companies').select('id,name,erp_code').order('name')
+    companies = (data ?? []) as Company[]
+  } else {
+    const [own, branch] = await Promise.all([getUserCompanies(user.id), getBranchAdminCompanies(user.id)])
+    const byId = new Map<string, Company>()
+    for (const c of [...own, ...branch]) byId.set(c.id, { id: c.id, name: c.name, erp_code: c.erp_code })
+    const merged = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
+    if (merged.length === 1) userCompany = merged[0]
+    else if (merged.length > 1) companies = merged
+  }
+
+  const product = await getProduct(id)
+  if (!product) notFound()
+
+  return <CustomOrderForm product={product} userCompany={userCompany} companies={companies} isAdmin={admin} />
+}

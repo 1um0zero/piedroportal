@@ -303,11 +303,19 @@ export default function ProductDetail({ product, siblings }: Props) {
       {t('pending_approval')}
     </div>
   ) : (
-    <Link href={`/gallery/${selected.id}/order`}
-      className="inline-flex items-center px-8 py-3 rounded-xl bg-gold text-white
-                 font-semibold text-sm hover:bg-gold-dark transition-colors uppercase tracking-wide">
-      {t('order')}
-    </Link>
+    <div className="flex flex-wrap items-center gap-3">
+      <Link href={`/gallery/${selected.id}/order`}
+        className="inline-flex items-center px-8 py-3 rounded-xl bg-gold text-white
+                   font-semibold text-sm hover:bg-gold-dark transition-colors uppercase tracking-wide">
+        {t('order')}
+      </Link>
+      {/* CUSTOM (custom-made shoes) — beta entry; same permission as OSB ordering */}
+      <Link href={`/gallery/${selected.id}/custom`}
+        className="inline-flex items-center px-6 py-3 rounded-xl border border-gold text-gold
+                   font-semibold text-sm hover:bg-gold/10 transition-colors uppercase tracking-wide">
+        Custom-made
+      </Link>
+    </div>
   )
 
   return (
