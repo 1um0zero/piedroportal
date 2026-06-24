@@ -35,6 +35,18 @@ export default async function AdminUsersPage() {
       .order('name'),
   ])
 
+  // Auth-side gate: has the user confirmed their email yet? A self-registered or
+  // freshly-created account sits unconfirmed until it clicks the confirmation link —
+  // which is a different state from "confirmed but no company assigned". Paginate
+  // through auth.users (admin API caps each page at 1000).
+  const confirmedIds = new Set<string>()
+  for (let page = 1; ; page++) {
+    const { data: list } = await service.auth.admin.listUsers({ page, perPage: 1000 })
+    const batch = list?.users ?? []
+    for (const u of batch) if (u.email_confirmed_at) confirmedIds.add(u.id)
+    if (batch.length < 1000) break
+  }
+
   // Map user_companies by user_id (multiple companies per user)
   const ucMap = new Map<string, Array<{ company_id: string; company_name: string; is_company_admin: boolean }>>()
   for (const uc of userCompanies ?? []) {
@@ -60,6 +72,7 @@ export default async function AdminUsersPage() {
       branch_id:          p.branch_id ?? null,
       created_at:         p.created_at,
       preferred_locale:   p.preferred_locale ?? null,
+      confirmed:          confirmedIds.has(p.id),  // email confirmed → has activated account
     }
   })
 

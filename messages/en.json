@@ -794,7 +794,10 @@
       "grid_status_pending": "Pending",
       "grid_status_active": "Active",
       "grid_status_admin": "Admin",
-      "grid_no_results": "No users match the filters."
+      "grid_no_results": "No users match the filters.",
+      "section_awaiting": "Awaiting email confirmation ({count})",
+      "awaiting_hint": "These users registered but have not confirmed their email yet, so they have never logged in. If our confirmation email did not arrive (e.g. Microsoft 365 inboxes often junk it), use the login-link button to hand them a set-password link directly.",
+      "not_confirmed": "Not confirmed"
     },
     "products": {
       "title": "Products",

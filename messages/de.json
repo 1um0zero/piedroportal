@@ -794,7 +794,10 @@
       "grid_status_pending": "Ausstehend",
       "grid_status_active": "Aktiv",
       "grid_status_admin": "Admin",
-      "grid_no_results": "Keine Benutzer entsprechen den Filtern."
+      "grid_no_results": "Keine Benutzer entsprechen den Filtern.",
+      "section_awaiting": "Warten auf E-Mail-Bestätigung ({count})",
+      "awaiting_hint": "Diese Benutzer haben sich registriert, aber ihre E-Mail noch nicht bestätigt und sich daher nie angemeldet. Falls unsere Bestätigungs-E-Mail nicht angekommen ist (Microsoft-365-Postfächer stufen sie oft als Spam ein), verwenden Sie die Login-Link-Schaltfläche, um ihnen direkt einen Passwort-Link zu geben.",
+      "not_confirmed": "Nicht bestätigt"
     },
     "products": {
       "title": "Produkte",

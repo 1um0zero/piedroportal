@@ -794,7 +794,10 @@
       "grid_status_pending": "In afwachting",
       "grid_status_active": "Actief",
       "grid_status_admin": "Admin",
-      "grid_no_results": "Geen gebruikers voldoen aan de filters."
+      "grid_no_results": "Geen gebruikers voldoen aan de filters.",
+      "section_awaiting": "Wacht op e-mailbevestiging ({count})",
+      "awaiting_hint": "Deze gebruikers hebben zich geregistreerd maar hun e-mail nog niet bevestigd, dus ze hebben nog nooit ingelogd. Als onze bevestigingsmail niet is aangekomen (Microsoft 365-postvakken markeren die vaak als spam), gebruik dan de inloglink-knop om hen rechtstreeks een wachtwoordlink te geven.",
+      "not_confirmed": "Niet bevestigd"
     },
     "products": {
       "title": "Producten",

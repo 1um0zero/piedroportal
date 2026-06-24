@@ -25,6 +25,7 @@ type UserRow = {
   branch_id: string | null
   created_at: string
   preferred_locale: string | null
+  confirmed: boolean
 }
 
 type Company = { id: string; name: string }
@@ -104,7 +105,15 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
       {/* User info */}
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-800 truncate">{u.full_name || '—'}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-stone-800 truncate">{u.full_name || '—'}</p>
+            {!u.confirmed && !isPiedroAdmin(u.role) && (
+              <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-500 uppercase tracking-wide"
+                title={t('awaiting_hint')}>
+                {t('not_confirmed')}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-stone-400 truncate">{u.email}</p>
         </div>
         {/* View as — step into this user's real session to validate permissions */}
@@ -431,9 +440,12 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     !needle ||
     `${u.full_name} ${u.email} ${u.companies.map(c => c.company_name).join(' ')}`.toLowerCase().includes(needle)
   const visible  = users.filter(matchesQ)
-  const pending  = visible.filter(u => u.companies.length === 0 && !isPiedroAdmin(u.role))
+  // Gate A — not yet confirmed their email (never activated the account). Distinct
+  // from "pending approval", which is a confirmed user still awaiting a company.
+  const awaiting = visible.filter(u => !u.confirmed && !isPiedroAdmin(u.role))
+  const pending  = visible.filter(u => u.confirmed && u.companies.length === 0 && !isPiedroAdmin(u.role))
   const admins   = visible.filter(u => isPiedroAdmin(u.role))
-  const assigned = visible.filter(u => u.companies.length > 0)
+  const assigned = visible.filter(u => u.companies.length > 0 && !isPiedroAdmin(u.role))
 
   const rowProps = {
     companies,
@@ -496,7 +508,21 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
         </section>
       )}
 
-      {/* Pending (no company) */}
+      {/* Awaiting email confirmation (Gate A — never activated the account) */}
+      {awaiting.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-400" />
+            <h2 className="text-sm font-semibold text-stone-700">{t('section_awaiting', { count: awaiting.length })}</h2>
+          </div>
+          <p className="text-xs text-stone-400 -mt-1">{t('awaiting_hint')}</p>
+          <div className="bg-white rounded-[14px] px-4" style={{ boxShadow: 'var(--shadow-card)' }}>
+            {awaiting.map(u => <Row key={u.id} u={u} {...rowProps} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Pending (confirmed, no company) */}
       {pending.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
