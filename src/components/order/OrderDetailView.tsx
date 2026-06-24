@@ -25,9 +25,9 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-export default function OrderDetailView({ order, isAdmin, readOnly = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
+export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  order: any; isAdmin: boolean; readOnly?: boolean; prevId?: string | null; nextId?: string | null
+  order: any; isAdmin: boolean; readOnly?: boolean; isFullAdmin?: boolean; prevId?: string | null; nextId?: string | null
   clientEmail?: string; clientCc?: string; deskEmail?: string
 }) {
   const router = useRouter()
@@ -65,7 +65,10 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, prev
   const [showCancel, setShowCancel]   = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelling, setCancelling]   = useState(false)
+  // Soft-cancel is a piedro_admin-only intervention (the server enforces the same).
+  // An orders_approval branch_staff may approve but NOT cancel — keep the button off.
   const canCancel = canEdit
+    && isFullAdmin
     && !order.production_state
     && (order.status === 'submitted' || order.status === 'approved')
 

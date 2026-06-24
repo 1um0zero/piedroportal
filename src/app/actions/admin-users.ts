@@ -29,6 +29,34 @@ export async function updateUserRoleAction(
   return { ok: true }
 }
 
+/**
+ * Toggle the granular orders_approval capability on a branch_staff user. Lets them
+ * approve orders + set the Piedro Order # within their model scope, WITHOUT any
+ * other back-office power. Only meaningful for branch_staff; a no-op guard keeps it
+ * from being set on roles that either already can approve (admins) or never should.
+ */
+export async function updateUserApproveOrdersAction(
+  userId: string,
+  canApprove: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: me } = await sb.from('profiles').select('role').eq('id', user.id).single()
+  if (!isPiedroAdmin(me?.role)) return { error: 'Not authorized' }
+
+  const service = createServiceClient()
+  const { data: target } = await service.from('profiles').select('role').eq('id', userId).single()
+  if (target?.role !== 'branch_staff') {
+    return { error: 'Only branch staff can be granted order approval' }
+  }
+
+  const { error } = await service.from('profiles').update({ can_approve_orders: canApprove }).eq('id', userId)
+  if (error) return { error: error.message }
+  return { ok: true }
+}
+
 /** Set a user's preferred portal language (null clears it). */
 export async function updateUserLocaleAction(
   userId: string,

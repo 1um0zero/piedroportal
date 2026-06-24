@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireOrdersViewPage } from '@/lib/admin/scope'
+import { isPiedroAdmin } from '@/lib/roles'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
 import { getSettings } from '@/lib/settings'
@@ -71,7 +72,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           ← {(await getTranslations('nav'))('orders')}
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={true} readOnly={!canWrite} prevId={prevId} nextId={nextId}
+      <OrderDetailView order={order} isAdmin={true} readOnly={!canWrite} isFullAdmin={isPiedroAdmin(scope.role)} prevId={prevId} nextId={nextId}
         clientEmail={orderer?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
     </div>
   )

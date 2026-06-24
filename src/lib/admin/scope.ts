@@ -27,6 +27,13 @@ export interface AdminScope {
   canModel(styleName: string | null | undefined): boolean
   /** Token-scoped (e.g. UK) staff consult the catalogue but cannot manage it. */
   readonlyCatalogue: boolean
+  /**
+   * Granular capability — may APPROVE orders (set the Piedro Order # + approval
+   * state) within `canModel` scope. Always true for piedro_admin/super_admin;
+   * for branch_staff it mirrors profiles.can_approve_orders. This is a WRITE
+   * permission only — it grants no other back-office area.
+   */
+  canApproveOrders: boolean
 }
 
 /**
@@ -40,19 +47,23 @@ export async function getAdminScope(): Promise<AdminScope | null> {
 
   const service = createServiceClient()
   const { data: profile } = await service
-    .from('profiles').select('role, branch_id').eq('id', user.id).single()
+    .from('profiles').select('role, branch_id, can_approve_orders').eq('id', user.id).single()
 
   const role = profile?.role as UserRole | undefined
   // super_admin (infra/technical) is a superset of piedro_admin (operational).
   if (isPiedroAdmin(role)) {
-    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: false }
+    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: false, canApproveOrders: true }
   }
+
+  // Granular order-approval capability — only meaningful for branch_staff (other
+  // non-admin roles never reach the back-office order controls).
+  const canApproveOrders = profile?.can_approve_orders === true
 
   if (role === 'branch_staff') {
     const branchId = (profile?.branch_id as string | null) ?? null
     if (!branchId) {
       // Staff not yet attached to a branch — no catalogue access.
-      return { userId: user.id, role, branchId: null, allModels: false, canModel: () => false, readonlyCatalogue: true }
+      return { userId: user.id, role, branchId: null, allModels: false, canModel: () => false, readonlyCatalogue: true, canApproveOrders }
     }
 
     const { data: branch } = await service
@@ -74,7 +85,7 @@ export async function getAdminScope(): Promise<AdminScope | null> {
       }
       const canModel = (styleName: string | null | undefined): boolean =>
         !!styleName && visibleStyles.has(styleName)
-      return { userId: user.id, role, branchId, allModels: false, canModel, readonlyCatalogue: true }
+      return { userId: user.id, role, branchId, allModels: false, canModel, readonlyCatalogue: true, canApproveOrders }
     }
 
     // ── Legacy branch: style_name inclusion/exclusion list ────────────────────
@@ -88,7 +99,7 @@ export async function getAdminScope(): Promise<AdminScope | null> {
       return seesFull ? !models.has(styleName) : models.has(styleName)
     }
     // allModels is true only for a full-catalogue branch with no exclusions.
-    return { userId: user.id, role, branchId, allModels: seesFull && models.size === 0, canModel, readonlyCatalogue: false }
+    return { userId: user.id, role, branchId, allModels: seesFull && models.size === 0, canModel, readonlyCatalogue: false, canApproveOrders }
   }
 
   // Regular users / company_admins have no back-office access.
@@ -151,12 +162,14 @@ export async function requireOrdersViewPage(): Promise<{ scope: AdminScope; canW
 
   if (isStaffViewer(profile?.role)) {
     return {
-      scope: { userId: user.id, role: 'staff_viewer', branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: true },
+      scope: { userId: user.id, role: 'staff_viewer', branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: true, canApproveOrders: false },
       canWrite: false,
     }
   }
 
   // piedro_admin / super_admin (full) or branch_staff (model-scoped); others redirected.
+  // canWrite covers the approval controls: full admins always, plus a branch_staff
+  // carrying the granular orders_approval capability (still model-scoped server-side).
   const scope = await requireBackofficePage()
-  return { scope, canWrite: isPiedroAdmin(scope.role) }
+  return { scope, canWrite: scope.canApproveOrders }
 }

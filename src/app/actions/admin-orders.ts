@@ -25,6 +25,10 @@ export async function updateOrderAdminAction(
     const scope = await getAdminScope()
     if (!scope) return { error: 'Not authenticated' }
     if (scope.role === 'branch_staff' && !scope.branchId) return { error: 'Not authorized' }
+    // These are approval/Piedro-Order management fields: a plain back-office user
+    // (e.g. a branch_staff WITHOUT the orders_approval capability) may consult the
+    // order but never write here. piedro_admin/super_admin always carry it.
+    if (!scope.canApproveOrders) return { error: 'Not authorized' }
 
     const service = createServiceClient()
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations, useLocale, useFormatter, useNow } from 'next-intl'
-import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction, generateAccessLinkAction } from '@/app/actions/admin-users'
+import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction, generateAccessLinkAction, updateUserApproveOrdersAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
 import { startImpersonation } from '@/app/actions/impersonation'
 import { isPiedroAdmin, isBranchStaff, isBranchAdmin, isStaffViewer } from '@/lib/roles'
@@ -25,6 +25,7 @@ type UserRow = {
   branch_id: string | null
   created_at: string
   preferred_locale: string | null
+  can_approve_orders: boolean
   confirmed: boolean
   last_sign_in: string | null
 }
@@ -59,6 +60,7 @@ type RowProps = {
   msg: { id: string; ok: boolean; text?: string } | null
   changeRole: (userId: string, role: UserRole) => void
   changeBranch: (userId: string, branchId: string | null) => void
+  toggleApproveOrders: (userId: string, canApprove: boolean) => void
   toggleCompanyAdmin: (userId: string, companyId: string, isAdmin: boolean) => void
   addCompany: (userId: string, companyId: string) => void
   removeCompany: (userId: string, companyId: string) => void
@@ -68,7 +70,7 @@ type RowProps = {
   linkData: { id: string; link: string } | null
 }
 
-function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany, deleteUser, generateLink, linkLoading, linkData }: RowProps) {
+function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleApproveOrders, toggleCompanyAdmin, addCompany, removeCompany, deleteUser, generateLink, linkLoading, linkData }: RowProps) {
   const t = useTranslations('admin.users')
   const ti = useTranslations('impersonation')
   const locale = useLocale()
@@ -240,6 +242,21 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
           </select>
         )}
 
+        {/* Granular capability — let this branch_staff approve orders + set the
+            Piedro Order # (within their model scope), without any other admin power. */}
+        {u.role === 'branch_staff' && (
+          <button
+            onClick={() => toggleApproveOrders(u.id, !u.can_approve_orders)}
+            disabled={saving === u.id}
+            title={u.can_approve_orders ? t('approve_orders_on_hint') : t('approve_orders_off_hint')}
+            className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg border transition-all disabled:opacity-50
+              ${u.can_approve_orders
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-600'
+                : 'text-stone-400 border-stone-200 hover:border-stone-400 bg-white'}`}>
+            {u.can_approve_orders ? `✓ ${t('approve_orders')}` : t('approve_orders')}
+          </button>
+        )}
+
         {/* Companies summary + toggle */}
         {!isPiedroAdmin(u.role) && (
           <>
@@ -391,6 +408,18 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     }
   }
 
+  async function toggleApproveOrders(userId: string, canApprove: boolean) {
+    setSaving(userId); setMsg(null)
+    const result = await updateUserApproveOrdersAction(userId, canApprove)
+    setSaving(null)
+    if (result.ok) {
+      setMsg({ id: userId, ok: true })
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, can_approve_orders: canApprove } : u))
+    } else {
+      setMsg({ id: userId, ok: false, text: result.error })
+    }
+  }
+
   async function toggleCompanyAdmin(userId: string, companyId: string, isAdmin: boolean) {
     setSaving(userId); setMsg(null)
     const result = await toggleCompanyAdminAction(userId, companyId, isAdmin)
@@ -473,6 +502,7 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
     msg,
     changeRole,
     changeBranch,
+    toggleApproveOrders,
     toggleCompanyAdmin,
     addCompany,
     removeCompany,

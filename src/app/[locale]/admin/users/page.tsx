@@ -20,7 +20,7 @@ export default async function AdminUsersPage() {
   const [{ data: profiles }, { data: companies }, { data: userCompanies }, { data: branches }] = await Promise.all([
     service
       .from('profiles')
-      .select('id, email, full_name, role, company_id, branch_id, created_at, preferred_locale')
+      .select('id, email, full_name, role, company_id, branch_id, created_at, preferred_locale, can_approve_orders')
       .order('created_at', { ascending: false }),
     service
       .from('companies')
@@ -76,6 +76,7 @@ export default async function AdminUsersPage() {
       branch_id:          p.branch_id ?? null,
       created_at:         p.created_at,
       preferred_locale:   p.preferred_locale ?? null,
+      can_approve_orders: p.can_approve_orders === true,
       confirmed:          confirmedIds.has(p.id),  // email confirmed → has activated account
       last_sign_in:       lastSignIn.get(p.id) ?? null,
     }
