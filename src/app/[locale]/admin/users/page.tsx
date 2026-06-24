@@ -40,10 +40,14 @@ export default async function AdminUsersPage() {
   // which is a different state from "confirmed but no company assigned". Paginate
   // through auth.users (admin API caps each page at 1000).
   const confirmedIds = new Set<string>()
+  const lastSignIn = new Map<string, string | null>()
   for (let page = 1; ; page++) {
     const { data: list } = await service.auth.admin.listUsers({ page, perPage: 1000 })
     const batch = list?.users ?? []
-    for (const u of batch) if (u.email_confirmed_at) confirmedIds.add(u.id)
+    for (const u of batch) {
+      if (u.email_confirmed_at) confirmedIds.add(u.id)
+      lastSignIn.set(u.id, u.last_sign_in_at ?? null)
+    }
     if (batch.length < 1000) break
   }
 
@@ -73,6 +77,7 @@ export default async function AdminUsersPage() {
       created_at:         p.created_at,
       preferred_locale:   p.preferred_locale ?? null,
       confirmed:          confirmedIds.has(p.id),  // email confirmed → has activated account
+      last_sign_in:       lastSignIn.get(p.id) ?? null,
     }
   })
 

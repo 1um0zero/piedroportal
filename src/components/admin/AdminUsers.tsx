@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations, useLocale, useFormatter, useNow } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction, generateAccessLinkAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
 import { startImpersonation } from '@/app/actions/impersonation'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isBranchStaff, isBranchAdmin } from '@/lib/roles'
 import AdminUsersGrid from './AdminUsersGrid'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin'
@@ -26,7 +26,12 @@ type UserRow = {
   created_at: string
   preferred_locale: string | null
   confirmed: boolean
+  last_sign_in: string | null
 }
+
+/** Branch roles (staff/admin) operate via their branch, not a company — they
+ *  must never be treated as "pending a company assignment". */
+const isBranchRole = (role: string) => isBranchStaff(role) || isBranchAdmin(role)
 
 type Company = { id: string; name: string }
 type BranchOpt = { id: string; name: string }
@@ -64,6 +69,8 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
   const t = useTranslations('admin.users')
   const ti = useTranslations('impersonation')
   const locale = useLocale()
+  const format = useFormatter()
+  const now = useNow()
   const isExpanded = expandedUser === u.id
   const userCompanyIds = new Set(u.companies.map(c => c.company_id))
   const [searchQuery, setSearchQuery] = useState('')
@@ -115,6 +122,11 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
             )}
           </div>
           <p className="text-xs text-stone-400 truncate">{u.email}</p>
+          <p className="text-[11px] text-stone-300 truncate">
+            {u.last_sign_in
+              ? t('last_login', { when: format.relativeTime(new Date(u.last_sign_in), now) })
+              : t('last_login_never')}
+          </p>
         </div>
         {/* View as — step into this user's real session to validate permissions */}
         {!isPiedroAdmin(u.role) && (
@@ -443,9 +455,11 @@ export default function AdminUsers({ users: initial, companies, branches }: Prop
   // Gate A — not yet confirmed their email (never activated the account). Distinct
   // from "pending approval", which is a confirmed user still awaiting a company.
   const awaiting = visible.filter(u => !u.confirmed && !isPiedroAdmin(u.role))
-  const pending  = visible.filter(u => u.confirmed && u.companies.length === 0 && !isPiedroAdmin(u.role))
+  // Pending = confirmed, company-based role (NOT branch staff/admin) with no company yet.
+  const pending  = visible.filter(u => u.confirmed && u.companies.length === 0 && !isPiedroAdmin(u.role) && !isBranchRole(u.role))
   const admins   = visible.filter(u => isPiedroAdmin(u.role))
-  const assigned = visible.filter(u => u.companies.length > 0 && !isPiedroAdmin(u.role))
+  // Active = confirmed and either has a company or is a branch role (assigned via its branch).
+  const assigned = visible.filter(u => u.confirmed && !isPiedroAdmin(u.role) && (u.companies.length > 0 || isBranchRole(u.role)))
 
   const rowProps = {
     companies,
