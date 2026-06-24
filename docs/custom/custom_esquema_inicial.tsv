@@ -1,0 +1,304 @@
+Overview Page					
+	Same as pair-by-pair				
+		Customer OBLIGED			
+		Reference Customer OBLIGED			
+	Type ( needs to be filled in) OBLIGED				
+	Ladies				
+	Men	Tickbox			
+	Children				
+	Shoes				
+	Pair ( by default selected on pair)	Tickbox			
+	Left				
+	Right				
+LAST & FITTING SHOES					
+	Last				
+	Blueprint ( thickbox)				
+	If yes, option to upload the blueprint will appear				
+	Footscan (thickbox)				
+	If yes, option to upload the blueprint will appear				
+cs1.0.01_yn	Wooden Last (thickbox)				
+cs1.0.02_yn	Plastercast (thickbox)				
+cs1.0.01_lf_rf	Last Height	Left Free fill in in mm	Right Free fill in in mm		
+cs1.0.02_lf_rf	Heel Height	Left Free fill in in mm	Right Free fill in in mm		
+cs1.0.03_lf_rf	Toe Jump	Left Free fill in in mm	Right Free fill in in mm		
+cs1.0.04_lf_rf	Toe Height	Left Free fill in in mm	Right Free fill in in mm		
+cs1.0.03_yn	Sharp heel Edge ( thickbox)				
+	Last measurements				
+	( what we took away from pair- by pair)	Left	Right		
+cs1.11_lf_rf	1: Footsize	Free fill in in mm	Free fill in in mm		
+cs1.12_lf_rf	2: Joint Width	Free fill in in mm	Free fill in in mm		
+cs1.13_lf_rf	3: Joint Circumference	Free fill in in mm	Free fill in in mm		
+cs1.14_lf_rf	4: Instep Circumference	Free fill in in mm	Free fill in in mm		
+cs1.15_lf_rf	5: Long Heel Girth	Free fill in in mm	Free fill in in mm		
+cs1.16_lf_rf	6: Heel Circumference (???)	Free fill in in mm	Free fill in in mm		
+cs1.17_lf_rf	7: Toe Depth	Free fill in in mm	Free fill in in mm		
+cs1.18_lf_rf	8: Heel Height	Free fill in in mm	Free fill in in mm		
+	Leg and Ankle Circumference				
+	Left	Height	Right		
+cs1.21_lf_rf cs1.21_hg_ch	free fill in	350mm	Free fill in		
+cs1.22_lf_rf cs1.22_hg_ch	free fill in	300mm	Free fill in		
+cs1.23_lf_rf cs1.23_hg_ch	free fill in	250mm	Free fill in		
+cs1.24_lf_rf cs1.24_hg_ch	free fill in	200mm	Free fill in		
+cs1.25_lf_rf cs1.25_hg_ch	free fill in	150mm	Free fill in		
+cs1.26_lf_rf cs1.26_hg_ch	free fill in	120 mm	Free fill in		
+	Toe Height				
+	Left	Height	Right		
+cs1.31_lf_rf_hg cs1.31_hg_ch	free fill in	I	Free fill in		
+cs1.32_lf_rf_hg cs1.32_hg_ch	free fill in	II	Free fill in		
+cs1.33_lf_rf_hg cs1.33_hg_ch	free fill in	III	Free fill in		
+cs1.34_lf_rf_hg cs1.34_hg_ch	free fill in	IV	Free fill in		
+cs1.35_lf_rf_hg cs1.35_hg_ch	free fill in	V	Free fill in		
+	Fitting Shoes				
+cs1.41_yn	Plastic Fitting Shoes ( thickbox) If yes, following will appear				
+cs1.41.01_lf_rf	Height	Left ( free fill in in mm)	Right (free fill in in mm)		
+cs1.41.02_lf_rf	Heel Height	Left ( free fill in in mm)	Right (free fill in in mm)		
+	Toe Shape				
+cs1.51_yn	Square (thickbox)		ALL OPTIONS NEED A PICTURE. WILL SEND YOU LATER ON		
+cs1.52_yn	Pointed (thickbox)				
+cs1.53_yn	Rounded (thickbox)				
+cs1.54_yn	Nature (thickbox)				
+SUPPLEMENT					
+	Supplement Material				
+cs2.11_lf_rf_yn	Multiform + Cork	Left (thickbox)	Right (thickbox)		
+cs2.12_lf_rf_yn	Micro Cork	Left (thickbox)	Right (thickbox)		
+cs2.13_lf_rf_yn	Multiform	Left (thickbox)	Right (thickbox)		
+	Supplement				
+cs2.21_yn	Standard (thickbox) if yes Left and Right will appear		ALL OPTIONS NEED A PICTURE. WILL SEND YOU LATER ON		
+cs2.21.01_lf	Left Free fill in in mm				
+cs2.21.01_rf	Right Free fill in in mm				
+cs2.22_yn	Lateral Low Reinforcement (thickbox) if yes Left and Right will appear and Material				
+cs2.22.01_lf	Left Free fill in in mm				
+cs2.22.01_rf	Right Free fill in in mm				
+cs2.21.01_m_ch	Material?				
+cs2.23_yn	Medial Low Reinforcement (thickbox) if yes Left and Right will appear and Material				
+cs2.23.01_lf	Left Free fill in in mm				
+cs2.23.01_rf	Right Free fill in in mm				
+cs2.23.01_m_ch	Material?				
+cs2.24_yn	Heel Low Reinforcement  (thickbox) if yes Left and Right below Left Medial and Lateral and below Right also medial and Lateral ( free fill in in mm) and Below 1xMaterial				
+cs2.24.01_lf_rf	Left Free fill in in mm	Right Free fill in in mm			
+cs2.24.01_lt_lf_rf	Lateral Free fill in in mm	Lateral Free fill in in mm			
+cs2.24.01_md_lt_rf	Medial  Free fill in in mm	Medial  Free fill in in mm			
+cs2.24.01_m_ch	Material				
+cs2.25_yn	Surrounding Orthoses  (thickbox) if yes Left and Right below Left Medial and Lateral and below Right also medial and Lateral ( free fill in in mm) and Below 1xMaterial				
+cs2.25.01_lf_rf	Left Free fill in in mm	Right Free fill in in mm			
+cs2.25.01_lt_lf_rf	Lateral Free fill in in mm	Lateral Free fill in in mm			
+cs2.25.01_md_lt_rf	Medial  Free fill in in mm	Medial  Free fill in in mm			
+cs2.25.01_m_ch	Material				
+cs2.26_yn	Lateral and Medial Orthoses   (thickbox) if yes Left and Right below Left Medial and Lateral and below Right also medial and Lateral ( free fill in in mm) and Below 1xMaterial				
+cs2.26.01_lf_rf	Left Free fill in in mm	Right Free fill in in mm			
+cs2.26.01_lt_lf_rf	Lateral Free fill in in mm	Lateral Free fill in in mm			
+cs2.26.01_md_lt_rf	Medial  Free fill in in mm	Medial  Free fill in in mm			
+cs2.26.01_m_ch	Material				
+cs2.27_yn	Lateral Orthoses (thickbox) if yes Left and Right will appear and Material				
+cs2.27.01_lf	Left Free fill in in mm				
+cs2.27.01_rf	Right Free fill in in mm				
+cs2.27.01_m_ch	Material?				
+cs2.28_yn	Medial Orthoses  (thickbox) if yes Left and Right will appear and Material				
+cs2.28.01_lf	Left Free fill in in mm				
+cs2.28.01_rf	Right Free fill in in mm				
+cs2.28.01_m_ch	Material?				
+cs2.29_yn	Forefoot Provision (thickbox) if yes Left and Right will appear				
+cs2.29.01_lf	Left Free fill in in mm				
+cs2.29.01_rf	Right Free fill in in mm				
+	Supplement Measurements				
+		LEFT	RIGHT		
+cs2.31_lt_lf_rf	Heel	Medial Free fill in in mm	Medial Free fill in in mm		
+cs2.31_md_lt_rf		Lateral Free fill in in mm	Lateral Free fill in in mm		
+cs2.32_lt_lf_rf	Ball	Medial Free fill in in mm	Medial Free fill in in mm		
+cs2.32_md_lt_rf		Lateral Free fill in in mm	Lateral Free fill in in mm		
+cs2.33	Toe	1 free fill in			
+	Rocker				
+cs2.41_ch					
+	(same as pair-by pair)				
+cs2.41_lf_rf	But when choosing a rocker they must fill in --> LEFT and RIGHT free fill in in mm				
+cs2.42_yn	Flare on the back ( if yes, left and right will appear with Medial and Lateral Free fill in in mm	LEFT	RIGHT		
+cs2.42_lt_lf_rf		Medial Free fill in in mm	Medial Free fill in in mm		
+cs2.42_md_lt_rf		Lateral Free fill in in mm	Lateral Free fill in in mm		
+cs2.43_yn	Flare on the Front ( if yes, left and right will appear with Medial and Lateral Free fill in in mm	LEFT	RIGHT		
+cs2.43_lt_lf_rf		Medial Free fill in in mm	Medial Free fill in in mm		
+cs2.43_md_lt_rf		Lateral Free fill in in mm	Lateral Free fill in in mm		
+	Leg Length Difference				
+cs2.51_yn	Left leg is shorter than right leg (thickbox) If yes, free fill in in mm				
+cs2.51					
+cs2.52_yn	Right leg is shorter than left leg (thickbox) If yes, free fill in in mm				
+cs2.52					
+UPPER					
+	Model				
+	Article number	When choosing article number - line drawing comes op	Upper Leather 1: Black 001042 ( LINKED TO PRODUCT SHEET)		
+		with information about lining --> example	Upper Leather 2: Blue 0015258		
+			Upper Leather 3: Green 10012		
+	Upper height	Left	Right		
+		Free fill in in mm	Free fill in in mm		
+	Upper Leather				
+	Upper 1:	Dropdown with example with all the leathers which are available			
+	Upper 2:				
+	Upper 3:				
+	Upper 4:				
+	etc				
+	Lining OBLIGED				
+	Upper	Dropdown with:			
+		Leather			
+		Black Leather			
+		Diabetic			
+		Fur			
+		Anti-Allergic			
+		Sympatex			
+	Rest	Dropdown with:			
+		Leather			
+		Black Leather			
+		Diabetic			
+		Fur			
+		Anti-Allergic			
+		Sympatex			
+	Anti-slip heel	Tickbox ( not obliged)			
+	Perforated lining	Tickbox ( not obliged)			
+	Closure OBLIGED				
+	Laces	Tickbox; if yes,dropdown with all laces which are available			
+	Velcro	Tickbox; if yes,dropdown with:			
+		Velcro Direct thickbox			
+		Velcro Passant Thickbox; if yes thickbox Medial or Lateral			
+		Medial thickbox			
+		Lateral thickbox			
+		D-ring thickbox			
+		Making Velcro longer; if yes			
+		free fill in in mm			
+		Making Velcro wider; if yes			
+		free fill in in mm			
+	Zipper	Thickbox; if yes, left and right will appear			
+		Left thickbox; if yes, medial and lateral will appear	Right thickbox; if yes, medial and lateral will appear		
+		Medial thickbox	Medial thickbox		
+		Lateral thickbox	Lateral thickbox		
+	Hooks and Eyelets	Thickbox; if yes			
+		Amount of Hooks; free fill in			
+		Amount of Eyelets; free fill in			
+	Twist Lock System	Thickbox			
+	Stretch				
+	Upper ( please place picture see-->)	Thickbox			
+	Medial and Lateral Side (please place picture, see -->)	Thickbox			
+	Ankle Heel and Quarter				
+	Ankle Heel	Thickbox; If yes, left and right will appear			
+		Left Thickbox; If yes, medial and lateral will appear		Right Thickbox; If yes, medial and lateral will appear	
+		Medial Thickbox; If yes, 3mm and 6mm will appear	Lateral Thickbox; If yes, 3mm and 6mm will appear	Medial Thickbox; If yes, 3mm and 6mm will appear	Lateral Thickbox; If yes, 3mm and 6mm will appear
+		3mm thickbox		3mm thickbox	
+		6mm thickbox		6mm thickbox	
+	Quarter	Thickbox; If yes, left and right will appear			
+		Left Thickbox; If yes, medial and lateral will appear		Right Thickbox; If yes, medial and lateral will appear	
+		Medial Thickbox; If yes, 3mm and 6mm will appear	Lateral Thickbox; If yes, 3mm and 6mm will appear	Medial Thickbox; If yes, 3mm and 6mm will appear	Lateral Thickbox; If yes, 3mm and 6mm will appear
+		3mm thickbox		3mm thickbox	
+		6mm thickbox		6mm thickbox	
+	Collar				
+	Extra Padding in Collar	Thickbox; If yes, 4mm, 6mm and 10mm will appear			
+		4mm thickbox			
+		6mm thickbox			
+		10mm thickbox			
+	Tongue				
+	Extra Padding in Tongue	Thickbox; If yes, 3mm, 6mm, 8mm and 10mm will appear			
+		3mm thickbox			
+		6mm thickbox			
+		8mm thickbox			
+		10mm thickbox			
+	Tongue Reinforcement	Thickbox; if yes; following options will appear			
+		Ercoflex 1.5mm thickbox			
+		Ercoflex 3mm thickbox			
+		Rhenoflex 0.6mm thickbox			
+		Rhenoflex 1 mm thickbox			
+		Rhenoflex 1.2 mm thickbox			
+	Tongue with Velcro	Thickbox; if yes medial and lateral will appear			
+		Medial thickbox; if yes option Stitched			
+		Stitched thickbox			
+		Lateral thickbox; if yes optrion Stitched			
+		Stitched thickbox			
+	Watertongue	Thickbox			
+	Tongue incision	Thickbox			
+	AFO				
+	Left thickbox	If yes, Medial and Perimeter will appear			
+		Medial free fill in in mm			
+		Perimeter free fill in in mm			
+	Right thickbox	If yes, Medial and Perimeter will appear			
+		Medial free fill in in mm			
+		Perimeter free fill in in mm			
+	Busk				
+	Left thickbox	If yes, Medial and Lateral will appear			
+		Medial free fill in in mm			
+		Lateral free fill in in mm			
+	Right thickbox	If yes, Medial and Lateral will appear			
+		Medial free fill in in mm			
+		Lateral free fill in in mm			
+	Others				
+	Extra pair of Laces (thickbox)				
+SHOE SOLES					
+	Heel Type				
+	Heel ( thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left, Medial and Lateral Will appear (thickbox)			
+		Right, Medial and Lateral Will appear (thickbox)			
+		Medial (thickbox)			
+		Lateral (thickbox)			
+	Hollow Wedge (thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left, Medial and Lateral Will appear (thickbox)			
+		Right, Medial and Lateral Will appear (thickbox)			
+		Medial (thickbox)			
+		Lateral (thickbox)			
+	Fully Hollow Wedge (thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left, Medial and Lateral Will appear (thickbox)			
+		Right, Medial and Lateral Will appear (thickbox)			
+		Medial (thickbox)			
+		Lateral (thickbox)			
+	Wedge (thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left, Medial and Lateral Will appear (thickbox)			
+		Right, Medial and Lateral Will appear (thickbox)			
+		Medial (thickbox)			
+		Lateral (thickbox)			
+	Height	Left ( Free fill in in mm)			
+		Right ( free fill in in mm)			
+	Measurement Back (thickbox)				
+	Measurement Side (thickbox)				
+	Rocker Sole				
+	Heel (thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left if yes, free fill in mm will appear			
+		Right  if yes, free fill in mm will appear			
+	Joint (thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left if yes, free fill in mm will appear			
+		Right  if yes, free fill in mm will appear			
+	Toes (thickbox)	if yes, Left and Right will appear (thickbox)			
+		Left if yes, free fill in mm will appear			
+		Right  if yes, free fill in mm will appear			
+	Rocker Sole Type	(same as pair-by-pair)			
+	Removable Carbon Insole (thickbox)				
+	Sole Stiffening (thickbox)				
+	Soles				
+	Same as pair-by-pair but with pictures of the soles	( will deliver pictures of a later stage)			
+	Others				
+	Rounded	if yes, Left and Right will appear (thickbox)			
+		Left (thickbox)			
+		Right (thickbox)			
+		one open space free fill in ( Free fill in in mm)			
+	Flare	if yes, Left and Right will appear (thickbox)			
+		Left (thickbox)			
+		Right (thickbox)			
+	Inwards	if yes, Left and Right will appear (thickbox)			
+		Left (thickbox)			
+		Right (thickbox)			
+	Sach Heel	if yes, Left and Right will appear (thickbox)			
+		Left (thickbox)			
+		Right (thickbox)			
+	Thomas Heel	if yes, Medial and Lateral will appear (thickbox)			
+		Medial (thickbox)			
+		Lateral (thickbox)			
+Stiffener s&Toe Options					
+	Stiffeners Materials				
+	Type			PICTURES OF THE 20 OPTIONS WILL FOLLOW	
+	Left (20 options will appear)		Right ( 20 options will appear)		
+	When choosing an option Material First Layer and Material Second Layer will appear ( Free fill in)		When choosing an option Material First Layer and Material Second Layer will appear ( Free fill in)		
+					
+	Height First Material	Height Second Material	Height First Material	Height Second Material	
+	Back (free fill in in mm)	Back (free fill in in mm)	Back (free fill in in mm)	Back (free fill in in mm)	
+	Medial ( Free fill in in mm)	Medial ( Free fill in in mm)	Medial ( Free fill in in mm)	Medial ( Free fill in in mm)	
+	Lateral ( Free fill in in mm)	Lateral ( Free fill in in mm)	Lateral ( Free fill in in mm)	Lateral ( Free fill in in mm)	
+	Toe Options				
+	No toe appicable Thickbox for left and right				
+	Normal thickbox for left and left + material				
+	Short thickbox for left and left + material				
+	Front thickbox for left and left + material				
+	Wing thickbox for left and left + material				
+	External Protectove Toe cap				
+	Urgent order (thickbox) Don't know where to place yet				
