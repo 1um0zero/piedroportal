@@ -181,10 +181,15 @@ validation in the config.
 
 ---
 
-## 5. Migration `042` (DRAFT — do not run yet)
+## 5. Migration `042` — written, ready to run
+
+The real file is [`migrations/042_custom_orders.sql`](../migrations/042_custom_orders.sql)
+(idempotent; **run it in the Supabase SQL Editor** — I do not apply migrations).
+It matches the decisions in §7: `order_type` discriminator + `order_additions`
+1:N + own-row RLS mirroring migration 026. Outline below for reference.
 
 ```sql
--- migrations/042_custom_orders.sql  (PROPOSAL — run only after sign-off)
+-- migrations/042_custom_orders.sql  (run in Supabase SQL Editor after review)
 
 -- 1) Discriminator on the shared header
 alter table orders
@@ -247,16 +252,26 @@ A throwaway `scripts/dataverse-custom-discover.mjs` (clone of
 
 ---
 
-## 7. Open questions for Jorge (answer when awake)
+## 7. Product decisions — RESOLVED by Jorge (2026-06-24)
 
-1. **Catalogue link?** Does a CUSTOM order reference a base model/last, or is it
-   fully bespoke (no `product_id`)? Decides whether `product_id` stays nullable.
-2. **Who orders CUSTOM** — all clients eventually, or specific companies/branches
-   (exclusivity-style gating)?
-3. **Pricing / measurements** — does the Dev form capture measurements (foot
-   length, circumferences) that need their own typed fields, or are they all
-   "additions"?
-4. **Sided?** Are CUSTOM fields L/R-sided like PAIR, or per-order globals?
+1. **Catalogue link → YES, parts from a base model.** A CUSTOM order starts by
+   picking a style in the **Gallery** → `orders.product_id` is filled. CUSTOM is
+   the customisation layer on top of a catalogue model, not bespoke-from-zero.
+   → `product_id` stays NOT NULL; no schema change there.
+2. **Measurements → all in `order_additions`** (`section='measurements'`). No
+   separate measurements table; one uniform 1:N writer for everything.
+3. **Where it lives → a first-class Portal section** (not admin-only), that feeds
+   off Gallery / Users / Companies / back-office like the rest. **Launch
+   permissions = same as pair-by-pair** (logged in + has company). Company- and
+   model-level gating (specific clients / specific models) comes later, reusing
+   the exclusivity machinery.
+4. **Sided → YES, L/R** — confirmed by the `LF`/`RF` suffix on every measurement
+   and correction field. Maps to `side ∈ {l,r,g}`.
+
+> Net effect on the model: **no change** — `orders` header (+ `order_type`,
+> existing `product_id`) + one `order_additions` 1:N table covers all of it.
+> The only nuance: ship behind a feature flag for rollout, but the *permission
+> check* is the PAIR check, not an admin gate.
 
 ---
 

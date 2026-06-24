@@ -1,0 +1,2373 @@
+[
+  {
+    "section": "sec_1",
+    "sectionCode": "1",
+    "key": "clinicist",
+    "label": "clinicist",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_clinicist"
+    }
+  },
+  {
+    "section": "sec_1",
+    "sectionCode": "1",
+    "key": "closure",
+    "label": "closure",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closure"
+    }
+  },
+  {
+    "section": "sec_1",
+    "sectionCode": "1",
+    "key": "customer",
+    "label": "customer",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_customer"
+    }
+  },
+  {
+    "section": "sec_1",
+    "sectionCode": "1",
+    "key": "customer_ref",
+    "label": "customer ref",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_customerref"
+    }
+  },
+  {
+    "section": "sec_1",
+    "sectionCode": "1",
+    "key": "patient",
+    "label": "patient",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_patient"
+    }
+  },
+  {
+    "section": "sec_1",
+    "sectionCode": "1",
+    "key": "shoe_unit",
+    "label": "shoe_unit",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_shoe_unit"
+    }
+  },
+  {
+    "section": "sec_2",
+    "sectionCode": "2",
+    "key": "last_height",
+    "label": "last_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_last_heightlf",
+      "r": "cr56f_last_heightrf"
+    }
+  },
+  {
+    "section": "sec_2",
+    "sectionCode": "2",
+    "key": "plastercast",
+    "label": "plastercast",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_plastercast"
+    }
+  },
+  {
+    "section": "sec_2",
+    "sectionCode": "2",
+    "key": "sharp_heel_edge",
+    "label": "sharp_heel_edge",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_sharp_heel_edge"
+    }
+  },
+  {
+    "section": "sec_2",
+    "sectionCode": "2",
+    "key": "toe_height",
+    "label": "toe_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_heightlf",
+      "r": "cr56f_toe_heightrf"
+    }
+  },
+  {
+    "section": "sec_2",
+    "sectionCode": "2",
+    "key": "wooden_last",
+    "label": "wooden_last",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_wooden_last"
+    }
+  },
+  {
+    "section": "sec_7",
+    "sectionCode": "7",
+    "key": "urgent",
+    "label": "urgent",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_urgent"
+    }
+  },
+  {
+    "section": "foot_leg_geometry",
+    "sectionCode": "22",
+    "key": "120_leg_ankle_circumference",
+    "label": "120 leg_ankle_circumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_120leg_ankle_circumferencelf",
+      "r": "cr56f_120leg_ankle_circumferencerf"
+    }
+  },
+  {
+    "section": "foot_leg_geometry",
+    "sectionCode": "22",
+    "key": "150_leg_ankle_circumference",
+    "label": "150 leg_ankle_circumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_150leg_ankle_circumferencelf",
+      "r": "cr56f_150leg_ankle_circumferencerf"
+    }
+  },
+  {
+    "section": "foot_leg_geometry",
+    "sectionCode": "22",
+    "key": "200_leg_ankle_circumference",
+    "label": "200 leg_ankle_circumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_200leg_ankle_circumferencelf",
+      "r": "cr56f_200leg_ankle_circumferencerf"
+    }
+  },
+  {
+    "section": "foot_leg_geometry",
+    "sectionCode": "22",
+    "key": "250_leg_ankle_circumference",
+    "label": "250 leg_ankle_circumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_250leg_ankle_circumferencelf",
+      "r": "cr56f_250leg_ankle_circumferencerf"
+    }
+  },
+  {
+    "section": "foot_leg_geometry",
+    "sectionCode": "22",
+    "key": "300_leg_ankle_circumference",
+    "label": "300 leg_ankle_circumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_300leg_ankle_circumferencelf",
+      "r": "cr56f_300leg_ankle_circumferencerf"
+    }
+  },
+  {
+    "section": "foot_leg_geometry",
+    "sectionCode": "22",
+    "key": "350_leg_ankle_circumference",
+    "label": "350 leg_ankle_circumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_350leg_ankle_circumferencelf",
+      "r": "cr56f_350leg_ankle_circumferencerf"
+    }
+  },
+  {
+    "section": "toe_heights",
+    "sectionCode": "23",
+    "key": "i_toe_height",
+    "label": "I_toe_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_i_toe_heightlf",
+      "r": "cr56f_i_toe_heightrf"
+    }
+  },
+  {
+    "section": "toe_heights",
+    "sectionCode": "23",
+    "key": "ii_toe_height",
+    "label": "II_toe_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_ii_toe_heightlf",
+      "r": "cr56f_ii_toe_heightrf"
+    }
+  },
+  {
+    "section": "toe_heights",
+    "sectionCode": "23",
+    "key": "iii_toe_height",
+    "label": "III_toe_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_iii_toe_heightlf",
+      "r": "cr56f_iii_toe_heightrf"
+    }
+  },
+  {
+    "section": "toe_heights",
+    "sectionCode": "23",
+    "key": "iv_toe_height",
+    "label": "IV_toe_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_iv_toe_heightlf",
+      "r": "cr56f_iv_toe_heightrf"
+    }
+  },
+  {
+    "section": "toe_heights",
+    "sectionCode": "23",
+    "key": "v_toe_height",
+    "label": "V_toe_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_v_toe_heightlf",
+      "r": "cr56f_v_toe_heightrf"
+    }
+  },
+  {
+    "section": "pfs",
+    "sectionCode": "24",
+    "key": "pfs_heel_height",
+    "label": "pfs_heel_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_pfs_heel_heightlf",
+      "r": "cr56f_pfs_heel_heightrf"
+    }
+  },
+  {
+    "section": "pfs",
+    "sectionCode": "24",
+    "key": "pfs_height",
+    "label": "pfs_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_pfs_heightlf",
+      "r": "cr56f_pfs_heightrf"
+    }
+  },
+  {
+    "section": "pfs",
+    "sectionCode": "24",
+    "key": "plastic_fitting_shoes",
+    "label": "plastic_fitting_shoes",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_plastic_fitting_shoes"
+    }
+  },
+  {
+    "section": "toe_shape",
+    "sectionCode": "25",
+    "key": "1_toe_shape_square",
+    "label": "1 toe_shape_square",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_1toe_shape_square"
+    }
+  },
+  {
+    "section": "toe_shape",
+    "sectionCode": "25",
+    "key": "2_toe_shape_pointed",
+    "label": "2 toe_shape_pointed",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_2toe_shape_pointed"
+    }
+  },
+  {
+    "section": "toe_shape",
+    "sectionCode": "25",
+    "key": "3_toe_shape_rounded",
+    "label": "3 toe_shape_rounded",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_3toe_shape_rounded"
+    }
+  },
+  {
+    "section": "toe_shape",
+    "sectionCode": "25",
+    "key": "4_toe_shape_nature",
+    "label": "4 toe_shape_nature",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_4toe_shape_nature"
+    }
+  },
+  {
+    "section": "toe_shape",
+    "sectionCode": "25",
+    "key": "toe_shape",
+    "label": "toe_shape",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe_shape"
+    }
+  },
+  {
+    "section": "cork",
+    "sectionCode": "31",
+    "key": "micro_cork",
+    "label": "micro_cork",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_micro_corklf",
+      "r": "cr56f_micro_corkrf"
+    }
+  },
+  {
+    "section": "cork",
+    "sectionCode": "31",
+    "key": "multiform_cork",
+    "label": "multiform_cork",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_multiform_corklf",
+      "r": "cr56f_multiform_corkrf"
+    }
+  },
+  {
+    "section": "cork",
+    "sectionCode": "31",
+    "key": "multiform",
+    "label": "multiform",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_multiformlf",
+      "r": "cr56f_multiformrf"
+    }
+  },
+  {
+    "section": "cork",
+    "sectionCode": "31",
+    "key": "supplement_material",
+    "label": "supplement_material",
+    "type": "option",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplement_materiallf",
+      "r": "cr56f_supplement_materialrf"
+    }
+  },
+  {
+    "section": "leg_length",
+    "sectionCode": "35",
+    "key": "leg_shorter",
+    "label": "leg_shorter",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_leg_shorter"
+    }
+  },
+  {
+    "section": "leg_length",
+    "sectionCode": "35",
+    "key": "leg_shorter_difference",
+    "label": "leg_shorter_difference",
+    "type": "mm",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_leg_shorter_difference"
+    }
+  },
+  {
+    "section": "upper_height",
+    "sectionCode": "41",
+    "key": "upper_height",
+    "label": "upper_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_upper_heightlf",
+      "r": "cr56f_upper_heightrf"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_01",
+    "label": "upper leather 01",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather01"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_02",
+    "label": "upper leather 02",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather02"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_03",
+    "label": "upper leather 03",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather03"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_04",
+    "label": "upper leather 04",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather04"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_05",
+    "label": "upper leather 05",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather05"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_06",
+    "label": "upper leather 06",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather06"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_07",
+    "label": "upper leather 07",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather07"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_08",
+    "label": "upper leather 08",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather08"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_09",
+    "label": "upper leather 09",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather09"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_10",
+    "label": "upper leather 10",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather10"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_11",
+    "label": "upper leather 11",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather11"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_12",
+    "label": "upper leather 12",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather12"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_13",
+    "label": "upper leather 13",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather13"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_14",
+    "label": "upper leather 14",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather14"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_15",
+    "label": "upper leather 15",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather15"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_16",
+    "label": "upper leather 16",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather16"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_17",
+    "label": "upper leather 17",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather17"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_18",
+    "label": "upper leather 18",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather18"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_19",
+    "label": "upper leather 19",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather19"
+    }
+  },
+  {
+    "section": "upper_leather",
+    "sectionCode": "42",
+    "key": "upper_leather_20",
+    "label": "upper leather 20",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather20"
+    }
+  },
+  {
+    "section": "lining",
+    "sectionCode": "43",
+    "key": "lining_anti_slip_heel",
+    "label": "lining_anti_slip_heel",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_lining_anti_slip_heel"
+    }
+  },
+  {
+    "section": "lining",
+    "sectionCode": "43",
+    "key": "lining_perforated",
+    "label": "lining_perforated",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_lining_perforated"
+    }
+  },
+  {
+    "section": "lining",
+    "sectionCode": "43",
+    "key": "lining_rest",
+    "label": "lining_rest",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_lining_rest"
+    }
+  },
+  {
+    "section": "lining",
+    "sectionCode": "43",
+    "key": "lining_upper",
+    "label": "lining_upper",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_lining_upper"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "closure_laces",
+    "label": "closure_laces",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closure_laces"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "closure_velcro",
+    "label": "closure_velcro",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closure_velcro"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "closure_velcro_list",
+    "label": "closure_velcro_list",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closure_velcro_list"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "closure_velcro_longer",
+    "label": "closure_velcro_longer",
+    "type": "mm",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closure_velcro_longer"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "closure_velcro_wider",
+    "label": "closure_velcro_wider",
+    "type": "mm",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closure_velcro_wider"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "eyelets",
+    "label": "eyelets",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_eyelets"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "hooks",
+    "label": "hooks",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_hooks"
+    }
+  },
+  {
+    "section": "closure",
+    "sectionCode": "44",
+    "key": "zipper",
+    "label": "zipper",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_zipper"
+    }
+  },
+  {
+    "section": "stretch",
+    "sectionCode": "45",
+    "key": "stretch_medial_lateral_side",
+    "label": "stretch_medial_lateral_side",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_stretch_medial_lateral_side"
+    }
+  },
+  {
+    "section": "stretch",
+    "sectionCode": "45",
+    "key": "stretch_upper",
+    "label": "stretch_upper",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_stretch_upper"
+    }
+  },
+  {
+    "section": "collar",
+    "sectionCode": "47",
+    "key": "collar_extra_padding",
+    "label": "collar_extra_padding",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_collar_extra_padding"
+    }
+  },
+  {
+    "section": "collar",
+    "sectionCode": "47",
+    "key": "collar_extra_padding_options",
+    "label": "collar_extra_padding_options",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_collar_extra_padding_options"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_extra_padding",
+    "label": "tongue_extra_padding",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_extra_padding"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_extra_padding_options",
+    "label": "tongue_extra_padding_options",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_extra_padding_options"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_incision",
+    "label": "tongue_incision",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_incision"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_reinforcement",
+    "label": "tongue_reinforcement",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_reinforcement"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_reinforcement_options",
+    "label": "tongue_reinforcement_options",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_reinforcement_options"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_velcro",
+    "label": "tongue_velcro",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_velcro"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_velcro_options",
+    "label": "tongue_velcro_options",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_velcro_options"
+    }
+  },
+  {
+    "section": "tongue",
+    "sectionCode": "48",
+    "key": "tongue_watertongue",
+    "label": "tongue_watertongue",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_tongue_watertongue"
+    }
+  },
+  {
+    "section": "extras",
+    "sectionCode": "51",
+    "key": "extra_pair_laces",
+    "label": "extra_pair_laces",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_extra_pair_laces"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "211",
+    "key": "foot_size",
+    "label": "foot_size",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_foot_sizelf",
+      "r": "cr56f_foot_sizerf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "212",
+    "key": "toe_jump",
+    "label": "toe_jump",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_jumplf",
+      "r": "cr56f_toe_jumprf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "213",
+    "key": "joint_cirumference",
+    "label": "joint_cirumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_joint_cirumferencelf",
+      "r": "cr56f_joint_cirumferencerf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "214",
+    "key": "instep_cirumference",
+    "label": "instep_cirumference",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_instep_cirumferencelf",
+      "r": "cr56f_instep_cirumferencerf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "215",
+    "key": "long_heel_girth",
+    "label": "long_heel_girth",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_long_heel_girthlf",
+      "r": "cr56f_long_heel_girthrf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "216",
+    "key": "short_heel_girth",
+    "label": "short_heel_girth",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_short_heel_girthlf",
+      "r": "cr56f_short_heel_girthrf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "217",
+    "key": "toe_depth",
+    "label": "toe_depth",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_depthlf",
+      "r": "cr56f_toe_depthrf"
+    }
+  },
+  {
+    "section": "measurements",
+    "sectionCode": "218",
+    "key": "heel_height",
+    "label": "heel_height",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_heel_heightlf",
+      "r": "cr56f_heel_heightrf"
+    }
+  },
+  {
+    "section": "supplement",
+    "sectionCode": "320",
+    "key": "supplement",
+    "label": "supplement",
+    "type": "option",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplementlf",
+      "r": "cr56f_supplementrf"
+    }
+  },
+  {
+    "section": "supplement",
+    "sectionCode": "321",
+    "key": "supplement_lateral_mm",
+    "label": "supplement_lateral_mm",
+    "type": "option",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplement_lateral_mmlf",
+      "r": "cr56f_supplement_lateral_mmrf"
+    }
+  },
+  {
+    "section": "supplement",
+    "sectionCode": "322",
+    "key": "supplement_medial_mm",
+    "label": "supplement_medial_mm",
+    "type": "option",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplement_medial_mmlf",
+      "r": "cr56f_supplement_medial_mmrf"
+    }
+  },
+  {
+    "section": "supplement",
+    "sectionCode": "330",
+    "key": "supplement_high_padding_lateral_mm",
+    "label": "supplement_high_padding_lateral_mm",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplement_high_padding_lateral_mmlf",
+      "r": "cr56f_supplement_high_padding_lateral_mmrf"
+    }
+  },
+  {
+    "section": "supplement",
+    "sectionCode": "330",
+    "key": "supplement_high_padding_medial_mm",
+    "label": "supplement_high_padding_medial_mm",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplement_high_padding_medial_mmlf",
+      "r": "cr56f_supplement_high_padding_medial_mmrf"
+    }
+  },
+  {
+    "section": "supplement",
+    "sectionCode": "330",
+    "key": "supplement_high_padding",
+    "label": "supplement_high_padding",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_supplement_high_paddinglf",
+      "r": "cr56f_supplement_high_paddingrf"
+    }
+  },
+  {
+    "section": "heel_correction",
+    "sectionCode": "331",
+    "key": "heel_lateral",
+    "label": "heel_lateral",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_heel_laterallf",
+      "r": "cr56f_heel_lateralrf"
+    }
+  },
+  {
+    "section": "heel_correction",
+    "sectionCode": "331",
+    "key": "heel_medial",
+    "label": "heel_medial",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_heel_mediallf",
+      "r": "cr56f_heel_medialrf"
+    }
+  },
+  {
+    "section": "ball_correction",
+    "sectionCode": "332",
+    "key": "ball_lateral",
+    "label": "ball_lateral",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_ball_laterallf",
+      "r": "cr56f_ball_lateralrf"
+    }
+  },
+  {
+    "section": "ball_correction",
+    "sectionCode": "332",
+    "key": "ball_medial",
+    "label": "ball_medial",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_ball_mediallf",
+      "r": "cr56f_ball_medialrf"
+    }
+  },
+  {
+    "section": "toe_correction",
+    "sectionCode": "333",
+    "key": "toe",
+    "label": "toe",
+    "type": "mm",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe"
+    }
+  },
+  {
+    "section": "rocker",
+    "sectionCode": "341",
+    "key": "rocker_heel",
+    "label": "rocker_heel",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_rocker_heellf",
+      "r": "cr56f_rocker_heelrf"
+    }
+  },
+  {
+    "section": "rocker",
+    "sectionCode": "341",
+    "key": "rocker_joint",
+    "label": "rocker_joint",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_rocker_jointlf",
+      "r": "cr56f_rocker_jointrf"
+    }
+  },
+  {
+    "section": "rocker",
+    "sectionCode": "341",
+    "key": "617_rocker_removable_carbon_insole",
+    "label": "617 rocker_removable_carbon_insole",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_rocker_removable_carbon_insole"
+    }
+  },
+  {
+    "section": "rocker",
+    "sectionCode": "341",
+    "key": "617_rocker_sole_stiffening",
+    "label": "617 rocker_sole_stiffening",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_rocker_sole_stiffening"
+    }
+  },
+  {
+    "section": "rocker",
+    "sectionCode": "341",
+    "key": "rocker_sole",
+    "label": "rocker_sole",
+    "type": "option",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_rocker_solelf",
+      "r": "cr56f_rocker_solerf"
+    }
+  },
+  {
+    "section": "rocker",
+    "sectionCode": "341",
+    "key": "rocker_toes",
+    "label": "rocker_toes",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_rocker_toeslf",
+      "r": "cr56f_rocker_toesrf"
+    }
+  },
+  {
+    "section": "flare_back",
+    "sectionCode": "342",
+    "key": "flare_back",
+    "label": "flare_back",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_flare_back"
+    }
+  },
+  {
+    "section": "flare_back",
+    "sectionCode": "342",
+    "key": "flare_back_lateral",
+    "label": "flare_back_lateral",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_flare_back_laterallf",
+      "r": "cr56f_flare_back_lateralrf"
+    }
+  },
+  {
+    "section": "flare_back",
+    "sectionCode": "342",
+    "key": "flare_back_medial",
+    "label": "flare_back_medial",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_flare_back_mediallf",
+      "r": "cr56f_flare_back_medialrf"
+    }
+  },
+  {
+    "section": "flare_front",
+    "sectionCode": "343",
+    "key": "flare_front",
+    "label": "flare_front",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_flare_front"
+    }
+  },
+  {
+    "section": "flare_front",
+    "sectionCode": "343",
+    "key": "flare_front_lateral",
+    "label": "flare_front_lateral",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_flare_front_laterallf",
+      "r": "cr56f_flare_front_lateralrf"
+    }
+  },
+  {
+    "section": "flare_front",
+    "sectionCode": "343",
+    "key": "flare_front_medial",
+    "label": "flare_front_medial",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_flare_front_mediallf",
+      "r": "cr56f_flare_front_medialrf"
+    }
+  },
+  {
+    "section": "sole_heel",
+    "sectionCode": "611",
+    "key": "heel",
+    "label": "heel",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_heel"
+    }
+  },
+  {
+    "section": "sole_heel",
+    "sectionCode": "611",
+    "key": "heel_lateral",
+    "label": "heel_lateral",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_heel_lateral"
+    }
+  },
+  {
+    "section": "sole_heel",
+    "sectionCode": "611",
+    "key": "heel_medial",
+    "label": "heel_medial",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_heel_medial"
+    }
+  },
+  {
+    "section": "sole_heel",
+    "sectionCode": "611",
+    "key": "heel_medial_lateral",
+    "label": "heel_medial_lateral",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_heel_medial_laterallf",
+      "r": "cr56f_heel_medial_lateralrf"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "612",
+    "key": "hollow_wedge",
+    "label": "hollow_wedge",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_hollow_wedge"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "612",
+    "key": "hollow_wedge_lateral",
+    "label": "hollow_wedge_lateral",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_hollow_wedge_lateral"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "612",
+    "key": "hollow_wedge_medial",
+    "label": "hollow_wedge_medial",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_hollow_wedge_medial"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "612",
+    "key": "hollow_wedge_medial_lateral",
+    "label": "hollow_wedge_medial_lateral",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_hollow_wedge_medial_laterallf",
+      "r": "cr56f_hollow_wedge_medial_lateralrf"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "613",
+    "key": "fully_hollow_wedge",
+    "label": "fully_hollow_wedge",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_fully_hollow_wedge"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "613",
+    "key": "fully_hollow_wedge_lateral",
+    "label": "fully_hollow_wedge_lateral",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_fully_hollow_wedge_lateral"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "613",
+    "key": "fully_hollow_wedge_medial",
+    "label": "fully_hollow_wedge_medial",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_fully_hollow_wedge_medial"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "613",
+    "key": "fully_hollow_wedge_medial_lateral",
+    "label": "fully_hollow_wedge_medial_lateral",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_fully_hollow_wedge_medial_laterallf",
+      "r": "cr56f_fully_hollow_wedge_medial_lateralrf"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "614",
+    "key": "wedge",
+    "label": "wedge",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_wedge"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "614",
+    "key": "wedge_lateral",
+    "label": "wedge_lateral",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_wedge_lateral"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "614",
+    "key": "wedge_medial",
+    "label": "wedge_medial",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_wedge_medial"
+    }
+  },
+  {
+    "section": "sole_wedge",
+    "sectionCode": "614",
+    "key": "wedge_medial_lateral",
+    "label": "wedge_medial_lateral",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_wedge_medial_laterallf",
+      "r": "cr56f_wedge_medial_lateralrf"
+    }
+  },
+  {
+    "section": "sole_height",
+    "sectionCode": "615",
+    "key": "height",
+    "label": "height",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "g": "cr56f_height",
+      "l": "cr56f_heightlf",
+      "r": "cr56f_heightrf"
+    }
+  },
+  {
+    "section": "sole_measurement",
+    "sectionCode": "616",
+    "key": "measurement_back",
+    "label": "measurement_back",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_measurement_back"
+    }
+  },
+  {
+    "section": "sole_measurement",
+    "sectionCode": "616",
+    "key": "measurement_side",
+    "label": "measurement_side",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_measurement_side"
+    }
+  },
+  {
+    "section": "sole_material",
+    "sectionCode": "618",
+    "key": "sole_eva_wedge_colour",
+    "label": "sole_eva_wedge_colour",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_sole_eva_wedge_colour"
+    }
+  },
+  {
+    "section": "sole_material",
+    "sectionCode": "618",
+    "key": "sole_pueva_bumper",
+    "label": "sole_pueva_bumper",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_sole_pueva_bumper"
+    }
+  },
+  {
+    "section": "sole_material",
+    "sectionCode": "618",
+    "key": "sole_pueva_bumper_options",
+    "label": "sole_pueva_bumper_options",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_sole_pueva_bumper_options"
+    }
+  },
+  {
+    "section": "sole_material",
+    "sectionCode": "618",
+    "key": "sole_runner",
+    "label": "sole_runner",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_sole_runner"
+    }
+  },
+  {
+    "section": "sole_material",
+    "sectionCode": "618",
+    "key": "sole_runner_options",
+    "label": "sole_runner_options",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_sole_runner_options"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "flare",
+    "label": "flare",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "g": "cr56f_flare",
+      "l": "cr56f_flarelf",
+      "r": "cr56f_flarerf"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "inwards",
+    "label": "inwards",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "g": "cr56f_inwards",
+      "l": "cr56f_inwardslf",
+      "r": "cr56f_inwardsrf"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "rounded",
+    "label": "rounded",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "g": "cr56f_rounded",
+      "l": "cr56f_roundedlf",
+      "r": "cr56f_roundedrf"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "sach_heel",
+    "label": "sach_heel",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "g": "cr56f_sach_heel",
+      "l": "cr56f_sach_heellf",
+      "r": "cr56f_sach_heelrf"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "thomas_heel",
+    "label": "thomas_heel",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_thomas_heel"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "thomas_heel_lateral",
+    "label": "thomas_heel_lateral",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_thomas_heel_lateral"
+    }
+  },
+  {
+    "section": "sole_flare",
+    "sectionCode": "619",
+    "key": "thomas_heel_medial",
+    "label": "thomas_heel_medial",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_thomas_heel_medial"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener_first_layer_back",
+    "label": "stiffener_first_layer_back",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffener_first_layer_backlf",
+      "r": "cr56f_stiffener_first_layer_backrf"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener_first_layer_lateral",
+    "label": "stiffener_first_layer_lateral",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffener_first_layer_laterallf",
+      "r": "cr56f_stiffener_first_layer_lateralrf"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener_first_layer_medial",
+    "label": "stiffener_first_layer_medial",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffener_first_layer_mediallf",
+      "r": "cr56f_stiffener_first_layer_medialrf"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener_second_layer_back",
+    "label": "stiffener_second_layer_back",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffener_second_layer_backlf",
+      "r": "cr56f_stiffener_second_layer_backrf"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener_second_layer_lateral",
+    "label": "stiffener_second_layer_lateral",
+    "type": "text",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffener_second_layer_laterallf",
+      "r": "cr56f_stiffener_second_layer_lateralrf"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener_second_layer_medial",
+    "label": "stiffener_second_layer_medial",
+    "type": "mm",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffener_second_layer_mediallf",
+      "r": "cr56f_stiffener_second_layer_medialrf"
+    }
+  },
+  {
+    "section": "stiffener",
+    "sectionCode": "621",
+    "key": "stiffener",
+    "label": "stiffener",
+    "type": "lookup",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_stiffenerlf",
+      "r": "cr56f_stiffenerrf"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_external_protective_cap",
+    "label": "toe_external_protective_cap",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe_external_protective_cap"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_front_material",
+    "label": "toe_front_material",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe_front_material"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_front",
+    "label": "toe_front",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_frontlf",
+      "r": "cr56f_toe_frontrf"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_normal_material",
+    "label": "toe_normal_material",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe_normal_material"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_normal",
+    "label": "toe_normal",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_normallf",
+      "r": "cr56f_toe_normalrf"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_not_applicable",
+    "label": "toe_not_applicable",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_not_applicablelf",
+      "r": "cr56f_toe_not_applicablerf"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_short_material",
+    "label": "toe_short_material",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe_short_material"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_short",
+    "label": "toe_short",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_shortlf",
+      "r": "cr56f_toe_shortrf"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_wing_material",
+    "label": "toe_wing_material",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_toe_wing_material"
+    }
+  },
+  {
+    "section": "toe_cap",
+    "sectionCode": "622",
+    "key": "toe_wing",
+    "label": "toe_wing",
+    "type": "toggle",
+    "sided": true,
+    "dataverse": {
+      "l": "cr56f_toe_winglf",
+      "r": "cr56f_toe_wingrf"
+    }
+  },
+  {
+    "section": "sec_0",
+    "sectionCode": "0",
+    "key": "style",
+    "label": "style",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_style"
+    }
+  },
+  {
+    "section": "sec_0",
+    "sectionCode": "0",
+    "key": "style_color",
+    "label": "style_color",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_style_color"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_closurename",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_closurename"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_customername",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_customername"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_customeryominame",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_customeryominame"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "invoice_date",
+    "label": "invoice date",
+    "type": "date",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_invoicedate"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "invoice_number",
+    "label": "invoice number",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_invoicenumber"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "order_id",
+    "label": "order_id",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "order_piedro",
+    "label": "order_piedro",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_order_piedro"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "order_production",
+    "label": "order_production",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_order_production"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "pdf_order_link",
+    "label": "PDF order link",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_pdforderlink"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "production",
+    "label": "production",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_production"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "qty",
+    "label": "Qty",
+    "type": "mm",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_qty"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "send_email",
+    "label": "send_email",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_send_email"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "state",
+    "label": "state",
+    "type": "option",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_state_approval"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "step",
+    "label": "step",
+    "type": "mm",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_step"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_stiffenerlfname",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_stiffenerlfname"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_stiffenerrfname",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_stiffenerrfname"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_style_colorname",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_style_colorname"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_stylename",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_stylename"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "tracking_code",
+    "label": "Tracking Code",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_trackingcode"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "tracking_link",
+    "label": "Tracking Link",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_trackinglink"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather01name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather01name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather02name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather02name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather03name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather03name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather04name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather04name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather05name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather05name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather06name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather06name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather07name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather07name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather08name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather08name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather09name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather09name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather10name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather10name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather11name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather11name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather12name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather12name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather13name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather13name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather14name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather14name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather15name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather15name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather16name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather16name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather17name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather17name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather18name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather18name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather19name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather19name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_upperleather20name",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_upperleather20name"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "user",
+    "label": "user",
+    "type": "lookup",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_user"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_username",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_username"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "cr56f_useryominame",
+    "label": "",
+    "type": "text",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_useryominame"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "x_blueprint",
+    "label": "x_blueprint",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_x_blueprint"
+    }
+  },
+  {
+    "section": "header",
+    "sectionCode": "00",
+    "key": "x_footscan",
+    "label": "x_footscan",
+    "type": "toggle",
+    "sided": false,
+    "dataverse": {
+      "g": "cr56f_x_footscan"
+    }
+  }
+]
