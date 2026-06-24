@@ -46,8 +46,12 @@ export async function getAdminScope(): Promise<AdminScope | null> {
   if (!user) return null
 
   const service = createServiceClient()
+  // Read the core fields with a select that ALWAYS works. The granular
+  // can_approve_orders flag is read separately (best-effort) so that a brand-new
+  // column not yet visible to PostgREST's schema cache can never null the whole
+  // profile and silently drop an admin to "no back-office access".
   const { data: profile } = await service
-    .from('profiles').select('role, branch_id, can_approve_orders').eq('id', user.id).single()
+    .from('profiles').select('role, branch_id').eq('id', user.id).single()
 
   const role = profile?.role as UserRole | undefined
   // super_admin (infra/technical) is a superset of piedro_admin (operational).
@@ -56,8 +60,10 @@ export async function getAdminScope(): Promise<AdminScope | null> {
   }
 
   // Granular order-approval capability — only meaningful for branch_staff (other
-  // non-admin roles never reach the back-office order controls).
-  const canApproveOrders = profile?.can_approve_orders === true
+  // non-admin roles never reach the back-office order controls). Best-effort.
+  const { data: cap } = await service
+    .from('profiles').select('can_approve_orders').eq('id', user.id).single()
+  const canApproveOrders = cap?.can_approve_orders === true
 
   if (role === 'branch_staff') {
     const branchId = (profile?.branch_id as string | null) ?? null

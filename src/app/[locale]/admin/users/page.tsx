@@ -20,7 +20,7 @@ export default async function AdminUsersPage() {
   const [{ data: profiles }, { data: companies }, { data: userCompanies }, { data: branches }] = await Promise.all([
     service
       .from('profiles')
-      .select('id, email, full_name, role, company_id, branch_id, created_at, preferred_locale, can_approve_orders')
+      .select('id, email, full_name, role, company_id, branch_id, created_at, preferred_locale')
       .order('created_at', { ascending: false }),
     service
       .from('companies')
@@ -51,6 +51,15 @@ export default async function AdminUsersPage() {
     if (batch.length < 1000) break
   }
 
+  // Granular orders_approval capability — fetched separately (best-effort) so a
+  // brand-new column not yet in PostgREST's schema cache can never null the whole
+  // profiles query and blank the entire users list for admins.
+  const approveMap = new Map<string, boolean>()
+  {
+    const { data: caps } = await service.from('profiles').select('id, can_approve_orders')
+    for (const c of caps ?? []) approveMap.set(c.id, (c as { can_approve_orders?: boolean }).can_approve_orders === true)
+  }
+
   // Map user_companies by user_id (multiple companies per user)
   const ucMap = new Map<string, Array<{ company_id: string; company_name: string; is_company_admin: boolean }>>()
   for (const uc of userCompanies ?? []) {
@@ -76,7 +85,7 @@ export default async function AdminUsersPage() {
       branch_id:          p.branch_id ?? null,
       created_at:         p.created_at,
       preferred_locale:   p.preferred_locale ?? null,
-      can_approve_orders: p.can_approve_orders === true,
+      can_approve_orders: approveMap.get(p.id) === true,
       confirmed:          confirmedIds.has(p.id),  // email confirmed → has activated account
       last_sign_in:       lastSignIn.get(p.id) ?? null,
     }
