@@ -803,7 +803,8 @@
       "grid_col_last_login": "Letzte Anmeldung",
       "grid_status_awaiting": "Wartet auf Bestätigung",
       "never_short": "nie",
-      "weeks_inactive_short": "{count} Wo"
+      "weeks_inactive_short": "{count, plural, one {# Woche} other {# Wochen}}",
+      "inactive_this_week": "diese Woche"
     },
     "products": {
       "title": "Produkte",

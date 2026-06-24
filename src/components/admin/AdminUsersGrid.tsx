@@ -7,9 +7,9 @@
  * in the card view. Columns are drag-resizable on the header edges.
  */
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslations, useLocale, useNow } from 'next-intl'
-import { Sort, nextSort, compareValues, SortableTh } from '@/components/ui/table-controls'
+import { Sort, nextSort, compareValues, SortableTh, GridFloatingNav } from '@/components/ui/table-controls'
 import { isPiedroAdmin, isBranchStaff, isBranchAdmin } from '@/lib/roles'
 import { updateUserLocaleAction } from '@/app/actions/admin-users'
 import { startImpersonation } from '@/app/actions/impersonation'
@@ -123,6 +123,7 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
   const ti = useTranslations('impersonation')
   const locale = useLocale()
   const now = useNow()
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [impersonating, setImpersonating] = useState<string | null>(null)
 
   // Whole weeks since the user last signed in; null if they never logged in.
@@ -253,17 +254,19 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
         <span className="text-xs text-stone-400">{t('grid_count', { count: rows.length, total: users.length })}</span>
       </div>
 
-      <div className="bg-white rounded-[14px] overflow-x-auto" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <div ref={scrollRef} className="bg-white rounded-[14px] overflow-x-auto" style={{ boxShadow: 'var(--shadow-card)' }}>
         <table className="text-sm" style={{ tableLayout: 'fixed', width: Object.values(colWidths).reduce((a, b) => a + b, 0), minWidth: '100%' }}>
           <colgroup>
             {COLUMNS.map(c => <col key={c.id} style={{ width: colWidths[c.id] }} />)}
           </colgroup>
           <thead>
             <tr className="border-b border-stone-100">
-              <SortableTh label={t('grid_col_name')} sortKey="name" sort={sort} onSort={onSort} className="relative">
+              <SortableTh label={t('grid_col_name')} sortKey="name" sort={sort} onSort={onSort}
+                className="relative sticky left-0 z-[2] bg-white">
                 <ColResizer onResize={d => resizeCol('name', d)} />
               </SortableTh>
-              <SortableTh label={t('grid_col_email')} sortKey="email" sort={sort} onSort={onSort} className="relative">
+              <SortableTh label={t('grid_col_email')} sortKey="email" sort={sort} onSort={onSort}
+                className="relative sticky z-[2] bg-white border-r border-stone-100" style={{ left: colWidths.name }}>
                 <ColResizer onResize={d => resizeCol('email', d)} />
               </SortableTh>
               <SortableTh label={t('grid_col_role')} sortKey="role" sort={sort} onSort={onSort} className="relative">
@@ -302,9 +305,11 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
             {rows.map(u => {
               const st = status(u)
               return (
-                <tr key={u.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
-                  <td className="px-4 py-2 font-medium text-stone-800 truncate" title={u.full_name || undefined}>{u.full_name || '—'}</td>
-                  <td className="px-4 py-2 text-stone-500 truncate" title={u.email}>{u.email}</td>
+                <tr key={u.id} className="group border-b border-stone-50 last:border-0 hover:bg-stone-50/60">
+                  <td className="px-4 py-2 font-medium text-stone-800 truncate sticky left-0 z-[1] bg-white group-hover:bg-stone-50"
+                    title={u.full_name || undefined}>{u.full_name || '—'}</td>
+                  <td className="px-4 py-2 text-stone-500 truncate sticky z-[1] bg-white group-hover:bg-stone-50 border-r border-stone-100"
+                    style={{ left: colWidths.name }} title={u.email}>{u.email}</td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-lg ${ROLE_COLORS[u.role]}`}>
                       {t(`role_${u.role}`)}
@@ -353,7 +358,7 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
                     return (
                       <td className={`px-4 py-2 text-right whitespace-nowrap ${cls}`}
                         title={u.last_sign_in ? new Date(u.last_sign_in).toLocaleString(locale) : t('last_login_never')}>
-                        {w == null ? t('never_short') : t('weeks_inactive_short', { count: w })}
+                        {w == null ? t('never_short') : w === 0 ? t('inactive_this_week') : t('weeks_inactive_short', { count: w })}
                       </td>
                     )
                   })()}
@@ -382,6 +387,10 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
           </tbody>
         </table>
       </div>
+
+      {/* Floating nav: jump to top/bottom of the page + scroll the grid sideways
+          without dragging the native scrollbar at the table foot. */}
+      <GridFloatingNav scrollRef={scrollRef} />
     </div>
   )
 }
