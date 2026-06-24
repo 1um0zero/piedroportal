@@ -34,8 +34,30 @@ shared `orders` row. Isolate. The `LF/RF` + section-number convention maps
 cleanly onto our existing `side ∈ {l,r,g}` + `section` model, so
 `order_additions` absorbs CUSTOM with no schema gymnastics.
 
-The form **jscript** (conditional show/require logic) is being pulled from
-`webresourceset` into `docs/custom-orders-jscript/`.
+### The form jscript
+
+The logic does **not** live in model-driven web resources — it's a **Power Pages
+portal** (`mspp_entityform.mspp_registerstartupscript`). Pulled into
+[`docs/custom-orders-jscript/`](custom-orders-jscript/):
+
+- **`mspp_entityforms__Wpp_orders__…js` (51 KB)** — the gold. A full
+  `array_booleans["#cr56f_<field><lf|rf>"] = [EN, NL, FR, DE]` map: every addition
+  field with its 4-language label, keyed by the exact Dataverse column. This is a
+  ready-made translation source for `additions-config.ts`.
+- `orders_new_03_-_measurements__…js` + `orders_new_01_02_-_customer_and_sizing__…js`
+  — the measurement/sizing form steps.
+
+> ⚠️ **Two entities, to disambiguate with Jorge:**
+> - `cr56f_wpp_orders` — 395 attrs (54 Bool, **80 Picklist**, 53 Int): the richer
+>   "normal" order; the 51 KB jscript is bound here.
+> - `cr56f_wpp_custom_orders` — 402 attrs (89 Bool, 32 Picklist, **90 Int**): the
+>   CUSTOM table; **measurement-driven** (90 integer/mm fields). Its portal forms
+>   ("Informações", "Customer and Product") carry no startup script (likely
+>   metadata-driven visibility).
+>
+> **Open Q for §7:** is CUSTOM = `cr56f_wpp_custom_orders` (the 402-field
+> measurement table) the canonical target, with `wpp_orders` being the prior
+> iteration? Confirm before mapping fields.
 
 ---
 
