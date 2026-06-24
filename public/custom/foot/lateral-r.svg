@@ -1,23 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 160" fill="none" role="img" aria-label="Foot lateral view, right">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 230" fill="none" role="img" aria-label="Foot lateral view with ankle, right">
   <defs>
-    <linearGradient id="footLatR" x1="165" y1="40" x2="165" y2="140" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#B8975A" stop-opacity="0.10"/>
+    <linearGradient id="footLatR" x1="150" y1="74" x2="150" y2="212" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8975A" stop-opacity="0.09"/>
       <stop offset="1" stop-color="#B8975A" stop-opacity="0.02"/>
     </linearGradient>
   </defs>
-  <g transform="translate(330,0) scale(-1,1)" fill="url(#footLatR)" stroke="#B8975A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M46 134
-             C31 134 22 122 22 105
-             C22 87 28 70 40 61
-             C51 53 61 49 73 46
-             C85 43 93 41 101 43
-             C150 50 204 68 246 94
-             C263 103 277 111 284 120
-             C289 126 288 133 280 134
-             C270 135 260 133 251 132
-             C212 131 182 131 156 128
-             C136 124 116 114 96 118
-             C78 121 58 131 48 133
-             C46 133 46 134 46 134 Z"/>
+  <g transform="translate(300,0) scale(-1,1)">
+    <path d="M72 205
+             C110 207 165 207 208 205
+             C224 205 236 204 242 199
+             C247 195 247 187 241 182
+             C232 177 210 174 190 171
+             C170 168 158 162 150 154
+             C144 147 139 138 137 128
+             C136 114 136 102 136 90
+             C136 74 130 70 119 70
+             C108 70 102 74 102 90
+             C102 110 103 132 101 152
+             C99 172 93 190 78 199
+             C68 204 58 205 55 207
+             C53 209 56 210 64 209
+             C69 208 72 207 72 205 Z"
+          fill="url(#footLatR)" stroke="#B8975A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
   </g>
 </svg>

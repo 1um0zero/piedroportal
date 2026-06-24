@@ -1,26 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 320" fill="none" role="img" aria-label="Foot sole, right">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 330" fill="none" role="img" aria-label="Foot outline, right">
   <defs>
-    <linearGradient id="footSoleR" x1="75" y1="20" x2="75" y2="305" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#B8975A" stop-opacity="0.10"/>
+    <linearGradient id="footSoleR" x1="75" y1="70" x2="75" y2="312" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8975A" stop-opacity="0.09"/>
       <stop offset="1" stop-color="#B8975A" stop-opacity="0.02"/>
     </linearGradient>
   </defs>
-  <!-- right foot = mirror of the left sole template -->
-  <g transform="translate(150,0) scale(-1,1)" fill="url(#footSoleR)" stroke="#B8975A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M73 303
-             C59 304 48 296 45 279
-             C41 258 35 222 34 196
-             C33 170 26 140 31 118
-             C34 100 42 86 55 80
-             C70 73 94 71 110 80
-             C120 92 118 112 112 130
-             C106 152 100 176 98 200
-             C96 230 99 260 92 280
-             C87 296 85 303 73 303 Z"/>
-    <ellipse cx="110" cy="62" rx="12"  ry="17"   transform="rotate(12 110 62)"/>
-    <ellipse cx="90"  cy="53" rx="9"   ry="14"   transform="rotate(6 90 53)"/>
-    <ellipse cx="72"  cy="50" rx="8.4" ry="13"/>
-    <ellipse cx="55"  cy="55" rx="7.4" ry="11.5" transform="rotate(-6 55 55)"/>
-    <ellipse cx="41"  cy="63" rx="6.6" ry="9.6"  transform="rotate(-13 41 63)"/>
+  <g transform="translate(150,0) scale(-1,1)">
+    <path d="M34 300
+             C26 290 24 264 24 234
+             C24 200 25 164 30 138
+             C33 120 36 108 41 99
+             C48 92 48 84 55 84
+             C62 84 62 92 69 92
+             C76 92 76 82 83 82
+             C90 82 90 90 97 90
+             C104 90 104 80 111 80
+             C118 80 119 83 123 86
+             C129 92 131 110 133 134
+             C136 168 137 204 135 234
+             C134 264 131 290 122 300
+             C113 310 100 312 79 312
+             C57 312 42 310 34 300 Z"
+          fill="url(#footSoleR)" stroke="#B8975A" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
   </g>
 </svg>
