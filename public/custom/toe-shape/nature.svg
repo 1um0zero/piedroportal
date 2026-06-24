@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 108" fill="none" role="img" aria-label="Nature toe shape">
+  <defs>
+    <linearGradient id="tsNature" x1="60" y1="14" x2="60" y2="94" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8975A" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#B8975A" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+  <path d="M22 92 C21 56 28 30 46 21 C67 28 86 49 99 79 C100 84 99 89 98 92 C74 86 46 86 22 92 Z"
+        fill="url(#tsNature)" stroke="#B8975A" stroke-width="2.6" stroke-linejoin="round"/>
+</svg>

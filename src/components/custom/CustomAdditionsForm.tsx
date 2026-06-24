@@ -62,6 +62,43 @@ export default function CustomAdditionsForm({
       )
     }
 
+    if (f.type === 'image') {
+      const selected = (values[f.key] as string) || null
+      // collapse: once a value is picked, show only it; click again to reveal all
+      const shown = f.collapse && selected ? [selected] : (f.values ?? [])
+      return (
+        <div key={f.key} className={`py-2 ${indent}`}>
+          <label className="mb-2 block text-xs text-stone-500">{label}</label>
+          <div className="flex flex-wrap gap-2.5">
+            {shown.map(v => {
+              const val = String(v)
+              const src = f.images?.[val]
+              const on = selected === val
+              return (
+                <button key={val} type="button" title={val}
+                  onClick={() => set(f.key, on ? '' : val)}
+                  className={`group relative flex w-[104px] flex-col items-center rounded-xl border p-2 transition-all
+                    ${on ? 'border-gold bg-gold/5 ring-2 ring-gold/30 shadow-sm' : 'border-stone-200 bg-white hover:border-gold/60'}`}>
+                  {src
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={src} alt={val} className="pointer-events-none h-[68px] w-full object-contain" />
+                    : <div className="flex h-[68px] w-full items-center justify-center text-[10px] text-stone-300">—</div>}
+                  <span className={`mt-1 text-[11px] font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>{val}</span>
+                  {on && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-white shadow-sm">
+                      <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
     if (f.type === 'option') {
       return (
         <div key={f.key} className={`py-1.5 ${indent}`}>

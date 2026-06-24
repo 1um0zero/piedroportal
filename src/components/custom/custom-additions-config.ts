@@ -20,6 +20,7 @@ export type CustomFieldType =
   | 'toggle'   // yes/no tickbox            (_yn)
   | 'mm'       // free-fill millimetres     (_lf_rf, _lf, _rf)
   | 'option'   // dropdown / choice         (_ch, _m_ch)
+  | 'image'    // single-select image chips (collapses others once picked)
   | 'text'     // free text
   | 'upload'   // file upload (blueprint, footscan)
 
@@ -41,6 +42,8 @@ export interface CustomField {
   required?:     boolean
   hint?:         CustomI18n            // small helper text (e.g. height label "350 mm", "I")
   picturePending?: boolean             // option needs a Piedro-supplied image (toe shape, soles…)
+  images?:       Record<string, string>  // for 'image': option value → SVG/png path
+  collapse?:     boolean               // single-select chips: hide the others once one is picked
 }
 
 export interface CustomGroup {
@@ -132,10 +135,17 @@ const SECTION_LAST: CustomSection = {
       key: 'toe_shape',
       label: { en: 'Toe Shape' },
       fields: [
-        { ...yn('Square',  'cs1.51_yn'), picturePending: true },
-        { ...yn('Pointed', 'cs1.52_yn'), picturePending: true },
-        { ...yn('Rounded', 'cs1.53_yn'), picturePending: true },
-        { ...yn('Nature',  'cs1.54_yn'), picturePending: true },
+        {
+          key: 'cs1.5_toe_shape', type: 'image', side: 'global', collapse: true,
+          label: { en: 'Toe Shape', nl: 'Neusvorm' },
+          values: ['Square', 'Pointed', 'Rounded', 'Nature'],
+          images: {
+            Square:  '/custom/toe-shape/square.svg',
+            Pointed: '/custom/toe-shape/pointed.svg',
+            Rounded: '/custom/toe-shape/rounded.svg',
+            Nature:  '/custom/toe-shape/nature.svg',
+          },
+        },
       ],
     },
   ],

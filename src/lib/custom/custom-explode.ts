@@ -19,7 +19,7 @@ export type CustomAdditionRow = {
 type Sided = { l?: unknown; r?: unknown }
 
 const DB_TYPE: Record<CustomField['type'], CustomAdditionRow['type']> = {
-  mm: 'mm', option: 'option', text: 'text', toggle: 'toggle', upload: 'text',
+  mm: 'mm', option: 'option', text: 'text', toggle: 'toggle', upload: 'text', image: 'image',
 }
 
 function row(field: CustomField, section: string, side: CustomAdditionRow['side'], raw: unknown): CustomAdditionRow | null {
