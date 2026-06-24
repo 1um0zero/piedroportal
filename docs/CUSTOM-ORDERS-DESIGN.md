@@ -47,17 +47,14 @@ portal** (`mspp_entityform.mspp_registerstartupscript`). Pulled into
 - `orders_new_03_-_measurements__…js` + `orders_new_01_02_-_customer_and_sizing__…js`
   — the measurement/sizing form steps.
 
-> ⚠️ **Two entities, to disambiguate with Jorge:**
-> - `cr56f_wpp_orders` — 395 attrs (54 Bool, **80 Picklist**, 53 Int): the richer
->   "normal" order; the 51 KB jscript is bound here.
-> - `cr56f_wpp_custom_orders` — 402 attrs (89 Bool, 32 Picklist, **90 Int**): the
->   CUSTOM table; **measurement-driven** (90 integer/mm fields). Its portal forms
->   ("Informações", "Customer and Product") carry no startup script (likely
->   metadata-driven visibility).
->
-> **Open Q for §7:** is CUSTOM = `cr56f_wpp_custom_orders` (the 402-field
-> measurement table) the canonical target, with `wpp_orders` being the prior
-> iteration? Confirm before mapping fields.
+> ✅ **Confirmed by Jorge (2026-06-24):**
+> - **`cr56f_wpp_custom_orders` = the CUSTOM target** — 402 attrs (89 Bool,
+>   32 Picklist, **90 Int**), **measurement-driven**. This is what we build.
+> - `cr56f_wpp_orders` = the order **already implemented in the current Portal**
+>   (the PAIR/normal flow). The 51 KB jscript is bound here — but its
+>   `array_booleans[...] = [EN,NL,FR,DE]` label map is the same vocabulary we
+>   reuse for CUSTOM translations. Its forms ("Informações", "Customer and
+>   Product") carry no startup script (metadata-driven visibility).
 
 ---
 
