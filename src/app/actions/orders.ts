@@ -305,6 +305,9 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
       const t = await getTranslations({ locale: orderLocale, namespace: 'emails' })
       const { error } = await resend.emails.send({
         from: emailFrom, to: [userEmail],
+        // Replies (e.g. "I forgot to add something to my order") must reach the
+        // order desk / customer service, not the no-reply From address.
+        replyTo: toEmails.length ? toEmails : undefined,
         cc:  cc.length  ? cc  : undefined,
         bcc: bcc.length ? bcc : undefined,
         subject: t('subject_client', { ref }),

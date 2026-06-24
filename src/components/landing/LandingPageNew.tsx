@@ -156,8 +156,8 @@ export default async function LandingPageNew({ hasError, loggedIn }: { hasError?
             <ul className="mt-4 space-y-4">
               {evoFeatures.map((f, i) => <Feature key={i} text={f} />)}
             </ul>
-            {/* TODO: link to the future in-stock area (own refs, no additions, limited sizes/qty). Provisional: gallery. */}
-            <Link href="/gallery" className={`${btnPrimary} mt-7`}>{t('evo.cta')}</Link>
+            {/* In-stock area: EVO range, own refs, no additions, limited sizes/qty. */}
+            <Link href="/stock" className={`${btnPrimary} mt-7`}>{t('evo.cta')}</Link>
           </div>
         </div>
       </section>
