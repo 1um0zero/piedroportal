@@ -62,6 +62,18 @@ const mm = (en: string, key: string, side: CustomSide = 'both'): CustomField =>
   ({ key, type: 'mm', side, unit: 'mm', label: { en } })
 const yn = (en: string, key: string, side: CustomSide = 'global'): CustomField =>
   ({ key, type: 'toggle', side, label: { en } })
+const opt = (en: string, key: string, values: string[], side: CustomSide = 'global'): CustomField =>
+  ({ key, type: 'option', side, values, label: { en } })
+
+// Shared option lists (from the Excel prose, Upper/Soles/Stiffener sections)
+const LINING   = ['Leather', 'Black Leather', 'Diabetic', 'Fur', 'Anti-Allergic', 'Sympatex']
+const REINFORCE = ['Ercoflex 1.5 mm', 'Ercoflex 3 mm', 'Rhenoflex 0.6 mm', 'Rhenoflex 1 mm', 'Rhenoflex 1.2 mm']
+const ROCKER_TYPES  = ['Normal Rocker', 'Advancing Rocker', 'Polyphase Rocker', 'Delaying Rocker', '2-Phase Rocker']
+const ROCKER_IMAGES = {
+  'Normal Rocker': '/rocker/normal.png', 'Advancing Rocker': '/rocker/advancing.png',
+  'Polyphase Rocker': '/rocker/polyphase.png', 'Delaying Rocker': '/rocker/delaying.png',
+  '2-Phase Rocker': '/rocker/2-phase.png',
+}
 
 // ─── Section cs1 — LAST & FITTING SHOES ──────────────────────────────────────
 const SECTION_LAST: CustomSection = {
@@ -231,7 +243,7 @@ const SECTION_SUPPLEMENT: CustomSection = {
       key: 'rocker',
       label: { en: 'Rocker' },
       fields: [
-        { key: 'cs2.41_ch', type: 'option', side: 'global', label: { en: 'Rocker Type' }, values: ['Normal Rocker', 'Advancing Rocker', 'Polyphase Rocker', 'Delaying Rocker', '2-Phase Rocker'] },
+        { key: 'cs2.41_ch', type: 'image', side: 'global', collapse: true, label: { en: 'Rocker Type' }, values: ROCKER_TYPES, images: ROCKER_IMAGES },
         { ...mm('Rocker', 'cs2.41_lf_rf'), conditionalOn: 'cs2.41_ch' },
         // Flare back
         yn('Flare on the Back', 'cs2.42_yn'),
@@ -256,23 +268,254 @@ const SECTION_SUPPLEMENT: CustomSection = {
   ],
 }
 
-// ─── Sections cs3+ — UPPER / SHOE SOLES / STIFFENERS (stubs) ──────────────────
-// Prose-only in the Excel; conditional logic to be lifted from the Customization
-// customjs + cr56f_ columns. Stubbed with a marker so the form shows the section.
+// ─── Section cs3 — UPPER ──────────────────────────────────────────────────────
+// Modelled from the Excel prose (rows 125–228). Conditional behaviour mirrors the
+// Customization customjs. Upper-leather lists come from the picked model's product
+// sheet (text for now until wired to the catalogue).
 const SECTION_UPPER: CustomSection = {
   key: 'upper',
   label: { en: 'Upper', nl: 'Bovenwerk' },
-  groups: [{ key: 'upper_todo', label: { en: 'Upper (coming next)' }, fields: [] }],
+  groups: [
+    {
+      key: 'model',
+      label: { en: 'Model' },
+      fields: [
+        { key: 'cs3.article', type: 'text', side: 'global', label: { en: 'Article number' }, hint: { en: 'line drawing & lining info from the product sheet' } },
+        mm('Upper Height', 'cs3.upper_height_lf_rf'),
+      ],
+    },
+    {
+      key: 'upper_leather',
+      label: { en: 'Upper Leather', nl: 'Bovenleer' },
+      fields: [
+        { key: 'cs3.leather_1', type: 'text', side: 'global', label: { en: 'Upper 1' }, hint: { en: 'from product sheet' } },
+        { key: 'cs3.leather_2', type: 'text', side: 'global', label: { en: 'Upper 2' } },
+        { key: 'cs3.leather_3', type: 'text', side: 'global', label: { en: 'Upper 3' } },
+        { key: 'cs3.leather_4', type: 'text', side: 'global', label: { en: 'Upper 4' } },
+      ],
+    },
+    {
+      key: 'lining',
+      label: { en: 'Lining', nl: 'Voering' },
+      fields: [
+        { ...opt('Upper', 'cs3.lining_upper', LINING), required: true },
+        { ...opt('Rest',  'cs3.lining_rest',  LINING), required: true },
+        yn('Anti-slip heel',  'cs3.lining_antislip'),
+        yn('Perforated lining', 'cs3.lining_perforated'),
+      ],
+    },
+    {
+      key: 'closure',
+      label: { en: 'Closure', nl: 'Sluiting' },
+      fields: [
+        // Laces
+        yn('Laces', 'cs3.cl_laces'),
+        { ...opt('Laces type', 'cs3.cl_laces_type', ['Standard', 'Elastic', 'Round', 'Flat'], 'global'), conditionalOn: 'cs3.cl_laces' },
+        // Velcro
+        yn('Velcro', 'cs3.cl_velcro'),
+        { ...opt('Velcro', 'cs3.cl_velcro_type', ['Velcro Direct', 'Velcro Passant'], 'global'), conditionalOn: 'cs3.cl_velcro' },
+        { ...opt('Passant side', 'cs3.cl_velcro_passant', ['Medial', 'Lateral'], 'global'), conditionalOn: 'cs3.cl_velcro' },
+        { ...yn('D-ring', 'cs3.cl_velcro_dring'), conditionalOn: 'cs3.cl_velcro' },
+        { ...mm('Make velcro longer', 'cs3.cl_velcro_longer', 'global'), conditionalOn: 'cs3.cl_velcro' },
+        { ...mm('Make velcro wider',  'cs3.cl_velcro_wider', 'global'), conditionalOn: 'cs3.cl_velcro' },
+        // Zipper (sided, medial/lateral)
+        yn('Zipper', 'cs3.cl_zipper'),
+        { ...opt('Zipper L', 'cs3.cl_zipper_l', ['Medial', 'Lateral'], 'left'),  conditionalOn: 'cs3.cl_zipper' },
+        { ...opt('Zipper R', 'cs3.cl_zipper_r', ['Medial', 'Lateral'], 'right'), conditionalOn: 'cs3.cl_zipper' },
+        // Hooks & Eyelets
+        yn('Hooks and Eyelets', 'cs3.cl_hooks'),
+        { ...mm('Amount of hooks',   'cs3.cl_hooks_n',   'global'), conditionalOn: 'cs3.cl_hooks' },
+        { ...mm('Amount of eyelets', 'cs3.cl_eyelets_n', 'global'), conditionalOn: 'cs3.cl_hooks' },
+        // Twist lock
+        yn('Twist Lock System', 'cs3.cl_twist'),
+      ],
+    },
+    {
+      key: 'stretch',
+      label: { en: 'Stretch' },
+      fields: [
+        yn('Upper', 'cs3.stretch_upper'),
+        yn('Medial and Lateral Side', 'cs3.stretch_med_lat'),
+      ],
+    },
+    {
+      key: 'ankle_heel_quarter',
+      label: { en: 'Ankle Heel and Quarter' },
+      fields: [
+        // Ankle Heel → medial/lateral × L/R × 3/6 mm
+        yn('Ankle Heel', 'cs3.ankle_heel'),
+        { ...opt('Medial', 'cs3.ankle_heel_medial', ['3 mm', '6 mm'], 'both'),  conditionalOn: 'cs3.ankle_heel' },
+        { ...opt('Lateral', 'cs3.ankle_heel_lateral', ['3 mm', '6 mm'], 'both'), conditionalOn: 'cs3.ankle_heel' },
+        // Quarter → same structure
+        yn('Quarter', 'cs3.quarter'),
+        { ...opt('Medial', 'cs3.quarter_medial', ['3 mm', '6 mm'], 'both'),  conditionalOn: 'cs3.quarter' },
+        { ...opt('Lateral', 'cs3.quarter_lateral', ['3 mm', '6 mm'], 'both'), conditionalOn: 'cs3.quarter' },
+      ],
+    },
+    {
+      key: 'collar',
+      label: { en: 'Collar' },
+      fields: [
+        yn('Extra Padding in Collar', 'cs3.collar_padding'),
+        { ...opt('Padding', 'cs3.collar_padding_mm', ['4 mm', '6 mm', '10 mm'], 'global'), conditionalOn: 'cs3.collar_padding' },
+      ],
+    },
+    {
+      key: 'tongue',
+      label: { en: 'Tongue' },
+      fields: [
+        yn('Extra Padding in Tongue', 'cs3.tongue_padding'),
+        { ...opt('Padding', 'cs3.tongue_padding_mm', ['3 mm', '6 mm', '8 mm', '10 mm'], 'global'), conditionalOn: 'cs3.tongue_padding' },
+        yn('Tongue Reinforcement', 'cs3.tongue_reinforce'),
+        { ...opt('Reinforcement', 'cs3.tongue_reinforce_opt', REINFORCE, 'global'), conditionalOn: 'cs3.tongue_reinforce' },
+        yn('Tongue with Velcro', 'cs3.tongue_velcro'),
+        { ...yn('Medial (stitched)',  'cs3.tongue_velcro_medial'),  conditionalOn: 'cs3.tongue_velcro' },
+        { ...yn('Lateral (stitched)', 'cs3.tongue_velcro_lateral'), conditionalOn: 'cs3.tongue_velcro' },
+        yn('Watertongue', 'cs3.watertongue'),
+        yn('Tongue incision', 'cs3.tongue_incision'),
+      ],
+    },
+    {
+      key: 'afo',
+      label: { en: 'AFO' },
+      fields: [
+        yn('AFO Left', 'cs3.afo_l'),
+        { ...mm('Medial',    'cs3.afo_l_medial', 'left'),    conditionalOn: 'cs3.afo_l' },
+        { ...mm('Perimeter', 'cs3.afo_l_perimeter', 'left'), conditionalOn: 'cs3.afo_l' },
+        yn('AFO Right', 'cs3.afo_r'),
+        { ...mm('Medial',    'cs3.afo_r_medial', 'right'),    conditionalOn: 'cs3.afo_r' },
+        { ...mm('Perimeter', 'cs3.afo_r_perimeter', 'right'), conditionalOn: 'cs3.afo_r' },
+      ],
+    },
+    {
+      key: 'busk',
+      label: { en: 'Busk' },
+      fields: [
+        yn('Busk Left', 'cs3.busk_l'),
+        { ...mm('Medial',  'cs3.busk_l_medial', 'left'),  conditionalOn: 'cs3.busk_l' },
+        { ...mm('Lateral', 'cs3.busk_l_lateral', 'left'), conditionalOn: 'cs3.busk_l' },
+        yn('Busk Right', 'cs3.busk_r'),
+        { ...mm('Medial',  'cs3.busk_r_medial', 'right'),  conditionalOn: 'cs3.busk_r' },
+        { ...mm('Lateral', 'cs3.busk_r_lateral', 'right'), conditionalOn: 'cs3.busk_r' },
+      ],
+    },
+    {
+      key: 'upper_others',
+      label: { en: 'Others' },
+      fields: [
+        yn('Extra pair of Laces', 'cs3.extra_laces'),
+      ],
+    },
+  ],
 }
+
+// ─── Section cs4 — SHOE SOLES ─────────────────────────────────────────────────
+// Modelled from the Excel prose (rows 229–286). Each heel/wedge type reveals L/R
+// medial/lateral toggles. Rocker reuses the OSB rocker artwork; soles will get the
+// "same as pair-by-pair" photo chips once Piedro delivers the images.
+const heelType = (en: string, key: string): CustomField[] => [
+  yn(en, key),
+  { ...yn('Left — Medial',  `${key}_l_med`), conditionalOn: key },
+  { ...yn('Left — Lateral', `${key}_l_lat`), conditionalOn: key },
+  { ...yn('Right — Medial', `${key}_r_med`), conditionalOn: key },
+  { ...yn('Right — Lateral', `${key}_r_lat`), conditionalOn: key },
+]
 const SECTION_SOLES: CustomSection = {
   key: 'soles',
   label: { en: 'Shoe Soles', nl: 'Zolen' },
-  groups: [{ key: 'soles_todo', label: { en: 'Shoe Soles (coming next)' }, fields: [] }],
+  groups: [
+    {
+      key: 'heel_type',
+      label: { en: 'Heel Type' },
+      fields: [
+        ...heelType('Heel', 'cs4.heel'),
+        ...heelType('Hollow Wedge', 'cs4.hollow_wedge'),
+        ...heelType('Fully Hollow Wedge', 'cs4.fully_hollow_wedge'),
+        ...heelType('Wedge', 'cs4.wedge'),
+        mm('Height', 'cs4.height_lf_rf'),
+        yn('Measurement Back', 'cs4.measure_back'),
+        yn('Measurement Side', 'cs4.measure_side'),
+      ],
+    },
+    {
+      key: 'rocker_sole',
+      label: { en: 'Rocker Sole' },
+      fields: [
+        yn('Heel', 'cs4.rocker_heel'),
+        { ...mm('Heel', 'cs4.rocker_heel_mm'), conditionalOn: 'cs4.rocker_heel' },
+        yn('Joint', 'cs4.rocker_joint'),
+        { ...mm('Joint', 'cs4.rocker_joint_mm'), conditionalOn: 'cs4.rocker_joint' },
+        yn('Toes', 'cs4.rocker_toes'),
+        { ...mm('Toes', 'cs4.rocker_toes_mm'), conditionalOn: 'cs4.rocker_toes' },
+        { key: 'cs4.rocker_type', type: 'image', side: 'global', collapse: true, label: { en: 'Rocker Sole Type' }, values: ROCKER_TYPES, images: ROCKER_IMAGES },
+        yn('Removable Carbon Insole', 'cs4.carbon_insole'),
+        yn('Sole Stiffening', 'cs4.sole_stiffening'),
+      ],
+    },
+    {
+      key: 'soles_others',
+      label: { en: 'Others' },
+      fields: [
+        yn('Rounded', 'cs4.rounded'),
+        { ...yn('Left',  'cs4.rounded_l'), conditionalOn: 'cs4.rounded' },
+        { ...yn('Right', 'cs4.rounded_r'), conditionalOn: 'cs4.rounded' },
+        { ...mm('Rounded', 'cs4.rounded_mm', 'global'), conditionalOn: 'cs4.rounded' },
+        yn('Flare', 'cs4.flare'),
+        { ...yn('Left',  'cs4.flare_l'), conditionalOn: 'cs4.flare' },
+        { ...yn('Right', 'cs4.flare_r'), conditionalOn: 'cs4.flare' },
+        yn('Inwards', 'cs4.inwards'),
+        { ...yn('Left',  'cs4.inwards_l'), conditionalOn: 'cs4.inwards' },
+        { ...yn('Right', 'cs4.inwards_r'), conditionalOn: 'cs4.inwards' },
+        yn('Sach Heel', 'cs4.sach'),
+        { ...yn('Left',  'cs4.sach_l'), conditionalOn: 'cs4.sach' },
+        { ...yn('Right', 'cs4.sach_r'), conditionalOn: 'cs4.sach' },
+        yn('Thomas Heel', 'cs4.thomas'),
+        { ...yn('Medial',  'cs4.thomas_med'), conditionalOn: 'cs4.thomas' },
+        { ...yn('Lateral', 'cs4.thomas_lat'), conditionalOn: 'cs4.thomas' },
+      ],
+    },
+  ],
 }
+
+// ─── Section cs5 — STIFFENERS & TOE ───────────────────────────────────────────
+// Modelled from the Excel prose (rows 287–303). The 20 stiffener options get image
+// chips once Piedro sends the pictures; for now a text type placeholder.
 const SECTION_STIFFENER: CustomSection = {
   key: 'stiffener',
   label: { en: 'Stiffeners & Toe', nl: 'Contreforts & Neus' },
-  groups: [{ key: 'stiffener_todo', label: { en: 'Stiffeners & Toe (coming next)' }, fields: [] }],
+  groups: [
+    {
+      key: 'stiffener_materials',
+      label: { en: 'Stiffeners Materials' },
+      fields: [
+        { key: 'cs5.stiffener_type', type: 'text', side: 'global', label: { en: 'Type (20 options)' }, hint: { en: 'image chips pending from Piedro' }, picturePending: true },
+        // First/second layer material heights, sided, back/medial/lateral
+        mm('1st layer — Back',    'cs5.l1_back'),
+        mm('1st layer — Medial',  'cs5.l1_medial'),
+        mm('1st layer — Lateral', 'cs5.l1_lateral'),
+        mm('2nd layer — Back',    'cs5.l2_back'),
+        mm('2nd layer — Medial',  'cs5.l2_medial'),
+        mm('2nd layer — Lateral', 'cs5.l2_lateral'),
+      ],
+    },
+    {
+      key: 'toe_options',
+      label: { en: 'Toe Options' },
+      fields: [
+        { key: 'cs5.toe_option', type: 'option', side: 'global', collapse: true,
+          label: { en: 'Toe Option' }, values: ['No toe', 'Normal', 'Short', 'Front', 'Wing'] },
+        { key: 'cs5.toe_material', type: 'text', side: 'global', label: { en: 'Toe material' }, conditionalOn: 'cs5.toe_option' },
+        yn('External Protective Toe Cap', 'cs5.toe_protective'),
+      ],
+    },
+    {
+      key: 'order_flags',
+      label: { en: 'Order' },
+      fields: [
+        yn('Urgent order', 'cs5.urgent'),
+      ],
+    },
+  ],
 }
 
 export const CUSTOM_SECTIONS: CustomSection[] = [

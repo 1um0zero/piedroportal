@@ -8,7 +8,7 @@ import {
 } from './custom-additions-config'
 
 type Vals = Record<string, unknown>
-type Sided = { l?: number | ''; r?: number | '' }
+type Sided = { l?: number | string | ''; r?: number | string | '' }
 
 function isActive(values: Vals, key?: string): boolean {
   if (!key) return true
@@ -34,7 +34,7 @@ export default function CustomAdditionsForm({
   )
 
   const set = (key: string, v: unknown) => onChange({ ...values, [key]: v })
-  const setSide = (key: string, side: 'l' | 'r', v: number | '') => {
+  const setSide = (key: string, side: 'l' | 'r', v: number | string | '') => {
     const cur = (values[key] as Sided) ?? {}
     onChange({ ...values, [key]: { ...cur, [side]: v } })
   }
@@ -100,14 +100,34 @@ export default function CustomAdditionsForm({
     }
 
     if (f.type === 'option') {
+      const sided = f.side === 'both'
+      const chipRow = (sel: string | null, pick: (v: string) => void) => {
+        const shown = f.collapse && sel ? [sel] : (f.values ?? [])
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            {shown.map(v => {
+              const val = String(v); const on = sel === val
+              return (
+                <button key={val} type="button" onClick={() => pick(on ? '' : val)}
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-all
+                    ${on ? 'border-gold bg-gold text-white shadow-sm' : 'border-stone-200 bg-white text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
+                  {val}
+                </button>
+              )
+            })}
+          </div>
+        )
+      }
+      const sv = (values[f.key] as Sided & { l?: string; r?: string }) ?? {}
       return (
         <div key={f.key} className={`py-1.5 ${indent}`}>
-          <label className="block text-xs text-stone-500 mb-1">{label}</label>
-          <select value={(values[f.key] as string) ?? ''} onChange={e => set(f.key, e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm">
-            <option value="">—</option>
-            {f.values?.map(v => <option key={String(v)} value={String(v)}>{String(v)}</option>)}
-          </select>
+          <label className="mb-1 block text-xs text-stone-500">{label}</label>
+          {sided ? (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2"><span className="w-4 text-[10px] text-stone-400">L</span>{chipRow((sv.l as string) ?? null, v => setSide(f.key, 'l', v as unknown as number | ''))}</div>
+              <div className="flex items-center gap-2"><span className="w-4 text-[10px] text-stone-400">R</span>{chipRow((sv.r as string) ?? null, v => setSide(f.key, 'r', v as unknown as number | ''))}</div>
+            </div>
+          ) : chipRow((values[f.key] as string) ?? null, v => set(f.key, v))}
         </div>
       )
     }
