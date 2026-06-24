@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/navigation'
 import { productImageUrl } from '@/lib/products/image-url'
 import type { Product } from '@/types'
 import CustomAdditionsForm from './CustomAdditionsForm'
-import { allCustomFields, customLabel } from './custom-additions-config'
+import { CUSTOM_SECTIONS, allCustomFields, customLabel } from './custom-additions-config'
 import { insertCustomOrderAction, type CustomOrderRow } from '@/app/actions/custom-orders'
 
 type Company = { id: string; name: string; erp_code: string }
@@ -38,7 +38,18 @@ export default function CustomOrderForm({
   const needsCompany = !userCompany && companies.length > 0
   const canNext1 = reference.trim() !== '' && (!needsCompany || companyId)
 
+  function missingRequired(): string[] {
+    return allCustomFields()
+      .filter(f => f.required)
+      .filter(f => { const v = values[f.key]; return v == null || v === '' })
+      .map(f => customLabel(f.label, locale))
+  }
+
   async function save(status: 'draft' | 'submitted') {
+    if (status === 'submitted') {
+      const miss = missingRequired()
+      if (miss.length) { setStep(2); setError(`Please fill the required fields: ${miss.join(', ')}`); return }
+    }
     setBusy(true); setError(null)
     const row: CustomOrderRow = {
       company_id: companyId || userCompany?.id || null,
@@ -196,22 +207,32 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function CustomSummary({ values, locale }: { values: Record<string, unknown>; locale: string }) {
+  const has = (v: unknown) => v != null && v !== '' && v !== false &&
+    !(typeof v === 'object' && !(v as { l?: unknown; r?: unknown }).l && !(v as { l?: unknown; r?: unknown }).r)
   const fmt = (v: unknown): string => {
     if (v === true) return 'Yes'
-    if (typeof v === 'object' && v) { const s = v as { l?: unknown; r?: unknown }; return `L ${s.l ?? '—'} / R ${s.r ?? '—'} mm` }
+    if (typeof v === 'object' && v) { const s = v as { l?: unknown; r?: unknown }; return `L ${s.l ?? '—'} / R ${s.r ?? '—'}` }
     return String(v)
   }
-  const rows = allCustomFields()
-    .map(f => ({ f, v: values[f.key] }))
-    .filter(({ v }) => v != null && v !== '' && v !== false)
-  if (!rows.length) return <div className="py-2 text-stone-400">No customizations selected.</div>
+  const sections = CUSTOM_SECTIONS
+    .map(s => ({
+      s,
+      rows: s.groups.flatMap(g => g.fields).map(f => ({ f, v: values[f.key] })).filter(({ v }) => has(v)),
+    }))
+    .filter(({ rows }) => rows.length)
+
+  if (!sections.length) return <div className="py-2 text-stone-400">No customizations selected.</div>
   return (
-    <div className="mt-2 pt-2">
-      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">Customizations</div>
-      {rows.map(({ f, v }) => (
-        <div key={f.key} className="flex justify-between py-1 text-xs">
-          <span className="text-stone-500">{customLabel(f.label, locale)}</span>
-          <span className="text-stone-700">{fmt(v)}</span>
+    <div className="mt-3 space-y-3 border-t border-stone-100 pt-3">
+      {sections.map(({ s, rows }) => (
+        <div key={s.key}>
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gold">{customLabel(s.label, locale)}</div>
+          {rows.map(({ f, v }) => (
+            <div key={f.key} className="flex justify-between py-0.5 text-xs">
+              <span className="text-stone-500">{customLabel(f.label, locale)}</span>
+              <span className="text-stone-700">{fmt(v)}</span>
+            </div>
+          ))}
         </div>
       ))}
     </div>
