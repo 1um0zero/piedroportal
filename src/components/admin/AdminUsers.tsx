@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { updateUserRoleAction, toggleCompanyAdminAction, addUserCompanyAction, removeUserCompanyAction, deleteUserAction, generateAccessLinkAction } from '@/app/actions/admin-users'
 import { assignUserBranch } from '@/app/actions/admin-branches'
+import { startImpersonation } from '@/app/actions/impersonation'
 import { isPiedroAdmin } from '@/lib/roles'
 import AdminUsersGrid from './AdminUsersGrid'
 
@@ -60,12 +61,24 @@ type RowProps = {
 
 function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, msg, changeRole, changeBranch, toggleCompanyAdmin, addCompany, removeCompany, deleteUser, generateLink, linkLoading, linkData }: RowProps) {
   const t = useTranslations('admin.users')
+  const ti = useTranslations('impersonation')
+  const locale = useLocale()
   const isExpanded = expandedUser === u.id
   const userCompanyIds = new Set(u.companies.map(c => c.company_id))
   const [searchQuery, setSearchQuery] = useState('')
   const [showAll, setShowAll] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [impersonating, setImpersonating] = useState(false)
   const showLink = linkData?.id === u.id
+
+  // Step into this user's real session to validate their permissions. Hard-reload
+  // to the gallery so the server re-reads the swapped session cookies.
+  const viewAs = async () => {
+    setImpersonating(true)
+    const res = await startImpersonation(u.id)
+    if (res.error) { setImpersonating(false); alert(res.error); return }
+    window.location.replace(`/${locale}/gallery`)
+  }
 
   // Filter companies: search always searches all, but assigned stay at top
   let filteredCompanies: Company[]
@@ -94,6 +107,20 @@ function Row({ u, companies, branches, expandedUser, setExpandedUser, saving, ms
           <p className="text-sm font-medium text-stone-800 truncate">{u.full_name || '—'}</p>
           <p className="text-xs text-stone-400 truncate">{u.email}</p>
         </div>
+        {/* View as — step into this user's real session to validate permissions */}
+        {!isPiedroAdmin(u.role) && (
+          <button
+            onClick={viewAs}
+            disabled={impersonating}
+            title={ti('view_as_hint')}
+            className="shrink-0 inline-flex items-center gap-1 px-2 h-7 rounded-lg text-[11px] font-semibold border border-gold/40 text-gold hover:bg-gold/10 transition-colors disabled:opacity-50">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {impersonating ? ti('starting') : ti('view_as')}
+          </button>
+        )}
         {/* Generate a direct login link (email-bypass) for support cases */}
         <button
           onClick={() => generateLink(u.id)}
