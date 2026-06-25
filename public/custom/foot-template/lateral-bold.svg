@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Lateral single-line outline (complete outer profile, cmds 0-16 of foot-side-view, SVG Repo public domain). stroke-width 2.81. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 182.649 182.649" fill="none" stroke="#B8975A" stroke-width="2.81" stroke-linejoin="round" stroke-linecap="round">
-  <path d="M165.002,97.959l-0.853-1.912c-3.27-7.222-6.649-14.705-6.49-31.055v-34.23c0-1.72-1.401-3.118-3.118-3.118 s-3.117,1.397-3.117,3.118v34.2c-0.183,17.695,3.653,26.177,7.039,33.655l0.846,1.875c5.572,12.562,6.583,22.578,2.93,28.996 c-3.788,6.638-11.601,7.679-11.497,7.691H25.312c-15.208-0.433-19.147-9.286-19.074-14.45c0.037-2.935,1.248-4.804,2.058-4.804 c7.669,0,21.032-1.455,27.41-2.723c19.592-3.836,57.859-24.076,68.582-43.083c3.233-5.712,4.494-18.91,3.86-40.347"/>
+<!-- Lateral, clean foot side outline (no leg sliver). cmds 10-16 of foot-side-view (SVG Repo public domain). stroke 1.576. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 26 164 112" fill="none" stroke="#B8975A" stroke-width="1.576" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M165.4,126.4 c-3.788,6.638-11.601,7.679-11.497,7.691H25.312c-15.208-0.433-19.147-9.286-19.074-14.45c0.037-2.935,1.248-4.804,2.058-4.804 c7.669,0,21.032-1.455,27.41-2.723c19.592-3.836,57.859-24.076,68.582-43.083c3.233-5.712,4.494-18.91,3.86-40.347"/>
 </svg>
