@@ -91,6 +91,10 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const setPage = (upd: number | ((prev: number) => number)) =>
     setPage1(prev => (typeof upd === 'function' ? upd(prev - 1) : upd) + 1)
   const scrollRef = useRef<HTMLDivElement>(null)
+  // Sticky identity columns (photo / style / colour) when the grid scrolls sideways.
+  const FOTO_W = 64, STYLE_W = 104, COL_W = 96
+  const anchorTh = 'sticky z-[2] bg-stone-50'
+  const anchorTd = 'sticky z-[1] bg-white'
   const [busy, setBusy] = useState<string | null>(null)
 
   const distinct = (key: keyof ProductRow) =>
@@ -219,9 +223,9 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
         <table className="w-full text-sm">
           <thead className="bg-stone-50">
             <tr>
-              <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
-              <SortableTh label={t('col_style')} sortKey="style_name" sort={sort} onSort={onSort} />
-              <SortableTh label="colour_id" sortKey="colour_id" sort={sort} onSort={onSort} />
+              <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} className={`left-0 ${anchorTh}`} style={{ width: FOTO_W, minWidth: FOTO_W }} />
+              <SortableTh label={t('col_style')} sortKey="style_name" sort={sort} onSort={onSort} className={anchorTh} style={{ left: FOTO_W, width: STYLE_W, minWidth: STYLE_W }} />
+              <SortableTh label="colour_id" sortKey="colour_id" sort={sort} onSort={onSort} className={`border-r border-stone-100 ${anchorTh}`} style={{ left: FOTO_W + STYLE_W, width: COL_W, minWidth: COL_W }} />
               <SortableTh label={t('col_colour')} sortKey="color_name" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_section')} sortKey="section" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_closure')} sortKey="closure" sort={sort} onSort={onSort} />
@@ -238,7 +242,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           <tbody className="divide-y divide-stone-50">
             {pageRows.map(p => (
               <tr key={p.id} className={p.active ? '' : 'bg-stone-50/60'}>
-                <td className="px-4 py-2">
+                <td className={`px-4 py-2 left-0 ${anchorTd}`} style={{ width: FOTO_W, minWidth: FOTO_W }}>
                   <div className="h-10 w-10 rounded-lg bg-stone-100 overflow-hidden">
                     {p.picture_name && (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -246,8 +250,8 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-2 text-stone-700">{p.style_name}</td>
-                <td className="px-4 py-2 font-mono text-xs text-stone-700" title={p.colour_id}>{colourCode(p.colour_id, p.style_name)}</td>
+                <td className={`px-4 py-2 text-stone-700 ${anchorTd}`} style={{ left: FOTO_W, width: STYLE_W, minWidth: STYLE_W }}>{p.style_name}</td>
+                <td className={`px-4 py-2 font-mono text-xs text-stone-700 border-r border-stone-100 ${anchorTd}`} style={{ left: FOTO_W + STYLE_W, width: COL_W, minWidth: COL_W }} title={p.colour_id ?? undefined}>{colourCode(p.colour_id, p.style_name)}</td>
                 <td className="px-4 py-2 text-stone-500">{p.color_name}</td>
                 <td className="px-4 py-2 text-stone-500">{p.section}</td>
                 <td className="px-4 py-2 text-stone-500">{p.closure}</td>

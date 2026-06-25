@@ -178,6 +178,11 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const PER_PAGE = 50
   // Ref of the horizontally-scrollable table wrapper (drives GridFloatingNav).
   const scrollRef = useRef<HTMLDivElement>(null)
+  // Sticky identity columns (Nr / Date / Product) keep the order recognisable when
+  // the grid scrolls sideways. Fixed widths so the cumulative left offsets are exact.
+  const NR_W = 76, DATE_W = 92, PROD_W = 240
+  const anchorTh = 'sticky z-[2] bg-white'
+  const anchorTd = 'sticky z-[1] bg-white group-hover:bg-stone-50'
 
   async function handleDelete(orderId: string) {
     if (!confirm(t('delete_confirm'))) return
@@ -422,9 +427,9 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
-                <th className="px-2.5 py-3 text-left">{t('col_number')}</th>
-                <th className="px-2.5 py-3 text-left">{t('col_date')}</th>
-                <th className="px-2.5 py-3 text-left">{t('col_product')}</th>
+                <th className={`px-2.5 py-3 text-left left-0 ${anchorTh}`} style={{ width: NR_W, minWidth: NR_W }}>{t('col_number')}</th>
+                <th className={`px-2.5 py-3 text-left ${anchorTh}`} style={{ left: NR_W, width: DATE_W, minWidth: DATE_W }}>{t('col_date')}</th>
+                <th className={`px-2.5 py-3 text-left border-r border-stone-100 ${anchorTh}`} style={{ left: NR_W + DATE_W, width: PROD_W, minWidth: PROD_W }}>{t('col_product')}</th>
                 <th className="px-2.5 py-3 text-left">{t('col_unit')}</th>
                 {isAdmin && <th className="px-2.5 py-3 text-left">{t('col_company')}</th>}
                 <th className="px-2.5 py-3 text-left">{staffView ? t('col_clinician') : t('col_patient')}</th>
@@ -453,15 +458,15 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                   : (isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`)
                 return (
                   <tr key={o.id} aria-busy={openingId === o.id}
-                    className={`hover:bg-stone-50 transition-all cursor-pointer ${openingId === o.id ? 'opacity-50' : ''}`}
+                    className={`group hover:bg-stone-50 transition-all cursor-pointer ${openingId === o.id ? 'opacity-50' : ''}`}
                     onClick={() => { setOpeningId(o.id); rememberReturn(); router.push(detailHref as Parameters<typeof router.push>[0]) }}>
 
                     {/* Order № — the restored legacy sequential number; stock orders have none */}
-                    <td className="px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap">
+                    <td className={`px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap left-0 ${anchorTd}`} style={{ width: NR_W, minWidth: NR_W }}>
                       {o.order_seq != null ? `#${orderNumber(o.order_seq)}` : '—'}
                     </td>
                     {/* Date — year shown only for orders before the current year */}
-                    <td className="px-2.5 py-3 text-stone-500 text-xs whitespace-nowrap">
+                    <td className={`px-2.5 py-3 text-stone-500 text-xs whitespace-nowrap ${anchorTd}`} style={{ left: NR_W, width: DATE_W, minWidth: DATE_W }}>
                       {o.created_at
                         ? (() => {
                             const d = new Date(o.created_at)
@@ -472,7 +477,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         : '—'}
                     </td>
                     {/* Product */}
-                    <td className="px-2.5 py-3">
+                    <td className={`px-2.5 py-3 border-r border-stone-100 ${anchorTd}`} style={{ left: NR_W + DATE_W, width: PROD_W, minWidth: PROD_W }}>
                       <div className="flex items-center gap-3">
                         {product?.picture_name ? (
                           <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-stone-50 shrink-0">
