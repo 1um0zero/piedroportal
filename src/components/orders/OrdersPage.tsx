@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useRef, useTransition } from 'react'
 import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
@@ -13,6 +13,7 @@ import { ProductionTrail } from './ProductionTrail'
 import { nz, orderNumber } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
+import { GridFloatingNav } from '@/components/ui/table-controls'
 
 const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
@@ -172,6 +173,8 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const selectChip   = (key: string) => { setUrgentFilter(false); setActive(a => a === key ? '' : key) }
   const selectUrgent = (key: string) => { setActive(key); setUrgentFilter(true) }
   const PER_PAGE = 50
+  // Ref of the horizontally-scrollable table wrapper (drives GridFloatingNav).
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   async function handleDelete(orderId: string) {
     if (!confirm(t('delete_confirm'))) return
@@ -412,7 +415,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
       {/* Table */}
       <div className={`bg-white rounded-[14px] overflow-hidden transition-opacity ${isWindowPending ? 'opacity-60' : ''}`}
         style={{ boxShadow: 'var(--shadow-card)' }}>
-        <div className="overflow-x-auto">
+        <div ref={scrollRef} className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
@@ -675,44 +678,56 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
         </div>
       </div>
 
-      {/* Pagination */}
-      {filtered.length > PER_PAGE && (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg
-                       disabled:opacity-40 hover:border-stone-300 transition-colors">
-            ← {tc('prev')}
-          </button>
+      {/* Pagination — sticky so the buttons stay pinned to the viewport foot while
+          rows scroll underneath (otherwise a scrolled row lands where a page button
+          was and an intended page-click opens an order instead). */}
+      {filtered.length > PER_PAGE && (() => {
+        const total = Math.ceil(filtered.length / PER_PAGE)
+        // First order shown on page p → its date (oldest-first sort is descending,
+        // so page 1 is the newest, the last page the oldest). Used as a hover hint.
+        const pageDate = (p: number) => {
+          const o = filtered[(p - 1) * PER_PAGE]
+          return o?.created_at
+            ? new Date(o.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+            : ''
+        }
+        const edge = 'px-2.5 py-1.5 text-sm border border-stone-200 rounded-lg disabled:opacity-40 hover:border-stone-300 transition-colors'
+        return (
+          <div className="sticky bottom-0 z-30 -mx-6 px-6 py-3 flex items-center justify-center gap-2
+                          bg-white/95 backdrop-blur border-t border-stone-100">
+            <button onClick={() => setPage(1)} disabled={page === 1}
+              title={`${tc('first')} · ${pageDate(1)}`} className={edge}>⏮</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+              className={edge}>← {tc('prev')}</button>
 
-          {Array.from({ length: Math.min(7, Math.ceil(filtered.length / PER_PAGE)) }, (_, i) => {
-            const total = Math.ceil(filtered.length / PER_PAGE)
-            let p: number
-            if (total <= 7) p = i + 1
-            else if (page <= 4) p = i + 1
-            else if (page >= total - 3) p = total - 6 + i
-            else p = page - 3 + i
-            return (
-              <button key={p} onClick={() => setPage(p)}
-                className={`w-9 h-9 text-sm rounded-lg border transition-colors
-                  ${p === page
-                    ? 'bg-gold text-white border-gold'
-                    : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>
-                {p}
-              </button>
-            )
-          })}
+            {Array.from({ length: Math.min(7, total) }, (_, i) => {
+              let p: number
+              if (total <= 7) p = i + 1
+              else if (page <= 4) p = i + 1
+              else if (page >= total - 3) p = total - 6 + i
+              else p = page - 3 + i
+              return (
+                <button key={p} onClick={() => setPage(p)} title={pageDate(p)}
+                  className={`w-9 h-9 text-sm rounded-lg border transition-colors
+                    ${p === page
+                      ? 'bg-gold text-white border-gold'
+                      : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>
+                  {p}
+                </button>
+              )
+            })}
 
-          <button
-            onClick={() => setPage(p => Math.min(Math.ceil(filtered.length / PER_PAGE), p + 1))}
-            disabled={page >= Math.ceil(filtered.length / PER_PAGE)}
-            className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg
-                       disabled:opacity-40 hover:border-stone-300 transition-colors">
-            {tc('next')} →
-          </button>
-        </div>
-      )}
+            <button onClick={() => setPage(p => Math.min(total, p + 1))} disabled={page >= total}
+              className={edge}>{tc('next')} →</button>
+            <button onClick={() => setPage(total)} disabled={page >= total}
+              title={`${tc('last')} · ${pageDate(total)}`} className={edge}>⏭</button>
+          </div>
+        )
+      })()}
+
+      {/* Quick top/bottom + sideways nav. Lifted above the chat bubble (bottom-6
+          right-6) so the two don't overlap. */}
+      <GridFloatingNav scrollRef={scrollRef} position="bottom-24 right-6" />
     </div>
   )
 }

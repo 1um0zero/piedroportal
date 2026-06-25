@@ -668,7 +668,9 @@
       "active": "Actief",
       "inactive": "Inactief",
       "saved": "Opgeslagen",
-      "add": "Toevoegen"
+      "add": "Toevoegen",
+      "first": "Eerste",
+      "last": "Laatste"
     },
     "approval": {
       "registered": "Geregistreerd",

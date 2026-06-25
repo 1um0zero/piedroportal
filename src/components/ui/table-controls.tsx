@@ -83,7 +83,7 @@ export function SortableTh({
  * columns stay put while the rest scrolls. Reusable across every grid — pass the
  * ref of the element with `overflow-x-auto`.
  */
-export function GridFloatingNav({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | null> }) {
+export function GridFloatingNav({ scrollRef, position = 'bottom-5 right-5' }: { scrollRef: React.RefObject<HTMLElement | null>; position?: string }) {
   const [atBottom, setAtBottom] = useState(false)
   const [h, setH] = useState({ scrollable: false, canLeft: false, canRight: false })
 
@@ -128,7 +128,7 @@ export function GridFloatingNav({ scrollRef }: { scrollRef: React.RefObject<HTML
   const btn = 'w-9 h-9 flex items-center justify-center rounded-full bg-white border border-stone-200 text-stone-500 hover:text-gold hover:border-gold/50 transition-colors disabled:opacity-30 disabled:hover:text-stone-500 disabled:hover:border-stone-200'
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-center gap-2 print:hidden" style={{ boxShadow: 'none' }}>
+    <div className={`fixed ${position} z-40 flex flex-col items-center gap-2 print:hidden`} style={{ boxShadow: 'none' }}>
       {h.scrollable && (
         <div className="flex gap-2" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.12))' }}>
           <button type="button" className={btn} onClick={() => hScroll(-1)} disabled={!h.canLeft} aria-label="scroll left">

@@ -668,7 +668,9 @@
       "active": "Active",
       "inactive": "Inactive",
       "saved": "Saved",
-      "add": "Add"
+      "add": "Add",
+      "first": "First",
+      "last": "Last"
     },
     "approval": {
       "registered": "Registered",
