@@ -49,6 +49,7 @@ export default async function CustomPreviewPage() {
         <div className="flex flex-wrap items-end gap-10">
           {[
             { src: '/custom/foot-template/sole.svg', label: 'Foot (top)', h: 'h-64' },
+            { src: '/custom/foot-template/sole-outline.svg', label: 'Foot outline', h: 'h-64' },
             { src: '/custom/foot-template/lateral.svg', label: 'Lateral', h: 'h-40' },
             { src: '/custom/foot-template/foot-massage.svg', label: 'Pair (alt)', h: 'h-64' },
           ].map(t => (
