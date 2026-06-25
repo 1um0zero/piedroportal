@@ -23,17 +23,17 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function AdminOrderDetailPage({ params }: Props) {
   const { id } = await params
-  const { scope, canWrite } = await requireOrdersViewPage()
-
   const service = createServiceClient()
 
-  // Try full select first; fall back to base if new columns don't exist yet
-  let order = null
-  const { data: full, error: fullErr } = await service
-    .from('orders').select(SELECT_FULL).eq('id', id).single()
+  // Auth/scope and the order itself are independent — fetch them together.
+  const [{ scope, canWrite }, { data: full, error: fullErr }] = await Promise.all([
+    requireOrdersViewPage(),
+    service.from('orders').select(SELECT_FULL).eq('id', id).single(),
+  ])
 
+  // Fall back to base select only if the full one fails (missing columns).
+  let order = null
   if (fullErr) {
-    // Likely missing columns — try base select
     const { data: base } = await service
       .from('orders').select(SELECT_BASE).eq('id', id).single()
     order = base
@@ -47,21 +47,26 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   const orderStyle = (order as { products?: { style_name?: string } }).products?.style_name
   if (!scope.canModel(orderStyle)) redirect('/admin/orders')
 
-  // Replace the stored path with a short-lived signed URL (private bucket).
-  if (order.pdf_url) order.pdf_url = await signOrderPdf(id)
+  // Everything below is independent of the order row → run it all in parallel
+  // instead of five sequential round-trips.
+  const [signedPdf, neighbors, ordererRes, settings, navT] = await Promise.all([
+    order.pdf_url ? signOrderPdf(id) : Promise.resolve(null),
+    // Prev/next navigator — only for full-catalogue admins (branch scope is by
+    // model, which can't be expressed in a simple neighbour query).
+    scope.allModels && order.created_at
+      ? getOrderNeighbors(service, { id: order.id, created_at: order.created_at })
+      : Promise.resolve({ prevId: null, nextId: null }),
+    // Client contact, for the "email client" shortcut.
+    order.user_id
+      ? service.from('profiles').select('email').eq('id', order.user_id).single()
+      : Promise.resolve({ data: null }),
+    getSettings(['order_notify_email']),
+    getTranslations('nav'),
+  ])
 
-  // Prev/next navigator — only for full-catalogue admins (branch scope is by model,
-  // which can't be expressed in a simple neighbour query).
-  const { prevId, nextId } = scope.allModels && order.created_at
-    ? await getOrderNeighbors(service, { id: order.id, created_at: order.created_at })
-    : { prevId: null, nextId: null }
-
-  // Client contact + order desk address, for the "email client" shortcut. Cc the
-  // desk so the thread stays with Piedro; To the ordering user (+ company Cc).
-  const { data: orderer } = order.user_id
-    ? await service.from('profiles').select('email').eq('id', order.user_id).single()
-    : { data: null }
-  const deskEmail = (await getSettings(['order_notify_email'])).order_notify_email ?? ''
+  if (signedPdf) order.pdf_url = signedPdf
+  const { prevId, nextId } = neighbors
+  const deskEmail = settings.order_notify_email ?? ''
   const clientCc = (order as { companies?: { notify_cc?: string } }).companies?.notify_cc ?? ''
 
   return (
@@ -69,11 +74,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       <div className="max-w-4xl mx-auto px-6 pt-6">
         <Link href="/admin/orders"
           className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors">
-          ← {(await getTranslations('nav'))('orders')}
+          ← {navT('orders')}
         </Link>
       </div>
       <OrderDetailView order={order} isAdmin={true} readOnly={!canWrite} isFullAdmin={isPiedroAdmin(scope.role)} prevId={prevId} nextId={nextId}
-        clientEmail={orderer?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
+        clientEmail={ordererRes.data?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
     </div>
   )
 }

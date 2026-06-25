@@ -11,6 +11,17 @@ import { matchesAny } from '@/lib/search'
 
 const PAGE = 50
 
+/** Colour code only — the colour_id with its style prefix stripped, so the
+ *  colour column doesn't repeat the style already shown in column 2.
+ *  "5313.2036" (style 5313) → "2036". */
+function colourCode(colourId?: string | null, styleName?: string | null): string {
+  const cid = colourId ?? ''
+  const st = styleName ?? ''
+  if (st && cid.startsWith(st)) return cid.slice(st.length).replace(/^[.\-_]/, '') || cid
+  const dot = cid.indexOf('.')
+  return dot >= 0 ? cid.slice(dot + 1) : cid
+}
+
 export type ProductRow = {
   id: string
   colour_id: string
@@ -209,8 +220,8 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
           <thead className="bg-stone-50">
             <tr>
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} />
-              <SortableTh label="colour_id" sortKey="colour_id" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_style')} sortKey="style_name" sort={sort} onSort={onSort} />
+              <SortableTh label="colour_id" sortKey="colour_id" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_colour')} sortKey="color_name" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_section')} sortKey="section" sort={sort} onSort={onSort} />
               <SortableTh label={t('col_closure')} sortKey="closure" sort={sort} onSort={onSort} />
@@ -235,8 +246,8 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-2 font-mono text-xs text-stone-700">{p.colour_id}</td>
                 <td className="px-4 py-2 text-stone-700">{p.style_name}</td>
+                <td className="px-4 py-2 font-mono text-xs text-stone-700" title={p.colour_id}>{colourCode(p.colour_id, p.style_name)}</td>
                 <td className="px-4 py-2 text-stone-500">{p.color_name}</td>
                 <td className="px-4 py-2 text-stone-500">{p.section}</td>
                 <td className="px-4 py-2 text-stone-500">{p.closure}</td>

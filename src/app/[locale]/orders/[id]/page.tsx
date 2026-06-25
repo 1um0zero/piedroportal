@@ -76,22 +76,26 @@ export default async function OrderDetailPage({ params }: Props) {
 
   if (!order) notFound()
 
-  // Replace the stored path with a short-lived signed URL (private bucket).
-  if (order.pdf_url) order.pdf_url = await signOrderPdf(id)
-
-  // Prev/next navigator — within the same visibility scope as the list.
+  // PDF signing, the prev/next navigator and the nav translations are all
+  // independent → run them in parallel instead of one after another.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyScope = (q: any) => isCompanyAdmin ? q.in('company_id', scopedCompanyIds) : q.eq('user_id', user.id)
-  const { prevId, nextId } = order.created_at
-    ? await getOrderNeighbors(service, { id: order.id, created_at: order.created_at }, applyScope)
-    : { prevId: null, nextId: null }
+  const [signedPdf, neighbors, navT] = await Promise.all([
+    order.pdf_url ? signOrderPdf(id) : Promise.resolve(null),
+    order.created_at
+      ? getOrderNeighbors(service, { id: order.id, created_at: order.created_at }, applyScope)
+      : Promise.resolve({ prevId: null, nextId: null }),
+    getTranslations('nav'),
+  ])
+  if (signedPdf) order.pdf_url = signedPdf  // short-lived signed URL (private bucket)
+  const { prevId, nextId } = neighbors
 
   return (
     <div>
       <div className="max-w-4xl mx-auto px-6 pt-6">
         <Link href="/orders"
           className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors">
-          ← {(await getTranslations('nav'))('orders')}
+          ← {navT('orders')}
         </Link>
       </div>
       <OrderDetailView order={order} isAdmin={false} prevId={prevId} nextId={nextId} />

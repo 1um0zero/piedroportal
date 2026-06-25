@@ -159,6 +159,9 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const { page, setPage, rememberReturn } = useListNav(isAdminPath ? 'admin-orders' : 'orders')
   const [repeating, setRepeating] = useState<string | null>(null)
   const [deleting, setDeleting]   = useState<string | null>(null)
+  // Order whose detail page is being opened — gives the clicked row an instant
+  // "the portal heard you" cue while the route-level skeleton loads.
+  const [openingId, setOpeningId] = useState<string | null>(null)
   // Age window (quick presets) or a specific from–to period — server-side.
   const [periodMode, setPeriodMode] = useState(!!(from || to))
   const [fromD, setFromD] = useState(from ?? '')
@@ -449,8 +452,9 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                   ? (isAdminPath ? `/admin/orders/stock/${o.id}` : `/orders/stock/${o.id}`)
                   : (isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`)
                 return (
-                  <tr key={o.id} className="hover:bg-stone-50 transition-colors cursor-pointer"
-                    onClick={() => { rememberReturn(); router.push(detailHref as Parameters<typeof router.push>[0]) }}>
+                  <tr key={o.id} aria-busy={openingId === o.id}
+                    className={`hover:bg-stone-50 transition-all cursor-pointer ${openingId === o.id ? 'opacity-50' : ''}`}
+                    onClick={() => { setOpeningId(o.id); rememberReturn(); router.push(detailHref as Parameters<typeof router.push>[0]) }}>
 
                     {/* Order № — the restored legacy sequential number; stock orders have none */}
                     <td className="px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap">

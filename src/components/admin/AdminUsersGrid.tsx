@@ -392,7 +392,7 @@ export default function AdminUsersGrid({ users, branches }: { users: UserRow[]; 
 
       {/* Floating nav: jump to top/bottom of the page + scroll the grid sideways
           without dragging the native scrollbar at the table foot. */}
-      <GridFloatingNav scrollRef={scrollRef} />
+      <GridFloatingNav scrollRef={scrollRef} position="bottom-24 right-6" />
     </div>
   )
 }
