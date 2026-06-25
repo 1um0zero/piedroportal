@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export type SortDir = 'asc' | 'desc'
 
@@ -143,6 +144,57 @@ export function GridFloatingNav({ scrollRef, position = 'bottom-5 right-5' }: { 
         style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.12))' }}>
         <Chevron d={atBottom ? 'M4.5 15.75l7.5-7.5 7.5 7.5' : 'M19.5 8.25l-7.5 7.5-7.5-7.5'} />
       </button>
+    </div>
+  )
+}
+
+/**
+ * Canonical sticky pagination footer for every paginated list in the portal.
+ *
+ * - Sticks to the viewport foot (opaque) so a row scrolled underneath can never
+ *   land on a page button and hijack an intended page-click into a row-click.
+ * - ⏮ First / ⏭ Last jump straight to the newest/oldest page.
+ * - `pageLabel(p)` (optional) supplies a hover hint per page button — e.g. the
+ *   date of that page's first row — so users can locate old records fast.
+ *
+ * Pair with `useListNav` for page state + return-position restore, and
+ * `GridFloatingNav` for top/bottom + sideways scrolling.
+ */
+export function ListPager({ page, total, onPage, pageLabel, className = '-mx-6 px-6' }: {
+  page: number
+  total: number
+  onPage: (p: number) => void
+  pageLabel?: (p: number) => string | undefined
+  /** Wrapper padding/bleed — defaults to full-bleed inside a px-6 container. */
+  className?: string
+}) {
+  const tc = useTranslations('admin.common')
+  if (total <= 1) return null
+  const edge = 'px-2.5 py-1.5 text-sm border border-stone-200 rounded-lg disabled:opacity-40 hover:border-stone-300 transition-colors'
+  return (
+    <div className={`sticky bottom-0 z-30 ${className} py-3 flex items-center justify-center gap-2 bg-white/95 backdrop-blur border-t border-stone-100`}>
+      <button onClick={() => onPage(1)} disabled={page === 1}
+        title={[tc('first'), pageLabel?.(1)].filter(Boolean).join(' · ')} className={edge}>⏮</button>
+      <button onClick={() => onPage(Math.max(1, page - 1))} disabled={page === 1} className={edge}>← {tc('prev')}</button>
+
+      {Array.from({ length: Math.min(7, total) }, (_, i) => {
+        let p: number
+        if (total <= 7) p = i + 1
+        else if (page <= 4) p = i + 1
+        else if (page >= total - 3) p = total - 6 + i
+        else p = page - 3 + i
+        return (
+          <button key={p} onClick={() => onPage(p)} title={pageLabel?.(p)}
+            className={`w-9 h-9 text-sm rounded-lg border transition-colors
+              ${p === page ? 'bg-gold text-white border-gold' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>
+            {p}
+          </button>
+        )
+      })}
+
+      <button onClick={() => onPage(Math.min(total, page + 1))} disabled={page >= total} className={edge}>{tc('next')} →</button>
+      <button onClick={() => onPage(total)} disabled={page >= total}
+        title={[tc('last'), pageLabel?.(total)].filter(Boolean).join(' · ')} className={edge}>⏭</button>
     </div>
   )
 }

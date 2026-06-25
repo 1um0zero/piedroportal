@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef, useTransition } from 'react'
+import { useListNav } from '@/components/ui/use-list-nav'
 import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
@@ -13,7 +14,7 @@ import { ProductionTrail } from './ProductionTrail'
 import { nz, orderNumber } from '@/lib/format'
 import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
-import { GridFloatingNav } from '@/components/ui/table-controls'
+import { GridFloatingNav, ListPager } from '@/components/ui/table-controls'
 
 const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
@@ -141,7 +142,6 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const locale = useLocale()
   const { guard } = useImpersonation()
   const t  = useTranslations('admin.orders')
-  const tc = useTranslations('admin.common')
   const ts = useTranslations('dashboard.status')
   const ta = useTranslations('admin.approval')
   const tp = useTranslations('admin.production')
@@ -156,7 +156,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const [active, setActive]       = useState<string>(searchParams.get('new') === '1' ? 'new' : '')
   // When true, narrow the active bucket to urgent orders only (set by the red dot).
   const [urgentFilter, setUrgentFilter] = useState(false)
-  const [page, setPage]           = useState(1)
+  const { page, setPage, rememberReturn } = useListNav(isAdminPath ? 'admin-orders' : 'orders')
   const [repeating, setRepeating] = useState<string | null>(null)
   const [deleting, setDeleting]   = useState<string | null>(null)
   // Age window (quick presets) or a specific from–to period — server-side.
@@ -450,7 +450,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                   : (isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`)
                 return (
                   <tr key={o.id} className="hover:bg-stone-50 transition-colors cursor-pointer"
-                    onClick={() => router.push(detailHref as Parameters<typeof router.push>[0])}>
+                    onClick={() => { rememberReturn(); router.push(detailHref as Parameters<typeof router.push>[0]) }}>
 
                     {/* Order № — the restored legacy sequential number; stock orders have none */}
                     <td className="px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap">
@@ -678,52 +678,19 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
         </div>
       </div>
 
-      {/* Pagination — sticky so the buttons stay pinned to the viewport foot while
-          rows scroll underneath (otherwise a scrolled row lands where a page button
-          was and an intended page-click opens an order instead). */}
-      {filtered.length > PER_PAGE && (() => {
-        const total = Math.ceil(filtered.length / PER_PAGE)
-        // First order shown on page p → its date (oldest-first sort is descending,
-        // so page 1 is the newest, the last page the oldest). Used as a hover hint.
-        const pageDate = (p: number) => {
+      {/* Sticky pagination footer. First order shown on page p → its date (the sort
+          is descending, so page 1 is newest, the last page oldest) as a hover hint. */}
+      <ListPager
+        page={page}
+        total={Math.ceil(filtered.length / PER_PAGE)}
+        onPage={setPage}
+        pageLabel={p => {
           const o = filtered[(p - 1) * PER_PAGE]
           return o?.created_at
             ? new Date(o.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
-            : ''
-        }
-        const edge = 'px-2.5 py-1.5 text-sm border border-stone-200 rounded-lg disabled:opacity-40 hover:border-stone-300 transition-colors'
-        return (
-          <div className="sticky bottom-0 z-30 -mx-6 px-6 py-3 flex items-center justify-center gap-2
-                          bg-white/95 backdrop-blur border-t border-stone-100">
-            <button onClick={() => setPage(1)} disabled={page === 1}
-              title={`${tc('first')} · ${pageDate(1)}`} className={edge}>⏮</button>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              className={edge}>← {tc('prev')}</button>
-
-            {Array.from({ length: Math.min(7, total) }, (_, i) => {
-              let p: number
-              if (total <= 7) p = i + 1
-              else if (page <= 4) p = i + 1
-              else if (page >= total - 3) p = total - 6 + i
-              else p = page - 3 + i
-              return (
-                <button key={p} onClick={() => setPage(p)} title={pageDate(p)}
-                  className={`w-9 h-9 text-sm rounded-lg border transition-colors
-                    ${p === page
-                      ? 'bg-gold text-white border-gold'
-                      : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>
-                  {p}
-                </button>
-              )
-            })}
-
-            <button onClick={() => setPage(p => Math.min(total, p + 1))} disabled={page >= total}
-              className={edge}>{tc('next')} →</button>
-            <button onClick={() => setPage(total)} disabled={page >= total}
-              title={`${tc('last')} · ${pageDate(total)}`} className={edge}>⏭</button>
-          </div>
-        )
-      })()}
+            : undefined
+        }}
+      />
 
       {/* Quick top/bottom + sideways nav. Lifted above the chat bubble (bottom-6
           right-6) so the two don't overlap. */}

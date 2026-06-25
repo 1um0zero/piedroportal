@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
 import { productImageUrl } from '@/lib/products/image-url'
 import { matchesAny } from '@/lib/search'
+import { GridFloatingNav, ListPager } from '@/components/ui/table-controls'
+import { useListNav } from '@/components/ui/use-list-nav'
 
 // Order unit → translation key in the `order` namespace.
 const UNIT_KEYS: Record<string, string> = {
@@ -39,8 +41,9 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
   const tu = useTranslations('order')
   const locale = useLocale()
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const { page, setPage } = useListNav('admin-drafts')
   const PER_PAGE = 50
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const filtered = useMemo(() => {
     if (!search) return drafts
@@ -84,7 +87,7 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
       </div>
 
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <div className="overflow-x-auto">
+        <div ref={scrollRef} className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-stone-100">
               <tr className="text-xs text-stone-400 font-semibold uppercase tracking-wider">
@@ -144,15 +147,14 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
         </div>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg disabled:opacity-40 hover:border-stone-300 transition-colors">←</button>
-          <span className="text-sm text-stone-500 tabular-nums">{page} / {totalPages}</span>
-          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-            className="px-3 py-1.5 text-sm border border-stone-200 rounded-lg disabled:opacity-40 hover:border-stone-300 transition-colors">→</button>
-        </div>
-      )}
+      <ListPager
+        page={page}
+        total={totalPages}
+        onPage={setPage}
+        pageLabel={p => fmtDate(filtered[(p - 1) * PER_PAGE]?.created_at ?? null) || undefined}
+      />
+
+      <GridFloatingNav scrollRef={scrollRef} position="bottom-24 right-6" />
     </div>
   )
 }

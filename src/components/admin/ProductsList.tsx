@@ -1,11 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { setProductActive, setProductNew, setProductDiabetics } from '@/app/actions/admin-products'
-import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
+import { SortableTh, nextSort, compareValues, GridFloatingNav, ListPager, type Sort } from '@/components/ui/table-controls'
+import { useListNav } from '@/components/ui/use-list-nav'
 import { matchesAny } from '@/lib/search'
 
 const PAGE = 50
@@ -72,7 +73,13 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const [onlyInactive, setOnlyInactive] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
-  const [page, setPage] = useState(0)
+  // Page state is 1-indexed in useListNav (shared with the rest of the portal);
+  // this grid is internally 0-indexed, so adapt at the boundary.
+  const { page: page1, setPage: setPage1, rememberReturn } = useListNav('admin-products')
+  const page = page1 - 1
+  const setPage = (upd: number | ((prev: number) => number)) =>
+    setPage1(prev => (typeof upd === 'function' ? upd(prev - 1) : upd) + 1)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [busy, setBusy] = useState<string | null>(null)
 
   const distinct = (key: keyof ProductRow) =>
@@ -197,6 +204,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
       )}
 
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
+        <div ref={scrollRef} className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-50">
             <tr>
@@ -291,23 +299,23 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                 </td>
                 <td className="px-4 py-2 text-right whitespace-nowrap">
                   <Link href={`/gallery/${p.id}`} target="_blank" className="mr-3 text-sm font-medium text-stone-400 hover:text-stone-700" title={t('view_gallery_hint')}>{t('view_gallery')}</Link>
-                  <Link href={`/admin/products/${p.id}/edit`} className="text-sm font-medium text-gold hover:text-gold-dark">{tc('edit')}</Link>
+                  <Link href={`/admin/products/${p.id}/edit`} onClick={rememberReturn} className="text-sm font-medium text-gold hover:text-gold-dark">{tc('edit')}</Link>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
-      {pages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-            className="rounded-lg border border-stone-200 px-3 py-1 text-sm disabled:opacity-40">{tc('prev')}</button>
-          <span className="text-sm text-stone-500">{page + 1} / {pages}</span>
-          <button onClick={() => setPage(p => Math.min(pages - 1, p + 1))} disabled={page >= pages - 1}
-            className="rounded-lg border border-stone-200 px-3 py-1 text-sm disabled:opacity-40">{tc('next')}</button>
-        </div>
-      )}
+      <ListPager
+        page={page + 1}
+        total={pages}
+        onPage={p => setPage(p - 1)}
+        pageLabel={p => filtered[(p - 1) * PAGE]?.created_at?.slice(0, 10) || undefined}
+      />
+
+      <GridFloatingNav scrollRef={scrollRef} position="bottom-24 right-6" />
     </div>
   )
 }
