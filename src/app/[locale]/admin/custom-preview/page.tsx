@@ -39,6 +39,35 @@ export default async function CustomPreviewPage() {
         </div>
       </section>
 
+      <section className="mb-12">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gold">
+          Foot templates — from SVG banks (recoloured gold)
+        </h2>
+        <p className="mb-4 text-xs text-stone-500">
+          Bases from SVG Repo (public domain). Right foot is the same file mirrored via CSS.
+        </p>
+        <div className="flex flex-wrap items-end gap-10">
+          {[
+            { src: '/custom/foot-template/sole.svg', label: 'Foot (top)', h: 'h-64' },
+            { src: '/custom/foot-template/lateral.svg', label: 'Lateral', h: 'h-40' },
+            { src: '/custom/foot-template/foot-massage.svg', label: 'Pair (alt)', h: 'h-64' },
+          ].map(t => (
+            <div key={t.src} className="flex items-end gap-4">
+              <figure className="text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={t.src} alt={`${t.label} left`} className={t.h} />
+                <figcaption className="mt-2 text-xs text-stone-500">{t.label} · L</figcaption>
+              </figure>
+              <figure className="text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={t.src} alt={`${t.label} right`} className={t.h} style={{ transform: 'scaleX(-1)' }} />
+                <figcaption className="mt-2 text-xs text-stone-500">{t.label} · R</figcaption>
+              </figure>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-gold">Toe shapes</h2>
         <div className="flex flex-wrap gap-6">
