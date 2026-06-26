@@ -60,24 +60,26 @@ function VariantSlider() {
   return (
     <FieldShell value={value}>
       <div className="flex items-center gap-4 w-full max-w-md">
-        <input
-          type="text"
-          inputMode="numeric"
-          value={value == null ? '' : `${value} mm`}
-          placeholder="mm"
-          onChange={e => {
-            const t = e.target.value.replace(/ mm$/i, '')
-            if (t === '') return setValue(null)
-            if (allowed.some(v => String(v).startsWith(t) || String(v) === t)) setValue(Number(t))
-          }}
-          onBlur={e => {
-            const t = e.target.value.replace(/ mm$/i, '')
-            setValue(t === '' || isNaN(Number(t)) ? null : clampSnap(Number(t)))
-          }}
-          onFocus={e => e.target.select()}
-          className="w-24 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center shrink-0
-                     focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
-        />
+        <div className="flex items-center gap-1.5 shrink-0">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={value == null ? '' : String(value)}
+            onChange={e => {
+              const t = e.target.value.trim()
+              if (t === '') return setValue(null)
+              if (allowed.some(v => String(v).startsWith(t) || String(v) === t)) setValue(Number(t))
+            }}
+            onBlur={e => {
+              const t = e.target.value.trim()
+              setValue(t === '' || isNaN(Number(t)) ? null : clampSnap(Number(t)))
+            }}
+            onFocus={e => e.target.select()}
+            className="w-16 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
+                       focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
+          />
+          <span className="text-sm text-stone-400">mm</span>
+        </div>
         <div className="flex-1">
           <input
             type="range"
@@ -102,28 +104,30 @@ function VariantStepper() {
   const step = (d: number) => setValue(v => clampSnap((v ?? 0) + d))
   return (
     <FieldShell value={value}>
-      <div className="inline-flex items-center h-9 bg-stone-50 border border-stone-200 rounded-lg overflow-hidden">
-        <button type="button" onClick={() => step(-STEP)}
-          className="w-9 h-full text-stone-500 hover:bg-stone-100 hover:text-gold text-lg leading-none">−</button>
-        <input
-          type="text"
-          inputMode="numeric"
-          value={value == null ? '' : `${value} mm`}
-          placeholder="mm"
-          onChange={e => {
-            const t = e.target.value.replace(/ mm$/i, '')
-            if (t === '') return setValue(null)
-            if (allowed.some(v => String(v).startsWith(t) || String(v) === t)) setValue(Number(t))
-          }}
-          onBlur={e => {
-            const t = e.target.value.replace(/ mm$/i, '')
-            setValue(t === '' || isNaN(Number(t)) ? null : clampSnap(Number(t)))
-          }}
-          onFocus={e => e.target.select()}
-          className="w-16 h-full text-sm bg-transparent text-center focus:outline-none"
-        />
-        <button type="button" onClick={() => step(STEP)}
-          className="w-9 h-full text-stone-500 hover:bg-stone-100 hover:text-gold text-lg leading-none">+</button>
+      <div className="flex items-center gap-1.5">
+        <div className="inline-flex items-center h-9 bg-stone-50 border border-stone-200 rounded-lg overflow-hidden">
+          <button type="button" onClick={() => step(-STEP)}
+            className="w-9 h-full text-stone-500 hover:bg-stone-100 hover:text-gold text-lg leading-none">−</button>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={value == null ? '' : String(value)}
+            onChange={e => {
+              const t = e.target.value.trim()
+              if (t === '') return setValue(null)
+              if (allowed.some(v => String(v).startsWith(t) || String(v) === t)) setValue(Number(t))
+            }}
+            onBlur={e => {
+              const t = e.target.value.trim()
+              setValue(t === '' || isNaN(Number(t)) ? null : clampSnap(Number(t)))
+            }}
+            onFocus={e => e.target.select()}
+            className="w-12 h-full text-sm bg-transparent text-center focus:outline-none"
+          />
+          <button type="button" onClick={() => step(STEP)}
+            className="w-9 h-full text-stone-500 hover:bg-stone-100 hover:text-gold text-lg leading-none">+</button>
+        </div>
+        <span className="text-sm text-stone-400">mm</span>
       </div>
     </FieldShell>
   )
@@ -134,26 +138,26 @@ function VariantHint() {
   const [value, setValue] = useState<number | null>(20)
   return (
     <FieldShell value={value}>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5">
         <input
           type="text"
           inputMode="numeric"
-          value={value == null ? '' : `${value} mm`}
-          placeholder="mm"
+          value={value == null ? '' : String(value)}
           onChange={e => {
-            const t = e.target.value.replace(/ mm$/i, '')
+            const t = e.target.value.trim()
             if (t === '') return setValue(null)
             if (allowed.some(v => String(v).startsWith(t) || String(v) === t)) setValue(Number(t))
           }}
           onBlur={e => {
-            const t = e.target.value.replace(/ mm$/i, '')
+            const t = e.target.value.trim()
             setValue(t === '' || isNaN(Number(t)) ? null : clampSnap(Number(t)))
           }}
           onFocus={e => e.target.select()}
-          className="w-24 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
+          className="w-16 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
                      focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold"
         />
-        <span className="text-xs text-stone-400">{MIN}–{MAX} mm</span>
+        <span className="text-sm text-stone-400">mm</span>
+        <span className="text-xs text-stone-300 ml-2">{MIN}–{MAX}</span>
       </div>
     </FieldShell>
   )
