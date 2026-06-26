@@ -39,6 +39,7 @@ const mm4to10   = [4,6,8,10]
 const mm2to8    = [2,4,6,8]
 const mm1to20   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 const mm1to60   = Array.from({ length: 60 }, (_, i) => i + 1)
+const mm0to60   = Array.from({ length: 61 }, (_, i) => i)        // Tenen allows 0 (Anabela, 2026-06-26)
 const mm5to25   = Array.from({ length: 21 }, (_, i) => i + 5)
 
 export const SECTIONS: AdditionSection[] = [
@@ -109,7 +110,7 @@ export const SECTIONS: AdditionSection[] = [
           'Delaying Rocker':  '/rocker/delaying.png',
           '2-Phase Rocker':   '/rocker/2-phase.png',
         } },
-      { key: 'rocker_toes',  type: 'mm',     side: 'both', values: mm1to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2toes' },
+      { key: 'rocker_toes',  type: 'mm',     side: 'both', values: mm0to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2toes' },
       { key: 'rocker_joint', type: 'mm',     side: 'both', values: mm1to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2joint' },
       { key: 'rocker_heel',  type: 'mm',     side: 'both', values: mm1to60, conditionalOn: 'rocker', dataverseKey: 'cr56f_2heel' },
       // Amendment PU/EVA Bumper
