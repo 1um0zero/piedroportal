@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { createProduct, updateProduct, type ProductInput } from '@/app/actions/admin-products'
-import { setModelExclusiveLabel } from '@/app/actions/admin-companies'
+import { setModelExclusiveLabel, setColourExclusiveLabel } from '@/app/actions/admin-companies'
 import { ProductImageSlots } from '@/components/admin/ProductImages'
 import type { Construction, Product, Section } from '@/types'
 
@@ -99,19 +99,36 @@ export default function ProductForm({ product, companies }: { product?: Product;
     set('constructions', f.constructions.filter((_, idx) => idx !== i))
   }
 
+  const [applyingAll, setApplyingAll] = useState(false)
+  async function applyExclusiveToAllColours() {
+    if (!product) return
+    const label = exclusiveValue || null
+    const msg = label
+      ? t('exclusive_all_confirm_set', { label, style: f.style_name })
+      : t('exclusive_all_confirm_clear', { style: f.style_name })
+    if (!window.confirm(msg)) return
+    setApplyingAll(true); setError(null); setOk(false)
+    const res = await setModelExclusiveLabel(f.style_name, label)
+    setApplyingAll(false)
+    if (res.error) { setError(res.error); return }
+    setOk(true)
+    router.refresh()
+  }
+
   async function save() {
     setSaving(true); setError(null); setOk(false)
     try {
       if (isEdit) {
-        // Exclusivity is model-wide (all colours of a style) and piedro_admin-only,
-        // so it is applied via setModelExclusiveLabel rather than the per-row update.
+        // Exclusivity is applied PER COLOUR (this row only) so editing one colour
+        // never touches its siblings. To stamp every colour of the style, use the
+        // explicit "apply to all colours" button below the field.
         const payload: Partial<ProductInput> = { ...f }
         delete payload.exclusive
         const res = await updateProduct(product!.id, payload)
         if (res.error) { setError(res.error); return }
 
         if (canManageExclusive && exclusiveValue !== (product!.exclusive ?? '').trim().toUpperCase()) {
-          const exRes = await setModelExclusiveLabel(f.style_name, exclusiveValue || null)
+          const exRes = await setColourExclusiveLabel(product!.id, exclusiveValue || null)
           if (exRes.error) { setError(exRes.error); return }
         }
         setOk(true)
@@ -194,7 +211,15 @@ export default function ProductForm({ product, companies }: { product?: Product;
                   <option value={exclusiveValue}>{t('exclusive_unassigned', { label: exclusiveValue })}</option>
                 )}
               </select>
-              <span className="mt-1 block text-[11px] text-stone-400">{t('exclusive_hint')}</span>
+              <span className="mt-1 block text-[11px] text-stone-400">{t('exclusive_hint_colour')}</span>
+              <button
+                type="button"
+                onClick={applyExclusiveToAllColours}
+                disabled={applyingAll || saving}
+                className="mt-2 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:border-stone-400 disabled:opacity-40"
+              >
+                {applyingAll ? tc('saving') : t('exclusive_apply_all')}
+              </button>
             </Field>
           )}
         </div>

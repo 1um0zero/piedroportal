@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
+import { exclusiveTokens } from '@/lib/exclusive'
 
 // ── Auth helper (piedro_admin only) ───────────────────────────────────────────
 
@@ -145,6 +146,66 @@ export async function setModelExclusiveLabel(
     .from('products')
     .update({ exclusive: value })
     .eq('style_name', styleName)
+  if (error) return { error: error.message }
+
+  revalidate()
+  return { ok: true }
+}
+
+/** Re-serialise a token set, with `token` added or removed. Returns '' when empty. */
+function applyToken(current: string | null | undefined, token: string, on: boolean): string {
+  const toks = new Set(exclusiveTokens(current))
+  if (on) toks.add(token); else toks.delete(token)
+  return toks.size ? [...toks].join(' ') : ''
+}
+
+/**
+ * Add/remove a single sigla on a batch of Style.Colour rows (by colour_id),
+ * ADDITIVELY — other siglas already on a row are preserved. This is the
+ * per-colour primitive behind the company Style→Colour exclusivity grid.
+ */
+export async function setColoursExclusiveToken(
+  colourIds: string[],
+  token: string,
+  on: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+  const tok = normalizeLabel(token)
+  if (!tok) return { error: 'token is required' }
+  if (!colourIds.length) return { ok: true }
+
+  const service = createServiceClient()
+  const { data: rows, error } = await service
+    .from('products').select('id, exclusive').in('colour_id', colourIds)
+  if (error) return { error: error.message }
+
+  for (const r of (rows ?? []) as { id: string; exclusive: string | null }[]) {
+    const next = applyToken(r.exclusive, tok, on)
+    const { error: upErr } = await service.from('products').update({ exclusive: next }).eq('id', r.id)
+    if (upErr) return { error: upErr.message }
+  }
+
+  revalidate()
+  return { ok: true }
+}
+
+/**
+ * Set the exclusive label on a SINGLE colour row (by product id), replacing
+ * whatever it held. Used by the Style.Colour product form so editing one colour
+ * never touches its siblings. Pass null to clear.
+ */
+export async function setColourExclusiveLabel(
+  productId: string,
+  label: string | null,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+  if (!productId?.trim()) return { error: 'product id is required' }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('products').update({ exclusive: normalizeLabel(label) }).eq('id', productId)
   if (error) return { error: error.message }
 
   revalidate()

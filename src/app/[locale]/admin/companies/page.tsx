@@ -10,9 +10,9 @@ export default async function AdminCompaniesPage() {
   const service = createServiceClient()
 
   const { data: companyRows } = await service
-    .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc').order('name')
+    .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc, sees_general_catalogue').order('name')
   const companies = (companyRows ?? []) as
-    { id: string; name: string; erp_code: string; exclusive_label: string | null; notify_cc: string | null; notify_bcc: string | null }[]
+    { id: string; name: string; erp_code: string; exclusive_label: string | null; notify_cc: string | null; notify_bcc: string | null; sees_general_catalogue: boolean | null }[]
 
   // Members per company (for user count, admin list and search by user name/email).
   type MemberAgg = { count: number; admins: string[]; haystack: string[] }
@@ -93,6 +93,7 @@ export default async function AdminCompaniesPage() {
     return {
       id: c.id, name: c.name, erp_code: c.erp_code, siglas,
       models,
+      seesGeneral: c.sees_general_catalogue !== false,
       userCount: agg?.count ?? 0,
       admins: agg?.admins ?? [],
       cc, bcc, search,

@@ -6,18 +6,21 @@ import { useRouter } from '@/i18n/navigation'
 import {
   addCompanyExclusiveSigla,
   removeCompanyExclusiveSigla,
-  setModelExclusiveLabel,
+  setColoursExclusiveToken,
 } from '@/app/actions/admin-companies'
 import { siglaColor } from '@/lib/exclusive-colors'
+import ExclusiveColourGrid, { type GridStyle } from '@/components/admin/ExclusiveColourGrid'
+
+/** A style with its colours; `tokens` = the siglas currently on each colour row. */
+export type CatalogueStyle = { style: string; colours: { id: string; name: string; tokens: string[] }[] }
 
 type Props = {
   companyId: string
   siglas: string[]
-  assignedBySigla: Record<string, string[]>
-  freeModels: string[]
+  catalogue: CatalogueStyle[]
 }
 
-export default function CompanyExclusiveModels({ companyId, siglas, assignedBySigla, freeModels }: Props) {
+export default function CompanyExclusiveModels({ companyId, siglas, catalogue }: Props) {
   const t = useTranslations('admin.companies')
   const tc = useTranslations('admin.common')
   const router = useRouter()
@@ -46,40 +49,38 @@ export default function CompanyExclusiveModels({ companyId, siglas, assignedBySi
     router.refresh()
   }
 
-  // ── Model ↔ sigla assignment (writes products.exclusive) ──────────────────────
+  // ── Model ↔ sigla assignment (Style → Colour grid, per-colour & additive) ─────
   const [selected, setSelected] = useState<string>(siglas[0] ?? '')
-  const [assigned, setAssigned] = useState<Record<string, string[]>>(assignedBySigla)
-  const [free, setFree] = useState<string[]>(freeModels)
-  const [q, setQ] = useState('')
-  const [busy, setBusy] = useState<string | null>(null)
-  const [modelErr, setModelErr] = useState<string | null>(null)
+  // colourId → set of siglas currently on it (local source of truth across switches)
+  const [tokensById, setTokensById] = useState<Map<string, Set<string>>>(
+    () => new Map(catalogue.flatMap(s => s.colours.map(c => [c.id, new Set(c.tokens)]))),
+  )
 
-  const filteredFree = useMemo(() => {
-    const needle = q.trim().toLowerCase()
-    return free.filter(m => !needle || m.toLowerCase().includes(needle)).slice(0, 200)
-  }, [free, q])
+  const gridStyles: GridStyle[] = useMemo(
+    () => catalogue.map(s => ({
+      style: s.style,
+      colours: s.colours.map(c => ({
+        id: c.id, name: c.name, on: tokensById.get(c.id)?.has(selected) ?? false,
+      })),
+    })),
+    [catalogue, tokensById, selected],
+  )
 
-  async function add(style: string) {
-    if (!selected) return
-    setBusy(style); setModelErr(null)
-    const res = await setModelExclusiveLabel(style, selected)
-    setBusy(null)
-    if (res.error) { setModelErr(res.error); return }
-    setAssigned(prev => ({ ...prev, [selected]: [...(prev[selected] ?? []), style].sort((a, b) => a.localeCompare(b)) }))
-    setFree(prev => prev.filter(m => m !== style))
+  async function applyToken(colourIds: string[], on: boolean) {
+    const res = await setColoursExclusiveToken(colourIds, selected, on)
+    if (!res.error) {
+      setTokensById(prev => {
+        const n = new Map(prev)
+        for (const id of colourIds) {
+          const set = new Set(n.get(id) ?? [])
+          if (on) set.add(selected); else set.delete(selected)
+          n.set(id, set)
+        }
+        return n
+      })
+    }
+    return res
   }
-
-  async function remove(style: string) {
-    if (!selected) return
-    setBusy(style); setModelErr(null)
-    const res = await setModelExclusiveLabel(style, null)
-    setBusy(null)
-    if (res.error) { setModelErr(res.error); return }
-    setAssigned(prev => ({ ...prev, [selected]: (prev[selected] ?? []).filter(m => m !== style) }))
-    setFree(prev => [...prev, style].sort((a, b) => a.localeCompare(b)))
-  }
-
-  const selectedAssigned = assigned[selected] ?? []
 
   return (
     <div className="space-y-6">
@@ -120,67 +121,27 @@ export default function CompanyExclusiveModels({ companyId, siglas, assignedBySi
         </div>
       </section>
 
-      {/* Exclusive models — tag which styles belong to a sigla (writes products.exclusive) */}
-      <section className="bg-white rounded-[14px] p-6 space-y-4" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('models_section')}</h2>
-          {selected && <p className="text-xs text-stone-400">{t('models_count', { n: selectedAssigned.length })}</p>}
-        </div>
-
-        {siglas.length === 0 ? (
+      {/* Exclusive models — Style → Colour grid for the selected sigla */}
+      {siglas.length === 0 ? (
+        <section className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
           <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">{t('set_label_first')}</p>
-        ) : (
-          <>
-            {/* Sigla selector (only when the company has more than one) */}
-            {siglas.length > 1 && (
-              <div className="flex flex-wrap gap-1.5">
-                {siglas.map(s => (
-                  <button key={s} onClick={() => setSelected(s)}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all
-                      ${s === selected ? 'bg-stone-800 text-white border-stone-800' : 'text-stone-600 border-stone-200 hover:border-stone-400 bg-white'}`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {modelErr && <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{modelErr}</div>}
-
-            {/* Currently assigned to the selected sigla */}
-            {selectedAssigned.length === 0 ? (
-              <p className="text-sm text-stone-400">{t('no_models')}</p>
-            ) : (
-              <div className="rounded-lg border border-stone-100 divide-y divide-stone-50">
-                {selectedAssigned.map(m => (
-                  <div key={m} className="flex items-center gap-3 px-3 py-2">
-                    <span className="flex-1 text-sm text-stone-700 font-mono">{m}</span>
-                    <button onClick={() => remove(m)} disabled={busy === m}
-                      className="text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-40">{tc('remove')}</button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add free models */}
-            <div className="pt-2">
-              <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1.5">{t('add_model')}</label>
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder={t('search_models')}
-                className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-gold focus:outline-none" />
-              <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-stone-100 divide-y divide-stone-50">
-                {filteredFree.map(m => (
-                  <button key={m} onClick={() => add(m)} disabled={busy === m}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-stone-50 disabled:opacity-40">
-                    <span className="flex-1 text-sm text-stone-700 font-mono">{m}</span>
-                    <span className="text-xs font-medium text-gold">{tc('add')}</span>
-                  </button>
-                ))}
-                {filteredFree.length === 0 && <p className="px-3 py-4 text-sm text-stone-400">{t('no_free_models')}</p>}
-              </div>
-              <p className="mt-1.5 text-[11px] text-stone-400">{t('add_hint')}</p>
+        </section>
+      ) : (
+        <div className="space-y-3">
+          {siglas.length > 1 && (
+            <div className="flex flex-wrap gap-1.5">
+              {siglas.map(s => (
+                <button key={s} onClick={() => setSelected(s)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all
+                    ${s === selected ? 'bg-stone-800 text-white border-stone-800' : 'text-stone-600 border-stone-200 hover:border-stone-400 bg-white'}`}>
+                  {s}
+                </button>
+              ))}
             </div>
-          </>
-        )}
-      </section>
+          )}
+          <ExclusiveColourGrid key={selected} token={selected} styles={gridStyles} onApply={applyToken} />
+        </div>
+      )}
     </div>
   )
 }

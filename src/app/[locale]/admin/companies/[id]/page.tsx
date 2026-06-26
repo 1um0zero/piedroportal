@@ -47,35 +47,30 @@ export default async function CompanyDetailPage({ params }: Props) {
     id: p.id, email: p.email ?? '', full_name: p.full_name ?? '',
   }))
 
-  // Build per-model (style_name) exclusivity from all product rows. A style is
-  // "free" only when NONE of its colour rows carry any sigla.
-  const styleSigla = new Map<string, Set<string>>()  // style → siglas (empty set = free)
+  // Build the Style → Colour catalogue (every colour row + the siglas it carries)
+  // so the exclusivity grid can toggle exclusivity per colour, additively.
+  const styleMap = new Map<string, { id: string; name: string; tokens: string[] }[]>()
   let offset = 0
   const PAGE = 1000
   while (true) {
     const { data, error } = await service
-      .from('products').select('style_name, exclusive').range(offset, offset + PAGE - 1)
+      .from('products').select('colour_id, style_name, color_name, exclusive')
+      .order('colour_id').range(offset, offset + PAGE - 1)
     if (error || !data?.length) break
     for (const r of data) {
       const style = r.style_name as string | null
-      if (!style) continue
-      if (!styleSigla.has(style)) styleSigla.set(style, new Set())
-      const set = styleSigla.get(style)!
-      for (const tok of ((r.exclusive as string | null) ?? '').toUpperCase().match(/[A-Z0-9]+/g) ?? []) set.add(tok)
+      const colourId = r.colour_id as string | null
+      if (!style || !colourId) continue
+      const tokens = ((r.exclusive as string | null) ?? '').toUpperCase().match(/[A-Z0-9]+/g) ?? []
+      if (!styleMap.has(style)) styleMap.set(style, [])
+      styleMap.get(style)!.push({ id: colourId, name: (r.color_name as string | null) ?? '', tokens })
     }
     if (data.length < PAGE) break
     offset += PAGE
   }
-
-  // Styles assigned per sigla (for this company's siglas) + the free pool.
-  const assignedBySigla: Record<string, string[]> = Object.fromEntries(siglas.map(s => [s, []]))
-  const freeModels: string[] = []
-  for (const [style, set] of styleSigla) {
-    if (set.size === 0) { freeModels.push(style); continue }
-    for (const s of siglas) if (set.has(s)) assignedBySigla[s].push(style)
-  }
-  for (const s of siglas) assignedBySigla[s].sort((a, b) => a.localeCompare(b))
-  freeModels.sort((a, b) => a.localeCompare(b))
+  const catalogue = [...styleMap.entries()]
+    .map(([style, colours]) => ({ style, colours }))
+    .sort((a, b) => a.style.localeCompare(b.style))
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
@@ -97,8 +92,7 @@ export default async function CompanyDetailPage({ params }: Props) {
       <CompanyExclusiveModels
         companyId={company.id}
         siglas={siglas}
-        assignedBySigla={assignedBySigla}
-        freeModels={freeModels}
+        catalogue={catalogue}
       />
     </div>
   )

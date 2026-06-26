@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { nz } from '@/lib/format'
-import { SortableTh, nextSort, compareValues, type Sort } from '@/components/ui/table-controls'
+import { SortableTh, nextSort, compareValues, GridFloatingNav, ListPager, type Sort } from '@/components/ui/table-controls'
+import { useListNav } from '@/components/ui/use-list-nav'
 import { siglaColor } from '@/lib/exclusive-colors'
 
 export type CompanyRow = {
@@ -13,6 +14,7 @@ export type CompanyRow = {
   erp_code: string
   siglas: string[]
   models: number
+  seesGeneral: boolean
   userCount: number
   admins: string[]
   cc: string
@@ -20,6 +22,8 @@ export type CompanyRow = {
   /** Pre-built lowercase haystack: name + erp + siglas + every member name & email. */
   search: string
 }
+
+const PAGE = 50
 
 const NONE = '__none__'
 
@@ -33,6 +37,7 @@ function sortVal(r: CompanyRow, key: string): string | number {
     case 'copies': return (r.cc ? 1 : 0) + (r.bcc ? 1 : 0)
     case 'label': return r.siglas[0] || '￿'
     case 'models': return r.models
+    case 'sees': return r.seesGeneral ? 1 : 0
     default: return r.name
   }
 }
@@ -42,6 +47,8 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
   const [q, setQ] = useState('')
   const [labelFilter, setLabelFilter] = useState('')
   const [sort, setSort] = useState<Sort>({ key: 'name', dir: 'asc' })
+  const { page: page1, setPage: setPage1 } = useListNav('admin-companies')
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const labelOptions = useMemo(
     () => [...new Set(rows.flatMap(r => r.siglas))].sort(),
@@ -71,6 +78,10 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
     return arr
   }, [filtered, sort])
 
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE))
+  const page = Math.min(page1, pages)
+  const paged = useMemo(() => sorted.slice((page - 1) * PAGE, page * PAGE), [sorted, page])
+
   const onSort = (key: string) =>
     setSort(prev => nextSort(prev, key, key === 'name' || key === 'erp' || key === 'label' ? 'asc' : 'desc'))
 
@@ -79,7 +90,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
       <div className="flex flex-wrap items-center gap-3">
         <input
           value={q}
-          onChange={e => setQ(e.target.value)}
+          onChange={e => { setQ(e.target.value); setPage1(1) }}
           placeholder={t('search_placeholder')}
           className="flex-1 min-w-[260px] rounded-lg border border-stone-200 px-3.5 py-2 text-sm focus:border-gold focus:outline-none"
         />
@@ -88,7 +99,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
         </span>
       </div>
 
-      <div className="bg-white rounded-[14px] overflow-x-auto" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <div ref={scrollRef} className="bg-white rounded-[14px] overflow-x-auto" style={{ boxShadow: 'var(--shadow-card)' }}>
         <table className="w-full text-sm">
           <thead className="bg-stone-50">
             <tr>
@@ -101,7 +112,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
                 {(labelOptions.length > 0 || hasNone) && (
                   <select
                     value={labelFilter}
-                    onChange={e => setLabelFilter(e.target.value)}
+                    onChange={e => { setLabelFilter(e.target.value); setPage1(1) }}
                     className={`mt-1 block w-full rounded-md border px-1.5 py-0.5 text-[11px] font-normal normal-case focus:border-gold focus:outline-none ${labelFilter ? 'border-gold text-stone-700' : 'border-stone-200 text-stone-400'}`}
                   >
                     <option value="">{t('filter_all')}</option>
@@ -111,13 +122,14 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
                 )}
               </SortableTh>
               <SortableTh label={t('col_models')} sortKey="models" sort={sort} onSort={onSort} />
+              <SortableTh label={t('col_sees_catalogue')} sortKey="sees" sort={sort} onSort={onSort} />
               <SortableTh label="" sortKey={null} sort={sort} onSort={onSort} align="right" />
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-50">
             {sorted.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-stone-400">{t('no_results')}</td></tr>
-            ) : sorted.map(c => (
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-stone-400">{t('no_results')}</td></tr>
+            ) : paged.map(c => (
               <tr key={c.id} className="hover:bg-stone-50/60">
                 <td className="px-4 py-3 font-medium text-stone-800">{c.name}</td>
                 <td className="px-4 py-3 text-stone-500 whitespace-nowrap">{c.erp_code || '—'}</td>
@@ -150,6 +162,11 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
                     : <span className="text-stone-300">—</span>}
                 </td>
                 <td className="px-4 py-3 text-stone-500 tabular-nums">{nz(c.models)}</td>
+                <td className="px-4 py-3">
+                  {c.seesGeneral
+                    ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">{t('sees_yes')}</span>
+                    : <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-500">{t('sees_no')}</span>}
+                </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <Link href={`/admin/companies/${c.id}`} className="text-sm font-medium text-gold hover:text-gold-dark">{t('manage')}</Link>
                 </td>
@@ -158,6 +175,9 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
           </tbody>
         </table>
       </div>
+
+      <ListPager page={page} total={pages} onPage={p => setPage1(p)} />
+      <GridFloatingNav scrollRef={scrollRef} position="bottom-24 right-6" />
     </div>
   )
 }
