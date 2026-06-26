@@ -84,9 +84,22 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
   const [onlyInactive, setOnlyInactive] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [sort, setSort] = useState<Sort>({ key: 'colour_id', dir: 'asc' })
+  // Filter/search/sort snapshot — saved on edit-navigation, restored on return so
+  // the user lands back on the exact search they had, not the unfiltered page 1.
+  type NavState = {
+    q: string; fSection: string; fClosure: string; fType: string; fExclusive: string
+    fStock: string; fNew: string; fSoft: string; fAdded: string; onlyInactive: boolean; sort: Sort
+  }
   // Page state is 1-indexed in useListNav (shared with the rest of the portal);
   // this grid is internally 0-indexed, so adapt at the boundary.
-  const { page: page1, setPage: setPage1, rememberReturn } = useListNav('admin-products')
+  const { page: page1, setPage: setPage1, rememberReturn } = useListNav<NavState>('admin-products', s => {
+    setQ(s.q); setFSection(s.fSection); setFClosure(s.fClosure); setFType(s.fType)
+    setFExclusive(s.fExclusive); setFStock(s.fStock); setFNew(s.fNew); setFSoft(s.fSoft)
+    setFAdded(s.fAdded); setOnlyInactive(s.onlyInactive); setSort(s.sort)
+  })
+  const navState = (): NavState => ({
+    q, fSection, fClosure, fType, fExclusive, fStock, fNew, fSoft, fAdded, onlyInactive, sort,
+  })
   const page = page1 - 1
   const setPage = (upd: number | ((prev: number) => number)) =>
     setPage1(prev => (typeof upd === 'function' ? upd(prev - 1) : upd) + 1)
@@ -314,7 +327,7 @@ export default function ProductsList({ products, companyByLabel = {} }: { produc
                 </td>
                 <td className="px-4 py-2 text-right whitespace-nowrap">
                   <Link href={`/gallery/${p.id}`} target="_blank" className="mr-3 text-sm font-medium text-stone-400 hover:text-stone-700" title={t('view_gallery_hint')}>{t('view_gallery')}</Link>
-                  <Link href={`/admin/products/${p.id}/edit`} onClick={rememberReturn} className="text-sm font-medium text-gold hover:text-gold-dark">{tc('edit')}</Link>
+                  <Link href={`/admin/products/${p.id}/edit`} onClick={() => rememberReturn(navState())} className="text-sm font-medium text-gold hover:text-gold-dark">{tc('edit')}</Link>
                 </td>
               </tr>
             ))}
