@@ -47,7 +47,12 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
   const [q, setQ] = useState('')
   const [labelFilter, setLabelFilter] = useState('')
   const [sort, setSort] = useState<Sort>({ key: 'name', dir: 'asc' })
-  const { page: page1, setPage: setPage1 } = useListNav('admin-companies')
+  // Filter/search/sort snapshot — restored on return so opening a company and
+  // coming back lands on the same search, not the unfiltered list.
+  type NavState = { q: string; labelFilter: string; sort: Sort }
+  const { page: page1, setPage: setPage1, rememberReturn } = useListNav<NavState>('admin-companies', s => {
+    setQ(s.q); setLabelFilter(s.labelFilter); setSort(s.sort)
+  })
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const labelOptions = useMemo(
@@ -168,7 +173,7 @@ export default function CompaniesTable({ rows }: { rows: CompanyRow[] }) {
                     : <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-500">{t('sees_no')}</span>}
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
-                  <Link href={`/admin/companies/${c.id}`} className="text-sm font-medium text-gold hover:text-gold-dark">{t('manage')}</Link>
+                  <Link href={`/admin/companies/${c.id}`} onClick={() => rememberReturn({ q, labelFilter, sort })} className="text-sm font-medium text-gold hover:text-gold-dark">{t('manage')}</Link>
                 </td>
               </tr>
             ))}
