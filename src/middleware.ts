@@ -3,6 +3,7 @@ import createMiddleware from 'next-intl/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { routing } from './i18n/routing'
 import { encodeQuery } from './lib/query-cipher'
+import { isBlockedPath } from './lib/security'
 
 const handleI18n = createMiddleware(routing)
 
@@ -74,6 +75,12 @@ const AUTH_REQUIRED = ['/orders', '/orders/dashboard', '/admin', '/set-password'
 // eagerly and doesn't invoke proxy.ts at runtime — using src/middleware.ts instead.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Lei pétria UmZero: cortar sondas hostis ANTES de qualquer auth/BD/redirect.
+  // Ver claude-config/SECURITY-CANON.md.
+  if (isBlockedPath(pathname)) {
+    return new NextResponse(null, { status: 404 })
+  }
 
   // Legacy /galeria deep links (piedro.com) → our encoded gallery URL.
   const galeria = legacyGaleriaRedirect(request)
