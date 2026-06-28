@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
+import { LAB_PAGES, STATUS_META } from '@/lab/pages'
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   draft:              { label: 'Rascunho',              cls: 'bg-stone-100 text-stone-500' },
@@ -35,6 +36,26 @@ export default async function AdminLabPage() {
           className="bg-gold text-white px-5 py-2.5 rounded-lg text-sm font-semibold">+ Nova folha</Link>
       </div>
 
+      {/* Páginas do Lab — todas as experiências criadas (agora e anteriores) */}
+      <section className="mb-8">
+        <h2 className="text-xs font-semibold tracking-wider text-stone-400 uppercase mb-3">Páginas do Lab</h2>
+        <div className="flex flex-wrap gap-2.5">
+          {LAB_PAGES.map(p => {
+            const st = STATUS_META[p.status]
+            return (
+              <Link key={p.key} href={p.href} target={p.href.startsWith('/lab') ? '_blank' : undefined}
+                className="group flex items-center gap-2 bg-white border border-stone-200 hover:border-gold rounded-full pl-4 pr-3 py-2 transition-colors"
+                style={{ boxShadow: 'var(--shadow-card)' }}
+                title={p.note}>
+                <span className="text-sm font-medium text-stone-700 group-hover:text-gold">{p.title}</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </section>
+
+      <h2 className="text-xs font-semibold tracking-wider text-stone-400 uppercase mb-3">Folhas de aprovação</h2>
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
         <table className="w-full text-sm">
           <thead>

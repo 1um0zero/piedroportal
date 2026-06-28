@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
 import SheetAdminPanel from '@/components/lab/SheetAdminPanel'
+import SheetPreviewButton from '@/components/lab/SheetPreviewButton'
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 const VERDICT: Record<string, { label: string; cls: string }> = {
@@ -22,12 +23,17 @@ export default async function LabSheetDetail({ params }: { params: Promise<{ id:
 
   const service = createServiceClient()
   const { data: sheet } = await service.from('lab_sheets')
-    .select('id, title, status, token, reviewer_name, reviewer_email, sent_at, open_until, overall_comment, responded_at')
+    .select('id, lab_key, title, intro, status, token, reviewer_name, reviewer_email, sent_at, open_until, overall_comment, responded_at')
     .eq('id', id).single()
   if (!sheet) redirect('/admin/lab')
 
   const { data: options } = await service.from('lab_options')
-    .select('opt_key, title, verdict, comment, position').eq('sheet_id', id).order('position')
+    .select('opt_key, title, subtitle, verdict, comment, position').eq('sheet_id', id).order('position')
+
+  const previewOptions = (options ?? []).map(o => ({
+    optKey: o.opt_key, title: o.title, subtitle: o.subtitle ?? null,
+    verdict: o.verdict as 'chosen' | 'option' | 'rejected' | null, comment: o.comment,
+  }))
 
   const link = `${SITE}/lab/s/${sheet.token}`
   const answered = sheet.status === 'answered' || sheet.status.startsWith('closed_')
@@ -35,7 +41,13 @@ export default async function LabSheetDetail({ params }: { params: Promise<{ id:
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
       <Link href="/admin/lab" className="text-xs text-stone-400 hover:text-gold">← Folhas</Link>
-      <h1 className="text-2xl font-semibold text-stone-800 mt-2 mb-1">{sheet.title}</h1>
+      <div className="flex items-start justify-between gap-4 mt-2 mb-1">
+        <h1 className="text-2xl font-semibold text-stone-800">{sheet.title}</h1>
+        <SheetPreviewButton
+          title={sheet.title} intro={sheet.intro} reviewerName={sheet.reviewer_name}
+          labKey={sheet.lab_key} options={previewOptions}
+        />
+      </div>
       <p className="text-sm text-stone-500 mb-6">
         Revisor: {sheet.reviewer_name ?? '—'}{sheet.reviewer_email ? ` · ${sheet.reviewer_email}` : ''}
       </p>

@@ -5,15 +5,18 @@
 // Widgets live in src/lab/widgets/mm-fields.tsx (shared with approval sheets).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { MmSlider, MmHint, MmStepper, MmDatalist, MM_MIN, MM_MAX, MM_STEP } from '@/lab/widgets/mm-fields'
+import { MmFloatingSlider, MmSlider, MmHint, MmStepper, MmDatalist, MM_MIN, MM_MAX, MM_STEP } from '@/lab/widgets/mm-fields'
 
 const VARIANTS = [
-  { key: 'B', title: 'Slider + número', tag: 'Recomendada',
-    note: 'A barra mostra o intervalo (0 à esquerda, 60 à direita) e o thumb a posição. Escreves OU arrastas; impossível sair dos limites.',
-    Comp: MmSlider },
-  { key: 'D', title: 'Input + ajuda "0–60"', tag: 'Mínimo',
-    note: 'Campo simples, unidade "mm" à direita e o intervalo ao lado. Tira a linguiça e é honesto.',
+  { key: 'E', title: 'Campo "0–60" + slider flutuante', tag: 'Proposta',
+    note: 'O campo definitivo (mm e escala fora) com o slider a aparecer só ao focar/tocar — limpo nos painéis cheios e, em touch, evita o teclado. Foca o campo para o ver flutuar.',
+    Comp: MmFloatingSlider },
+  { key: 'D', title: 'Campo + ajuda "0–60"', tag: 'Produção',
+    note: 'A base definitiva: campo simples, unidade "mm" à direita e o intervalo ao lado. Elegante e funcional.',
     Comp: MmHint },
+  { key: 'B', title: 'Slider sempre visível', tag: null,
+    note: 'A barra mostra o intervalo e a posição. Boa para um campo isolado, mas polui num painel com dezenas.',
+    Comp: MmSlider },
   { key: 'C', title: 'Stepper ▲▼', tag: null,
     note: 'Botões − / + (e digitação). Limpo, mas de 1 em 1 até 60 é lento e não dá noção do intervalo.',
     Comp: MmStepper },

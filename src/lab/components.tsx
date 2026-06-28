@@ -5,14 +5,15 @@
 // Keys mirror `registry.ts` (LAB_META). Used by the playground and approval sheets.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { MmSlider, MmHint, MmStepper, MmDatalist } from './widgets/mm-fields'
+import { MmSlider, MmHint, MmStepper, MmDatalist, MmFloatingSlider } from './widgets/mm-fields'
 
 type CompMap = Record<string, React.ComponentType>
 
 export const LAB_COMPONENTS: Record<string, CompMap> = {
   'mm-fields': {
-    slider:   MmSlider,
+    floating: MmFloatingSlider,
     hint:     MmHint,
+    slider:   MmSlider,
     stepper:  MmStepper,
     datalist: MmDatalist,
   },

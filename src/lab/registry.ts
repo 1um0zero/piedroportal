@@ -30,10 +30,12 @@ export const LAB_META: Record<string, LabMeta> = {
       'intervalo 0–60). Experimente cada alternativa — escreva e, onde houver, arraste. Marque a sua ' +
       'preferência em cada uma; o comentário esclarece o resto.',
     options: [
-      { key: 'slider',   title: 'Slider + número',
-        note: 'A barra mostra o intervalo (0 à esquerda, 60 à direita) e a posição. Escreve-se OU arrasta-se; impossível sair dos limites.' },
+      { key: 'floating', title: 'Campo “0–60” + slider flutuante',
+        note: 'O campo definitivo (mm e escala fora) e, ao tocar/focar, aparece um slider flutuante — limpo nos painéis cheios e, no telemóvel, evita o teclado.' },
       { key: 'hint',     title: 'Campo + indicação “0–60”',
         note: 'Campo simples com a unidade “mm” à direita e o intervalo permitido ao lado.' },
+      { key: 'slider',   title: 'Slider + número (sempre visível)',
+        note: 'A barra mostra o intervalo (0 à esquerda, 60 à direita) e a posição. Escreve-se OU arrasta-se; impossível sair dos limites.' },
       { key: 'stepper',  title: 'Campo com botões ▲▼',
         note: 'Botões − / + para acertar de 1 em 1, além de se poder escrever.' },
       { key: 'datalist', title: 'Atual (lista pendente)',

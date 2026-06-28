@@ -15,10 +15,12 @@ const VERDICTS: { key: Exclude<Verdict, null>; label: string; active: string }[]
 ]
 
 export default function ApprovalSheetForm({
-  token, labKey, options, closed, answered, overallComment,
+  token, labKey, options, closed, answered, overallComment, preview = false,
 }: {
   token: string; labKey: string; options: Opt[]
   closed: boolean; answered: boolean; overallComment: string | null
+  /** Preview mode (admin): widgets interactive, but no submit and no server writes. */
+  preview?: boolean
 }) {
   const meta = getLabMeta(labKey)
   const noteFor = (k: string) => meta?.options.find(o => o.key === k)?.note
@@ -122,7 +124,11 @@ export default function ApprovalSheetForm({
         />
       </section>
 
-      {!readOnly && (
+      {preview && (
+        <p className="text-center text-xs text-stone-400">Pré-visualização — nada é guardado neste modo.</p>
+      )}
+
+      {!readOnly && !preview && (
         <div className="flex items-center justify-between gap-4 pt-1">
           {error && <p className="text-sm text-red-500">{error}</p>}
           <button type="button" onClick={submit} disabled={saving}
