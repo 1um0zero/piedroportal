@@ -51,6 +51,7 @@ export default async function AdminProductsPage() {
               <Link href="/admin/products/import" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('import_excel')}</Link>
               <Link href="/admin/products/images" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('bulk_images')}</Link>
               <Link href="/admin/products/order" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">{t('gallery_order')}</Link>
+              <Link href="/admin/products/styles" className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">Styles &amp; maquettes</Link>
             </>
           )}
         </div>
