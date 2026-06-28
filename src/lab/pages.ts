@@ -19,11 +19,18 @@ export type LabPage = {
 export const LAB_PAGES: LabPage[] = [
   {
     key: 'mm-fields',
-    title: 'Campos mm',
+    title: 'Campos numéricos (range)',
     href: '/lab/mm-fields',
-    status: 'active',
+    status: 'shipped',
     approvableLabKey: 'mm-fields',
-    note: 'Widget de introdução de milímetros (0–60).',
+    note: 'Campo + unidade + (range) com slider flutuante. Em produção no OSB (RangeField).',
+  },
+  {
+    key: 'combo-lists',
+    title: 'Campos — lista combo',
+    href: '/lab/combo-lists',
+    status: 'active',
+    note: 'Chips de opção a flutuar num popover (vs inline). Casos reais do OSB.',
   },
   {
     key: 'spinner',

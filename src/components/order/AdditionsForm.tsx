@@ -8,6 +8,7 @@ import { ZSM_PREFAB_OPTIONS, zsmSheetColours, type ZsmGroup } from './zsm-profil
 import { soleImages } from './sole-images'
 import SoleStage from './SoleStage'
 import { GlbViewer } from './GlbViewer'
+import { RangeField } from '@/components/ui/RangeField'
 import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -33,51 +34,15 @@ type Props = {
 
 // ── Chip components ───────────────────────────────────────────────────────────
 
-// Text input with datalist — shows valid options, snaps to nearest on blur
-let _mmId = 0
-function MmInput({ values, value, onChange, onBlurDone }: {
+// Numeric field with a defined range → the project's standard RangeField:
+// a small field + "mm (min–max)" with a slider that floats on focus (touch-friendly).
+function MmInput(props: {
   values: (number | string)[]
   value: unknown
   onChange: (v: number | string | null) => void
   onBlurDone?: (v: number | string | null) => void
 }) {
-  const [id] = useState(() => `mm-${++_mmId}`)
-  const strValues = values.map(String)
-  return (
-    <div className="relative">
-      <input
-        list={id}
-        type="text"
-        inputMode="numeric"
-        value={value == null ? '' : `${String(value)} mm`}
-        placeholder="mm"
-        onChange={e => {
-          const typed = e.target.value.replace(/ mm$/i, '')
-          if (typed === '') { onChange(null); return }
-          const allowed = strValues.some(v => v.startsWith(typed) || typed === v)
-          if (allowed) onChange(typed)
-        }}
-        onBlur={e => {
-          const typed = e.target.value.replace(/ mm$/i, '')
-          if (!typed) { onChange(null); onBlurDone?.(null); return }
-          const exact = strValues.find(v => v === typed)
-          if (exact) { const n = parseFloat(exact); onChange(n); onBlurDone?.(n); return }
-          const v = parseFloat(typed)
-          if (isNaN(v)) { onChange(null); onBlurDone?.(null); return }
-          const nearest = strValues.reduce((p, c) =>
-            Math.abs(parseFloat(c) - v) < Math.abs(parseFloat(p) - v) ? c : p
-          )
-          const n = parseFloat(nearest); onChange(n); onBlurDone?.(n)
-        }}
-        onFocus={e => e.target.select()}
-        className="w-24 h-9 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg text-center
-                   focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold transition-colors"
-      />
-      <datalist id={id}>
-        {strValues.map(v => <option key={v} value={v} />)}
-      </datalist>
-    </div>
-  )
+  return <RangeField {...props} unit="mm" />
 }
 
 // ── Shared option picker (one strip, click fills active foot) ─────────────────
