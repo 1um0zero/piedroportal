@@ -37,7 +37,10 @@ function MeasurementGrid({
   setSide: (key: string, side: 'l' | 'r', v: number | string | '') => void
   num: (e: React.ChangeEvent<HTMLInputElement>) => number | ''
 }) {
-  const [active, setActive] = useState<string | null>(null)
+  // hover previews the marker; focus pins it (stays fixed until another field is focused)
+  const [hover, setHover] = useState<string | null>(null)
+  const [focused, setFocused] = useState<string | null>(null)
+  const active = focused ?? hover
   const inputCls = (on: boolean) =>
     `w-16 rounded-lg border px-2 py-2 text-sm text-center tabular-nums transition-colors
      ${on ? 'border-gold ring-1 ring-gold/40' : 'border-stone-300'}`
@@ -51,19 +54,19 @@ function MeasurementGrid({
     const on = active === no
     return (
       <div key={f.key}
-        onMouseEnter={() => no && setActive(no)} onMouseLeave={() => setActive(null)}
+        onMouseEnter={() => no && setHover(no)} onMouseLeave={() => setHover(null)}
         className="grid grid-cols-[auto_1fr_auto] items-center gap-2 py-1">
         <div className="flex items-center gap-1 justify-self-start">
           <input inputMode="numeric" value={sv.l ?? ''} onChange={e => setSide(f.key, 'l', num(e))}
-            onFocus={() => no && setActive(no)} onBlur={() => setActive(null)} className={inputCls(on)} />
+            onFocus={() => no && setFocused(no)} onBlur={() => setFocused(null)} className={inputCls(on)} />
           <span className="text-[11px] text-stone-400">mm</span>
         </div>
-        <div className={`text-center text-xs font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>
+        <div className={`text-left text-xs font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>
           <span className="text-stone-400">{no}.</span> {title}
         </div>
         <div className="flex items-center gap-1 justify-self-end">
           <input inputMode="numeric" value={sv.r ?? ''} onChange={e => setSide(f.key, 'r', num(e))}
-            onFocus={() => no && setActive(no)} onBlur={() => setActive(null)} className={inputCls(on)} />
+            onFocus={() => no && setFocused(no)} onBlur={() => setFocused(null)} className={inputCls(on)} />
           <span className="text-[11px] text-stone-400">mm</span>
         </div>
       </div>
@@ -71,10 +74,10 @@ function MeasurementGrid({
   })
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">
-        <div className="mb-1 grid grid-cols-[auto_1fr_auto] gap-2 px-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">
-          <span className="w-16 text-center">Left</span><span /><span className="w-16 text-center">Right</span>
+        <div className="mb-1 grid grid-cols-[auto_1fr_auto] gap-2 text-[10px] font-semibold uppercase tracking-wide text-stone-400">
+          <span className="w-16 text-left">Left</span><span /><span className="w-16 text-left">Right</span>
         </div>
         {rows}
       </div>
