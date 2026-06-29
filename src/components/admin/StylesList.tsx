@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState, useTransition } from 'react'
+import { GridFloatingNav } from '@/components/ui/table-controls'
 import { setStyleNumColours, uploadStyleMaquette } from '@/app/actions/admin-styles'
 
 export type StyleRow = {
@@ -16,6 +17,7 @@ export default function StylesList({ rows: initial }: { rows: StyleRow[] }) {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'missing' | 'no-maquette' | 'has-maquette'>('all')
   const [preview, setPreview] = useState<string | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const shown = useMemo(() => rows.filter(r => {
     if (q && !r.styleName.toLowerCase().includes(q.toLowerCase())) return false
@@ -46,7 +48,7 @@ export default function StylesList({ rows: initial }: { rows: StyleRow[] }) {
         <span className="text-stone-400">nr. colours: {filledColours}/{rows.length} · maquettes: {withMaquette}/{rows.length}</span>
       </div>
 
-      <div className="overflow-hidden rounded-[14px] border border-stone-200" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <div ref={scrollRef} className="overflow-x-auto rounded-[14px] border border-stone-200" style={{ boxShadow: 'var(--shadow-card)' }}>
         <table className="w-full text-sm">
           <thead className="bg-stone-50 text-left text-xs uppercase tracking-wide text-stone-400">
             <tr>
@@ -62,6 +64,10 @@ export default function StylesList({ rows: initial }: { rows: StyleRow[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* Canonical list nav: top/bottom + sideways scroll (no pager — the list isn't paginated).
+          Bottom-left so it never overlaps the maquette preview (bottom-right). */}
+      <GridFloatingNav scrollRef={scrollRef} position="bottom-6 left-6" />
 
       {/* Floating enlarged maquette — shown on thumbnail hover OR while editing nr. colours,
           so you can read the circled piece-numbers while typing the count. */}
