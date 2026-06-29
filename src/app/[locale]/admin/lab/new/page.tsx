@@ -11,9 +11,11 @@ export default async function NewLabSheetPage() {
   const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!isPiedroAdmin(me?.role)) redirect('/gallery')
 
-  const labs = Object.values(LAB_META).map(m => ({
-    key: m.key, title: m.title, intro: m.intro ?? '', count: m.options.length,
-  }))
+  // Only 'alternatives' labs are created here; 'approval' sheets (e.g. custom-leather)
+  // originate from their own tool, which captures the subject (the painted maquette).
+  const labs = Object.values(LAB_META)
+    .filter(m => (m.kind ?? 'alternatives') === 'alternatives')
+    .map(m => ({ key: m.key, title: m.title, intro: m.intro ?? '', count: m.options.length }))
 
   return (
     <div className="max-w-xl mx-auto px-6 py-10">

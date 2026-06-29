@@ -2,13 +2,14 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { isPiedroAdmin } from '@/lib/roles'
+import { isPiedroAdmin, isSuperAdmin } from '@/lib/roles'
 import { LAB_PAGES, STATUS_META } from '@/lab/pages'
+import { APPROVAL_VERDICTS } from '@/lab/registry'
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  draft:              { label: 'Rascunho',              cls: 'bg-stone-100 text-stone-500' },
-  sent:               { label: 'Enviada',               cls: 'bg-blue-50 text-blue-500' },
-  answered:           { label: 'Respondida',            cls: 'bg-gold/15 text-gold' },
+  draft:              { label: 'Esboço',                cls: 'bg-stone-100 text-stone-500' },
+  sent:               { label: 'Para aprovar',          cls: 'bg-blue-50 text-blue-500' },
+  answered:           { label: 'Respondido',            cls: 'bg-gold/15 text-gold' },
   closed_implemented: { label: 'Fechada · implementada', cls: 'bg-green-50 text-green-600' },
   closed_cancelled:   { label: 'Fechada · cancelada',    cls: 'bg-red-50 text-red-500' },
 }
@@ -19,10 +20,13 @@ export default async function AdminLabPage() {
   if (!user) redirect('/login')
   const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!isPiedroAdmin(me?.role)) redirect('/gallery')
+  // The experiments dashboard ("Páginas do Lab") is an internal/technical tool —
+  // super_admin only. Operational admins (e.g. Anabela) see just the approval sheets.
+  const showExperiments = isSuperAdmin(me?.role)
 
   const service = createServiceClient()
   const { data: sheets } = await service.from('lab_sheets')
-    .select('id, title, status, reviewer_name, sent_at, open_until, responded_at, created_at')
+    .select('id, title, status, reviewer_name, sent_at, open_until, responded_at, created_at, verdict')
     .order('created_at', { ascending: false })
 
   return (
@@ -36,24 +40,26 @@ export default async function AdminLabPage() {
           className="bg-gold text-white px-5 py-2.5 rounded-lg text-sm font-semibold">+ Nova folha</Link>
       </div>
 
-      {/* Páginas do Lab — todas as experiências criadas (agora e anteriores) */}
-      <section className="mb-8">
-        <h2 className="text-xs font-semibold tracking-wider text-stone-400 uppercase mb-3">Páginas do Lab</h2>
-        <div className="flex flex-wrap gap-2.5">
-          {LAB_PAGES.map(p => {
-            const st = STATUS_META[p.status]
-            return (
-              <Link key={p.key} href={p.href} target={p.href.startsWith('/lab') ? '_blank' : undefined}
-                className="group flex items-center gap-2 bg-white border border-stone-200 hover:border-gold rounded-full pl-4 pr-3 py-2 transition-colors"
-                style={{ boxShadow: 'var(--shadow-card)' }}
-                title={p.note}>
-                <span className="text-sm font-medium text-stone-700 group-hover:text-gold">{p.title}</span>
-                <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </section>
+      {/* Páginas do Lab — experiências internas; super_admin apenas. */}
+      {showExperiments && (
+        <section className="mb-8">
+          <h2 className="text-xs font-semibold tracking-wider text-stone-400 uppercase mb-3">Páginas do Lab</h2>
+          <div className="flex flex-wrap gap-2.5">
+            {LAB_PAGES.map(p => {
+              const st = STATUS_META[p.status]
+              return (
+                <Link key={p.key} href={p.href} target={p.href.startsWith('/lab') ? '_blank' : undefined}
+                  className="group flex items-center gap-2 bg-white border border-stone-200 hover:border-gold rounded-full pl-4 pr-3 py-2 transition-colors"
+                  style={{ boxShadow: 'var(--shadow-card)' }}
+                  title={p.note}>
+                  <span className="text-sm font-medium text-stone-700 group-hover:text-gold">{p.title}</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       <h2 className="text-xs font-semibold tracking-wider text-stone-400 uppercase mb-3">Folhas de aprovação</h2>
       <div className="bg-white rounded-[14px] overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
@@ -77,6 +83,10 @@ export default async function AdminLabPage() {
                   <td className="px-5 py-3 text-stone-500">{s.reviewer_name ?? '—'}</td>
                   <td className="px-5 py-3">
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
+                    {s.status === 'answered' && s.verdict && (() => {
+                      const v = APPROVAL_VERDICTS.find(x => x.key === s.verdict)
+                      return v ? <span className={`ml-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${v.cls}`}>{v.label}</span> : null
+                    })()}
                   </td>
                   <td className="px-5 py-3 text-stone-500">
                     {s.responded_at ? new Date(s.responded_at).toLocaleDateString('pt-PT') : '—'}

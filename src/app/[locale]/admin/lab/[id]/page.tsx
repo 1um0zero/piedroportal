@@ -5,6 +5,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
 import SheetAdminPanel from '@/components/lab/SheetAdminPanel'
 import SheetPreviewButton from '@/components/lab/SheetPreviewButton'
+import ApprovalDecisionForm from '@/components/lab/ApprovalDecisionForm'
+import { isApprovalKind, APPROVAL_VERDICTS, type ApprovalVerdict } from '@/lab/registry'
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
 const VERDICT: Record<string, { label: string; cls: string }> = {
@@ -23,11 +25,12 @@ export default async function LabSheetDetail({ params }: { params: Promise<{ id:
 
   const service = createServiceClient()
   const { data: sheet } = await service.from('lab_sheets')
-    .select('id, lab_key, title, intro, status, token, reviewer_name, reviewer_email, sent_at, open_until, overall_comment, responded_at')
+    .select('id, lab_key, title, intro, status, token, reviewer_name, reviewer_email, sent_at, open_until, overall_comment, responded_at, verdict, subject_data')
     .eq('id', id).single()
   if (!sheet) redirect('/admin/lab')
 
-  const { data: options } = await service.from('lab_options')
+  const isApproval = isApprovalKind(sheet.lab_key)
+  const { data: options } = isApproval ? { data: [] } : await service.from('lab_options')
     .select('opt_key, title, subtitle, verdict, comment, position').eq('sheet_id', id).order('position')
 
   const previewOptions = (options ?? []).map(o => ({
@@ -36,20 +39,29 @@ export default async function LabSheetDetail({ params }: { params: Promise<{ id:
   }))
 
   const link = `${SITE}/lab/s/${sheet.token}`
-  const answered = sheet.status === 'answered' || sheet.status.startsWith('closed_')
+  const closed = sheet.status.startsWith('closed_')
+  const answered = sheet.status === 'answered' || closed
+  const approvalVerdict = APPROVAL_VERDICTS.find(v => v.key === sheet.verdict)
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
       <Link href="/admin/lab" className="text-xs text-stone-400 hover:text-gold">← Folhas</Link>
       <div className="flex items-start justify-between gap-4 mt-2 mb-1">
         <h1 className="text-2xl font-semibold text-stone-800">{sheet.title}</h1>
-        <SheetPreviewButton
-          title={sheet.title} intro={sheet.intro} reviewerName={sheet.reviewer_name}
-          labKey={sheet.lab_key} options={previewOptions}
-        />
+        {!isApproval && (
+          <SheetPreviewButton
+            title={sheet.title} intro={sheet.intro} reviewerName={sheet.reviewer_name}
+            labKey={sheet.lab_key} options={previewOptions}
+          />
+        )}
       </div>
       <p className="text-sm text-stone-500 mb-6">
         Revisor: {sheet.reviewer_name ?? '—'}{sheet.reviewer_email ? ` · ${sheet.reviewer_email}` : ''}
+        {isApproval && answered && approvalVerdict && (
+          <span className={`ml-2 inline-block rounded-full border px-2 py-0.5 text-[11px] font-semibold ${approvalVerdict.cls}`}>
+            {approvalVerdict.label}
+          </span>
+        )}
       </p>
 
       <SheetAdminPanel
@@ -57,7 +69,22 @@ export default async function LabSheetDetail({ params }: { params: Promise<{ id:
         sentAt={sheet.sent_at} openUntil={sheet.open_until}
       />
 
-      {answered && (
+      {/* Approval kind: decide directly in-app (no email needed). */}
+      {isApproval && (
+        <div className="mt-6">
+          <p className="text-xs text-stone-400 mb-2">Aprovação direta — sem necessitar de enviar por email.</p>
+          <ApprovalDecisionForm
+            sheetId={sheet.id}
+            subjectData={sheet.subject_data}
+            verdict={(sheet.verdict as ApprovalVerdict | null) ?? null}
+            comment={sheet.overall_comment}
+            closed={closed}
+            answered={answered}
+          />
+        </div>
+      )}
+
+      {!isApproval && answered && (
         <div className="mt-6 bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
           <h2 className="text-sm font-semibold text-stone-800 mb-4">Respostas</h2>
           <div className="space-y-3">

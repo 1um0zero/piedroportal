@@ -51,7 +51,8 @@ export const LAB_PAGES: LabPage[] = [
     title: 'CUSTOM — maquete (pele por peça)',
     href: '/admin/custom-leather',
     status: 'active',
-    note: 'Spike: escolher pele (vira pincel) e pintar peças da maquete. Zonas aproximadas à mão.',
+    approvableLabKey: 'custom-leather',
+    note: 'Spike: escolher pele (vira pincel) e pintar peças da maquete. Zonas aproximadas à mão. Pode enviar para aprovação.',
   },
 ]
 

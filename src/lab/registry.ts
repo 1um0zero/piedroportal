@@ -18,8 +18,23 @@ export type LabMeta = {
   key: string
   title: string
   intro?: string
+  /**
+   * 'alternatives' (default) — reviewer marks each option Escolhido/Opção/Recusado.
+   * 'approval'              — ONE subject, one sheet-level verdict
+   *                           Aprovado/Rejeitado/Em discussão (+ comment).
+   */
+  kind?: 'alternatives' | 'approval'
   options: LabOptionMeta[]
 }
+
+/** Sheet-level verdict labels for the 'approval' kind (PT). */
+export const APPROVAL_VERDICTS = [
+  { key: 'approved',   label: 'Aprovado',     cls: 'border-green-300 bg-green-50 text-green-600' },
+  { key: 'rejected',   label: 'Rejeitado',    cls: 'border-red-300 bg-red-50 text-red-500' },
+  { key: 'discussion', label: 'Em discussão', cls: 'border-gold bg-gold/10 text-gold' },
+] as const
+
+export type ApprovalVerdict = (typeof APPROVAL_VERDICTS)[number]['key']
 
 export const LAB_META: Record<string, LabMeta> = {
   'mm-fields': {
@@ -42,8 +57,22 @@ export const LAB_META: Record<string, LabMeta> = {
         note: 'A forma actual: ao clicar abre uma lista com todos os valores. Incluída só para comparação.' },
     ],
   },
+  'custom-leather': {
+    key: 'custom-leather',
+    title: 'Custom — aprovação da pele por peça',
+    kind: 'approval',
+    intro:
+      'Segue a proposta de pele para cada peça da maquete. Confirme se aprova, ' +
+      'rejeita ou quer discutir, e deixe um comentário com o que entender.',
+    options: [],
+  },
 }
 
 export function getLabMeta(labKey: string): LabMeta | undefined {
   return LAB_META[labKey]
+}
+
+/** A sheet uses the single-subject approval flow when its lab is of kind 'approval'. */
+export function isApprovalKind(labKey: string): boolean {
+  return getLabMeta(labKey)?.kind === 'approval'
 }

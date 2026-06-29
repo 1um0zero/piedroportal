@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createSheet } from '@/app/actions/lab'
 
 type Zone = { id: string; name: string; points: string }
 type Maquete = { id: string; image: string; viewBox: string; silhouette?: string; zones: Zone[] }
@@ -15,18 +17,41 @@ type Leather = { id: number; src: string; name: string }
  * isn't reliable — final version would use proper vector maquettes).
  */
 export default function MaqueteLeatherPicker({
-  zonesUrl, leathers,
+  zonesUrl, leathers, approvable = false,
 }: {
   zonesUrl: string
   leathers: Leather[]
+  /** When true, show "Enviar para aprovação" — captures the painted design as a Lab sheet. */
+  approvable?: boolean
 }) {
+  const router = useRouter()
   const [m, setM] = useState<Maquete | null>(null)
   const [assign, setAssign] = useState<Record<string, number>>({})
   const [brush, setBrush] = useState<number | null>(leathers[0]?.id ?? null)
   const [hover, setHover] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+  const [reviewerName, setReviewerName] = useState('')
+  const [reviewerEmail, setReviewerEmail] = useState('')
 
   useEffect(() => { fetch(zonesUrl).then(r => r.json()).then(setM) }, [zonesUrl])
   if (!m) return <div className="text-sm text-stone-400">Loading maquette…</div>
+
+  async function propose() {
+    if (!m) return
+    setSending(true)
+    try {
+      const { id } = await createSheet({
+        labKey: 'custom-leather',
+        reviewerName: reviewerName.trim() || undefined,
+        reviewerEmail: reviewerEmail.trim() || undefined,
+        subjectData: { maquete: m, leathers, assign },
+      })
+      router.push(`/admin/lab/${id}`)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Erro ao criar a folha de aprovação')
+      setSending(false)
+    }
+  }
 
   const leatherOf = (zid: string) => leathers.find(l => l.id === assign[zid]) || null
   const paint = (zid: string) => { if (brush != null) setAssign(a => ({ ...a, [zid]: brush })) }
@@ -114,6 +139,25 @@ export default function MaqueteLeatherPicker({
             )
           })}
         </ul>
+
+        {approvable && (
+          <div className="mt-6 border-t border-stone-100 pt-4">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gold">Enviar para aprovação</h3>
+            <input value={reviewerName} onChange={e => setReviewerName(e.target.value)}
+              placeholder="Nome do revisor (opcional)"
+              className="mb-2 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30" />
+            <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)}
+              placeholder="Email do revisor (opcional)"
+              className="mb-3 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30" />
+            <button type="button" onClick={propose} disabled={sending}
+              className="w-full rounded-lg bg-gold px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+              {sending ? 'A criar folha…' : 'Criar folha de aprovação'}
+            </button>
+            <p className="mt-2 text-[11px] text-stone-400">
+              Cria uma folha em <strong>Esboço</strong>. Depois pode aprovar diretamente ou enviar o link por email.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

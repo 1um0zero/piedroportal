@@ -23,7 +23,7 @@ export default async function CustomLeatherSpike() {
         list — to paint it. Hover highlights the piece. The line-art stays crisp on top (multiply
         blend); the colour shows through the white areas. Zones are hand-approximated for this spike.
       </p>
-      <MaqueteLeatherPicker zonesUrl="/custom/maquete-zones/3310.json" leathers={LEATHERS} />
+      <MaqueteLeatherPicker zonesUrl="/custom/maquete-zones/3310.json" leathers={LEATHERS} approvable />
     </div>
   )
 }

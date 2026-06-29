@@ -29,29 +29,39 @@ async function requireAdmin(): Promise<Me> {
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
 // ── Admin: create a sheet (draft) from a registry lab key ─────────────────────
+// `subjectData` is the JSON snapshot the reviewer sees for an 'approval' sheet
+// (e.g. the painted maquette). For 'alternatives' labs it is ignored and the
+// options are seeded from the registry instead.
 export async function createSheet(input: {
   labKey: string; title?: string; intro?: string; reviewerName?: string; reviewerEmail?: string
+  subjectData?: unknown
 }): Promise<{ id: string }> {
   const me = await requireAdmin()
   const meta = getLabMeta(input.labKey)
   if (!meta) throw new Error('Unknown lab key')
+  const kind = meta.kind ?? 'alternatives'
 
   const service = createServiceClient()
   const { data: sheet, error } = await service.from('lab_sheets').insert({
     lab_key: input.labKey,
+    kind,
     title: input.title?.trim() || meta.title,
     intro: input.intro?.trim() || meta.intro || null,
     reviewer_name: input.reviewerName?.trim() || null,
     reviewer_email: input.reviewerEmail?.trim() || null,
+    subject_data: kind === 'approval' ? (input.subjectData ?? null) : null,
     created_by: me.id,
   }).select('id').single()
   if (error || !sheet) throw new Error(error?.message ?? 'Insert failed')
 
-  const options = meta.options.map((o, i) => ({
-    sheet_id: sheet.id, opt_key: o.key, title: o.title, subtitle: o.subtitle ?? null, position: i,
-  }))
-  const { error: optErr } = await service.from('lab_options').insert(options)
-  if (optErr) throw new Error(optErr.message)
+  // Only 'alternatives' sheets carry per-option rows.
+  if (kind === 'alternatives' && meta.options.length) {
+    const options = meta.options.map((o, i) => ({
+      sheet_id: sheet.id, opt_key: o.key, title: o.title, subtitle: o.subtitle ?? null, position: i,
+    }))
+    const { error: optErr } = await service.from('lab_options').insert(options)
+    if (optErr) throw new Error(optErr.message)
+  }
 
   revalidatePath('/admin/lab')
   return { id: sheet.id }
@@ -131,6 +141,54 @@ export async function submitResponse(input: {
   // Notify Jorge (fire-and-forget; never blocks the reviewer).
   notifyResponse(sheet.id).catch(() => {})
 
+  revalidatePath('/admin/lab')
+  revalidatePath(`/admin/lab/${sheet.id}`)
+}
+
+// ── Single-subject approval (custom-leather etc.) ─────────────────────────────
+// Two callers share this:
+//   • Reviewer via the token link  → pass { token } (open-window or login gate).
+//   • Internal admin in-app         → pass { sheetId } (no email needed).
+// Sets a sheet-level verdict (approved/rejected/discussion) + a comment, marks
+// the sheet 'answered', and notifies Jorge. The sheet stays until he closes it,
+// so an "Em discussão" thread keeps living as 'answered'.
+export async function submitApproval(input: {
+  token?: string; sheetId?: string
+  verdict: 'approved' | 'rejected' | 'discussion'; comment?: string
+}): Promise<void> {
+  const service = createServiceClient()
+
+  let sheet: { id: string; status: string; open_until: string | null } | null = null
+  if (input.sheetId) {
+    await requireAdmin()                       // in-app path: any piedro_admin may decide
+    const { data } = await service.from('lab_sheets')
+      .select('id, status, open_until').eq('id', input.sheetId).single()
+    sheet = data
+  } else if (input.token) {
+    const { data } = await service.from('lab_sheets')
+      .select('id, status, open_until').eq('token', input.token).single()
+    sheet = data
+    // After the no-login window, the token path requires an authenticated session.
+    const open = !!sheet?.open_until && todayISO() <= sheet.open_until
+    if (sheet && !open) {
+      const supabase = await createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Login required')
+    }
+  }
+  if (!sheet) throw new Error('Sheet not found')
+  if (sheet.status.startsWith('closed_')) throw new Error('This sheet is closed')
+
+  const { error } = await service.from('lab_sheets').update({
+    status: 'answered',
+    verdict: input.verdict,
+    overall_comment: input.comment?.trim() || null,
+    responded_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }).eq('id', sheet.id)
+  if (error) throw new Error(error.message)
+
+  notifyResponse(sheet.id).catch(() => {})
   revalidatePath('/admin/lab')
   revalidatePath(`/admin/lab/${sheet.id}`)
 }

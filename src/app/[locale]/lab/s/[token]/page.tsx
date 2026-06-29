@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import ApprovalSheetForm from '@/components/lab/ApprovalSheetForm'
+import ApprovalDecisionForm from '@/components/lab/ApprovalDecisionForm'
+import { isApprovalKind, type ApprovalVerdict } from '@/lab/registry'
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
@@ -24,14 +26,15 @@ export default async function ReviewerSheetPage({ params }: { params: Promise<{ 
   const service = createServiceClient()
 
   const { data: sheet } = await service.from('lab_sheets')
-    .select('id, lab_key, title, intro, status, open_until, reviewer_name, overall_comment')
+    .select('id, lab_key, title, intro, status, open_until, reviewer_name, overall_comment, verdict, subject_data')
     .eq('token', token).single()
 
   if (!sheet) {
     return <Shell><div className="bg-white rounded-[14px] p-8 text-center text-stone-500" style={{ boxShadow: 'var(--shadow-card)' }}>Folha não encontrada.</div></Shell>
   }
 
-  const { data: options } = await service.from('lab_options')
+  const isApproval = isApprovalKind(sheet.lab_key)
+  const { data: options } = isApproval ? { data: [] } : await service.from('lab_options')
     .select('opt_key, title, subtitle, position, verdict, comment')
     .eq('sheet_id', sheet.id).order('position')
 
@@ -73,17 +76,28 @@ export default async function ReviewerSheetPage({ params }: { params: Promise<{ 
         {sheet.intro && <p className="text-sm text-stone-500 mt-1 leading-relaxed">{sheet.intro}</p>}
       </header>
 
-      <ApprovalSheetForm
-        token={token}
-        labKey={sheet.lab_key}
-        closed={closed}
-        answered={sheet.status === 'answered'}
-        overallComment={sheet.overall_comment}
-        options={(options ?? []).map(o => ({
-          optKey: o.opt_key, title: o.title, subtitle: o.subtitle,
-          verdict: o.verdict as 'chosen' | 'option' | 'rejected' | null, comment: o.comment,
-        }))}
-      />
+      {isApproval ? (
+        <ApprovalDecisionForm
+          token={token}
+          subjectData={sheet.subject_data}
+          verdict={(sheet.verdict as ApprovalVerdict | null) ?? null}
+          comment={sheet.overall_comment}
+          closed={closed}
+          answered={sheet.status === 'answered'}
+        />
+      ) : (
+        <ApprovalSheetForm
+          token={token}
+          labKey={sheet.lab_key}
+          closed={closed}
+          answered={sheet.status === 'answered'}
+          overallComment={sheet.overall_comment}
+          options={(options ?? []).map(o => ({
+            optKey: o.opt_key, title: o.title, subtitle: o.subtitle,
+            verdict: o.verdict as 'chosen' | 'option' | 'rejected' | null, comment: o.comment,
+          }))}
+        />
+      )}
     </Shell>
   )
 }
