@@ -17,23 +17,33 @@ type Leather = { id: number; src: string; name: string }
  * isn't reliable — final version would use proper vector maquettes).
  */
 export default function MaqueteLeatherPicker({
-  zonesUrl, leathers, approvable = false,
+  zonesUrl, leathers, approvable = false, maquete, initialAssign, readOnly = false,
 }: {
-  zonesUrl: string
+  /** Fetch the maquette JSON from here — OR pass `maquete` preloaded (approval sheet). */
+  zonesUrl?: string
   leathers: Leather[]
   /** When true, show "Enviar para aprovação" — captures the painted design as a Lab sheet. */
   approvable?: boolean
+  /** Preloaded maquette (e.g. from a sheet's subject_data) — skips the fetch. */
+  maquete?: Maquete
+  /** Initial zone → leather assignment (the captured proposal). */
+  initialAssign?: Record<string, number>
+  /** Read-only: keeps the leather render + hover + piece legend, but no painting/brush/send. */
+  readOnly?: boolean
 }) {
   const router = useRouter()
-  const [m, setM] = useState<Maquete | null>(null)
-  const [assign, setAssign] = useState<Record<string, number>>({})
+  const [m, setM] = useState<Maquete | null>(maquete ?? null)
+  const [assign, setAssign] = useState<Record<string, number>>(initialAssign ?? {})
   const [brush, setBrush] = useState<number | null>(leathers[0]?.id ?? null)
   const [hover, setHover] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [reviewerName, setReviewerName] = useState('')
   const [reviewerEmail, setReviewerEmail] = useState('')
 
-  useEffect(() => { fetch(zonesUrl).then(r => r.json()).then(setM) }, [zonesUrl])
+  useEffect(() => {
+    if (maquete || !zonesUrl) return
+    fetch(zonesUrl).then(r => r.json()).then(setM)
+  }, [zonesUrl, maquete])
   if (!m) return <div className="text-sm text-stone-400">Loading maquette…</div>
 
   async function propose() {
@@ -54,8 +64,8 @@ export default function MaqueteLeatherPicker({
   }
 
   const leatherOf = (zid: string) => leathers.find(l => l.id === assign[zid]) || null
-  const paint = (zid: string) => { if (brush != null) setAssign(a => ({ ...a, [zid]: brush })) }
-  const applyAll = () => { if (brush != null) setAssign(Object.fromEntries(m.zones.map(z => [z.id, brush]))) }
+  const paint = (zid: string) => { if (!readOnly && brush != null) setAssign(a => ({ ...a, [zid]: brush })) }
+  const applyAll = () => { if (!readOnly && brush != null) setAssign(Object.fromEntries(m.zones.map(z => [z.id, brush]))) }
 
   return (
     <div className="flex flex-wrap gap-8">
@@ -90,7 +100,7 @@ export default function MaqueteLeatherPicker({
             <polygon key={z.id} points={z.points}
               fill="transparent"
               stroke={hover === z.id ? '#B8975A' : 'transparent'} strokeWidth={2}
-              className="cursor-pointer"
+              className={readOnly ? '' : 'cursor-pointer'}
               onMouseEnter={() => setHover(z.id)} onMouseLeave={() => setHover(null)}
               onClick={() => paint(z.id)} />
           ))}
@@ -104,22 +114,26 @@ export default function MaqueteLeatherPicker({
 
       {/* ── Palette + piece list ── */}
       <div className="w-72">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-gold">Leathers</h3>
-          <button onClick={applyAll} className="text-[11px] text-stone-500 underline hover:text-gold">apply to all</button>
-        </div>
-        <div className="mb-6 grid grid-cols-4 gap-2">
-          {leathers.map(l => (
-            <button key={l.id} title={l.name} onClick={() => setBrush(l.id)}
-              className={`relative h-14 w-full overflow-hidden rounded-lg border-2 transition-all
-                ${brush === l.id ? 'border-gold ring-2 ring-gold/30' : 'border-stone-200 hover:border-gold/50'}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={l.src} alt={l.name} className="h-full w-full object-cover" />
-            </button>
-          ))}
-        </div>
+        {!readOnly && (
+          <>
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-gold">Leathers</h3>
+              <button onClick={applyAll} className="text-[11px] text-stone-500 underline hover:text-gold">apply to all</button>
+            </div>
+            <div className="mb-6 grid grid-cols-4 gap-2">
+              {leathers.map(l => (
+                <button key={l.id} title={l.name} onClick={() => setBrush(l.id)}
+                  className={`relative h-14 w-full overflow-hidden rounded-lg border-2 transition-all
+                    ${brush === l.id ? 'border-gold ring-2 ring-gold/30' : 'border-stone-200 hover:border-gold/50'}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={l.src} alt={l.name} className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gold">Pieces</h3>
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gold">Peças</h3>
         <ul className="space-y-1.5">
           {m.zones.map((z, i) => {
             const l = leatherOf(z.id)
@@ -127,8 +141,8 @@ export default function MaqueteLeatherPicker({
               <li key={z.id}
                 onMouseEnter={() => setHover(z.id)} onMouseLeave={() => setHover(null)}
                 onClick={() => paint(z.id)}
-                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2 py-1.5 text-sm transition-colors
-                  ${hover === z.id ? 'border-gold bg-gold/5' : 'border-stone-200'}`}>
+                className={`flex items-center gap-2 rounded-lg border px-2 py-1.5 text-sm transition-colors
+                  ${readOnly ? '' : 'cursor-pointer'} ${hover === z.id ? 'border-gold bg-gold/5' : 'border-stone-200'}`}>
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-stone-100 text-[10px] text-stone-500">{i + 1}</span>
                 <span className="flex-1 text-stone-700">{z.name}</span>
                 {l

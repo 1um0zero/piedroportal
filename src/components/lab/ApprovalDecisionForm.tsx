@@ -9,7 +9,10 @@
 import { useState } from 'react'
 import { APPROVAL_VERDICTS, type ApprovalVerdict } from '@/lab/registry'
 import { submitApproval } from '@/app/actions/lab'
-import MaquetePreview, { type LeatherProposal } from '@/components/custom/MaquetePreview'
+import MaqueteLeatherPicker from '@/components/custom/MaqueteLeatherPicker'
+
+type Maquete = { id: string; image: string; viewBox: string; silhouette?: string; zones: { id: string; name: string; points: string }[] }
+type LeatherProposal = { maquete: Maquete; leathers: { id: number; src: string; name: string }[]; assign: Record<string, number> }
 
 export default function ApprovalDecisionForm({
   token, sheetId, subjectData, verdict, comment, closed, answered, preview = false,
@@ -55,7 +58,11 @@ export default function ApprovalDecisionForm({
 
       <section className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
         {proposal
-          ? <MaquetePreview proposal={proposal} />
+          ? <MaqueteLeatherPicker
+              leathers={proposal.leathers}
+              maquete={proposal.maquete}
+              initialAssign={proposal.assign}
+              readOnly />
           : <p className="text-sm text-stone-400">— sem pré-visualização do assunto —</p>}
       </section>
 
