@@ -478,8 +478,42 @@ const SECTION_SOLES: CustomSection = {
 }
 
 // ─── Section cs5 — STIFFENERS & TOE ───────────────────────────────────────────
-// Modelled from the Excel prose (rows 287–303). The 20 stiffener options get image
-// chips once Piedro sends the pictures; for now a text type placeholder.
+// Modelled from the Excel prose (rows 287–303). The 20 stiffener options are wired
+// as image chips from Piedro's Contreforts/ source set (docs/custom/Contreforts →
+// public/custom/stiffener). Each option = a stiffener shape × reinforcement level.
+// Values use Piedro's NL source names; EN/FR/DE labels come with the rest of cs5.
+const STIFF = '/custom/stiffener'
+const STIFFENER_TYPES = [
+  'Normaal · Standaard', 'Normaal · Extra',
+  'Hoog · Standaard', 'Hoog · Extra', 'Hoog · Dubbele',
+  'Binnen Normaal Lateraal Hoog · Standaard', 'Binnen Normaal Lateraal Hoog · Extra', 'Binnen Normaal Lateraal Hoog · Dubbele',
+  'Mediaal Hoog Lateraal Normaal · Standaard', 'Mediaal Hoog Lateraal Normaal · Extra', 'Mediaal Hoog Lateraal Normaal · Dubbele',
+  'Mediaal en Lateraal Hoog · Standaard', 'Mediaal en Lateraal Hoog · Extra', 'Mediaal en Lateraal Hoog · Dubbele',
+  'Hoge Peroneus · Standaard', 'Hoge Peroneus · Extra', 'Hoge Peroneus · Dubbele',
+  'Hoge Peroneus Beide Zijde · Standaard', 'Hoge Peroneus Beide Zijde · Extra', 'Hoge Peroneus Beide Zijde · Dubbele',
+]
+const STIFFENER_IMAGES: Record<string, string> = {
+  'Normaal · Standaard': `${STIFF}/normaal-standaard-versteviging.png`,
+  'Normaal · Extra': `${STIFF}/normaal-extra-versteviging.png`,
+  'Hoog · Standaard': `${STIFF}/hoog-standaard-versteviging.png`,
+  'Hoog · Extra': `${STIFF}/hoog-extra-versteviging.png`,
+  'Hoog · Dubbele': `${STIFF}/hoog-dubbele-versteviging.png`,
+  'Binnen Normaal Lateraal Hoog · Standaard': `${STIFF}/binnen-normaal-lateraal-hoog-standaard-versteviging.png`,
+  'Binnen Normaal Lateraal Hoog · Extra': `${STIFF}/binnen-normaal-lateraal-hoog-extra-versteviging.png`,
+  'Binnen Normaal Lateraal Hoog · Dubbele': `${STIFF}/binnen-normaal-lateraal-hoog-dubbele-versteviging.png`,
+  'Mediaal Hoog Lateraal Normaal · Standaard': `${STIFF}/mediaal-hoog-lateraal-normaal-standaard-versteviging.png`,
+  'Mediaal Hoog Lateraal Normaal · Extra': `${STIFF}/mediaal-hoog-lateraal-normaal-extra-versteviging.png`,
+  'Mediaal Hoog Lateraal Normaal · Dubbele': `${STIFF}/mediaal-hoog-lateraal-normaal-dubbele-versteviging.png`,
+  'Mediaal en Lateraal Hoog · Standaard': `${STIFF}/mediaal-en-lateraal-hoog-standaard-versteviging.png`,
+  'Mediaal en Lateraal Hoog · Extra': `${STIFF}/mediaal-en-lateraal-hoog-extra-versteviging.png`,
+  'Mediaal en Lateraal Hoog · Dubbele': `${STIFF}/mediaal-en-lateraal-hoog-dubbele-versteviging.png`,
+  'Hoge Peroneus · Standaard': `${STIFF}/hoge-peroneus-standaard-versteviging.png`,
+  'Hoge Peroneus · Extra': `${STIFF}/hoge-peroneus-extra-versteviging.png`,
+  'Hoge Peroneus · Dubbele': `${STIFF}/hoge-peroneus-dubbele-versteviging.png`,
+  'Hoge Peroneus Beide Zijde · Standaard': `${STIFF}/hoge-peroneus-beide-zijde-standaard-versteviging.png`,
+  'Hoge Peroneus Beide Zijde · Extra': `${STIFF}/hoge-peroneus-beide-zijde-extra-versteviging.png`,
+  'Hoge Peroneus Beide Zijde · Dubbele': `${STIFF}/hoge-peroneus-beide-zijde-dubbele-versteviging.png`,
+}
 const SECTION_STIFFENER: CustomSection = {
   key: 'stiffener',
   label: { en: 'Stiffeners & Toe', nl: 'Contreforts & Neus' },
@@ -488,7 +522,7 @@ const SECTION_STIFFENER: CustomSection = {
       key: 'stiffener_materials',
       label: { en: 'Stiffeners Materials' },
       fields: [
-        { key: 'cs5.stiffener_type', type: 'text', side: 'global', label: { en: 'Type (20 options)' }, hint: { en: 'image chips pending from Piedro' }, picturePending: true },
+        { key: 'cs5.stiffener_type', type: 'image', side: 'global', collapse: true, label: { en: 'Stiffener Type' }, values: STIFFENER_TYPES, images: STIFFENER_IMAGES },
         // First/second layer material heights, sided, back/medial/lateral
         mm('1st layer — Back',    'cs5.l1_back'),
         mm('1st layer — Medial',  'cs5.l1_medial'),
