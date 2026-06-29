@@ -43,6 +43,7 @@ export interface CustomField {
   hint?:         CustomI18n            // small helper text (e.g. height label "350 mm", "I")
   picturePending?: boolean             // option needs a Piedro-supplied image (toe shape, soles…)
   thumb?:        string                // small illustration shown beside a toggle label
+  thumbWide?:    boolean               // render the thumb in a wide (landscape) box — e.g. shoe profiles
   images?:       Record<string, string>  // for 'image': option value → SVG/png path
   collapse?:     boolean               // single-select chips: hide the others once one is picked
 }
@@ -414,8 +415,8 @@ const SECTION_UPPER: CustomSection = {
 // Modelled from the Excel prose (rows 229–286). Each heel/wedge type reveals L/R
 // medial/lateral toggles. Rocker reuses the OSB rocker artwork; soles will get the
 // "same as pair-by-pair" photo chips once Piedro delivers the images.
-const heelType = (en: string, key: string): CustomField[] => [
-  yn(en, key),
+const heelType = (en: string, key: string, thumb?: string): CustomField[] => [
+  { ...yn(en, key), ...(thumb ? { thumb, thumbWide: true } : {}) },
   { ...yn('Left — Medial',  `${key}_l_med`), conditionalOn: key },
   { ...yn('Left — Lateral', `${key}_l_lat`), conditionalOn: key },
   { ...yn('Right — Medial', `${key}_r_med`), conditionalOn: key },
@@ -429,10 +430,10 @@ const SECTION_SOLES: CustomSection = {
       key: 'heel_type',
       label: { en: 'Heel Type' },
       fields: [
-        ...heelType('Heel', 'cs4.heel'),
-        ...heelType('Hollow Wedge', 'cs4.hollow_wedge'),
-        ...heelType('Fully Hollow Wedge', 'cs4.fully_hollow_wedge'),
-        ...heelType('Wedge', 'cs4.wedge'),
+        ...heelType('Heel', 'cs4.heel', '/custom/heel/heel.png'),
+        ...heelType('Hollow Wedge', 'cs4.hollow_wedge', '/custom/heel/hollow-wedge.png'),
+        ...heelType('Fully Hollow Wedge', 'cs4.fully_hollow_wedge', '/custom/heel/fully-hollow-wedge.png'),
+        ...heelType('Wedge', 'cs4.wedge', '/custom/heel/wedge.png'),
         mm('Height', 'cs4.height_lf_rf'),
         yn('Measurement Back', 'cs4.measure_back'),
         yn('Measurement Side', 'cs4.measure_side'),

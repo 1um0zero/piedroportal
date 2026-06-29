@@ -58,7 +58,8 @@ export default function CustomAdditionsForm({
             className="h-4 w-4 accent-[#B8975A]" />
           {f.thumb && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={f.thumb} alt={label} className="h-9 w-9 shrink-0 rounded-md border border-stone-200 bg-white object-contain p-0.5" />
+            <img src={f.thumb} alt={label}
+              className={`${f.thumbWide ? 'h-9 w-[72px]' : 'h-9 w-9'} shrink-0 rounded-md border border-stone-200 bg-white object-contain p-0.5`} />
           )}
           <span className="text-sm text-stone-700">{label}</span>
           {f.picturePending && <span className="text-[10px] text-stone-400">(image pending)</span>}
