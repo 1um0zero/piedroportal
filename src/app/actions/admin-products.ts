@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope, type AdminScope } from '@/lib/admin/scope'
+import { ensureStyles } from '@/lib/admin/styles'
 import {
   parseProducts, diffAgainstExisting,
   type SheetMode, type ExistingProduct, type ImportedProduct,
@@ -147,6 +148,8 @@ export async function applyProductImport(
     const { error } = await service.from('products').insert(toInsert.slice(i, i + BATCH))
     if (error) return { created: 0, skipped, rejected, rejectedRefs, error: `Insert failed: ${error.message}` }
   }
+  // Every newly-imported model must have a styles row (maquette + num_colours).
+  await ensureStyles(service, toInsert.map(r => r.style_name))
 
   // Flag existing products the sheet marks STOCK (single-column update; safe,
   // never touches descriptive fields). Skips excluded colour_ids and out-of-scope.
@@ -186,6 +189,9 @@ export async function createProduct(
   const id = randomUUID()
   const { error } = await service.from('products').insert({ id, ...input })
   if (error) return { error: error.message }
+
+  // A new model gets its styles row so it appears in /admin/products/styles.
+  await ensureStyles(service, [input.style_name])
 
   revalidatePath('/admin/products')
   return { id }
