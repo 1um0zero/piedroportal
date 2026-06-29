@@ -18,20 +18,16 @@ function isActive(values: Vals, key?: string): boolean {
   return true
 }
 
-// Position of each numbered measurement on the reference diagram (% of width/height).
-const MEASURE_MARKERS: Record<string, { x: number; y: number }> = {
-  '1': { x: 86, y: 94 }, '2': { x: 75, y: 50 }, '3': { x: 63, y: 40 }, '4': { x: 36, y: 80 },
-  '5': { x: 54, y: 27 }, '6': { x: 11, y: 21 }, '7': { x: 93, y: 71 }, '8': { x: 6, y: 74 },
-}
-
-/** Special layout for the "Last Measurements" group: narrow L/R mm inputs flanking
- *  a centred numbered title, beside the foot reference diagram. Focusing a row
- *  highlights the matching measurement on the diagram in gold. */
+/** Special layout for measurement groups: narrow L/R mm inputs flanking a centred
+ *  tag (numbered field name, or a hint like "350 mm" / "I"), optionally beside a
+ *  reference diagram. Hovering/focusing a row highlights the matching measurement
+ *  on the diagram in gold; focus pins it. Renders without a diagram when none. */
 function MeasurementGrid({
-  fields, image, values, locale, setSide, num,
+  fields, image, markers, values, locale, setSide, num,
 }: {
   fields: CustomField[]
-  image: string
+  image?: string
+  markers?: Record<string, { x: number; y: number }>
   values: Vals
   locale: string
   setSide: (key: string, side: 'l' | 'r', v: number | string | '') => void
@@ -47,47 +43,56 @@ function MeasurementGrid({
 
   const rows = fields.map(f => {
     const full = customLabel(f.label, locale)
+    const hint = f.hint ? customLabel(f.hint, locale) : ''
     const m = /^\s*(\d+)\s*[:.]\s*(.*)$/.exec(full)
-    const no = m?.[1] ?? ''
-    const title = m?.[2] ?? full
+    // tag = what shows in the centre column and keys the diagram marker
+    const tag = m ? m[1] : hint
+    const center = m
+      ? <><span className="text-stone-400">{m[1]}.</span> {m[2]}</>
+      : (hint || full)
     const sv = (values[f.key] as Sided) ?? {}
-    const on = active === no
+    const on = !!tag && active === tag
     return (
       <div key={f.key}
-        onMouseEnter={() => no && setHover(no)} onMouseLeave={() => setHover(null)}
+        onMouseEnter={() => tag && setHover(tag)} onMouseLeave={() => setHover(null)}
         className="grid grid-cols-[auto_1fr_auto] items-center gap-2 py-1">
         <div className="flex items-center gap-1 justify-self-start">
           <input inputMode="numeric" value={sv.l ?? ''} onChange={e => setSide(f.key, 'l', num(e))}
-            onFocus={() => no && setFocused(no)} onBlur={() => setFocused(null)} className={inputCls(on)} />
+            onFocus={() => tag && setFocused(tag)} onBlur={() => setFocused(null)} className={inputCls(on)} />
           <span className="text-[11px] text-stone-400">mm</span>
         </div>
-        <div className={`text-left text-xs font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>
-          <span className="text-stone-400">{no}.</span> {title}
-        </div>
+        <div className={`text-left text-xs font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>{center}</div>
         <div className="flex items-center gap-1 justify-self-end">
           <input inputMode="numeric" value={sv.r ?? ''} onChange={e => setSide(f.key, 'r', num(e))}
-            onFocus={() => no && setFocused(no)} onBlur={() => setFocused(null)} className={inputCls(on)} />
+            onFocus={() => tag && setFocused(tag)} onBlur={() => setFocused(null)} className={inputCls(on)} />
           <span className="text-[11px] text-stone-400">mm</span>
         </div>
       </div>
     )
   })
 
+  const grid = (
+    <div className="min-w-0 flex-1">
+      <div className="mb-1 grid grid-cols-[auto_1fr_auto] gap-2 text-[10px] font-semibold uppercase tracking-wide text-stone-400">
+        <span className="w-16 text-left">Left</span><span /><span className="w-16 text-left">Right</span>
+      </div>
+      {rows}
+    </div>
+  )
+
+  if (!image) return grid
+
+  const mk = active && markers ? markers[active] : null
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 grid grid-cols-[auto_1fr_auto] gap-2 text-[10px] font-semibold uppercase tracking-wide text-stone-400">
-          <span className="w-16 text-left">Left</span><span /><span className="w-16 text-left">Right</span>
-        </div>
-        {rows}
-      </div>
+      {grid}
       <div className="relative mx-auto w-full max-w-[300px] shrink-0 lg:w-[300px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={image} alt="Last measurements diagram" className="w-full object-contain" />
-        {active && MEASURE_MARKERS[active] && (
+        <img src={image} alt="Measurement diagram" className="w-full object-contain" />
+        {mk && (
           <span aria-hidden
             className="pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-gold bg-gold/10 animate-pulse"
-            style={{ left: `${MEASURE_MARKERS[active].x}%`, top: `${MEASURE_MARKERS[active].y}%` }} />
+            style={{ left: `${mk.x}%`, top: `${mk.y}%` }} />
         )}
       </div>
     </div>
@@ -271,9 +276,9 @@ export default function CustomAdditionsForm({
             {s.groups.map(g => (
               <div key={g.key}>
                 <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-400">{customLabel(g.label, locale)}</h4>
-                {g.render === 'measurements' && g.image ? (
-                  <MeasurementGrid fields={g.fields} image={g.image} values={values}
-                    locale={locale} setSide={setSide} num={num} />
+                {g.render === 'measurements' ? (
+                  <MeasurementGrid fields={g.fields} image={g.image} markers={g.markers}
+                    values={values} locale={locale} setSide={setSide} num={num} />
                 ) : (
                   <div>{g.fields.map(renderField)}</div>
                 )}

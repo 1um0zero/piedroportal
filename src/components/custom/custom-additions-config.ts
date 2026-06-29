@@ -52,8 +52,9 @@ export interface CustomGroup {
   key:    string                 // sub-heading within a section
   label:  CustomI18n
   fields: CustomField[]
-  render?: 'measurements'        // special layout: numbered L/R rows beside a reference diagram
-  image?:  string                // reference diagram for the special layout
+  render?: 'measurements'        // special layout: L/R rows with a centred tag, optional diagram
+  image?:  string                // reference diagram for the special layout (optional)
+  markers?: Record<string, { x: number; y: number }> // tag → position (% of image) to highlight
 }
 
 export interface CustomSection {
@@ -106,6 +107,10 @@ const SECTION_LAST: CustomSection = {
       label: { en: 'Last Measurements', nl: 'Leestmaten' },
       render: 'measurements',
       image: '/custom/measurements/last_measurements.png',
+      markers: {
+        '1': { x: 86, y: 94 }, '2': { x: 75, y: 50 }, '3': { x: 63, y: 40 }, '4': { x: 36, y: 80 },
+        '5': { x: 54, y: 27 }, '6': { x: 11, y: 21 }, '7': { x: 93, y: 71 }, '8': { x: 6, y: 74 },
+      },
       fields: [
         mm('1: Foot Size',            'cs1.11_lf_rf'),
         mm('2: Joint Width',          'cs1.12_lf_rf'),
@@ -120,6 +125,14 @@ const SECTION_LAST: CustomSection = {
     {
       key: 'leg_ankle_circ',
       label: { en: 'Leg & Ankle Circumference' },
+      render: 'measurements',
+      image: '/custom/measurements/leg-ankle.png',
+      // The diagram shows 4 rings (25/20/15/10 cm). 350/300 extrapolate up the leg.
+      markers: {
+        '350 mm': { x: 50, y: 38 }, '300 mm': { x: 50, y: 46 },
+        '250 mm': { x: 50, y: 54 }, '200 mm': { x: 50, y: 62 },
+        '150 mm': { x: 50, y: 70 }, '120 mm': { x: 50, y: 77 },
+      },
       fields: [
         { ...mm('Circumference', 'cs1.21_lf_rf'), hint: { en: '350 mm' } },
         { ...mm('Circumference', 'cs1.22_lf_rf'), hint: { en: '300 mm' } },
@@ -132,6 +145,7 @@ const SECTION_LAST: CustomSection = {
     {
       key: 'toe_height_levels',
       label: { en: 'Toe Height' },
+      render: 'measurements',   // no diagram yet — same L/R + centred-tag layout
       fields: [
         { ...mm('Toe Height', 'cs1.31_lf_rf_hg'), hint: { en: 'I' } },
         { ...mm('Toe Height', 'cs1.32_lf_rf_hg'), hint: { en: 'II' } },

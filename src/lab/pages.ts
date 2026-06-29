@@ -39,6 +39,20 @@ export const LAB_PAGES: LabPage[] = [
     status: 'rejected',
     note: 'Spinner ilustrado — rejeitado (graphic design fica para designers).',
   },
+  {
+    key: 'custom-preview',
+    title: 'CUSTOM — design assets',
+    href: '/admin/custom-preview',
+    status: 'active',
+    note: 'Pré-visualização dos assets do canal CUSTOM (foot templates, toe shapes, SVG banks).',
+  },
+  {
+    key: 'custom-leather',
+    title: 'CUSTOM — maquete (pele por peça)',
+    href: '/admin/custom-leather',
+    status: 'active',
+    note: 'Spike: escolher pele (vira pincel) e pintar peças da maquete. Zonas aproximadas à mão.',
+  },
 ]
 
 export const STATUS_META: Record<LabPageStatus, { label: string; cls: string }> = {
