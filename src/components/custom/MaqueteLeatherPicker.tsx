@@ -17,7 +17,7 @@ type Leather = { id: number; src: string; name: string }
  * isn't reliable — final version would use proper vector maquettes).
  */
 export default function MaqueteLeatherPicker({
-  zonesUrl, leathers, approvable = false, maquete, initialAssign, readOnly = false,
+  zonesUrl, leathers, approvable = false, maquete, initialAssign, readOnly = false, onAssignChange,
 }: {
   /** Fetch the maquette JSON from here — OR pass `maquete` preloaded (approval sheet). */
   zonesUrl?: string
@@ -30,6 +30,8 @@ export default function MaqueteLeatherPicker({
   initialAssign?: Record<string, number>
   /** Read-only: keeps the leather render + hover + piece legend, but no painting/brush/send. */
   readOnly?: boolean
+  /** Notified with the full assignment whenever the reviewer repaints (for persisting). */
+  onAssignChange?: (assign: Record<string, number>) => void
 }) {
   const router = useRouter()
   const [m, setM] = useState<Maquete | null>(maquete ?? null)
@@ -64,8 +66,9 @@ export default function MaqueteLeatherPicker({
   }
 
   const leatherOf = (zid: string) => leathers.find(l => l.id === assign[zid]) || null
-  const paint = (zid: string) => { if (!readOnly && brush != null) setAssign(a => ({ ...a, [zid]: brush })) }
-  const applyAll = () => { if (!readOnly && brush != null) setAssign(Object.fromEntries(m.zones.map(z => [z.id, brush]))) }
+  const update = (next: Record<string, number>) => { setAssign(next); onAssignChange?.(next) }
+  const paint = (zid: string) => { if (!readOnly && brush != null) update({ ...assign, [zid]: brush }) }
+  const applyAll = () => { if (!readOnly && brush != null) update(Object.fromEntries(m.zones.map(z => [z.id, brush]))) }
 
   return (
     <div className="flex flex-wrap gap-8">

@@ -155,6 +155,8 @@ export async function submitResponse(input: {
 export async function submitApproval(input: {
   token?: string; sheetId?: string
   verdict: 'approved' | 'rejected' | 'discussion'; comment?: string
+  /** The (possibly re-painted) design to persist back onto the sheet. */
+  subjectData?: unknown
 }): Promise<void> {
   const service = createServiceClient()
 
@@ -183,6 +185,7 @@ export async function submitApproval(input: {
     status: 'answered',
     verdict: input.verdict,
     overall_comment: input.comment?.trim() || null,
+    ...(input.subjectData !== undefined ? { subject_data: input.subjectData } : {}),
     responded_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }).eq('id', sheet.id)

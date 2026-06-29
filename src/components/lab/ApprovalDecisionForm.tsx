@@ -31,6 +31,7 @@ export default function ApprovalDecisionForm({
   const readOnly = closed
   const [pick, setPick] = useState<ApprovalVerdict | null>(verdict)
   const [note, setNote] = useState(comment ?? '')
+  const [assign, setAssign] = useState<Record<string, number>>(proposal?.assign ?? {})
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(answered)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +40,9 @@ export default function ApprovalDecisionForm({
     if (!pick) { setError('Escolha um veredicto.'); return }
     setSaving(true); setError(null)
     try {
-      await submitApproval({ token, sheetId, verdict: pick, comment: note })
+      // Persist the (possibly re-painted) design alongside the verdict.
+      const updatedSubject = proposal ? { ...proposal, assign } : undefined
+      await submitApproval({ token, sheetId, verdict: pick, comment: note, subjectData: updatedSubject })
       setDone(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro ao submeter')
@@ -62,7 +65,8 @@ export default function ApprovalDecisionForm({
               leathers={proposal.leathers}
               maquete={proposal.maquete}
               initialAssign={proposal.assign}
-              readOnly />
+              readOnly={readOnly}
+              onAssignChange={setAssign} />
           : <p className="text-sm text-stone-400">— sem pré-visualização do assunto —</p>}
       </section>
 
