@@ -61,7 +61,7 @@ function MeasurementGrid({
             onFocus={() => tag && setFocused(tag)} onBlur={() => setFocused(null)} className={inputCls(on)} />
           <span className="text-[11px] text-stone-400">mm</span>
         </div>
-        <div className={`text-left text-xs font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>{center}</div>
+        <div className={`text-xs font-medium ${m ? 'text-left' : 'text-center'} ${on ? 'text-gold' : 'text-stone-600'}`}>{center}</div>
         <div className="flex items-center gap-1 justify-self-end">
           <input inputMode="numeric" value={sv.r ?? ''} onChange={e => setSide(f.key, 'r', num(e))}
             onFocus={() => tag && setFocused(tag)} onBlur={() => setFocused(null)} className={inputCls(on)} />
@@ -80,19 +80,25 @@ function MeasurementGrid({
     </div>
   )
 
-  if (!image) return grid
-
-  const mk = active && markers ? markers[active] : null
+  const mk = active && image && markers ? markers[active] : null
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
       {grid}
-      <div className="relative mx-auto w-full max-w-[300px] shrink-0 lg:w-[300px]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={image} alt="Measurement diagram" className="w-full object-contain" />
-        {mk && (
-          <span aria-hidden
-            className="pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-gold bg-gold/10 animate-pulse"
-            style={{ left: `${mk.x}%`, top: `${mk.y}%` }} />
+      {/* Right zone: the diagram, or a blank white square placeholder so the
+          Right column lines up with the diagram-bearing sections. */}
+      <div className="relative mx-auto aspect-square w-full max-w-[300px] shrink-0 lg:w-[300px]">
+        {image ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt="Measurement diagram" className="h-full w-full object-contain" />
+            {mk && (
+              <span aria-hidden
+                className="pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-gold bg-gold/10 animate-pulse"
+                style={{ left: `${mk.x}%`, top: `${mk.y}%` }} />
+            )}
+          </>
+        ) : (
+          <div className="h-full w-full rounded-xl border border-dashed border-stone-200 bg-white" />
         )}
       </div>
     </div>
