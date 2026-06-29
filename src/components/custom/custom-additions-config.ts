@@ -52,6 +52,8 @@ export interface CustomGroup {
   key:    string                 // sub-heading within a section
   label:  CustomI18n
   fields: CustomField[]
+  render?: 'measurements'        // special layout: numbered L/R rows beside a reference diagram
+  image?:  string                // reference diagram for the special layout
 }
 
 export interface CustomSection {
@@ -102,6 +104,8 @@ const SECTION_LAST: CustomSection = {
     {
       key: 'last_measurements',
       label: { en: 'Last Measurements', nl: 'Leestmaten' },
+      render: 'measurements',
+      image: '/custom/measurements/last_measurements.png',
       fields: [
         mm('1: Foot Size',            'cs1.11_lf_rf'),
         mm('2: Joint Width',          'cs1.12_lf_rf'),
@@ -336,8 +340,8 @@ const SECTION_UPPER: CustomSection = {
       key: 'stretch',
       label: { en: 'Stretch' },
       fields: [
-        yn('Upper', 'cs3.stretch_upper'),
-        yn('Medial and Lateral Side', 'cs3.stretch_med_lat'),
+        { ...yn('Upper', 'cs3.stretch_upper'), thumb: '/custom/stretch/upper.png', thumbWide: true },
+        { ...yn('Medial and Lateral Side', 'cs3.stretch_med_lat'), thumb: '/custom/stretch/medial-lateral.png', thumbWide: true },
       ],
     },
     {
