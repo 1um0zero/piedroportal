@@ -153,15 +153,19 @@ export default function CustomAdditionsForm({
           {label}{hint && <span className="ml-1 text-stone-400">· {hint}</span>}
         </label>
         {sided ? (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <input inputMode="numeric" placeholder="L" value={sv.l ?? ''} onChange={e => setSide(f.key, 'l', num(e))}
-              className="w-1/2 rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+              className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />
             <input inputMode="numeric" placeholder="R" value={sv.r ?? ''} onChange={e => setSide(f.key, 'r', num(e))}
-              className="w-1/2 rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+              className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+            <span className="text-sm text-stone-400 shrink-0">mm</span>
           </div>
         ) : (
-          <input inputMode="numeric" value={single} onChange={e => set(f.key, num(e))}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+          <div className="flex items-center gap-2">
+            <input inputMode="numeric" value={single} onChange={e => set(f.key, num(e))}
+              className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+            <span className="text-sm text-stone-400 shrink-0">mm</span>
+          </div>
         )}
       </div>
     )

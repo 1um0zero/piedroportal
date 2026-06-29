@@ -51,6 +51,10 @@ export function ComboField({
 
   const flip = pos ? (typeof window !== 'undefined' && window.innerHeight - pos.top < 180) : false
 
+  // Harmonised grid: ≤3 → single row; otherwise a near-square (ceil√n columns),
+  // so 4→2×2, 5→3+2, 6→3+3, 9→3×3, 18→5 cols, etc.
+  const cols = options.length <= 3 ? options.length : Math.ceil(Math.sqrt(options.length))
+
   function pick(opt: string) {
     onChange(value === opt ? null : opt)
     setOpen(false)
@@ -74,18 +78,19 @@ export function ComboField({
         <div
           ref={popRef}
           style={{
-            position: 'fixed', left: pos.left, width: Math.max(pos.width, 220), maxWidth: 360,
+            position: 'fixed', left: pos.left,
+            width: Math.min(Math.max(cols * 120, pos.width, 200), 560),
             ...(flip ? { bottom: window.innerHeight - pos.top + 36 } : { top: pos.top + 8 }),
             boxShadow: 'var(--shadow-card)',
           }}
           className="z-[60] bg-white border border-stone-200 rounded-xl p-3 max-h-72 overflow-y-auto"
         >
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
             {options.map(opt => {
               const on = value === opt
               return (
                 <button key={opt} type="button" onClick={() => pick(opt)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded border transition-all
+                  className={`px-3 py-1.5 text-xs font-medium rounded border transition-all text-center
                     ${on ? 'border-gold bg-gold/10 text-gold' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>
                   {opt}
                 </button>
