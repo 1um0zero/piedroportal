@@ -101,7 +101,6 @@ export function RangeField({
         ref={inputRef}
         type="text" inputMode={touch ? 'none' : 'numeric'} readOnly={touch}
         value={value == null ? '' : String(value)}
-        placeholder={unit || undefined}
         onFocus={e => { e.currentTarget.select(); setOpen(true) }}
         onChange={e => {
           if (touch) return
