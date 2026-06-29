@@ -25,11 +25,20 @@ const BLOCKED_PATH = /(?:^|\/)(?:\.git|\.svn|\.hg|\.env|\.aws|\.ssh|\.vscode|\.i
 const BLOCKED_EXT = /\.(?:env|ya?ml|properties|ini|conf|cfg|toml|bak|backup|old|orig|swp|save|sql|sqlite3?|db|mdb|dump|sh|bash|zsh|ps1|pem|key|crt|cer|p12|pfx|jks|keystore|asc|gpg|php\d?|phtml|phps|asp|aspx|ashx|jsp|jspx|do|action|cgi|pl|py|rb|htaccess|htpasswd|tfstate|tfvars|war|ear|class|inc|log|git|svn)$/i
 
 /**
+ * Ficheiros de chave/segredo nus (sem extensão) que um portal nunca serve.
+ * Estes podem ser bloqueados como segmento nu — não colidem com rotas legítimas.
+ */
+const BLOCKED_SECRET_FILE = /(?:^|\/)(?:id_rsa|id_dsa|id_ecdsa|known_hosts|wp-config|docker-compose|dockerfile)\b/i
+
+/**
  * Nomes clássicos de ficheiros de config/segredos sondados como .json/.xml/etc.
  * (ex.: /config/secrets.json, /server/credentials.json, /app/parameters.yml).
+ * EXIGE uma extensão de config a seguir ao nome — palavras genéricas como
+ * "settings"/"application" são também rotas LEGÍTIMAS da app (ex.: /admin/settings),
+ * por isso só bloqueamos quando vêm como NOME DE FICHEIRO de config.
  * Não apanha estáticos legítimos como manifest.json, robots.txt ou sitemap.xml.
  */
-const BLOCKED_CONFIG_NAME = /(?:^|\/)(?:secrets?|credentials?|passwords?|secret[_-]?key|api[_-]?keys?|parameters?|appsettings|application|databases?|connection(?:strings?)?|settings|configuration|wp-config|web\.config|composer|docker-compose|dockerfile|package-lock|yarn\.lock|id_rsa|id_dsa|id_ecdsa|known_hosts)\b/i
+const BLOCKED_CONFIG_NAME = /(?:^|\/)(?:secrets?|credentials?|passwords?|secret[_-]?key|api[_-]?keys?|parameters?|appsettings|application|databases?|connection(?:strings?)?|settings|configuration|composer|package-lock|yarn|web)(?:[._-][a-z0-9]+)*\.(?:json|ya?ml|xml|ini|conf|cfg|config|properties|toml|env|lock|bak|old|sql|pem|key|php)\b/i
 
 /**
  * Devolve true se o path for inequivocamente uma sondagem hostil/inútil.
@@ -51,6 +60,7 @@ export function isBlockedPath(pathname: string): boolean {
 
   if (BLOCKED_PATH.test(p)) return true
   if (BLOCKED_EXT.test(p)) return true
+  if (BLOCKED_SECRET_FILE.test(p)) return true
   if (BLOCKED_CONFIG_NAME.test(p)) return true
 
   return false
