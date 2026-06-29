@@ -42,6 +42,7 @@ export interface CustomField {
   required?:     boolean
   hint?:         CustomI18n            // small helper text (e.g. height label "350 mm", "I")
   picturePending?: boolean             // option needs a Piedro-supplied image (toe shape, soles…)
+  thumb?:        string                // small illustration shown beside a toggle label
   images?:       Record<string, string>  // for 'image': option value → SVG/png path
   collapse?:     boolean               // single-select chips: hide the others once one is picked
 }
@@ -184,21 +185,21 @@ const SECTION_SUPPLEMENT: CustomSection = {
       label: { en: 'Supplement' },
       fields: [
         // Standard
-        { ...yn('Standard', 'cs2.21_yn'), picturePending: true },
+        { ...yn('Standard', 'cs2.21_yn'), thumb: '/custom/supplement/standard.png' },
         { ...mm('Left',  'cs2.21.01_lf', 'left'),  conditionalOn: 'cs2.21_yn' },
         { ...mm('Right', 'cs2.21.01_rf', 'right'), conditionalOn: 'cs2.21_yn' },
         // Lateral Low Reinforcement
-        yn('Lateral Low Reinforcement', 'cs2.22_yn'),
+        { ...yn('Lateral Low Reinforcement', 'cs2.22_yn'), thumb: '/custom/supplement/lateral-low-reinforcement.png' },
         { ...mm('Left',  'cs2.22.01_lf', 'left'),  conditionalOn: 'cs2.22_yn' },
         { ...mm('Right', 'cs2.22.01_rf', 'right'), conditionalOn: 'cs2.22_yn' },
         { key: 'cs2.21.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.22_yn' },
         // Medial Low Reinforcement
-        yn('Medial Low Reinforcement', 'cs2.23_yn'),
+        { ...yn('Medial Low Reinforcement', 'cs2.23_yn'), thumb: '/custom/supplement/medial-low-reinforcement.png' },
         { ...mm('Left',  'cs2.23.01_lf', 'left'),  conditionalOn: 'cs2.23_yn' },
         { ...mm('Right', 'cs2.23.01_rf', 'right'), conditionalOn: 'cs2.23_yn' },
         { key: 'cs2.23.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.23_yn' },
         // Heel Low Reinforcement (medial + lateral both sides)
-        yn('Heel Low Reinforcement', 'cs2.24_yn'),
+        { ...yn('Heel Low Reinforcement', 'cs2.24_yn'), thumb: '/custom/supplement/heel-low-reinforcement.png' },
         { ...mm('Lateral', 'cs2.24.01_lt_lf_rf'), conditionalOn: 'cs2.24_yn' },
         { ...mm('Medial',  'cs2.24.01_md_lt_rf'), conditionalOn: 'cs2.24_yn' },
         { key: 'cs2.24.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.24_yn' },
