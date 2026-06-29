@@ -90,6 +90,9 @@ export function RangeField({
   }, [open, reposition, close])
 
   const curNum = value == null ? null : Number(value)
+  // Sequential = consecutive integers (step 1). Non-sequential lists (e.g. 4,6,8,10)
+  // label each accepted value along the bar instead of a single centred readout.
+  const sequential = nums.length > 1 && nums.every((n, i) => i === 0 || n - nums[i - 1] === 1)
   const idx = curNum == null ? 0 : nearestIndex(curNum)
   const pct = nums.length > 1 ? (idx / (nums.length - 1)) * 100 : 0
   // Flip above when there isn't room below.
@@ -137,11 +140,19 @@ export function RangeField({
             className="w-full accent-gold cursor-pointer"
             style={{ background: `linear-gradient(to right, #B8975A ${pct}%, #e7e5e4 ${pct}%)` }}
           />
-          <div className="flex justify-between text-[10px] text-stone-400 mt-1">
-            <span>{min}{unit && ` ${unit}`}</span>
-            <span className="font-semibold text-gold">{value == null ? '—' : `${value}${unit ? ` ${unit}` : ''}`}</span>
-            <span>{max}{unit && ` ${unit}`}</span>
-          </div>
+          {sequential ? (
+            <div className="flex justify-between text-[10px] text-stone-400 mt-1">
+              <span>{min}</span>
+              <span className="font-semibold text-gold">{value == null ? '—' : String(value)}</span>
+              <span>{max}</span>
+            </div>
+          ) : (
+            <div className="flex justify-between text-[10px] mt-1">
+              {nums.map(n => (
+                <span key={n} className={n === curNum ? 'font-semibold text-gold' : 'text-stone-400'}>{n}</span>
+              ))}
+            </div>
+          )}
         </div>,
         document.body,
       )}
