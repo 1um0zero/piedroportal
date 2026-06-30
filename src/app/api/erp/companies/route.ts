@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { isErpAuthorized } from '@/lib/erp/auth'
 import { logAdminAction } from '@/lib/admin/audit'
 import { ERP_CONTRACT_VERSION } from '@/lib/erp/order-contract'
+import { normaliseCountry } from '@/lib/erp/country'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,8 +88,19 @@ export async function POST(req: Request) {
   if (typeof body.name === 'string')          fields.name          = body.name.trim()
   if (typeof body.address_line1 === 'string') fields.address_line1 = body.address_line1.trim() || null
   if (typeof body.city === 'string')          fields.city          = body.city.trim() || null
-  if (typeof body.country === 'string')       fields.country       = body.country.trim() || null
-  if (typeof body.country_code === 'string')  fields.country_code  = body.country_code.trim() || null
+  // Country arrives as messy free text from the ERP (e.g. "PORTUGAL", "HOLANDA").
+  // Normalise to a canonical ISO code + English name, keeping the raw for audit
+  // — same rules the Dataverse import used (scripts/import-accounts.mjs).
+  if (typeof body.country === 'string') {
+    const raw = body.country.trim() || null
+    const { code, name } = normaliseCountry(raw)
+    fields.country_raw  = raw
+    fields.country      = name ?? raw
+    fields.country_code = code
+  }
+  if (typeof body.country_code === 'string' && body.country_code.trim()) {
+    fields.country_code = body.country_code.trim()  // explicit code wins if provided
+  }
 
   const service = createServiceClient()
 
