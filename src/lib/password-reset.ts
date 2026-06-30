@@ -145,7 +145,14 @@ export async function consumePasswordReset(
 
   if (!claimed || new Date(claimed.expires_at).getTime() < Date.now()) return { error: 'invalid' }
 
-  const { error: pwErr } = await service.auth.admin.updateUserById(claimed.user_id, { password: newPassword })
+  // Setting a password via a token delivered to the user's mailbox (or handed over
+  // by staff) is itself proof of email control, so confirm the address here. Without
+  // this, a never-confirmed auth user (e.g. a migrated account) sets a valid password
+  // but still gets rejected by signInWithPassword as "invalid email or password".
+  const { error: pwErr } = await service.auth.admin.updateUserById(claimed.user_id, {
+    password: newPassword,
+    email_confirm: true,
+  })
   if (pwErr) return { error: pwErr.message }
 
   await service.from('profiles').update({ must_set_password: false }).eq('id', claimed.user_id)
