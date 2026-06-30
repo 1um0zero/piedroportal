@@ -43,6 +43,19 @@ function decodeUnit(raw) {
   return map[raw] ?? 'PAIR'
 }
 
+// ── Size decode ───────────────────────────────────────────────────────────────
+// Size lives in a lookup to cr56f_wpp_sizeses (cr56f_name = "36"). The numeric
+// cr56f_footsizelf/rf fields are null for most orders, so prefer the lookup.
+// side is 'LF' or 'RF' (nav property is upper-cased).
+function parseSize(o, side) {
+  const name = o[`cr56f_size${side}`]?.cr56f_name
+  let s = name == null ? null : String(name).trim().replace('½', '.5').replace(',', '.')
+  let n = s ? parseFloat(s) : NaN
+  if (Number.isFinite(n)) return n
+  const fallback = o[`cr56f_footsize${side.toLowerCase()}`]
+  return fallback ? parseFloat(fallback) : null
+}
+
 // ── Status decode ─────────────────────────────────────────────────────────────
 // Map the Dataverse approval (cr56f_state_approval) and production (cr56f_productionstate)
 // option-sets to our enums (read the FormattedValue label, normalize to snake_case), then
@@ -206,7 +219,11 @@ const SELECT = [
   'cr56f_7extrapairoflaces','cr56f_nopiedrologo','cr56f_7plasticfittingshoes','cr56f_7urgent',
 ].join(',')
 
-let url = `${API}/cr56f_wpp_orderses?$select=${SELECT}&$orderby=createdon desc`
+// Size lives in a lookup to cr56f_wpp_sizeses (name = "36"), NOT the numeric
+// cr56f_footsizelf/rf fields (null for most orders). Expand both lookups so the
+// mapping below can read the real size. (nav props are upper-cased: ...LF/...RF)
+const SIZE_EXPAND = 'cr56f_sizeLF($select=cr56f_name),cr56f_sizeRF($select=cr56f_name)'
+let url = `${API}/cr56f_wpp_orderses?$select=${SELECT}&$expand=${SIZE_EXPAND}&$orderby=createdon desc`
 const dvOrders = []
 while (url && dvOrders.length < LIMIT) {
   const res = await fetch(url, { headers: H })
@@ -270,8 +287,8 @@ const rows = kept.map(o => {
   patient_name:       o.cr56f_patient ?? null,
   reference_customer: o.cr56f_customerref ?? null,
   quantity:           o.cr56f_qty ?? o.cr56f_totalpairs ?? 1,
-  size_left:          o.cr56f_footsizelf ? parseFloat(o.cr56f_footsizelf) : null,
-  size_right:         o.cr56f_footsizerf ? parseFloat(o.cr56f_footsizerf) : null,
+  size_left:          parseSize(o, 'LF'),
+  size_right:         parseSize(o, 'RF'),
   comments:           o.cr56f_comments ?? null,
   additions:          mapAdditions(o),
   imported_at:        new Date().toISOString(),
