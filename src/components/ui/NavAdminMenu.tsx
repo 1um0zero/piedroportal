@@ -39,6 +39,7 @@ export default function NavAdminMenu() {
     { href: '/admin/users',        label: t('users') },
     { href: '/admin/translations', label: t('translations') },
     { href: '/admin/email',        label: t('email') },
+    { href: '/admin/announcements', label: t('announcements') },
     { href: '/admin/factory-calendar', label: t('factory_calendar') },
     { href: '/admin/lab',          label: t('lab') },
     { href: '/admin/settings',     label: t('settings') },

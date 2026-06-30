@@ -17,6 +17,7 @@ import { getImpersonation } from '@/lib/impersonation'
 import { GallerySectionProvider } from '@/contexts/GallerySectionContext'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import WelcomeModal from '@/components/welcome/WelcomeModal'
+import AnnouncementsHost from '@/components/announcements/AnnouncementsHost'
 import PageViewTracker from '@/components/analytics/PageViewTracker'
 import { Analytics } from '@vercel/analytics/next'
 import type { Profile } from '@/types'
@@ -71,6 +72,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <div className="flex flex-col min-h-screen">
                 <ImpersonationBanner locale={locale} />
                 <Navbar locale={locale} />
+                {user && <AnnouncementsHost placement="after_login" />}
                 <div className="flex-1">{children}</div>
                 <Footer contact={contact} />
                 {user && <ChatWidget />}

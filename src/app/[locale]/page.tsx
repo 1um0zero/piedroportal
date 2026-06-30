@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import LandingPageNew from '@/components/landing/LandingPageNew'
+import AnnouncementsHost from '@/components/announcements/AnnouncementsHost'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,5 +20,10 @@ export default async function LocalePage({ params, searchParams }: Props) {
 
   // The revised homepage (formerly /homenew) is now the live entry point.
   // The previous landing is kept at /homebk for validation.
-  return <LandingPageNew hasError={error === '1'} loggedIn={!!user} />
+  return (
+    <>
+      <AnnouncementsHost placement="homepage" />
+      <LandingPageNew hasError={error === '1'} loggedIn={!!user} />
+    </>
+  )
 }

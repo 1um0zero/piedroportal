@@ -9,6 +9,7 @@ import { isExclusiveVisible, exclusiveTokens } from '@/lib/exclusive'
 import { getSettings } from '@/lib/settings'
 import { closuresAhead } from '@/lib/dispatch'
 import OrderForm from '@/components/order/OrderForm'
+import AnnouncementsHost from '@/components/announcements/AnnouncementsHost'
 import type { Product } from '@/types'
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -127,7 +128,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
   }
 
   return (
-    <OrderForm
+    <>
+      <AnnouncementsHost placement="order_start" />
+      <OrderForm
       product={product}
       closuresAhead={upcomingClosures}
       userId={user?.id ?? ''}
@@ -137,6 +140,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
       isAdmin={isAdmin}
       draftId={effectiveDraftId}
       draftData={draftData}
-    />
+      />
+    </>
   )
 }
