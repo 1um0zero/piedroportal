@@ -99,7 +99,7 @@ function OrderStatusMark({ o, title }: {
   const cancelled = st === 'cancelled' || ap === 'refused'
   const pending = !cancelled && PENDING_STATES.has(ap ?? '')
   const approved = !cancelled && !pending &&
-    (ap === 'approved' || st === 'approved' || st === 'in_production' || st === 'delivered')
+    (ap === 'approved' || st === 'approved' || st === 'in_production' || st === 'shipped' || st === 'delivered')
   const svg = { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none',
     strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   if (cancelled) return <span title={title} className="inline-flex shrink-0"><svg {...svg} stroke="#dc2626" strokeWidth={1.5}><path d="M6 6l12 12M18 6 6 18" /></svg></span>
@@ -243,7 +243,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
 
   // All chip counts (and how many of each are urgent) computed from the windowed set.
   const counts = useMemo(() => {
-    const c = { total: 0, delivered: 0, draft: 0, draftU: 0, new: 0, newU: 0,
+    const c = { total: 0, delivered: 0, shipped: 0, shippedU: 0, draft: 0, draftU: 0, new: 0, newU: 0,
       pending: 0, pendingU: 0, approved: 0, approvedU: 0, production: 0, productionU: 0, refused: 0 }
     for (const o of orders) {
       const u = isUrgent(o)
@@ -255,6 +255,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
       if (isPending(o))                         { c.pending++;    if (u) c.pendingU++ }
       if (o.status === 'approved')              { c.approved++;   if (u) c.approvedU++ }
       if (o.status === 'in_production')         { c.production++; if (u) c.productionU++ }
+      if (o.status === 'shipped')               { c.shipped++;    if (u) c.shippedU++ }
       if (o.approval_state === 'refused')       c.refused++
     }
     return c
@@ -269,6 +270,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
     { key: 'pending',       label: t('metric_pending'),    count: counts.pending,    urgent: counts.pendingU },
     { key: 'approved',      label: t('metric_approved'),   count: counts.approved,   urgent: counts.approvedU },
     { key: 'in_production', label: t('metric_production'), count: counts.production, urgent: counts.productionU },
+    ...(counts.shipped > 0 ? [{ key: 'shipped', label: t('metric_shipped'), count: counts.shipped, urgent: counts.shippedU }] : []),
   ]
 
   return (

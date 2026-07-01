@@ -756,6 +756,7 @@
       "metric_submitted": "Eingereicht",
       "metric_approved": "Genehmigt",
       "metric_production": "Produktion",
+      "metric_shipped": "Versandt",
       "metric_urgent": "Dringend",
       "search_placeholder": "Piedro-Bestellung, Modell, Patient, Ref. suchen…",
       "search_hint": "* als Platzhalter: 2* = beginnt mit 2, *K = endet auf K.",

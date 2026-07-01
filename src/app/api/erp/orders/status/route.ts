@@ -81,6 +81,18 @@ export async function POST(req: Request) {
   }
 
   const service = createServiceClient()
+
+  // Dispatched → left production. Once the carrier assigns a tracking code/link
+  // the order has physically shipped, so it must leave 'in_production'. Promote
+  // to 'shipped' (a terminal-minus-one state) unless it's already delivered —
+  // we never downgrade a delivered order. This closes the gap where the ERP
+  // pushed tracking but never a 'delivered' production_state, leaving thousands
+  // of shipped orders frozen as in_production (and their tracking hidden).
+  const hasTracking = !!(String(body.tracking_code ?? '').trim() || String(body.tracking_link ?? '').trim())
+  if (hasTracking && update.status !== 'delivered') {
+    const { data: cur } = await service.from('orders').select('status').eq('id', orderId).single()
+    if (cur?.status !== 'delivered') update.status = 'shipped'
+  }
   const { data, error } = await service
     .from('orders').update(update).eq('id', orderId).select('id')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -756,6 +756,7 @@
       "metric_submitted": "Submitted",
       "metric_approved": "Approved",
       "metric_production": "Production",
+      "metric_shipped": "Shipped",
       "metric_urgent": "Urgent",
       "search_placeholder": "Search Piedro order, style, patient, ref…",
       "search_hint": "Use * as a wildcard: 2* = starts with 2, *K = ends with K.",

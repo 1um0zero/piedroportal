@@ -756,6 +756,7 @@
       "metric_submitted": "Ingediend",
       "metric_approved": "Goedgekeurd",
       "metric_production": "Productie",
+      "metric_shipped": "Verzonden",
       "metric_urgent": "Urgent",
       "search_placeholder": "Zoek Piedro-order, model, patiënt, ref…",
       "search_hint": "Gebruik * als jokerteken: 2* = begint met 2, *K = eindigt op K.",
