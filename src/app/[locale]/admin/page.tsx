@@ -199,7 +199,7 @@ export default async function AdminDashboard() {
         <StatCard label={statusLabel('submitted')} value={bySt.submitted    ?? 0} color="text-blue-600"  />
         <StatCard label={statusLabel('approved')}  value={bySt.approved     ?? 0} color="text-emerald-600" />
         <StatCard label={statusLabel('in_production')} value={bySt.in_production ?? 0} color="text-amber-600" />
-        <StatCard label={statusLabel('shipped')}   value={bySt.shipped      ?? 0} color="text-violet-600" />
+        <StatCard label={statusLabel('delivered')} value={bySt.delivered    ?? 0} color="text-teal-600" />
         <StatCard label={`🔴 ${td('kpi.urgent')}`} value={urgent}                  color="text-red-500"  />
       </div>
 
