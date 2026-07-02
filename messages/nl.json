@@ -163,7 +163,8 @@
     "adoption": "Live adoptie",
     "drafts": "Concepten",
     "factory_calendar": "Fabriekskalender",
-    "announcements": "Meldingen"
+    "announcements": "Meldingen",
+    "message_templates": "Berichtsjablonen"
   },
   "announcements": {
     "badge": "Bericht",
@@ -1501,7 +1502,10 @@
     "translating": "Vertalen…",
     "translations_hint": "Ontvangers krijgen de versie in hun portaaltaal; talen zonder vertaling krijgen het origineel. Controleer en bewerk elk tabblad vóór verzending.",
     "translations_ready": "Vertalingen klaar: {langs}. Controleer elk tabblad.",
-    "discard_translations": "Verwijderen"
+    "discard_translations": "Verwijderen",
+    "load_template": "Sjabloon laden",
+    "template_none": "Kies een sjabloon…",
+    "template_loaded": "Sjabloon geladen"
   },
   "chatConsent": {
     "title": "Voordat u de assistent gebruikt",

@@ -163,7 +163,8 @@
     "adoption": "Live-Akzeptanz",
     "drafts": "Entwürfe",
     "factory_calendar": "Werkskalender",
-    "announcements": "Mitteilungen"
+    "announcements": "Mitteilungen",
+    "message_templates": "Nachrichtenvorlagen"
   },
   "announcements": {
     "badge": "Mitteilung",
@@ -1501,7 +1502,10 @@
     "translating": "Übersetzen…",
     "translations_hint": "Empfänger erhalten die Version in ihrer Portalsprache; Sprachen ohne Übersetzung erhalten das Original. Prüfen und bearbeiten Sie jeden Tab vor dem Versand.",
     "translations_ready": "Übersetzungen bereit: {langs}. Prüfen Sie jeden Tab.",
-    "discard_translations": "Verwerfen"
+    "discard_translations": "Verwerfen",
+    "load_template": "Vorlage laden",
+    "template_none": "Vorlage wählen…",
+    "template_loaded": "Vorlage geladen"
   },
   "chatConsent": {
     "title": "Bevor Sie den Assistenten verwenden",

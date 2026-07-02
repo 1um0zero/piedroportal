@@ -163,7 +163,8 @@
     "adoption": "Adoption en direct",
     "drafts": "Brouillons",
     "factory_calendar": "Calendrier usine",
-    "announcements": "Annonces"
+    "announcements": "Annonces",
+    "message_templates": "Modèles de message"
   },
   "announcements": {
     "badge": "Message",
@@ -1501,7 +1502,10 @@
     "translating": "Traduction…",
     "translations_hint": "Les destinataires reçoivent la version correspondant à leur langue du portail ; les langues sans traduction reçoivent l’original. Vérifiez et modifiez chaque onglet avant l’envoi.",
     "translations_ready": "Traductions prêtes : {langs}. Vérifiez chaque onglet.",
-    "discard_translations": "Supprimer"
+    "discard_translations": "Supprimer",
+    "load_template": "Charger un modèle",
+    "template_none": "Choisir un modèle…",
+    "template_loaded": "Modèle chargé"
   },
   "chatConsent": {
     "title": "Avant d’utiliser l’assistant",

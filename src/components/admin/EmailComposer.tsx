@@ -23,6 +23,15 @@ export interface CampaignRow {
 interface UserOpt { id: string; name: string; email: string }
 interface CompanyOpt { id: string; name: string }
 
+/** Active message template offered in the "load from template" picker. */
+export interface TemplateOption {
+  id: string
+  name: string
+  subject: string
+  body_html: string
+  translations: Record<string, { subject: string; body_html: string }> | null
+}
+
 const STATUS_BADGE: Record<CampaignRow['status'], string> = {
   scheduled: 'bg-blue-50 text-blue-600',
   sending: 'bg-amber-50 text-amber-600',
@@ -30,10 +39,11 @@ const STATUS_BADGE: Record<CampaignRow['status'], string> = {
   cancelled: 'bg-stone-100 text-stone-500',
 }
 
-export default function EmailComposer({ users, companies, campaigns, signatureHtml }: {
+export default function EmailComposer({ users, companies, campaigns, templates, signatureHtml }: {
   users: UserOpt[]
   companies: CompanyOpt[]
   campaigns: CampaignRow[]
+  templates: TemplateOption[]
   signatureHtml: string
 }) {
   const t = useTranslations('adminEmail')
@@ -150,6 +160,26 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Load a saved template into the composer. Subject + body + any per-language
+  // variants are filled; audience/schedule stay as the admin set them.
+  function applyTemplate(id: string) {
+    const tpl = templates.find(t => t.id === id)
+    if (!tpl) return
+    const html = tpl.body_html || defaultBody
+    setSubject(tpl.subject)
+    setBody(html)
+    setEditorInitial(html)
+    setEditorKey(k => k + 1)
+    const vars: Record<string, CampaignVariant> = {}
+    for (const [loc, v] of Object.entries(tpl.translations ?? {})) {
+      if (v?.subject || v?.body_html) vars[loc] = { subject: v.subject, bodyHtml: v.body_html }
+    }
+    setVariants(vars)
+    setActiveVar(Object.keys(vars)[0] ?? null)
+    setVarKey(k => k + 1)
+    setMsg({ kind: 'ok', text: t('template_loaded') })
+  }
+
   function test() {
     setMsg(null)
     startTransition(async () => {
@@ -222,6 +252,15 @@ export default function EmailComposer({ users, companies, campaigns, signatureHt
 
         {/* Subject + body */}
         <div className="space-y-3">
+          {templates.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold tracking-wider uppercase text-stone-400 whitespace-nowrap">{t('load_template')}</span>
+              <select className={`${inputCls} !w-auto`} defaultValue="" onChange={e => { if (e.target.value) { applyTemplate(e.target.value); e.target.value = '' } }}>
+                <option value="">{t('template_none')}</option>
+                {templates.map(tpl => <option key={tpl.id} value={tpl.id}>{tpl.name}</option>)}
+              </select>
+            </div>
+          )}
           <input className={inputCls} placeholder={t('subject')} value={subject} onChange={e => setSubject(e.target.value)} />
           <RichTextEditor key={editorKey} initialHtml={editorInitial} onChange={setBody} placeholder={t('body_placeholder')} />
           <p className="text-xs text-stone-400">{t('body_hint')}</p>

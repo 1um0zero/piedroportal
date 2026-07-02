@@ -163,7 +163,8 @@
     "adoption": "Live adoption",
     "drafts": "Drafts",
     "factory_calendar": "Factory calendar",
-    "announcements": "Announcements"
+    "announcements": "Announcements",
+    "message_templates": "Message templates"
   },
   "announcements": {
     "badge": "Message",
@@ -1501,7 +1502,10 @@
     "translating": "Translating…",
     "translations_hint": "Recipients receive the version matching their portal language; languages without a translation get the original. Review and edit each tab before sending.",
     "translations_ready": "Translations ready: {langs}. Review each tab.",
-    "discard_translations": "Discard"
+    "discard_translations": "Discard",
+    "load_template": "Load template",
+    "template_none": "Choose a template…",
+    "template_loaded": "Template loaded"
   },
   "chatConsent": {
     "title": "Before using the assistant",

@@ -2,7 +2,7 @@ import 'server-only'
 import { Resend } from 'resend'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getSettings } from '@/lib/settings'
-import { escapeHtml } from '@/lib/escape-html'
+import { renderBrandedHtml, sanitizeEmailHtml, htmlToPlainText } from '@/messaging/render'
 
 /**
  * Email campaign processor — drains pending recipients of due campaigns in
@@ -12,48 +12,19 @@ import { escapeHtml } from '@/lib/escape-html'
  * Each invocation works within a time budget and stops cleanly; the 5-minute
  * Vercel cron picks up whatever remains, so a full-portal blast drips out at
  * a steady, reputation-friendly rate instead of one giant burst.
+ *
+ * Branding, footer and locales now live in the messaging Foundation config
+ * (`@/messaging/config`); the render helpers below are re-exported for the
+ * existing callers (admin-email actions, announcements) that import them here.
  */
 
 const PACE_MS = 700
-const LOCALES = ['en', 'nl', 'fr', 'de'] as const
-type Loc = (typeof LOCALES)[number]
 
-const FOOTER: Record<Loc, { reason: string; contact: string }> = {
-  en: { reason: 'You are receiving this email because you have a Piedro Portal account.', contact: 'Questions? Reply to this email or contact' },
-  nl: { reason: 'U ontvangt deze e-mail omdat u een Piedro Portal-account heeft.', contact: 'Vragen? Beantwoord deze e-mail of neem contact op via' },
-  fr: { reason: 'Vous recevez cet e-mail car vous disposez d’un compte Piedro Portal.', contact: 'Des questions ? Répondez à cet e-mail ou contactez' },
-  de: { reason: 'Sie erhalten diese E-Mail, weil Sie ein Piedro Portal-Konto haben.', contact: 'Fragen? Antworten Sie auf diese E-Mail oder kontaktieren Sie' },
-}
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://portal.piedro.pt'
+export { sanitizeEmailHtml, htmlToPlainText }
 
 /**
- * Conservative e-mail HTML sanitizer. Authors are piedro_admins (trusted), so
- * this is a guard rail, not a security boundary: strips active content
- * (script/style/iframe/forms), inline event handlers and javascript: URLs.
- */
-export function sanitizeEmailHtml(html: string): string {
-  return html
-    .replace(/<\s*(script|style|iframe|object|embed|form|link|meta)\b[\s\S]*?(<\s*\/\s*\1\s*>|\/?>)/gi, '')
-    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src)\s*=\s*(["']?)\s*javascript:[^"'\s>]*\2/gi, '$1="#"')
-}
-
-/** Plain-text version of an HTML body (history list / fallback). */
-export function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<\s*(br|\/p|\/div|\/tr|\/li|\/h[1-6])\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
-}
-
-/**
- * Render the composed body + optional HTML signature + branded header/footer
- * into the standard portal email HTML. `bodyHtml` (rich editor) wins over the
- * plain-text `body`; images in it must already be hosted URLs (the composer
- * uploads pasted images to the public `email-assets` bucket).
+ * Positional wrapper kept for existing callers. Delegates to the shared
+ * branded-HTML renderer in `@/messaging/render`.
  */
 export function renderCampaignHtml(
   body: string,
@@ -63,39 +34,7 @@ export function renderCampaignHtml(
   bodyHtml?: string | null,
   signatureHtml?: string | null,
 ): string {
-  const loc: Loc = LOCALES.includes(locale as Loc) ? (locale as Loc) : 'en'
-  const name = fullName?.trim() || ''
-
-  let content: string
-  if (bodyHtml?.trim()) {
-    content = `<div style="font-size:14px;color:#44403C;line-height:1.6">${
-      sanitizeEmailHtml(bodyHtml).replaceAll('{{name}}', escapeHtml(name))
-    }</div>`
-  } else {
-    content = escapeHtml(body.replaceAll('{{name}}', name))
-      .split(/\n{2,}/)
-      .map(p => `<p style="font-size:14px;color:#44403C;line-height:1.6;margin:0 0 16px">${p.replaceAll('\n', '<br/>')}</p>`)
-      .join('')
-  }
-
-  const signature = signatureHtml?.trim()
-    ? `<div style="margin-top:24px;font-size:13px;color:#44403C;line-height:1.6">${sanitizeEmailHtml(signatureHtml)}</div>`
-    : ''
-  const f = FOOTER[loc]
-  const contact = contactEmail
-    ? ` ${f.contact} <a href="mailto:${escapeHtml(contactEmail)}" style="color:#B8975A">${escapeHtml(contactEmail)}</a>.`
-    : ''
-  return `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
-    <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#B8975A;margin:0 0 24px">Piedro Portal</p>
-    ${content}
-    ${signature}
-    <div style="border-top:1px solid #E7E5E4;margin-top:32px;padding-top:16px">
-      <p style="font-size:11px;color:#A8A29E;line-height:1.6;margin:0">
-        ${escapeHtml(f.reason)}${contact}<br/>
-        Piedro International · <a href="${SITE}" style="color:#A8A29E">${SITE.replace(/^https?:\/\//, '')}</a>
-      </p>
-    </div>
-  </div>`
+  return renderBrandedHtml({ body, bodyHtml, fullName, locale, contactEmail, signatureHtml })
 }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
