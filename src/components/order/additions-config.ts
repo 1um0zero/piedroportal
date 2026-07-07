@@ -38,7 +38,7 @@ const mm1to10   = [1,2,3,4,5,6,7,8,9,10]
 const mm4to10   = [4,6,8,10]
 const mm2to8    = [2,4,6,8]
 const mm1to20   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-const mm0to20   = [0,...mm1to20]                                 // Hak Wig allows 0 (client, 2026-07-07)
+const mm0to20   = [0,...mm1to20]                                 // Hak Wig + Zool Wig allow 0 (client, 2026-07-07)
 const mm1to60   = Array.from({ length: 60 }, (_, i) => i + 1)
 const mm0to60   = Array.from({ length: 61 }, (_, i) => i)        // Tenen allows 0 (Anabela, 2026-06-26)
 const mm5to25   = Array.from({ length: 21 }, (_, i) => i + 5)
@@ -139,8 +139,8 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'hf_medial',    type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'heel_float', dataverseKey: 'cr56f_3hf_medial' },
       { key: 'hf_lateral',   type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'heel_float', dataverseKey: 'cr56f_3hf_lateral' },
       { key: 'sole_wedge',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_4solewedge' },
-      { key: 'sw_medial',    type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'sole_wedge', dataverseKey: 'cr56f_4sw_medial' },
-      { key: 'sw_lateral',   type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'sole_wedge', dataverseKey: 'cr56f_4sw_lateral' },
+      { key: 'sw_medial',    type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'sole_wedge', dataverseKey: 'cr56f_4sw_medial' },
+      { key: 'sw_lateral',   type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'sole_wedge', dataverseKey: 'cr56f_4sw_lateral' },
       { key: 'heel_wedge',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_4heelwedge' },
       { key: 'hw_medial',    type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'heel_wedge', dataverseKey: 'cr56f_4hw_medial' },
       { key: 'hw_lateral',   type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'heel_wedge', dataverseKey: 'cr56f_4hw_lateral' },
