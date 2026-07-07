@@ -25,8 +25,8 @@ export default async function AdminDraftsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let drafts: any[] = data ?? []
 
-  // Branch staff only see drafts whose product model is within their scope.
-  if (!scope.allModels) drafts = drafts.filter(o => scope.canModel(o.products?.style_name))
+  // Branch staff only see drafts whose product model and company are within their scope.
+  if (!scope.allModels) drafts = drafts.filter(o => scope.canModel(o.products?.style_name) && scope.canCompany(o.companies?.id))
 
   // Attach the creator's email (consultation: whose draft is this).
   const ownerIds = [...new Set(drafts.map(o => o.user_id).filter(Boolean))]

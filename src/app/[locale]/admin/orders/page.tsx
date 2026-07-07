@@ -55,10 +55,11 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     offset += PAGE
   }
 
-  // Branch staff only see orders whose product model is within their scope.
+  // Branch staff only see orders whose product model is within their scope AND
+  // whose company belongs to their portfolio (token-scoped branches, e.g. UK).
   const scopedOrders = scope.allModels
     ? allOrders
-    : allOrders.filter(o => scope.canModel(o.products?.style_name))
+    : allOrders.filter(o => scope.canModel(o.products?.style_name) && scope.canCompany(o.companies?.id))
 
   // STOCK orders (separate table), under the same scoping as configured orders:
   // a stock order is in scope if ANY of its models is in the staff member's scope.
@@ -70,7 +71,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   })
   const stockRows = scope.allModels
     ? allStock
-    : allStock.filter(o => o.styleNames.some(sn => scope.canModel(sn)))
+    : allStock.filter(o => o.styleNames.some(sn => scope.canModel(sn)) && scope.canCompany(o.companies?.id))
 
   const all = [...scopedOrders, ...stockRows].sort(
     (a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''),

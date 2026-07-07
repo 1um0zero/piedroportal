@@ -64,7 +64,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       (await getBranchAdminCompanyIds(user.id)).length > 0
 
     let allowed =
-      (!!scope && scope.canModel(product?.style_name)) ||
+      (!!scope && scope.canModel(product?.style_name) && scope.canCompany(order.company_id)) ||
       order.user_id === user.id ||
       (isMigrated && isBranchBackoffice)
     if (!allowed && order.company_id) {

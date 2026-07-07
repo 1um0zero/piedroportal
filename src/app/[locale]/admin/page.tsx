@@ -98,8 +98,8 @@ export default async function AdminDashboard() {
     offset += 1000
   }
 
-  // Branch staff dashboards are scoped to the models they manage.
-  if (!scope.allModels) all = all.filter(o => scope.canModel(o.products?.style_name))
+  // Branch staff dashboards are scoped to the models they manage and their client portfolio.
+  if (!scope.allModels) all = all.filter(o => scope.canModel(o.products?.style_name) && scope.canCompany(o.companies?.id))
 
   const total   = all.length
   const urgent  = all.filter(o => (o.additions as Record<string,unknown>)?.urgent === true).length

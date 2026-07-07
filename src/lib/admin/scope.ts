@@ -25,6 +25,13 @@ export interface AdminScope {
   branchId: string | null
   allModels: boolean
   canModel(styleName: string | null | undefined): boolean
+  /**
+   * Company circumscription — token-scoped branch staff (e.g. UK) may only see
+   * orders of THEIR client portfolio: companies carrying the branch sigla in
+   * exclusive_label, plus explicit branch_companies links. Everyone else sees
+   * all companies (subject to canModel).
+   */
+  canCompany(companyId: string | null | undefined): boolean
   /** Token-scoped (e.g. UK) staff consult the catalogue but cannot manage it. */
   readonlyCatalogue: boolean
   /**
@@ -56,7 +63,7 @@ export async function getAdminScope(): Promise<AdminScope | null> {
   const role = profile?.role as UserRole | undefined
   // super_admin (infra/technical) is a superset of piedro_admin (operational).
   if (isPiedroAdmin(role)) {
-    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: false, canApproveOrders: true }
+    return { userId: user.id, role: role!, branchId: null, allModels: true, canModel: () => true, canCompany: () => true, readonlyCatalogue: false, canApproveOrders: true }
   }
 
   // Granular order-approval capability — only meaningful for branch_staff (other
@@ -69,7 +76,7 @@ export async function getAdminScope(): Promise<AdminScope | null> {
     const branchId = (profile?.branch_id as string | null) ?? null
     if (!branchId) {
       // Staff not yet attached to a branch — no catalogue access.
-      return { userId: user.id, role, branchId: null, allModels: false, canModel: () => false, readonlyCatalogue: true, canApproveOrders }
+      return { userId: user.id, role, branchId: null, allModels: false, canModel: () => false, canCompany: () => false, readonlyCatalogue: true, canApproveOrders }
     }
 
     const { data: branch } = await service
@@ -91,7 +98,22 @@ export async function getAdminScope(): Promise<AdminScope | null> {
       }
       const canModel = (styleName: string | null | undefined): boolean =>
         !!styleName && visibleStyles.has(styleName)
-      return { userId: user.id, role, branchId, allModels: false, canModel, readonlyCatalogue: true, canApproveOrders }
+
+      // Company circumscription (Anabela's rule: "UK staff see ONLY UK orders"):
+      // the branch's client portfolio = companies whose exclusive_label carries the
+      // branch sigla, plus any explicit branch_companies links.
+      const [{ data: labelled }, { data: linked }] = await Promise.all([
+        service.from('companies').select('id, exclusive_label').not('exclusive_label', 'is', null),
+        service.from('branch_companies').select('company_id').eq('branch_id', branchId),
+      ])
+      const branchSiglas = exclusiveTokens(token)
+      const companyIds = new Set<string>((linked ?? []).map(r => r.company_id as string))
+      for (const c of (labelled ?? []) as { id: string; exclusive_label: string | null }[]) {
+        if (exclusiveTokens(c.exclusive_label).some(t => branchSiglas.includes(t))) companyIds.add(c.id)
+      }
+      const canCompany = (companyId: string | null | undefined): boolean =>
+        !!companyId && companyIds.has(companyId)
+      return { userId: user.id, role, branchId, allModels: false, canModel, canCompany, readonlyCatalogue: true, canApproveOrders }
     }
 
     // ── Legacy branch: style_name inclusion/exclusion list ────────────────────
@@ -105,7 +127,7 @@ export async function getAdminScope(): Promise<AdminScope | null> {
       return seesFull ? !models.has(styleName) : models.has(styleName)
     }
     // allModels is true only for a full-catalogue branch with no exclusions.
-    return { userId: user.id, role, branchId, allModels: seesFull && models.size === 0, canModel, readonlyCatalogue: false, canApproveOrders }
+    return { userId: user.id, role, branchId, allModels: seesFull && models.size === 0, canModel, canCompany: () => true, readonlyCatalogue: false, canApproveOrders }
   }
 
   // Regular users / company_admins have no back-office access.
@@ -168,7 +190,7 @@ export async function requireOrdersViewPage(): Promise<{ scope: AdminScope; canW
 
   if (isStaffViewer(profile?.role)) {
     return {
-      scope: { userId: user.id, role: 'staff_viewer', branchId: null, allModels: true, canModel: () => true, readonlyCatalogue: true, canApproveOrders: false },
+      scope: { userId: user.id, role: 'staff_viewer', branchId: null, allModels: true, canModel: () => true, canCompany: () => true, readonlyCatalogue: true, canApproveOrders: false },
       canWrite: false,
     }
   }

@@ -32,12 +32,13 @@ export async function updateOrderAdminAction(
 
     const service = createServiceClient()
 
-    // Branch staff can only act on orders whose product model is within their scope.
+    // Branch staff can only act on orders whose product model AND company are within their scope.
     if (!scope.allModels) {
       const { data: ord } = await service
-        .from('orders').select('products(style_name)').eq('id', orderId).single()
+        .from('orders').select('company_id, products(style_name)').eq('id', orderId).single()
       const style = (ord as { products?: { style_name?: string } } | null)?.products?.style_name
       if (!scope.canModel(style)) return { error: 'Not authorized' }
+      if (!scope.canCompany((ord as { company_id?: string | null } | null)?.company_id)) return { error: 'Not authorized' }
     }
 
     // Validation: cannot approve without Piedro Order ID; and stamp the

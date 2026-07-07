@@ -43,9 +43,10 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   if (!order) notFound()
 
-  // Branch staff cannot open an order whose model is outside their scope.
+  // Branch staff cannot open an order whose model or company is outside their scope.
   const orderStyle = (order as { products?: { style_name?: string } }).products?.style_name
-  if (!scope.canModel(orderStyle)) redirect('/admin/orders')
+  const orderCompanyId = (order as { companies?: { id?: string } }).companies?.id
+  if (!scope.allModels && (!scope.canModel(orderStyle) || !scope.canCompany(orderCompanyId))) redirect('/admin/orders')
 
   // Everything below is independent of the order row → run it all in parallel
   // instead of five sequential round-trips.
