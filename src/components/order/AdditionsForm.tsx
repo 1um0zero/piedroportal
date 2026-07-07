@@ -584,8 +584,14 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                     <div key={field.key} className={`py-2 pl-4 ml-1 border-l-2 ${flagged ? 'border-red-400' : 'border-gold/20'}`}>
                       <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel} <span className="text-red-400">*</span></p>
                       <div className="grid grid-cols-2 gap-4">
-                        <div>{parentFilledL ? renderControl(field, 'l') : null}</div>
-                        <div>{parentFilledR ? renderControl(field, 'r') : null}</div>
+                        <div className="space-y-1">
+                          {parentFilledL && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')}</p>}
+                          {parentFilledL ? renderControl(field, 'l') : null}
+                        </div>
+                        <div className="space-y-1">
+                          {parentFilledR && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')}</p>}
+                          {parentFilledR ? renderControl(field, 'r') : null}
+                        </div>
                       </div>
                     </div>
                   )
