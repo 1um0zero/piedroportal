@@ -91,9 +91,18 @@ export async function getAdminScope(): Promise<AdminScope | null> {
       // visible when any of its rows is general or carries the branch sigla — the
       // exact same gate the client gallery applies, but rolled up to style_name so
       // every existing canModel() caller keeps working unchanged.
-      const { data: prods } = await service.from('products').select('style_name, exclusive')
+      // Paginated fetch — the catalogue exceeds Supabase's 1000-row cap, and a
+      // truncated slice silently drops styles out of scope (orders vanish).
+      const prods: { style_name: string | null; exclusive: string | null }[] = []
+      for (let from = 0; ; from += 1000) {
+        const { data: page } = await service
+          .from('products').select('style_name, exclusive').range(from, from + 999)
+        if (!page?.length) break
+        prods.push(...(page as typeof prods))
+        if (page.length < 1000) break
+      }
       const visibleStyles = new Set<string>()
-      for (const p of (prods ?? []) as { style_name: string | null; exclusive: string | null }[]) {
+      for (const p of prods) {
         if (p.style_name && isExclusiveVisible(p.exclusive, labels, false)) visibleStyles.add(p.style_name)
       }
       const canModel = (styleName: string | null | undefined): boolean =>
