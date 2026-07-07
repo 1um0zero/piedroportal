@@ -3,6 +3,7 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import { logAdminAction } from '@/lib/admin/audit'
+import { getImpersonation } from '@/lib/impersonation'
 import type { ApprovalState, ProductionState } from '@/lib/order-status'
 
 // NOTE: this is a 'use server' module — it may ONLY export async functions.
@@ -83,12 +84,17 @@ export async function updateOrderAdminAction(
     }
 
     // Audit trail — record which back-office fields were changed and to what.
+    // Under "View as" the session (and scope) belong to the TARGET user, so the
+    // change would be attributed to them with no trace of the admin driving it —
+    // attribute the action to the real admin and mark the impersonation.
+    const imp = await getImpersonation()
     await logAdminAction({
-      actorId:   scope.userId,
-      actorRole: scope.role,
+      actorId:   imp?.adminId ?? scope.userId,
+      actorRole: imp ? 'piedro_admin' : scope.role,
       action:    'order_update',
       orderId,
-      details:   { changed: update },
+      details:   imp ? { changed: update, target_name: imp.targetName } : { changed: update },
+      impersonatedAsUserId: imp?.targetId,
     })
     return { ok: true }
   } catch (e) {

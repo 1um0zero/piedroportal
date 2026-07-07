@@ -256,7 +256,16 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const patient = row.patient_name ?? '—'
     const resend = getResend()
     if (!resend) return { pdf_url: pdfPath, emailError: 'Email service not configured (RESEND_API_KEY missing)' }
-    const cfg = await getSettings(['order_notify_email', 'email_from', 'notify_locale'])
+    // Everything the three emails need, fetched concurrently — settings, the
+    // client's Cc/Bcc contacts and the product style (for branch copies).
+    const [cfg, { data: prof }, { data: comp }, { data: prod }] = await Promise.all([
+      getSettings(['order_notify_email', 'email_from', 'notify_locale']),
+      service.from('profiles').select('notify_cc, notify_bcc').eq('id', userId).single(),
+      row.company_id
+        ? service.from('companies').select('notify_cc, notify_bcc').eq('id', row.company_id).single()
+        : Promise.resolve({ data: null as { notify_cc?: string; notify_bcc?: string } | null }),
+      service.from('products').select('style_name').eq('id', row.product_id).single(),
+    ])
     // The order-desk setting may hold a comma-separated list of addresses.
     const toEmails  = splitEmails(cfg.order_notify_email)
     const emailFrom = cfg.email_from
@@ -268,16 +277,10 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     const internalLocale = (cfg.notify_locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'
     const orderLocale    = (row.locale ?? 'en') as 'en' | 'nl' | 'fr' | 'de'
     const errors: string[] = []
-
-    // Client contacts (used to Cc the order desk so staff can reply-all to the
-    // client, and to Cc/Bcc the client's confirmation).
-    const [{ data: prof }, { data: comp }] = await Promise.all([
-      service.from('profiles').select('notify_cc, notify_bcc').eq('id', userId).single(),
-      row.company_id
-        ? service.from('companies').select('notify_cc, notify_bcc').eq('id', row.company_id).single()
-        : Promise.resolve({ data: null as { notify_cc?: string; notify_bcc?: string } | null }),
-    ])
     const internalSet = new Set(toEmails.map(e => e.toLowerCase()))
+    // The emails are independent of each other — send them concurrently. Each
+    // records its own failure; one bad address never blocks the others.
+    const sends: Promise<void>[] = []
 
     // (1) Internal notification to the order desk. The client is NOT Cc'd here
     // (that caused the client to receive two messages per order — this internal
@@ -285,52 +288,58 @@ async function generatePdf(orderId: string, row: OrderRow, pdfMeta: PdfMeta, ser
     // shown in the body ("reply to customer here") and set as Reply-To, so the
     // desk can still reply straight to the client without duplicating the email.
     if (toEmails.length) {
-      const customerReply = userEmail && !internalSet.has(userEmail.toLowerCase())
-        ? userEmail : undefined
-      const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
-      const { error } = await resend.emails.send({
-        from: emailFrom, to: toEmails,
-        replyTo: customerReply,
-        subject: t('subject_internal', { ref }),
-        html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId, undefined, customerReply),
-        attachments: [attachment],
-      })
-      if (error) errors.push(`internal: ${error.message}`)
+      sends.push((async () => {
+        const customerReply = userEmail && !internalSet.has(userEmail.toLowerCase())
+          ? userEmail : undefined
+        const t = await getTranslations({ locale: internalLocale, namespace: 'emails' })
+        const { error } = await resend.emails.send({
+          from: emailFrom, to: toEmails,
+          replyTo: customerReply,
+          subject: t('subject_internal', { ref }),
+          html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId, undefined, customerReply),
+          attachments: [attachment],
+        })
+        if (error) errors.push(`internal: ${error.message}`)
+      })())
     }
 
     // (2) Confirmation to the ordering user (+ user/company Cc/Bcc).
     if (userEmail) {
-      const cc  = uniq([...splitEmails(prof?.notify_cc),  ...splitEmails(comp?.notify_cc)]).filter(e => e !== userEmail.toLowerCase())
-      const bcc = uniq([...splitEmails(prof?.notify_bcc), ...splitEmails(comp?.notify_bcc)])
-      const t = await getTranslations({ locale: orderLocale, namespace: 'emails' })
-      const { error } = await resend.emails.send({
-        from: emailFrom, to: [userEmail],
-        // Replies (e.g. "I forgot to add something to my order") must reach the
-        // order desk / customer service, not the no-reply From address.
-        replyTo: toEmails.length ? toEmails : undefined,
-        cc:  cc.length  ? cc  : undefined,
-        bcc: bcc.length ? bcc : undefined,
-        subject: t('subject_client', { ref }),
-        html: orderEmailHtml(t, t('heading_client'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId, t('client_intro')),
-        attachments: [attachment],
-      })
-      if (error) errors.push(`client: ${error.message}`)
+      sends.push((async () => {
+        const cc  = uniq([...splitEmails(prof?.notify_cc),  ...splitEmails(comp?.notify_cc)]).filter(e => e !== userEmail.toLowerCase())
+        const bcc = uniq([...splitEmails(prof?.notify_bcc), ...splitEmails(comp?.notify_bcc)])
+        const t = await getTranslations({ locale: orderLocale, namespace: 'emails' })
+        const { error } = await resend.emails.send({
+          from: emailFrom, to: [userEmail],
+          // Replies (e.g. "I forgot to add something to my order") must reach the
+          // order desk / customer service, not the no-reply From address.
+          replyTo: toEmails.length ? toEmails : undefined,
+          cc:  cc.length  ? cc  : undefined,
+          bcc: bcc.length ? bcc : undefined,
+          subject: t('subject_client', { ref }),
+          html: orderEmailHtml(t, t('heading_client'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId, t('client_intro')),
+          attachments: [attachment],
+        })
+        if (error) errors.push(`client: ${error.message}`)
+      })())
     }
 
     // (3) Branch-office copies — each relevant branch in its OWN language.
-    const { data: prod } = await service.from('products').select('style_name').eq('id', row.product_id).single()
-    const branchTargets = (await getBranchNotifyTargets(prod?.style_name))
-      .filter(bt => !internalSet.has(bt.email.toLowerCase()))
-    for (const bt of branchTargets) {
-      const t = await getTranslations({ locale: bt.locale, namespace: 'emails' })
-      const { error } = await resend.emails.send({
-        from: emailFrom, to: [bt.email],
-        subject: t('subject_internal', { ref }),
-        html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
-        attachments: [attachment],
-      })
-      if (error) errors.push(`branch ${bt.email}: ${error.message}`)
-    }
+    sends.push((async () => {
+      const branchTargets = (await getBranchNotifyTargets(prod?.style_name))
+        .filter(bt => !internalSet.has(bt.email.toLowerCase()))
+      await Promise.all(branchTargets.map(async bt => {
+        const t = await getTranslations({ locale: bt.locale, namespace: 'emails' })
+        const { error } = await resend.emails.send({
+          from: emailFrom, to: [bt.email],
+          subject: t('subject_internal', { ref }),
+          html: orderEmailHtml(t, t('heading_internal'), ref, pdfMeta.companyName, patient, pdfMeta.productColourId),
+          attachments: [attachment],
+        })
+        if (error) errors.push(`branch ${bt.email}: ${error.message}`)
+      }))
+    })())
+    await Promise.all(sends)
 
     if (errors.length) {
       console.error('Email error:', errors.join(' | '))
