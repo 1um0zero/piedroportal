@@ -42,8 +42,10 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
       .from('orders')
       .select(SELECT)
       // Drafts are private to their creator and live in /admin/drafts — they must
-      // not pollute the back-office Orders analysis. See project_draft_on_behalf_future.
-      .neq('status', 'draft')
+      // not pollute the back-office Orders analysis. The viewer's OWN drafts are the
+      // exception: back-office users have no other list where they can resume them
+      // (their home is this view, not /orders). See project_draft_on_behalf_future.
+      .or(`status.neq.draft,user_id.eq.${scope.userId}`)
       .order('created_at', { ascending: false })
       .range(offset, offset + PAGE - 1)
     if (useRange) q = q.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)

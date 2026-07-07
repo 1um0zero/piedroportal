@@ -129,6 +129,13 @@ export default async function Navbar({ locale }: Props) {
                   {t('products')}
                 </Link>
               )}
+              {/* Branch staff have no NavAdminMenu, so Drafts needs its own entry —
+                  it is where they consult their portfolio's concept orders. */}
+              {isOperator && !isAdmin && (
+                <Link href="/admin/drafts" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                  {t('drafts')}
+                </Link>
+              )}
               {isAdmin && (
                 <>
                   <Link href="/admin/stock" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">

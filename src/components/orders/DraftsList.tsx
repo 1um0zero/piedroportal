@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import Image from 'next/image'
+import { Link } from '@/i18n/navigation'
 import { productImageUrl } from '@/lib/products/image-url'
 import { matchesAny } from '@/lib/search'
 import { GridFloatingNav, ListPager } from '@/components/ui/table-controls'
@@ -24,7 +25,7 @@ type DraftRow = {
   created_at: string | null
   updated_at: string | null
   owner_email?: string | null
-  products?: { style_name?: string; colour_id?: string; closure?: string; picture_name?: string } | null
+  products?: { id?: string; style_name?: string; colour_id?: string; closure?: string; picture_name?: string } | null
   companies?: { name?: string; erp_code?: string } | null
 }
 
@@ -32,10 +33,11 @@ type DraftRow = {
  * Read-only consultation list of DRAFT orders for the back-office. Drafts are
  * private to their creator (they may be tests/notes/scratch orders), so they are
  * deliberately kept OUT of the main Orders analysis. This page carries no
- * follow-up columns (production/delivery/PDF) and no actions — pure consultation.
+ * follow-up columns (production/delivery/PDF); the only action is "resume" on the
+ * viewer's OWN drafts — colleagues' drafts stay pure consultation.
  * See memory project_draft_on_behalf_future.
  */
-export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
+export default function DraftsList({ drafts, currentUserId }: { drafts: DraftRow[]; currentUserId?: string }) {
   const t  = useTranslations('admin.drafts')
   const to = useTranslations('admin.orders')
   const tu = useTranslations('order')
@@ -97,11 +99,12 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
                 <th className="px-2.5 py-3 text-left">{to('col_company')}</th>
                 <th className="px-2.5 py-3 text-left">{to('col_clinician')}</th>
                 <th className="px-2.5 py-3 text-left">{t('col_owner')}</th>
+                <th className="px-2.5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
               {filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-12 text-center text-stone-400 text-sm">{t('empty')}</td></tr>
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-stone-400 text-sm">{t('empty')}</td></tr>
               ) : filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(o => {
                 const product = o.products
                 return (
@@ -138,6 +141,18 @@ export default function DraftsList({ drafts }: { drafts: DraftRow[] }) {
                     </td>
                     <td className="px-2.5 py-3">
                       <p className="text-stone-600 text-xs truncate max-w-[180px]">{o.owner_email ?? '—'}</p>
+                    </td>
+                    <td className="px-2.5 py-3 text-right whitespace-nowrap">
+                      {/* Drafts are private — only the creator may resume/submit their own. */}
+                      {currentUserId && o.user_id === currentUserId && product?.id && (
+                        <Link href={`/gallery/${product.id}/order?draft=${o.id}` as Parameters<typeof Link>[0]['href']}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gold rounded-lg hover:bg-gold-dark transition-colors">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/>
+                          </svg>
+                          {tu('edit_draft')}
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 )

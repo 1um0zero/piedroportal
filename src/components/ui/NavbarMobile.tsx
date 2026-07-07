@@ -85,6 +85,10 @@ export function NavbarMobile({ isAdmin, isBackoffice, isOperator = false, isLogg
                   {isOperator && (
                     <Link href="/admin/products" onClick={close} className={linkCls}>{t('products')}</Link>
                   )}
+                  {/* Branch staff have no backoffice menu below, so Drafts gets its own entry. */}
+                  {isOperator && !isAdmin && (
+                    <Link href="/admin/drafts" onClick={close} className={linkCls}>{t('drafts')}</Link>
+                  )}
                   {isAdmin && (
                     <>
                       <Link href="/admin/stock" onClick={close} className={linkCls}>{t('stock')}</Link>

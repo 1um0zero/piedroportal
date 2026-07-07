@@ -15,6 +15,7 @@ import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filte
 import { displayWidth, sortWidths } from '@/lib/width-display'
 import { insertOrderAction, updateOrderAction, deleteOrderAction, type PdfMeta } from '@/app/actions/orders'
 import { useImpersonation } from '@/contexts/ImpersonationContext'
+import { closurePeriods } from '@/lib/dispatch'
 
 
 type Unit    = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT' | 'DIFF_SIZES'
@@ -543,7 +544,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
           </svg>
           <p className="text-sm text-amber-800">
             {t('dispatch_closure_notice', {
-              dates: closuresAhead.map(c => new Date(`${c.date}T00:00:00Z`).toLocaleDateString(locale, { day: '2-digit', month: 'short' })).join(', '),
+              dates: closurePeriods(closuresAhead).map(p => {
+                const fmt = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(locale, { day: '2-digit', month: 'short' })
+                return p.start === p.end ? fmt(p.start) : `${fmt(p.start)} – ${fmt(p.end)}`
+              }).join(', '),
             })}
           </p>
         </div>

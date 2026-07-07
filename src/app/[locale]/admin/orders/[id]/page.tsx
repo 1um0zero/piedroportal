@@ -78,7 +78,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           ← {navT('orders')}
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={true} readOnly={!canWrite} isFullAdmin={isPiedroAdmin(scope.role)} prevId={prevId} nextId={nextId}
+      <OrderDetailView order={order} isAdmin={true} readOnly={!canWrite} isFullAdmin={isPiedroAdmin(scope.role)}
+        canEditDraft={order.status === 'draft' && order.user_id === scope.userId} prevId={prevId} nextId={nextId}
         clientEmail={ordererRes.data?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
     </div>
   )

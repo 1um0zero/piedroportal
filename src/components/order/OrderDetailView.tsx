@@ -25,9 +25,9 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
+export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, canEditDraft = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  order: any; isAdmin: boolean; readOnly?: boolean; isFullAdmin?: boolean; prevId?: string | null; nextId?: string | null
+  order: any; isAdmin: boolean; readOnly?: boolean; isFullAdmin?: boolean; canEditDraft?: boolean; prevId?: string | null; nextId?: string | null
   clientEmail?: string; clientCc?: string; deskEmail?: string
 }) {
   const router = useRouter()
@@ -233,8 +233,10 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
           actions + the current state badge(s). */}
       <div className="flex items-center justify-end gap-2 flex-wrap">
           {/* A draft is unfinished — let the owner reopen it in the order form to
-              edit and actually submit it (the detail view itself is read-only). */}
-          {!isAdmin && order.status === 'draft' && product?.id && (
+              edit and actually submit it (the detail view itself is read-only).
+              Back-office viewers get the same affordance ONLY for their own drafts
+              (canEditDraft, set by the admin detail page). */}
+          {(!isAdmin || canEditDraft) && order.status === 'draft' && product?.id && (
             <Link href={`/gallery/${product.id}/order?draft=${order.id}` as Parameters<typeof Link>[0]['href']}
               className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gold rounded-lg hover:bg-gold-dark transition-colors">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -36,5 +36,5 @@ export default async function AdminDraftsPage() {
     for (const o of drafts) o.owner_email = o.user_id ? (emailById.get(o.user_id) ?? null) : null
   }
 
-  return <DraftsList drafts={drafts} />
+  return <DraftsList drafts={drafts} currentUserId={scope.userId} />
 }
