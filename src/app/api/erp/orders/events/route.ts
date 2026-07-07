@@ -73,14 +73,24 @@ export async function POST(req: Request) {
   )]
   const refToId = new Map<string, string>()
   if (refs.length) {
-    const { data: orders, error } = await service
-      .from('orders').select('id, erp_order_ref').not('erp_order_ref', 'is', null)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    for (const o of orders ?? []) {
-      const raw = String((o as { erp_order_ref: string }).erp_order_ref ?? '')
-      for (const tok of raw.split('/')) {
-        const t = tok.trim()
-        if (t && !refToId.has(t)) refToId.set(t, (o as { id: string }).id)
+    // Targeted lookup instead of a full-table scan: a plain select truncates at
+    // 1000 rows, so orders beyond the first page would silently never resolve.
+    // erp_order_ref is either the ref itself or two feet joined by "/".
+    for (let i = 0; i < refs.length; i += 100) {
+      const conds = refs.slice(i, i + 100).flatMap(r => [
+        `erp_order_ref.eq.${r}`,
+        `erp_order_ref.like.${r}/%`,
+        `erp_order_ref.like.%/${r}`,
+      ])
+      const { data: orders, error } = await service
+        .from('orders').select('id, erp_order_ref').or(conds.join(','))
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      for (const o of orders ?? []) {
+        const raw = String((o as { erp_order_ref: string }).erp_order_ref ?? '')
+        for (const tok of raw.split('/')) {
+          const t = tok.trim()
+          if (t && !refToId.has(t)) refToId.set(t, (o as { id: string }).id)
+        }
       }
     }
   }

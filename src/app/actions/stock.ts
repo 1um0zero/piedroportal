@@ -11,6 +11,7 @@ import { getSettings } from '@/lib/settings'
 import { addWorkingDays } from '@/lib/dispatch'
 import { getBranchNotifyTargets } from '@/lib/admin/branch-recipients'
 import { signOrderPdf } from '@/lib/order-pdf'
+import { fetchAll } from '@/lib/fetch-all'
 import { escapeHtml } from '@/lib/escape-html'
 import { getTranslations } from 'next-intl/server'
 import { renderToBuffer } from '@react-pdf/renderer'
@@ -428,18 +429,20 @@ const STOCK_LIST_SELECT = `
 /** Stock orders for the unified list, normalized to StockOrderListRow[]. */
 export async function getStockOrderRows(opts: ListOpts): Promise<StockOrderListRow[]> {
   const service = createServiceClient()
-  let q = service.from('stock_orders').select(STOCK_LIST_SELECT).order('created_at', { ascending: false })
+  if (!opts.all && !(opts.companyIds && opts.companyIds.length > 0) && !opts.userId) return []
 
-  if (opts.all) { /* no owner filter */ }
-  else if (opts.companyIds && opts.companyIds.length > 0) q = q.in('company_id', opts.companyIds)
-  else if (opts.userId) q = q.eq('user_id', opts.userId)
-  else return []
-
-  if (opts.fromISO && opts.toISO) q = q.gte('created_at', opts.fromISO).lte('created_at', opts.toISO)
-  else if (opts.cutoffISO) q = q.gte('created_at', opts.cutoffISO)
-
-  const { data, error } = await q
-  if (error || !data) return []
+  // Paginated: the admin list fetches ALL stock orders — an unpaginated select
+  // would silently truncate at 1000 rows as stock volume grows.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = await fetchAll<any>(page => {
+    let q = service.from('stock_orders').select(STOCK_LIST_SELECT).order('created_at', { ascending: false })
+    if (opts.all) { /* no owner filter */ }
+    else if (opts.companyIds && opts.companyIds.length > 0) q = q.in('company_id', opts.companyIds)
+    else if (opts.userId) q = q.eq('user_id', opts.userId)
+    if (opts.fromISO && opts.toISO) q = q.gte('created_at', opts.fromISO).lte('created_at', opts.toISO)
+    else if (opts.cutoffISO) q = q.gte('created_at', opts.cutoffISO)
+    return q.range(page.from, page.to)
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data as any[]).map((o) => {

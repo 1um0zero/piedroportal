@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { isPiedroAdmin } from '@/lib/roles'
 import { hasChatConsent, logChatMessage } from '@/lib/chat-consent'
+import { fetchAll } from '@/lib/fetch-all'
 import { getContactInfo } from '@/lib/contact-info.server'
 
 // Lazily construct the client — the SDK throws at construction if the key is
@@ -310,11 +311,14 @@ async function executeTool(
 
     case 'get_top_models': {
       const limit = Number(input.limit ?? 5)
-      const { data } = await service
+      // Paginated: an unbounded select truncates at 1000 rows and skews the ranking.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await fetchAll<any>(page => service
         .from('orders')
         .select('products(colour_id, color_name, style_name)')
         .in('company_id', companyIds)
         .neq('status', 'draft')
+        .range(page.from, page.to))
       const counts = new Map<string, { count: number; color: string }>()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(data ?? []).forEach((o: any) => {

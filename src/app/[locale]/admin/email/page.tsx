@@ -2,6 +2,7 @@ import { requirePiedroAdminPage } from '@/lib/admin/scope'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getSettings } from '@/lib/settings'
 import EmailComposer, { type CampaignRow, type TemplateOption } from '@/components/admin/EmailComposer'
+import { fetchAll } from '@/lib/fetch-all'
 
 /**
  * /admin/email — broadcast tool: compose an email and send it to one user,
@@ -12,8 +13,11 @@ export default async function AdminEmailPage() {
   await requirePiedroAdminPage()
   const service = createServiceClient()
 
-  const [{ data: users }, { data: companies }, { data: campaigns }, { data: templates }, settings] = await Promise.all([
-    service.from('profiles').select('id, full_name, email').not('email', 'is', null).order('full_name'),
+  const [users, { data: companies }, { data: campaigns }, { data: templates }, settings] = await Promise.all([
+    // Paginated: past 1000 users an unbounded select silently drops recipients.
+    fetchAll<{ id: string; full_name: string | null; email: string }>(page =>
+      service.from('profiles').select('id, full_name, email').not('email', 'is', null)
+        .order('full_name').range(page.from, page.to)),
     service.from('companies').select('id, name').order('name'),
     service.from('email_campaigns')
       .select('id, subject, audience, scheduled_at, status, total_recipients, sent_count, failed_count, created_at, body_html, body')

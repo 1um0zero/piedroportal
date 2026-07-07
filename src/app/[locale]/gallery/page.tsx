@@ -29,13 +29,29 @@ export default async function GalleryRoute() {
     // are overlaid client-side for the signed-in user (see GalleryPage).
     .or('exclusive.is.null,exclusive.eq.')
 
-  let res = await run(FIELDS)
-    .order('gallery_position', { ascending: true, nullsFirst: false })
-    .order('style_name').order('colour_id')
-  if (res.error) res = await run(FIELDS).order('style_name').order('colour_id')
-  if (res.error) res = await run(FIELDS_NO_UNIT).order('style_name').order('colour_id')
+  // Paginated (the catalogue exceeds Supabase's 1000-row cap) while preserving
+  // the graceful-degradation chain: null = this field/order variant errored.
+  const fetchVariant = async (fields: string, withPosition: boolean) => {
+    const rows: unknown[] = []
+    for (let from = 0; ; from += 1000) {
+      let q = run(fields)
+      if (withPosition) q = q.order('gallery_position', { ascending: true, nullsFirst: false })
+      const { data, error } = await q.order('style_name').order('colour_id').range(from, from + 999)
+      if (error) return from === 0 ? null : rows
+      if (!data?.length) break
+      rows.push(...data)
+      if (data.length < 1000) break
+    }
+    return rows
+  }
 
-  const initialProducts = (res.data ?? []) as unknown as Product[]
+  const rows =
+    (await fetchVariant(FIELDS, true)) ??
+    (await fetchVariant(FIELDS, false)) ??
+    (await fetchVariant(FIELDS_NO_UNIT, false)) ??
+    []
+
+  const initialProducts = rows as unknown as Product[]
 
   return <GalleryPage initialSection="KIDS" initialProducts={initialProducts} showHero />
 }

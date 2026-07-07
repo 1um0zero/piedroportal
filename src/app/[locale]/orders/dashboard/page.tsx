@@ -8,6 +8,7 @@ import { signOrderPdfs } from '@/lib/order-pdf'
 import { Link } from '@/i18n/navigation'
 import { nz } from '@/lib/format'
 import { isPiedroAdmin } from '@/lib/roles'
+import { fetchAll } from '@/lib/fetch-all'
 
 
 const STATUS_DOT: Record<string, string> = {
@@ -89,19 +90,20 @@ export default async function ClientDashboard() {
   const statusLabel = (st: string) => (td.has(`status.${st}`) ? td(`status.${st}`) : st)
 
   const service = createServiceClient()
-  let query = service
-    .from('orders')
-    .select(`id, status, unit, quantity, patient_name, reference_customer, created_at,
+  const SELECT = `id, status, unit, quantity, patient_name, reference_customer, created_at,
       size_left, size_right, additions, pdf_url, user_id, company_id,
       products(id, colour_id, color_name, style_name, picture_name, section, closure),
-      companies(id, name)`)
-  // Company admins see all orders from companies they admin; regular users see their own
-  if (isCompanyAdmin) query = query.in('company_id', adminCompanyIds)
-  else query = query.eq('user_id', user.id)
-  const { data: all } = await query.order('created_at', { ascending: false })
-
+      companies(id, name)`
+  // Paginated: every KPI below is computed over this array — a truncated fetch
+  // silently under-reports all dashboard numbers.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const orders = (all ?? []) as any[]
+  const orders = await fetchAll<any>(page => {
+    let query = service.from('orders').select(SELECT)
+    // Company admins see all orders from companies they admin; regular users see their own
+    if (isCompanyAdmin) query = query.in('company_id', adminCompanyIds)
+    else query = query.eq('user_id', user.id)
+    return query.order('created_at', { ascending: false }).range(page.from, page.to)
+  })
   const total = orders.length
   const prod = (o: { products: unknown }) =>
     (Array.isArray(o.products) ? o.products[0] : o.products) as

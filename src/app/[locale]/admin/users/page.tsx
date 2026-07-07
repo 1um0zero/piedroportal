@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
 import AdminUsers from '@/components/admin/AdminUsers'
+import { fetchAll } from '@/lib/fetch-all'
 
 export default async function AdminUsersPage() {
   // Auth check
@@ -17,18 +18,24 @@ export default async function AdminUsersPage() {
   // Load all data with service client (bypasses RLS)
   const service = createServiceClient()
 
-  const [{ data: profiles }, { data: companies }, { data: userCompanies }, { data: branches }] = await Promise.all([
-    service
+  // profiles/user_companies are paginated: past 1000 users an unbounded select
+  // would silently drop rows from the list.
+  const [profiles, { data: companies }, userCompanies, { data: branches }] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchAll<any>(page => service
       .from('profiles')
       .select('id, email, full_name, role, company_id, branch_id, created_at, preferred_locale')
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .range(page.from, page.to)),
     service
       .from('companies')
       .select('id, name')
       .order('name'),
-    service
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchAll<any>(page => service
       .from('user_companies')
-      .select('user_id, company_id, is_company_admin, companies(id, name)'),
+      .select('user_id, company_id, is_company_admin, companies(id, name)')
+      .range(page.from, page.to)),
     service
       .from('branches')
       .select('id, name')
@@ -56,7 +63,8 @@ export default async function AdminUsersPage() {
   // profiles query and blank the entire users list for admins.
   const approveMap = new Map<string, boolean>()
   {
-    const { data: caps } = await service.from('profiles').select('id, can_approve_orders')
+    const caps = await fetchAll<{ id: string }>(page =>
+      service.from('profiles').select('id, can_approve_orders').range(page.from, page.to))
     for (const c of caps ?? []) approveMap.set(c.id, (c as { can_approve_orders?: boolean }).can_approve_orders === true)
   }
 

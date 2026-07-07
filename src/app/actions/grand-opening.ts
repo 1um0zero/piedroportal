@@ -3,6 +3,7 @@
 import { getAdminScope } from '@/lib/admin/scope'
 import { isSuperAdmin } from '@/lib/roles'
 import { createServiceClient } from '@/lib/supabase/service'
+import { fetchAll } from '@/lib/fetch-all'
 
 /**
  * Grand Opening — the one-time cut-over from the test phase to production.
@@ -25,15 +26,14 @@ export async function deletePortalTestOrdersAction(): Promise<{
   const service = createServiceClient()
 
   // Collect ids first (also the PDF paths — both kinds store `${id}.pdf`).
-  const { data: portalOrders, error: e1 } = await service
-    .from('orders').select('id').is('dataverse_id', null)
-  if (e1) return { error: e1.message }
-  const { data: stockOrders, error: e2 } = await service
-    .from('stock_orders').select('id')
-  if (e2) return { error: e2.message }
+  // Paginated: an unbounded select caps at 1000 rows → silently partial purge.
+  const portalOrders = await fetchAll<{ id: string }>(page => service
+    .from('orders').select('id').is('dataverse_id', null).range(page.from, page.to))
+  const stockOrders = await fetchAll<{ id: string }>(page => service
+    .from('stock_orders').select('id').range(page.from, page.to))
 
-  const orderIds = (portalOrders ?? []).map(o => o.id as string)
-  const stockIds = (stockOrders ?? []).map(o => o.id as string)
+  const orderIds = portalOrders.map(o => o.id)
+  const stockIds = stockOrders.map(o => o.id)
 
   // PDFs — remove in chunks; missing files are not an error.
   const pdfPaths = [...orderIds, ...stockIds].map(id => `${id}.pdf`)
