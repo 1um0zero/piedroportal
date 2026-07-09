@@ -24,9 +24,12 @@ declare module 'page-flip' {
   export class PageFlip {
     constructor(element: HTMLElement, settings: FlipSetting)
     loadFromImages(images: string[]): void
+    loadFromHTML(items: HTMLElement[] | NodeListOf<HTMLElement>): void
     on(event: 'flip' | 'init' | 'changeState' | 'changeOrientation', cb: (e: WidgetEvent) => void): void
     flipNext(): void
     flipPrev(): void
+    getCurrentPageIndex(): number
+    getPageCount(): number
     destroy(): void
   }
 }
