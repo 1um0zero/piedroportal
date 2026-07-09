@@ -59,6 +59,12 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BUILD_TIME: buildTime,
   },
   images: {
+    // Keep optimized variants cached on the CDN for 31 days so the optimizer
+    // rarely re-pulls the source from Supabase Storage (the effective Max-Age is
+    // max(minimumCacheTTL, upstream Cache-Control)). Safe because every source
+    // URL is versioned — products via ?v=PRODUCT_IMG_VERSION, catalogue leaves
+    // via ?v=CATALOGUE_IMG_VERSION — so re-processed images bust the cache.
+    minimumCacheTTL: 2678400, // 31 days
     remotePatterns: [
       {
         protocol: 'https',
