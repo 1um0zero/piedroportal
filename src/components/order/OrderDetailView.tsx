@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import OrderSummary from './OrderSummary'
 import { updateOrderAdminAction, translateTextAction, reopenOrderAction, undoReopenAction } from '@/app/actions/admin-orders'
-import { cancelOrderAction } from '@/app/actions/orders'
+import { cancelOrderAction, cancelReopenedOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
 import { orderNumber } from '@/lib/format'
 
@@ -26,10 +26,13 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, canEditDraft = false, canEditReopened = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
+export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, canEditDraft = false, canEditReopened = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '', replacesRef = null, replacedByRef = null }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   order: any; isAdmin: boolean; readOnly?: boolean; isFullAdmin?: boolean; canEditDraft?: boolean; canEditReopened?: boolean; prevId?: string | null; nextId?: string | null
   clientEmail?: string; clientCc?: string; deskEmail?: string
+  /** Replacement chain: this order replaces / was replaced by another one. */
+  replacesRef?: { id: string; label: string } | null
+  replacedByRef?: { id: string; label: string } | null
 }) {
   const router = useRouter()
   const locale = useLocale()
@@ -117,6 +120,20 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
     router.refresh()
   }
 
+  // Client-side cancel of a reopened order (instead of correcting it) — the one
+  // exception to "clients can't cancel after Piedro intervened". Soft cancel.
+  const [showClientCancel, setShowClientCancel] = useState(false)
+  const [clientCancelling, setClientCancelling] = useState(false)
+
+  async function handleClientCancel() {
+    setClientCancelling(true); setMsg(''); setMsgErr(false)
+    const res = await cancelReopenedOrderAction(order.id)
+    setClientCancelling(false)
+    if (res.error) { setMsg(res.error); setMsgErr(true); return }
+    setShowClientCancel(false)
+    router.refresh()
+  }
+
   const unit  = order.unit ?? 'PAIR'
   const approvalMeta   = APPROVAL_STATES.find(s => s.value === approvalSt)
   const productionMeta = PRODUCTION_STATES.find(s => s.value === productionSt)
@@ -185,6 +202,22 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
             {order.order_seq != null ? `#${orderNumber(order.order_seq)}` : (order.reference_customer ?? '—')}
             <span className="ml-2 text-sm font-normal text-stone-400">— {createdLabel}</span>
           </p>
+          {/* Replacement chain — a corrected order and its cancelled original
+              reference each other so the trail reads in one glance. */}
+          {replacesRef && (
+            <p className="text-xs text-stone-500 mt-1">
+              {tOrder('replaces_label')}{' '}
+              <Link href={`${base}/${replacesRef.id}` as Parameters<typeof Link>[0]['href']}
+                className="font-semibold text-gold hover:underline tabular-nums">{replacesRef.label}</Link>
+            </p>
+          )}
+          {replacedByRef && (
+            <p className="text-xs text-amber-700 mt-1">
+              {tOrder('replaced_by_label')}{' '}
+              <Link href={`${base}/${replacedByRef.id}` as Parameters<typeof Link>[0]['href']}
+                className="font-semibold text-gold hover:underline tabular-nums">{replacedByRef.label}</Link>
+            </p>
+          )}
         </div>
 
         {/* Admin: Piedro Order # + Approval + Save */}
@@ -290,6 +323,12 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
               </svg>
               {tOrder('reopen_edit_btn')}
             </Link>
+          )}
+          {canEditReopened && (
+            <button onClick={() => setShowClientCancel(true)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+              {tOrder('cancel_order')}
+            </button>
           )}
           {/* Current state: the Piedro approval (or portal status) badge, plus the
               production stage badge alongside it whenever the factory has set one.
@@ -434,6 +473,38 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
           </div>
         ) : undefined}
       />
+
+      {/* ── Client cancel (reopened order) confirmation modal ─────────────── */}
+      {showClientCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40"
+          onClick={() => !clientCancelling && setShowClientCancel(false)}>
+          <div className="bg-white rounded-[14px] max-w-md w-full p-6 space-y-4"
+            style={{ boxShadow: 'var(--shadow-card)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 w-9 h-9 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </span>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-stone-900">{tOrder('client_cancel_modal_title')}</h3>
+                <p className="text-sm text-stone-600 leading-relaxed">{tOrder('client_cancel_modal_body')}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={() => setShowClientCancel(false)} disabled={clientCancelling}
+                className="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors disabled:opacity-50">
+                {tOrder('cancel_keep_btn')}
+              </button>
+              <button onClick={handleClientCancel} disabled={clientCancelling}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
+                {clientCancelling ? tOrder('cancelling') : tOrder('cancel_confirm_btn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Reopen ("request changes") confirmation modal ─────────────────── */}
       {showReopen && (

@@ -5,6 +5,7 @@ import { requireOrdersViewPage } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
+import { getReplacementRefs } from '@/lib/replacement-refs'
 import { getSettings } from '@/lib/settings'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
@@ -17,7 +18,7 @@ const SELECT_BASE = `id, user_id, order_seq, status, unit, quantity, reference_c
   companies(id, name, notify_cc)`
 
 // Extended select — requires SQL migrations to have been run
-const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, erp_exported_at, reopen_reason, reopened_at`
+const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, erp_exported_at, reopen_reason, reopened_at, replaces_order_id, replaced_by_order_id`
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
@@ -50,7 +51,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   // Everything below is independent of the order row → run it all in parallel
   // instead of five sequential round-trips.
-  const [signedPdf, neighbors, ordererRes, settings, navT] = await Promise.all([
+  const [signedPdf, neighbors, ordererRes, settings, navT, replacementRefs] = await Promise.all([
     order.pdf_url ? signOrderPdf(id) : Promise.resolve(null),
     // Prev/next navigator — only for full-catalogue admins (branch scope is by
     // model, which can't be expressed in a simple neighbour query).
@@ -63,6 +64,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       : Promise.resolve({ data: null }),
     getSettings(['order_notify_email']),
     getTranslations('nav'),
+    getReplacementRefs(service, order as { replaces_order_id?: string | null; replaced_by_order_id?: string | null }),
   ])
 
   if (signedPdf) order.pdf_url = signedPdf
@@ -82,7 +84,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         canEditDraft={order.status === 'draft' && order.user_id === scope.userId}
         canEditReopened={order.status === 'changes_requested' && order.user_id === scope.userId}
         prevId={prevId} nextId={nextId}
-        clientEmail={ordererRes.data?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail} />
+        clientEmail={ordererRes.data?.email ?? ''} clientCc={clientCc} deskEmail={deskEmail}
+        replacesRef={replacementRefs.replacesRef} replacedByRef={replacementRefs.replacedByRef} />
     </div>
   )
 }

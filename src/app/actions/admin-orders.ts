@@ -4,11 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import { logAdminAction } from '@/lib/admin/audit'
 import { getImpersonation } from '@/lib/impersonation'
-import { getSettings } from '@/lib/settings'
-import { escapeHtml } from '@/lib/escape-html'
-import { orderNumber } from '@/lib/format'
-import { getTranslations } from 'next-intl/server'
-import { Resend } from 'resend'
+import { sendReopenClientEmail } from '@/lib/reopen-emails'
 import type { ApprovalState, ProductionState } from '@/lib/order-status'
 
 // NOTE: this is a 'use server' module — it may ONLY export async functions.
@@ -180,7 +176,7 @@ export async function reopenOrderAction(
     // Notify the order's creator (in the order's locale) that their order is
     // unlocked for edits. Email failure never rolls back the reopen — the client
     // also sees the banner + chip in the portal.
-    const emailError = await sendReopenEmail(service, orderId, order, reason.trim())
+    const emailError = await sendReopenClientEmail(service, 'reopened', { ...order, id: orderId }, reason.trim())
     return { ok: true, ...(emailError ? { emailError } : {}) }
   } catch (e) {
     console.error('reopenOrderAction threw', e)
@@ -237,64 +233,6 @@ export async function undoReopenAction(
   } catch (e) {
     console.error('undoReopenAction threw', e)
     return { error: e instanceof Error ? e.message : 'Unexpected error' }
-  }
-}
-
-// Branded notification to the order's creator, in the order's locale. Returns an
-// error string (for surfacing to staff) instead of throwing — best-effort only.
-async function sendReopenEmail(
-  service: ReturnType<typeof createServiceClient>,
-  orderId: string,
-  order: {
-    user_id?: string | null
-    order_seq?: number | null
-    reference_customer?: string | null
-    locale?: string | null
-    products?: { colour_id?: string } | { colour_id?: string }[] | null
-  },
-  reason: string,
-): Promise<string | undefined> {
-  try {
-    if (!order.user_id) return 'Order has no owner to notify'
-    const apiKey = process.env.RESEND_API_KEY
-    if (!apiKey) return 'Email service not configured (RESEND_API_KEY missing)'
-
-    const [{ data: owner }, settings] = await Promise.all([
-      service.from('profiles').select('email, full_name').eq('id', order.user_id).single(),
-      getSettings(['email_from']),
-    ])
-    const from = settings.email_from || process.env.EMAIL_FROM
-    if (!owner?.email || !from) return 'Sender or recipient email not configured'
-
-    const t = await getTranslations({ locale: order.locale ?? 'en', namespace: 'emails' })
-    const product = Array.isArray(order.products) ? order.products[0] : order.products
-    const ref = (order.order_seq != null ? `#${orderNumber(order.order_seq)}` : null)
-      ?? order.reference_customer ?? orderId.slice(0, 8)
-    const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://portal.piedro.pt'
-    const link = `${site}/${order.locale ?? 'en'}/orders/${orderId}`
-
-    const html = `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
-      <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9A96E;margin:0 0 24px">Piedro Portal</p>
-      <h2 style="font-size:18px;font-weight:600;color:#1C1917;margin:0 0 12px">${escapeHtml(t('reopen_heading', { ref }))}</h2>
-      <p style="font-size:14px;color:#44403C;margin:0 0 20px">${escapeHtml(t('reopen_intro', { model: product?.colour_id ?? '—' }))}</p>
-      <div style="margin:0 0 20px;padding:12px 16px;background:#FAF8F4;border-left:3px solid #C9A96E;border-radius:6px">
-        <p style="font-size:12px;color:#78716C;margin:0 0 4px">${escapeHtml(t('reopen_reason_label'))}</p>
-        <p style="font-size:14px;font-weight:500;color:#1C1917;margin:0;white-space:pre-wrap">${escapeHtml(reason)}</p>
-      </div>
-      <a href="${escapeHtml(link)}" style="display:inline-block;padding:10px 22px;background:#B8975A;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px">${escapeHtml(t('reopen_cta'))}</a>
-      <p style="font-size:12px;color:#A8A29E;margin-top:24px">${escapeHtml(t('reopen_footer'))}</p>
-    </div>`
-
-    const { error } = await new Resend(apiKey).emails.send({
-      from,
-      to: [owner.email],
-      subject: t('reopen_subject', { ref }),
-      html,
-    }).catch((e: Error) => ({ error: { message: e.message } }))
-    return error ? String((error as { message?: string }).message ?? error) : undefined
-  } catch (e) {
-    console.error('sendReopenEmail threw', e)
-    return e instanceof Error ? e.message : 'Email failed'
   }
 }
 

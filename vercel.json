@@ -3,6 +3,10 @@
     {
       "path": "/api/admin/campaigns/process",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/reopen-followup",
+      "schedule": "0 7 * * *"
     }
   ]
 }

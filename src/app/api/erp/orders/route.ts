@@ -47,6 +47,20 @@ export const dynamic = 'force-dynamic'
  * Returns { contract_version, count, orders[] }. The ERP should POST the
  * returned order_ids to /api/erp/orders/ack AFTER a successful import so they
  * are not returned again (prevents duplicate imports — a known flaw to kill).
+ *
+ * ── Reopened / cancelled lifecycle (changes_requested, migrations 048/049) ──
+ * Staff can reopen a submitted/approved order for client edits. The console
+ * must ALSO poll, each import cycle, the already-imported orders whose state
+ * changed and act on them in the ERP:
+ *
+ *   GET /api/erp/orders?exported=1&status=changes_requested   → SUSPEND in ERP
+ *       (block from production; do not void — the client may still correct it)
+ *   GET /api/erp/orders?exported=1&status=cancelled           → VOID in ERP
+ *
+ * A corrected re-submit CANCELS the original and creates a NEW order
+ * (replaces_order_id / replaced_by_order_id cross-links) which arrives through
+ * the normal pending flow — so the console never mutates an imported order:
+ * it only suspends, voids, and imports replacements as fresh orders.
  */
 export async function GET(req: Request) {
   if (!isErpAuthorized(req)) {

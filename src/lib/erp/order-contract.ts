@@ -43,6 +43,11 @@ export interface ErpOrder {
   width: { left: string | null; right: string | null }
   comments: string | null
   comments_pt: string | null        // PT translation (cached); falls back to comments
+  // Replacement chain (reopened-order flow, migrations 048/049): a corrected
+  // re-submit cancels the original and creates a new order. The console voids
+  // the cancelled one and imports the replacement as a fresh order.
+  replaces_order_id: string | null     // this order replaces that cancelled original
+  replaced_by_order_id: string | null  // this (cancelled) order was replaced by that one
   pdf_url: string | null            // direct signed URL to the order PDF, read-only (or null)
   tracking: { code: string | null; link: string | null }   // written by the ERP, echoed back
   additions: ErpAddition[]          // normalized 1:N list (only present items)
@@ -83,6 +88,8 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     reference_customer: row.reference_customer ?? null,
     quantity: row.quantity ?? null,
     size: { left: row.size_left ?? null, right: row.size_right ?? null },
+    replaces_order_id: row.replaces_order_id ?? null,
+    replaced_by_order_id: row.replaced_by_order_id ?? null,
     sizes_pairs: Array.isArray(row.diff_sizes_pairs) && row.diff_sizes_pairs.length
       ? row.diff_sizes_pairs : null,
     // Pass through if the columns exist; null otherwise (defensive — schema may vary).

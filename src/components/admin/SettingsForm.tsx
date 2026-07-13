@@ -9,6 +9,7 @@ type Cfg = {
   order_notify_email?: string; admin_notify_email?: string; chat_notify_email?: string
   broadcast_reply_to?: string; email_from?: string; notify_locale?: string
   dispatch_days_normal?: string; dispatch_days_urgent?: string; dispatch_show_all?: string
+  reopen_reminder_days?: string; reopen_cancel_days?: string
 }
 
 const LOCALES = ['en', 'nl', 'fr', 'de'] as const
@@ -88,6 +89,26 @@ export default function SettingsForm({ current }: { current: Cfg }) {
           </label>
           <p className="text-xs text-stone-400">{t('dispatch_help')}</p>
           <Link href="/admin/factory-calendar" className="inline-block text-sm text-gold hover:underline">{t('dispatch_calendar_link')} →</Link>
+        </div>
+
+        {/* Reopened-orders follow-up (changes requested) */}
+        <div className="pt-5 border-t border-stone-100 space-y-4">
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{t('reopen_title')}</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('reopen_reminder_days')}</label>
+              <input name="reopen_reminder_days" type="number" min={0} placeholder="3"
+                value={values.reopen_reminder_days ?? ''} onChange={set('reopen_reminder_days')}
+                className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">{t('reopen_cancel_days')}</label>
+              <input name="reopen_cancel_days" type="number" min={0} placeholder="10"
+                value={values.reopen_cancel_days ?? ''} onChange={set('reopen_cancel_days')}
+                className="w-full h-10 px-3 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold" />
+            </div>
+          </div>
+          <p className="text-xs text-stone-400">{t('reopen_help')}</p>
         </div>
 
         {state?.error && (

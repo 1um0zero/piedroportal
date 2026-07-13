@@ -6,6 +6,7 @@ import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { signOrderPdf } from '@/lib/order-pdf'
 import { getOrderNeighbors } from '@/lib/order-neighbors'
+import { getReplacementRefs } from '@/lib/replacement-refs'
 import { isPiedroAdmin } from '@/lib/roles'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
@@ -16,7 +17,7 @@ const SELECT_BASE = `id, user_id, order_seq, status, unit, quantity, reference_c
   products(id, colour_id, color_name, closure, picture_name, style_name),
   companies(id, name)`
 
-const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, reopen_reason, reopened_at`
+const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, reopen_reason, reopened_at, replaces_order_id, replaced_by_order_id`
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
@@ -80,12 +81,13 @@ export default async function OrderDetailPage({ params }: Props) {
   // independent → run them in parallel instead of one after another.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyScope = (q: any) => isCompanyAdmin ? q.in('company_id', scopedCompanyIds) : q.eq('user_id', user.id)
-  const [signedPdf, neighbors, navT] = await Promise.all([
+  const [signedPdf, neighbors, navT, replacementRefs] = await Promise.all([
     order.pdf_url ? signOrderPdf(id) : Promise.resolve(null),
     order.created_at
       ? getOrderNeighbors(service, { id: order.id, created_at: order.created_at }, applyScope)
       : Promise.resolve({ prevId: null, nextId: null }),
     getTranslations('nav'),
+    getReplacementRefs(service, order as { replaces_order_id?: string | null; replaced_by_order_id?: string | null }),
   ])
   if (signedPdf) order.pdf_url = signedPdf  // short-lived signed URL (private bucket)
   const { prevId, nextId } = neighbors
@@ -99,7 +101,8 @@ export default async function OrderDetailPage({ params }: Props) {
         </Link>
       </div>
       <OrderDetailView order={order} isAdmin={false} prevId={prevId} nextId={nextId}
-        canEditReopened={order.status === 'changes_requested' && (order as { user_id?: string }).user_id === user.id} />
+        canEditReopened={order.status === 'changes_requested' && (order as { user_id?: string }).user_id === user.id}
+        replacesRef={replacementRefs.replacesRef} replacedByRef={replacementRefs.replacedByRef} />
     </div>
   )
 }

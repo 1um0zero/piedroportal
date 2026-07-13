@@ -6,7 +6,8 @@ export default async function AdminSettingsPage() {
   await requirePiedroAdminPage()
   const current = await getSettings(['order_notify_email', 'admin_notify_email', 'chat_notify_email',
     'broadcast_reply_to', 'email_from', 'notify_locale',
-    'dispatch_days_normal', 'dispatch_days_urgent', 'dispatch_show_all'])
+    'dispatch_days_normal', 'dispatch_days_urgent', 'dispatch_show_all',
+    'reopen_reminder_days', 'reopen_cancel_days'])
 
   return <SettingsForm current={current} />
 }

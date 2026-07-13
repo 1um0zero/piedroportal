@@ -411,26 +411,50 @@ export async function updateOrderAction(
   const effectiveStatus = isReopened && row.status !== 'submitted' ? 'changes_requested' : row.status
   const submitting = effectiveStatus === 'submitted'
 
+  const expected_dispatch_date = await computeDispatchDate(service, effectiveStatus, row.additions)
+
+  // Re-submitting a reopened order = REPLACEMENT (ERP-clean void + re-import):
+  // a NEW order (new number) carries the corrections and the original is
+  // soft-cancelled, cross-linked both ways. The VSI console voids the old one
+  // (it polls exported orders whose status turned cancelled) and imports the
+  // replacement through the normal pending flow.
+  if (isReopened && submitting) {
+    const order_seq = await nextOrderSeq(service)
+    const { data: created, error: insErr } = await service
+      .from('orders')
+      .insert({ ...row, user_id: user.id, status: 'submitted', expected_dispatch_date, order_seq, replaces_order_id: draftId })
+      .select('id')
+      .single()
+    if (insErr || !created?.id) {
+      // Original untouched (still changes_requested) — the client can retry.
+      return { error: insErr ? `${insErr.message} [${insErr.code}]` : 'The order could not be saved.' }
+    }
+    const { error: cancelErr } = await service
+      .from('orders')
+      .update({ status: 'cancelled', replaced_by_order_id: created.id })
+      .eq('id', draftId)
+      .eq('user_id', user.id)
+    // The replacement exists either way; a failed cancel only leaves the old one
+    // reopened — surface nothing to the client, log for the trail.
+    if (cancelErr) console.error('replacement created but original not cancelled', draftId, cancelErr.message)
+    await logOnBehalf('order_replace_on_behalf', created.id, { replaces_order_id: draftId, company_id: row.company_id })
+
+    if (pdfMeta) {
+      const pdfResult = await generatePdf(created.id, { ...row, status: 'submitted' }, pdfMeta, service, user.id, user.email, order_seq)
+      return { id: created.id, ...pdfResult }
+    }
+    return { id: created.id }
+  }
+
   // Confirm the update actually hit the row (an UPDATE matching 0 rows returns no
   // error). Only a returned id proves the order is persisted — PDF/email come
   // strictly after this.
-  const expected_dispatch_date = await computeDispatchDate(service, effectiveStatus, row.additions)
-  // Draft → submit: assign the sequential number now (the draft had none). An order
-  // that ALREADY has a number (reopened after submission) keeps it forever — the
-  // visible order number is a traceability anchor and is never re-minted.
+  // Draft → submit: assign the sequential number now (the draft had none).
   const assignedSeq = submitting && existing.order_seq == null ? await nextOrderSeq(service) : null
   const numberPatch = assignedSeq != null ? { order_seq: assignedSeq } : {}
-  // Re-submitting a reopened order: back to Piedro triage, and clear the ERP
-  // import flag so the VSI console re-imports the corrected data (the console
-  // upserts by order id, so the re-pull replaces the stale version).
-  // production_state is also cleared: it could only be 'order_received' (deeper
-  // stages can't be reopened) and the console re-emits it after the re-import.
-  const reopenPatch = isReopened && submitting
-    ? { approval_state: 'registered', erp_exported_at: null, production_state: null, reopened_at: null, reopened_by: null, reopen_reason: null }
-    : {}
   const { data: updated, error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id, status: effectiveStatus, expected_dispatch_date, ...numberPatch, ...reopenPatch })
+    .update({ ...row, user_id: user.id, status: effectiveStatus, expected_dispatch_date, ...numberPatch })
     .eq('id', draftId)
     .eq('user_id', user.id)
     .select('id')
@@ -518,6 +542,42 @@ export async function deleteOrderAction(
   const { error } = await service.from('orders').delete().eq('id', orderId)
   if (error) return { error: error.message }
   await logOnBehalf('order_delete_on_behalf', orderId)
+  return { ok: true }
+}
+
+// ── Cancel a reopened order (client, soft) ────────────────────────────────────
+// While an order sits in 'changes_requested' its creator may cancel it instead
+// of correcting it — the one exception to "clients can't cancel after Piedro
+// intervened". Soft only (record kept, MDR); the VSI console voids the ERP copy
+// when it polls exported orders whose status turned cancelled.
+export async function cancelReopenedOrderAction(
+  orderId: string,
+): Promise<{ ok?: boolean; error?: string }> {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const service = createServiceClient()
+  const { data: order, error: fetchErr } = await service
+    .from('orders')
+    .select('user_id, status, order_seq, reference_customer, locale, reopen_reason')
+    .eq('id', orderId)
+    .single()
+  if (fetchErr) return { error: fetchErr.message }
+  if (!order) return { error: 'Order not found' }
+  if (order.user_id !== user.id) return { error: 'Not allowed' }
+  if (order.status !== 'changes_requested') return { error: 'Order is not open for changes' }
+
+  const { error } = await service.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+  if (error) return { error: error.message }
+  await logOnBehalf('order_cancel_reopened_on_behalf', orderId)
+
+  // Tell the order desk the change request ended in a cancellation (best-effort).
+  const { sendReopenDeskNote, orderRefLabel } = await import('@/lib/reopen-emails')
+  await sendReopenDeskNote(
+    'reopen_desk_client_cancelled_subject', 'reopen_desk_client_cancelled_body',
+    { ref: orderRefLabel({ ...order, id: orderId }) }, order.reopen_reason ?? '—',
+  )
   return { ok: true }
 }
 

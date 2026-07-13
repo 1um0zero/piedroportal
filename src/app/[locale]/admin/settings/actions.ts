@@ -6,7 +6,8 @@ import { setSettings } from '@/lib/settings'
 
 const ALLOWED = ['order_notify_email', 'admin_notify_email', 'chat_notify_email',
   'broadcast_reply_to', 'email_from', 'notify_locale',
-  'dispatch_days_normal', 'dispatch_days_urgent'] as const
+  'dispatch_days_normal', 'dispatch_days_urgent',
+  'reopen_reminder_days', 'reopen_cancel_days'] as const
 
 export async function saveSettingsAction(
   _: unknown,
