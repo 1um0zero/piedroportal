@@ -112,7 +112,12 @@
     "reopen_desk_auto_cancelled_body": "Bestellung {ref} wurde nach {days} Werktagen ohne Kundenantwort auf die unten stehende Änderungsanfrage automatisch storniert.",
     "reopen_reason_label": "Grund",
     "reopen_cta": "Bestellung öffnen",
-    "reopen_footer": "Fragen? Antworten Sie einfach auf diese E-Mail."
+    "reopen_footer": "Fragen? Antworten Sie einfach auf diese E-Mail.",
+    "draft_reminder_subject": "Erinnerung: {count, plural, one {1 Bestellentwurf} other {# Bestellentwürfe}} noch nicht übermittelt",
+    "draft_reminder_heading": "{count, plural, one {Ein Bestellentwurf wartet auf die Übermittlung} other {# Bestellentwürfe warten auf die Übermittlung}}",
+    "draft_reminder_intro": "{count, plural, one {Die untenstehende Bestellung wurde als Entwurf gespeichert und nicht an Piedro übermittelt — sie geht erst nach Ihrer Übermittlung in Produktion.} other {Die untenstehenden Bestellungen wurden als Entwurf gespeichert und nicht an Piedro übermittelt — sie gehen erst nach Ihrer Übermittlung in Produktion.}} Falls dies beabsichtigt war, können Sie diese einmalige Erinnerung einfach ignorieren.",
+    "draft_reminder_cta": "Meine Entwürfe öffnen",
+    "draft_reminder_footer": "Fragen? Antworten Sie einfach auf diese E-Mail."
   },
   "adminTexts": {
     "title": "Texte für Passwort-Seite & Reset-E-Mail",

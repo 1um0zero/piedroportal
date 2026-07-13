@@ -112,7 +112,12 @@
     "reopen_desk_auto_cancelled_body": "Bestelling {ref} is automatisch geannuleerd na {days} werkdagen zonder reactie van de klant op het onderstaande wijzigingsverzoek.",
     "reopen_reason_label": "Reden",
     "reopen_cta": "Bestelling openen",
-    "reopen_footer": "Vragen? Beantwoord gewoon deze e-mail."
+    "reopen_footer": "Vragen? Beantwoord gewoon deze e-mail.",
+    "draft_reminder_subject": "Herinnering: {count, plural, one {1 conceptbestelling} other {# conceptbestellingen}} nog niet ingediend",
+    "draft_reminder_heading": "{count, plural, one {Er wacht een conceptbestelling op indiening} other {Er wachten # conceptbestellingen op indiening}}",
+    "draft_reminder_intro": "{count, plural, one {Onderstaande bestelling is als concept opgeslagen en niet naar Piedro verzonden — ze gaat pas in productie nadat u ze indient.} other {Onderstaande bestellingen zijn als concept opgeslagen en niet naar Piedro verzonden — ze gaan pas in productie nadat u ze indient.}} Was dit de bedoeling, dan kunt u deze eenmalige herinnering gewoon negeren.",
+    "draft_reminder_cta": "Mijn conceptbestellingen openen",
+    "draft_reminder_footer": "Vragen? Beantwoord gewoon deze e-mail."
   },
   "adminTexts": {
     "title": "Teksten wachtwoord instellen & reset-e-mail",

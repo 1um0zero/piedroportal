@@ -112,7 +112,12 @@
     "reopen_desk_auto_cancelled_body": "La commande {ref} a été annulée automatiquement après {days} jours ouvrables sans réponse du client à la demande de modification ci-dessous.",
     "reopen_reason_label": "Motif",
     "reopen_cta": "Ouvrir la commande",
-    "reopen_footer": "Des questions ? Répondez simplement à cet e-mail."
+    "reopen_footer": "Des questions ? Répondez simplement à cet e-mail.",
+    "draft_reminder_subject": "Rappel : {count, plural, one {1 commande en brouillon non envoyée} other {# commandes en brouillon non envoyées}}",
+    "draft_reminder_heading": "{count, plural, one {Une commande en brouillon attend d'être envoyée} other {# commandes en brouillon attendent d'être envoyées}}",
+    "draft_reminder_intro": "{count, plural, one {La commande ci-dessous a été enregistrée comme brouillon et n'a pas été envoyée à Piedro — elle ne sera mise en production qu'après votre envoi.} other {Les commandes ci-dessous ont été enregistrées comme brouillons et n'ont pas été envoyées à Piedro — elles ne seront mises en production qu'après votre envoi.}} Si c'était intentionnel, vous pouvez simplement ignorer ce rappel unique.",
+    "draft_reminder_cta": "Ouvrir mes brouillons",
+    "draft_reminder_footer": "Des questions ? Répondez simplement à cet e-mail."
   },
   "adminTexts": {
     "title": "Textes mot de passe & e-mail de réinitialisation",

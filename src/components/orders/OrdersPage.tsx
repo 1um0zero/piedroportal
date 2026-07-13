@@ -153,7 +153,9 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
   const searchParams = useSearchParams()
   const [search, setSearch]       = useState('')
   // Single active chip/filter: '' (all) | new | pending | approved | in_production | refused | <status>
-  const [active, setActive]       = useState<string>(searchParams.get('new') === '1' ? 'new' : '')
+  // ?status=<chip> deep-links a pre-selected filter (draft-reminder email CTA).
+  const [active, setActive]       = useState<string>(
+    searchParams.get('status') ?? (searchParams.get('new') === '1' ? 'new' : ''))
   // When true, narrow the active bucket to urgent orders only (set by the red dot).
   const [urgentFilter, setUrgentFilter] = useState(false)
   const { page, setPage, rememberReturn } = useListNav(isAdminPath ? 'admin-orders' : 'orders')

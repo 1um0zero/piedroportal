@@ -112,7 +112,12 @@
     "reopen_desk_auto_cancelled_body": "Order {ref} was cancelled automatically after {days} working days without a client response to the change request below.",
     "reopen_reason_label": "Reason",
     "reopen_cta": "Open the order",
-    "reopen_footer": "Questions? Just reply to this email."
+    "reopen_footer": "Questions? Just reply to this email.",
+    "draft_reminder_subject": "Reminder: {count, plural, one {1 draft order} other {# draft orders}} not yet submitted",
+    "draft_reminder_heading": "{count, plural, one {A draft order is waiting to be submitted} other {# draft orders are waiting to be submitted}}",
+    "draft_reminder_intro": "{count, plural, one {The order below was saved as a draft and has not been sent to Piedro — it will only go into production after you submit it.} other {The orders below were saved as drafts and have not been sent to Piedro — they will only go into production after you submit them.}} If keeping {count, plural, one {it} other {them}} as a draft was intentional, you can simply ignore this one-time reminder.",
+    "draft_reminder_cta": "Open my draft orders",
+    "draft_reminder_footer": "Questions? Just reply to this email."
   },
   "adminTexts": {
     "title": "Set-password & reset email texts",
