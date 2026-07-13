@@ -457,20 +457,33 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                 const company = o.companies
                 const isUrgent = o.additions?.urgent === true
                 const isStock = o.kind === 'stock'
+                // Drafts read clearly apart from real orders: warm-tinted row,
+                // pencil in the № cell and a "Draft" chip in the status column.
+                const isDraft = o.status === 'draft'
+                const rowBg = isDraft ? 'bg-amber-50/70 hover:bg-[#FDF4D7]' : 'hover:bg-stone-50'
+                // Sticky cells must stay opaque (they mask content scrolling under
+                // them), so the draft tint gets solid equivalents there.
+                const aTd = isDraft ? 'sticky z-[1] bg-[#FEFAEC] group-hover:bg-[#FDF4D7]' : anchorTd
                 const detailHref = isStock
                   ? (isAdminPath ? `/admin/orders/stock/${o.id}` : `/orders/stock/${o.id}`)
                   : (isAdminPath ? `/admin/orders/${o.id}` : `/orders/${o.id}`)
                 return (
                   <tr key={o.id} aria-busy={openingId === o.id}
-                    className={`group hover:bg-stone-50 transition-all cursor-pointer ${openingId === o.id ? 'opacity-50' : ''}`}
+                    className={`group ${rowBg} transition-all cursor-pointer ${openingId === o.id ? 'opacity-50' : ''}`}
                     onClick={() => { setOpeningId(o.id); rememberReturn(); router.push(detailHref as Parameters<typeof router.push>[0]) }}>
 
                     {/* Order № — the restored legacy sequential number; stock orders have none */}
-                    <td className={`px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap left-0 ${anchorTd}`} style={{ width: NR_W, minWidth: NR_W }}>
-                      {o.order_seq != null ? `#${orderNumber(o.order_seq)}` : '—'}
+                    <td className={`px-2.5 py-3 text-stone-700 text-xs font-semibold tabular-nums whitespace-nowrap left-0 ${aTd}`} style={{ width: NR_W, minWidth: NR_W }}>
+                      {o.order_seq != null ? `#${orderNumber(o.order_seq)}` : isDraft ? (
+                        <span title={ts('draft')} className="inline-flex text-amber-500">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897l12.682-12.68z" />
+                          </svg>
+                        </span>
+                      ) : '—'}
                     </td>
                     {/* Date — year shown only for orders before the current year */}
-                    <td className={`px-2.5 py-3 text-stone-500 text-xs whitespace-nowrap ${anchorTd}`} style={{ left: NR_W, width: DATE_W, minWidth: DATE_W }}>
+                    <td className={`px-2.5 py-3 text-stone-500 text-xs whitespace-nowrap ${aTd}`} style={{ left: NR_W, width: DATE_W, minWidth: DATE_W }}>
                       {o.created_at
                         ? (() => {
                             const d = new Date(o.created_at)
@@ -481,7 +494,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                         : '—'}
                     </td>
                     {/* Product */}
-                    <td className={`px-2.5 py-3 border-r border-stone-100 ${anchorTd}`} style={{ left: NR_W + DATE_W, width: PROD_W, minWidth: PROD_W }}>
+                    <td className={`px-2.5 py-3 border-r border-stone-100 ${aTd}`} style={{ left: NR_W + DATE_W, width: PROD_W, minWidth: PROD_W }}>
                       <div className="flex items-center gap-3">
                         {product?.picture_name ? (
                           <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-stone-50 shrink-0">
@@ -578,6 +591,14 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                       <div className="flex items-center gap-1.5">
                         {isUrgent && <span title={t('urgent_only')} className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
                         {(() => {
+                          // Draft: not an order yet — dashed chip instead of a trail.
+                          if (isDraft) {
+                            return (
+                              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border border-dashed border-amber-400/70 text-amber-700 bg-white/60">
+                                {ts('draft')}
+                              </span>
+                            )
+                          }
                           if (isOnProductionTrail(o.production_state)) {
                             // Clients (incl. company admins) see the simplified
                             // 3-step journey; only Piedro back-office keeps the full

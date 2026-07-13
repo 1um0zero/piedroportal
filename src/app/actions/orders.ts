@@ -452,9 +452,13 @@ export async function updateOrderAction(
   // Draft → submit: assign the sequential number now (the draft had none).
   const assignedSeq = submitting && existing.order_seq == null ? await nextOrderSeq(service) : null
   const numberPatch = assignedSeq != null ? { order_seq: assignedSeq } : {}
+  // The order date is the SUBMISSION date: a draft may sit for days before the
+  // client submits it, and created_at is what lists, filters and the ERP pull
+  // treat as the order date — move it to now when the draft becomes an order.
+  const datePatch = submitting ? { created_at: new Date().toISOString() } : {}
   const { data: updated, error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id, status: effectiveStatus, expected_dispatch_date, ...numberPatch })
+    .update({ ...row, user_id: user.id, status: effectiveStatus, expected_dispatch_date, ...numberPatch, ...datePatch })
     .eq('id', draftId)
     .eq('user_id', user.id)
     .select('id')
