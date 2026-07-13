@@ -20,7 +20,8 @@ export const dynamic = 'force-dynamic'
  *                        a freshly-imported order is still `approved` (its
  *                        production_state is just "order_received"), so a
  *                        status-based filter would miss it. Drops the default
- *                        status filter and implies all=1.
+ *                        status filter, implies all=1, and returns newest-first
+ *                        (pending stays oldest-first for the import flow).
  *   status=submitted     CSV of statuses to include (default: submitted,approved)
  *   include_vsi_direct=1 also pull VSI-direct orders: accounts whose erp_code
  *                        starts with "08" (Voetmax/ZSM/Tallermade…) are billed
@@ -70,10 +71,13 @@ export async function GET(req: Request) {
 
   const service = createServiceClient()
 
+  // Pending orders import oldest-first; the exported (already-imported) browse
+  // must be newest-first or the default `limit` returns the oldest 200 and
+  // recent imports never surface.
   let query = service
     .from('orders')
     .select('*, products(style_name, colour_id, closure, section)')
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: !exported })
     .limit(limit)
 
   // Stopgap until a real companies.vsi_direct flag exists: pull approved orders
