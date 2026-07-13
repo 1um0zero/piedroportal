@@ -65,7 +65,7 @@ export async function GET(req: Request) {
 
   let query = service
     .from('orders')
-    .select('*, products(style_name, colour_id)')
+    .select('*, products(style_name, colour_id, closure, section)')
     .order('created_at', { ascending: true })
     .limit(limit)
 

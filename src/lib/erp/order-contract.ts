@@ -25,7 +25,13 @@ export interface ErpOrder {
   production_state: string | null
   urgent: boolean
   company: { id: string | null; erp_code: string | null; name: string | null }
-  product: { id: string | null; style_name: string | null; colour_id: string | null }
+  product: {
+    id: string | null
+    style_name: string | null
+    colour_id: string | null
+    closure: string | null   // LACE | VELCRO | BUCKLE | TWIST LOCK SYSTEM | LACE, ZIPPER
+    gender: string | null    // products.section: KIDS | MEN | WOMEN
+  }
   unit: string | null
   clinician: string | null
   patient_name: string | null
@@ -68,6 +74,8 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
       id: row.product_id ?? null,
       style_name: product.style_name ?? null,
       colour_id: product.colour_id ?? null,
+      closure: product.closure ?? null,
+      gender: product.section ?? null,
     },
     unit: row.unit ?? null,
     clinician: row.clinician ?? null,
