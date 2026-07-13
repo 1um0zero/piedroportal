@@ -85,9 +85,9 @@ Legenda: ✅ claro · ❓ precisa de esclarecimento (ver lista no fim).
   *"A surcharge may apply if colors other than the standard colors are chosen."*
 - ✅ **Voering/Lining**: eliminar distinção Upper/Rest; fica um único **"Lining"** com uma só
   fila de opções (Leather, Black Leather, Diabetic, Fur, Anti-Allergic, Sympatex).
-- ❓ **Anti-slip heel + Perforated lining**: mostrar apenas quando "Leather **and** Black
-  leather are checked" — interpretar como *lining = Leather OU Black Leather* (um lining é
-  escolha única); confirmar.
+- ✅ **Anti-slip heel + Perforated lining**: mostrar apenas quando o lining é *Leather* OU
+  *Black Leather* (decisão Jorge 2026-07-13; o "and" do slide lido como OU — lining é
+  escolha única). Implementado.
 - ✅ **Novo checkbox "Closure as model"**, marcado por defeito; igual à lógica dos leathers.
   Popup ao desmarcar/escolher outro closure: *"A surcharge may apply if closures other than
   the standard closure is chosen."*
@@ -148,8 +148,8 @@ Legenda: ✅ claro · ❓ precisa de esclarecimento (ver lista no fim).
    noção de "heel" desaparece).
 6. **Renoflex vs Rhenoflex** — grafia oficial; e Renoflex **1.1** (slide 4) vs **1.2**
    (slide 10): são listas mesmo diferentes entre supplements e stiffeners?
-7. **Anti-slip heel / Perforated lining** — "Leather and Black leather" = lining Leather **ou**
-   Black Leather?
+7. ~~Anti-slip heel / Perforated lining~~ — RESOLVIDO 2026-07-13 (Jorge): é **OU**;
+   implementado.
 8. **Bovenwerk → Schacht** — só o label NL? O que fica em EN/FR/DE?
 9. **Heel height no Supplement** — campo novo visível nessa secção, ou só autofill na Zolen?
 10. **"High counter"** — qual das opções de stiffener atuais corresponde?

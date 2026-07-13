@@ -39,6 +39,7 @@ export interface CustomField {
   values?:       (number | string)[]   // for 'option'
   unit?:         string                // e.g. 'mm'
   conditionalOn?: string               // show only when this sibling key is truthy
+  conditionalOnValues?: { key: string; values: string[] }  // show only when key holds one of these values
   hiddenWhen?:   string                // hide while this sibling key is truthy (inverse conditional)
   dropdown?:     boolean               // 'option': render a <select> instead of chips
   popup?:        string                // toggle: message shown when the value changes (see popupOn)
@@ -349,8 +350,9 @@ const SECTION_UPPER: CustomSection = {
       fields: [
         // Single lining choice — no upper/rest split (Martin slide 6).
         { ...opt('Lining', 'cs3.lining_ch', LINING), required: true },
-        yn('Anti-slip heel',  'cs3.lining_antislip'),
-        yn('Perforated lining', 'cs3.lining_perforated'),
+        // Only for leather linings (Martin slide 6; "and" confirmed as OR, 2026-07-13).
+        { ...yn('Anti-slip heel',  'cs3.lining_antislip'),   conditionalOnValues: { key: 'cs3.lining_ch', values: ['Leather', 'Black Leather'] } },
+        { ...yn('Perforated lining', 'cs3.lining_perforated'), conditionalOnValues: { key: 'cs3.lining_ch', values: ['Leather', 'Black Leather'] } },
       ],
     },
     {

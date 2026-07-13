@@ -19,10 +19,12 @@ function isActive(values: Vals, key?: string): boolean {
   return true
 }
 
-/** conditionalOn shows a field while its parent is truthy; hiddenWhen hides it. */
+/** conditionalOn shows a field while its parent is truthy; hiddenWhen hides it;
+ *  conditionalOnValues needs the parent to hold one of the listed values. */
 function isVisible(values: Vals, f: CustomField): boolean {
   if (!isActive(values, f.conditionalOn)) return false
   if (f.hiddenWhen && isActive(values, f.hiddenWhen)) return false
+  if (f.conditionalOnValues && !f.conditionalOnValues.values.includes(String(values[f.conditionalOnValues.key] ?? ''))) return false
   return true
 }
 
