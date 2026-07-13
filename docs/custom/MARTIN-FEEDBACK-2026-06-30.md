@@ -154,6 +154,18 @@ Legenda: ✅ claro · ❓ precisa de esclarecimento (ver lista no fim).
 9. **Heel height no Supplement** — campo novo visível nessa secção, ou só autofill na Zolen?
 10. **"High counter"** — qual das opções de stiffener atuais corresponde?
 
+## Estado de implementação (2026-07-13)
+
+Todos os pontos ✅ (inequívocos) foram implementados nesta data — config
+(`custom-additions-config.ts`), `CustomAdditionsForm` (unit L/R, dropdowns, popups,
+hiddenWhen, botão ⓘ, secções fechadas), `CustomOrderForm` (obrigatórios Tab 1, defaults,
+autofill heel height, validação das regras) e o diagrama `leg-ankle.png` (labels em mm +
+anéis 100–350). Interpretações provisórias adotadas enquanto não há resposta: dropdown do
+Last Height é por pé; regra da circunferência cobre TODAS as alturas ≥100; rename do
+"Bovenwerk"→"Schacht" só no NL; heel height = só autofill Leest→Zolen; grafia "Renoflex"
+como o Martin escreveu. Ficam de fora (bloqueados): toe shapes (falta arte hi-res),
+regra do high counter (Q10), condicional Anti-slip/Perforated (Q7).
+
 ## Notas de implementação
 
 - Vários pedidos são a versão formal do que estava pendente em

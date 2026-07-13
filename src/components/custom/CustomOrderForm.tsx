@@ -6,8 +6,22 @@ import { useRouter } from '@/i18n/navigation'
 import { productImageUrl } from '@/lib/products/image-url'
 import type { Product } from '@/types'
 import CustomAdditionsForm from './CustomAdditionsForm'
-import { CUSTOM_SECTIONS, allCustomFields, customLabel } from './custom-additions-config'
+import {
+  CUSTOM_SECTIONS, allCustomFields, customLabel,
+  LAST_HEIGHT_KEY, CIRC_BY_HEIGHT, HEEL_HEIGHT_KEY, SOLE_HEIGHT_KEY,
+  FITTING_SHOE_TYPE_KEY, FITTING_SHOE_WITH_SUPPLEMENT,
+  LEATHER_AS_MODEL_KEY, CLOSURE_AS_MODEL_KEY,
+  STIFFENER_TYPE_L_KEY, STIFFENER_TYPE_R_KEY,
+  STIFFENER_MATERIAL_L_KEY, STIFFENER_MATERIAL_R_KEY,
+  type CustomField,
+} from './custom-additions-config'
 import { insertCustomOrderAction, type CustomOrderRow } from '@/app/actions/custom-orders'
+
+type Sided = { l?: number | string; r?: number | string }
+const sideEmpty = (v: unknown, s: 'l' | 'r') => {
+  const sv = (v ?? {}) as Sided
+  return sv[s] == null || sv[s] === ''
+}
 
 type Company = { id: string; name: string; erp_code: string }
 const UNITS = ['PAIR', 'LEFT', 'RIGHT', 'LEFT_RIGHT'] as const
@@ -30,19 +44,74 @@ export default function CustomOrderForm({
   const [reference, setReference] = useState('')
   const [clinician, setClinician] = useState('')
   const [comments, setComments] = useState('')
-  const [values, setValues] = useState<Record<string, unknown>>({})
+  // Defaults per Martin (pptx 30-6-2026): article nr autofilled from the model,
+  // "as model" boxes checked, Measurement Back on, Normal toe reinforcement.
+  const [values, setValues] = useState<Record<string, unknown>>({
+    'cs3.article': product.colour_id,
+    [LEATHER_AS_MODEL_KEY]: true,
+    [CLOSURE_AS_MODEL_KEY]: true,
+    'cs4.measure_back': true,
+    'cs5.toe_option': 'Normal',
+  })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
 
   const needsCompany = !userCompany && companies.length > 0
-  const canNext1 = reference.trim() !== '' && (!needsCompany || companyId)
+  const canNext1 = reference.trim() !== '' && patient.trim() !== '' && (!needsCompany || companyId)
+
+  // Sole Height autofills from the Last tab's Heel Height and follows it until the
+  // user types their own value (Martin slides 4/8).
+  const onValues = (next: Record<string, unknown>) => {
+    const src  = next[HEEL_HEIGHT_KEY] as Sided | undefined
+    const prev = values[HEEL_HEIGHT_KEY] as Sided | undefined
+    const dst  = { ...((next[SOLE_HEIGHT_KEY] as Sided) ?? {}) }
+    let touched = false
+    for (const s of ['l', 'r'] as const) {
+      const follows = dst[s] == null || dst[s] === '' || dst[s] === prev?.[s]
+      if (follows && dst[s] !== (src?.[s] ?? '')) { dst[s] = src?.[s] ?? ''; touched = true }
+    }
+    setValues(touched ? { ...next, [SOLE_HEIGHT_KEY]: dst } : next)
+  }
+
+  const sides: ('l' | 'r')[] = unit === 'LEFT' ? ['l'] : unit === 'RIGHT' ? ['r'] : ['l', 'r']
 
   function missingRequired(): string[] {
-    return allCustomFields()
-      .filter(f => f.required)
-      .filter(f => { const v = values[f.key]; return v == null || v === '' })
-      .map(f => customLabel(f.label, locale))
+    const miss: string[] = []
+    const lbl = (f: CustomField) => customLabel(f.label, locale)
+    for (const f of allCustomFields()) {
+      if (!f.required) continue
+      const v = values[f.key]
+      if (f.side === 'both') {
+        for (const s of sides) if (sideEmpty(v, s)) miss.push(`${lbl(f)} (${s.toUpperCase()})`)
+      } else if (v == null || v === '') {
+        miss.push(lbl(f))
+      }
+    }
+    // A picked last height makes the circumference row at that height required.
+    const lastH = values[LAST_HEIGHT_KEY] as Sided | undefined
+    for (const s of sides) {
+      const circKey = CIRC_BY_HEIGHT[String(lastH?.[s] ?? '')]
+      if (circKey && sideEmpty(values[circKey], s))
+        miss.push(`Circumference at ${lastH?.[s]} (${s.toUpperCase()})`)
+    }
+    // Plastic fitting shoes: the type choice is required; "including supplement"
+    // requires at least one supplement type.
+    if (values['cs1.41_yn'] === true) {
+      const ft = values[FITTING_SHOE_TYPE_KEY]
+      if (!ft) miss.push('Fitting shoe type')
+      if (ft === FITTING_SHOE_WITH_SUPPLEMENT) {
+        const anySupplement = ['cs2.21_yn', 'cs2.22_yn', 'cs2.23_yn', 'cs2.24_yn', 'cs2.25_yn', 'cs2.26_yn', 'cs2.27_yn', 'cs2.28_yn', 'cs2.29_yn']
+          .some(k => values[k] === true)
+        if (!anySupplement) miss.push('Supplement (required with the chosen fitting shoe)')
+      }
+    }
+    // Every stiffener selection needs a material.
+    if (sides.includes('l') && values[STIFFENER_TYPE_L_KEY] && !values[STIFFENER_MATERIAL_L_KEY])
+      miss.push('Stiffener material (L)')
+    if (sides.includes('r') && values[STIFFENER_TYPE_R_KEY] && !values[STIFFENER_MATERIAL_R_KEY])
+      miss.push('Stiffener material (R)')
+    return miss
   }
 
   async function save(status: 'draft' | 'submitted') {
@@ -106,7 +175,7 @@ export default function CustomOrderForm({
           </div>
 
           {needsCompany && (
-            <Field label="Company">
+            <Field label="Company *">
               <select value={companyId} onChange={e => setCompanyId(e.target.value)} className="input">
                 <option value="">—</option>
                 {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -114,14 +183,14 @@ export default function CustomOrderForm({
             </Field>
           )}
           {isAdmin && !needsCompany && companies.length > 0 && (
-            <Field label="Company">
+            <Field label="Company *">
               <select value={companyId} onChange={e => setCompanyId(e.target.value)} className="input">
                 {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
           )}
 
-          <Field label="Customer / Patient">
+          <Field label="Customer / Patient *">
             <input value={patient} onChange={e => setPatient(e.target.value)} className="input" />
           </Field>
           <Field label="Reference *">
@@ -154,7 +223,7 @@ export default function CustomOrderForm({
       {/* ── Tab 2 — Customization ──────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-5">
-          <CustomAdditionsForm values={values} onChange={setValues} />
+          <CustomAdditionsForm values={values} onChange={onValues} unit={unit} />
           <div className="flex justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
             <button onClick={() => setStep(3)} className="rounded-lg bg-gold px-6 py-2.5 text-sm font-medium text-white">Next →</button>

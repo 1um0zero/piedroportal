@@ -39,6 +39,10 @@ export interface CustomField {
   values?:       (number | string)[]   // for 'option'
   unit?:         string                // e.g. 'mm'
   conditionalOn?: string               // show only when this sibling key is truthy
+  hiddenWhen?:   string                // hide while this sibling key is truthy (inverse conditional)
+  dropdown?:     boolean               // 'option': render a <select> instead of chips
+  popup?:        string                // toggle: message shown when the value changes (see popupOn)
+  popupOn?:      'check' | 'uncheck'   // when to show the popup (default 'check')
   required?:     boolean
   hint?:         CustomI18n            // small helper text (e.g. height label "350 mm", "I")
   picturePending?: boolean             // option needs a Piedro-supplied image (toe shape, soles…)
@@ -51,6 +55,7 @@ export interface CustomField {
 export interface CustomGroup {
   key:    string                 // sub-heading within a section
   label:  CustomI18n
+  info?:  CustomI18n             // ⓘ note shown on demand next to the group heading
   fields: CustomField[]
   render?: 'measurements'        // special layout: L/R rows with a centred tag, optional diagram
   image?:  string                // reference diagram for the special layout (optional)
@@ -81,6 +86,18 @@ const ROCKER_IMAGES = {
 }
 
 // ─── Section cs1 — LAST & FITTING SHOES ──────────────────────────────────────
+// Last Height is a dropdown (Martin, pptx 30-6-2026 slide 2); picking a height
+// makes the Leg & Ankle Circumference row at that height required (see
+// CIRC_BY_HEIGHT + the validation in CustomOrderForm).
+export const LAST_HEIGHTS = ['Low last', '100 mm', '120 mm', '150 mm', '200 mm', '220 mm', '250 mm', '300 mm', '350 mm']
+export const LAST_HEIGHT_KEY = 'cs1.0.01_lf_rf'
+export const CIRC_BY_HEIGHT: Record<string, string> = {
+  '350 mm': 'cs1.21_lf_rf', '300 mm': 'cs1.22_lf_rf', '250 mm': 'cs1.23_lf_rf',
+  '220 mm': 'cs1.circ220_lf_rf', '200 mm': 'cs1.24_lf_rf', '150 mm': 'cs1.25_lf_rf',
+  '120 mm': 'cs1.26_lf_rf', '100 mm': 'cs1.circ100_lf_rf',
+}
+export const FITTING_SHOE_TYPE_KEY = 'cs1.41_type_ch'
+export const FITTING_SHOE_WITH_SUPPLEMENT = 'Fitting shoe including supplement'
 const SECTION_LAST: CustomSection = {
   key: 'last',
   label: { en: 'Last & Fitting Shoes', nl: 'Leest & Passchoenen' },
@@ -89,14 +106,14 @@ const SECTION_LAST: CustomSection = {
       key: 'last_type',
       label: { en: 'Last' },
       fields: [
-        yn('Wooden Last',  'cs1.0.01_yn'),
         yn('Plastercast',  'cs1.0.02_yn'),
         yn('Blueprint',    'cs1.blueprint_yn'),
         { key: 'cs1.blueprint_file', type: 'upload', side: 'global', label: { en: 'Upload blueprint' }, conditionalOn: 'cs1.blueprint_yn' },
         yn('Footscan',     'cs1.footscan_yn'),
         { key: 'cs1.footscan_file', type: 'upload', side: 'global', label: { en: 'Upload footscan' }, conditionalOn: 'cs1.footscan_yn' },
-        mm('Last Height', 'cs1.0.01_lf_rf'),
-        mm('Heel Height', 'cs1.0.02_lf_rf'),
+        { key: LAST_HEIGHT_KEY, type: 'option', side: 'both', dropdown: true, required: true,
+          label: { en: 'Last Height' }, values: LAST_HEIGHTS },
+        { ...mm('Heel Height', 'cs1.0.02_lf_rf'), required: true },
         mm('Toe Jump',    'cs1.0.03_lf_rf'),
         mm('Toe Height',  'cs1.0.04_lf_rf'),
         yn('Sharp Heel Edge', 'cs1.0.03_yn'),
@@ -104,7 +121,7 @@ const SECTION_LAST: CustomSection = {
     },
     {
       key: 'last_measurements',
-      label: { en: 'Last Measurements', nl: 'Leestmaten' },
+      label: { en: 'Last measurements' },   // Martin slide 2: heading reads "Last measurements" (was NL "Leestmaten")
       render: 'measurements',
       image: '/custom/measurements/last_measurements.png',
       markers: {
@@ -127,19 +144,23 @@ const SECTION_LAST: CustomSection = {
       label: { en: 'Leg & Ankle Circumference' },
       render: 'measurements',
       image: '/custom/measurements/leg-ankle.png',
-      // The diagram shows 4 rings (25/20/15/10 cm). 350/300 extrapolate up the leg.
+      // 8 rings, 100–350 mm (all labels in mm — Martin slide 2); positions match
+      // the ring centres measured in leg-ankle.png.
       markers: {
-        '350 mm': { x: 50, y: 38 }, '300 mm': { x: 50, y: 46 },
-        '250 mm': { x: 50, y: 54 }, '200 mm': { x: 50, y: 62 },
-        '150 mm': { x: 50, y: 70 }, '120 mm': { x: 50, y: 77 },
+        '350 mm': { x: 49, y: 37.5 }, '300 mm': { x: 49, y: 45.7 },
+        '250 mm': { x: 48, y: 54 },   '220 mm': { x: 50, y: 59 },
+        '200 mm': { x: 49, y: 62.3 }, '150 mm': { x: 50, y: 71 },
+        '120 mm': { x: 53, y: 75.6 }, '100 mm': { x: 50, y: 78.6 },
       },
       fields: [
         { ...mm('Circumference', 'cs1.21_lf_rf'), hint: { en: '350 mm' } },
         { ...mm('Circumference', 'cs1.22_lf_rf'), hint: { en: '300 mm' } },
         { ...mm('Circumference', 'cs1.23_lf_rf'), hint: { en: '250 mm' } },
+        { ...mm('Circumference', 'cs1.circ220_lf_rf'), hint: { en: '220 mm' } },
         { ...mm('Circumference', 'cs1.24_lf_rf'), hint: { en: '200 mm' } },
         { ...mm('Circumference', 'cs1.25_lf_rf'), hint: { en: '150 mm' } },
         { ...mm('Circumference', 'cs1.26_lf_rf'), hint: { en: '120 mm' } },
+        { ...mm('Circumference', 'cs1.circ100_lf_rf'), hint: { en: '100 mm' } },
       ],
     },
     {
@@ -159,6 +180,11 @@ const SECTION_LAST: CustomSection = {
       label: { en: 'Fitting Shoes' },
       fields: [
         yn('Plastic Fitting Shoes', 'cs1.41_yn'),
+        // Martin slide 3: checking the box asks which kind; "including supplement"
+        // makes the Supplement section required (validated in CustomOrderForm).
+        { key: FITTING_SHOE_TYPE_KEY, type: 'option', side: 'global', conditionalOn: 'cs1.41_yn',
+          label: { en: 'Fitting shoe type' },
+          values: ['Fitting shoe of last', FITTING_SHOE_WITH_SUPPLEMENT] },
         { ...mm('Height',      'cs1.41.01_lf_rf'), conditionalOn: 'cs1.41_yn' },
         { ...mm('Heel Height', 'cs1.41.02_lf_rf'), conditionalOn: 'cs1.41_yn' },
       ],
@@ -184,7 +210,9 @@ const SECTION_LAST: CustomSection = {
 }
 
 // ─── Section cs2 — SUPPLEMENT ─────────────────────────────────────────────────
-const MATERIALS = ['Multiform', 'Micro Cork', 'Cork', 'EVA', 'PU']  // TODO confirm material list with Piedro
+// Reinforcement materials per Martin (pptx 30-6-2026 slide 4). Spelling "Renoflex"
+// is Martin's — brand is usually "Rhenoflex"; pending confirmation (questões #6).
+const MATERIALS = ['Ercoflex', 'Renoflex 1.1', 'Renoflex 1.5', 'Renoflex 1.9']
 
 const SECTION_SUPPLEMENT: CustomSection = {
   key: 'supplement',
@@ -202,47 +230,41 @@ const SECTION_SUPPLEMENT: CustomSection = {
     {
       key: 'supplement_types',
       label: { en: 'Supplement' },
+      // Type names + which ones carry a height are Martin's (pptx 30-6-2026 slide 4):
+      // "under ankle" types need no height; "over ankle" types do.
       fields: [
-        // Standard
+        // Standard — no height indication
         { ...yn('Standard', 'cs2.21_yn'), thumb: '/custom/supplement/standard.png' },
-        { ...mm('Left',  'cs2.21.01_lf', 'left'),  conditionalOn: 'cs2.21_yn' },
-        { ...mm('Right', 'cs2.21.01_rf', 'right'), conditionalOn: 'cs2.21_yn' },
-        // Lateral Low Reinforcement
-        { ...yn('Lateral Low Reinforcement', 'cs2.22_yn'), thumb: '/custom/supplement/lateral-low-reinforcement.png' },
-        { ...mm('Left',  'cs2.22.01_lf', 'left'),  conditionalOn: 'cs2.22_yn' },
-        { ...mm('Right', 'cs2.22.01_rf', 'right'), conditionalOn: 'cs2.22_yn' },
+        // Lateral under ankle reinforcement — no height indication
+        { ...yn('Lateral under ankle reinforcement', 'cs2.22_yn'), thumb: '/custom/supplement/lateral-low-reinforcement.png' },
         { key: 'cs2.21.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.22_yn' },
-        // Medial Low Reinforcement
-        { ...yn('Medial Low Reinforcement', 'cs2.23_yn'), thumb: '/custom/supplement/medial-low-reinforcement.png' },
-        { ...mm('Left',  'cs2.23.01_lf', 'left'),  conditionalOn: 'cs2.23_yn' },
-        { ...mm('Right', 'cs2.23.01_rf', 'right'), conditionalOn: 'cs2.23_yn' },
+        // Medial under ankle reinforcement — no height indication
+        { ...yn('Medial under ankle reinforcement', 'cs2.23_yn'), thumb: '/custom/supplement/medial-low-reinforcement.png' },
         { key: 'cs2.23.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.23_yn' },
-        // Heel Low Reinforcement (medial + lateral both sides)
-        { ...yn('Heel Low Reinforcement', 'cs2.24_yn'), thumb: '/custom/supplement/heel-low-reinforcement.png' },
-        { ...mm('Lateral', 'cs2.24.01_lt_lf_rf'), conditionalOn: 'cs2.24_yn' },
-        { ...mm('Medial',  'cs2.24.01_md_lt_rf'), conditionalOn: 'cs2.24_yn' },
+        // Lateral/medial under ankle reinforcement — no height indication
+        { ...yn('Lateral/medial under ankle reinforcement', 'cs2.24_yn'), thumb: '/custom/supplement/heel-low-reinforcement.png' },
         { key: 'cs2.24.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.24_yn' },
-        // Surrounding Orthoses
-        yn('Surrounding Orthoses', 'cs2.25_yn'),
+        // Lateral/medial over ankle reinforcement covering achilles tendon
+        yn('Lateral/medial over ankle reinforcement covering achilles tendon', 'cs2.25_yn'),
         { ...mm('Lateral', 'cs2.25.01_lt_lf_rf'), conditionalOn: 'cs2.25_yn' },
         { ...mm('Medial',  'cs2.25.01_md_lt_rf'), conditionalOn: 'cs2.25_yn' },
         { key: 'cs2.25.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.25_yn' },
-        // Lateral and Medial Orthoses
-        yn('Lateral and Medial Orthoses', 'cs2.26_yn'),
+        // Lateral/medial over ankle reinforcement
+        yn('Lateral/medial over ankle reinforcement', 'cs2.26_yn'),
         { ...mm('Lateral', 'cs2.26.01_lt_lf_rf'), conditionalOn: 'cs2.26_yn' },
         { ...mm('Medial',  'cs2.26.01_md_lt_rf'), conditionalOn: 'cs2.26_yn' },
         { key: 'cs2.26.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.26_yn' },
-        // Lateral Orthoses
-        yn('Lateral Orthoses', 'cs2.27_yn'),
+        // Lateral over ankle orthosis
+        yn('Lateral over ankle orthosis', 'cs2.27_yn'),
         { ...mm('Left',  'cs2.27.01_lf', 'left'),  conditionalOn: 'cs2.27_yn' },
         { ...mm('Right', 'cs2.27.01_rf', 'right'), conditionalOn: 'cs2.27_yn' },
         { key: 'cs2.27.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.27_yn' },
-        // Medial Orthoses
-        yn('Medial Orthoses', 'cs2.28_yn'),
+        // Medial over ankle orthosis
+        yn('Medial over ankle orthosis', 'cs2.28_yn'),
         { ...mm('Left',  'cs2.28.01_lf', 'left'),  conditionalOn: 'cs2.28_yn' },
         { ...mm('Right', 'cs2.28.01_rf', 'right'), conditionalOn: 'cs2.28_yn' },
         { key: 'cs2.28.01_m_ch', type: 'option', side: 'global', label: { en: 'Material' }, values: MATERIALS, conditionalOn: 'cs2.28_yn' },
-        // Forefoot Provision
+        // Forefoot Provision — unchanged
         yn('Forefoot Provision', 'cs2.29_yn'),
         { ...mm('Left',  'cs2.29.01_lf', 'left'),  conditionalOn: 'cs2.29_yn' },
         { ...mm('Right', 'cs2.29.01_rf', 'right'), conditionalOn: 'cs2.29_yn' },
@@ -252,8 +274,8 @@ const SECTION_SUPPLEMENT: CustomSection = {
       key: 'supplement_measurements',
       label: { en: 'Supplement Measurements' },
       fields: [
-        mm('Heel — Medial',  'cs2.31_lt_lf_rf'),
-        mm('Heel — Lateral', 'cs2.31_md_lt_rf'),
+        // Heel has no medial/lateral split (Martin slide 5) — a single Heel row.
+        mm('Heel', 'cs2.31_lt_lf_rf'),
         mm('Ball — Medial',  'cs2.32_lt_lf_rf'),
         mm('Ball — Lateral', 'cs2.32_md_lt_rf'),
         mm('Toe', 'cs2.33', 'global'),
@@ -292,34 +314,41 @@ const SECTION_SUPPLEMENT: CustomSection = {
 // Modelled from the Excel prose (rows 125–228). Conditional behaviour mirrors the
 // Customization customjs. Upper-leather lists come from the picked model's product
 // sheet (text for now until wired to the catalogue).
+export const LEATHER_AS_MODEL_KEY = 'cs3.leather_as_model'
+export const CLOSURE_AS_MODEL_KEY = 'cs3.closure_as_model'
+const SURCHARGE_COLOURS  = 'A surcharge may apply if colors other than the standard colors are chosen.'
+const SURCHARGE_CLOSURES = 'A surcharge may apply if closures other than the standard closure is chosen.'
+const STRETCH_POPUP      = 'Stretch is only possible if the model allows it.'
 const SECTION_UPPER: CustomSection = {
   key: 'upper',
-  label: { en: 'Upper', nl: 'Bovenwerk' },
+  label: { en: 'Upper', nl: 'Schacht' },
   groups: [
     {
       key: 'model',
       label: { en: 'Model' },
       fields: [
-        { key: 'cs3.article', type: 'text', side: 'global', label: { en: 'Article number' }, hint: { en: 'line drawing & lining info from the product sheet' } },
-        mm('Upper Height', 'cs3.upper_height_lf_rf'),
+        { key: 'cs3.article', type: 'text', side: 'global', label: { en: 'Article number' } },  // autofilled from the chosen model
+        { ...mm('Upper Height', 'cs3.upper_height_lf_rf'), required: true },
       ],
     },
     {
       key: 'upper_leather',
       label: { en: 'Upper Leather', nl: 'Bovenleer' },
       fields: [
-        { key: 'cs3.leather_1', type: 'text', side: 'global', label: { en: 'Upper 1' }, hint: { en: 'from product sheet' } },
-        { key: 'cs3.leather_2', type: 'text', side: 'global', label: { en: 'Upper 2' } },
-        { key: 'cs3.leather_3', type: 'text', side: 'global', label: { en: 'Upper 3' } },
-        { key: 'cs3.leather_4', type: 'text', side: 'global', label: { en: 'Upper 4' } },
+        // Checked by default; unchecking (= picking own colours) warns about surcharge.
+        { ...yn('Leathers as model', LEATHER_AS_MODEL_KEY), popup: SURCHARGE_COLOURS, popupOn: 'uncheck' },
+        { key: 'cs3.leather_1', type: 'text', side: 'global', label: { en: 'Upper 1' }, hiddenWhen: LEATHER_AS_MODEL_KEY, hint: { en: 'from product sheet' } },
+        { key: 'cs3.leather_2', type: 'text', side: 'global', label: { en: 'Upper 2' }, hiddenWhen: LEATHER_AS_MODEL_KEY },
+        { key: 'cs3.leather_3', type: 'text', side: 'global', label: { en: 'Upper 3' }, hiddenWhen: LEATHER_AS_MODEL_KEY },
+        { key: 'cs3.leather_4', type: 'text', side: 'global', label: { en: 'Upper 4' }, hiddenWhen: LEATHER_AS_MODEL_KEY },
       ],
     },
     {
       key: 'lining',
       label: { en: 'Lining', nl: 'Voering' },
       fields: [
-        { ...opt('Upper', 'cs3.lining_upper', LINING), required: true },
-        { ...opt('Rest',  'cs3.lining_rest',  LINING), required: true },
+        // Single lining choice — no upper/rest split (Martin slide 6).
+        { ...opt('Lining', 'cs3.lining_ch', LINING), required: true },
         yn('Anti-slip heel',  'cs3.lining_antislip'),
         yn('Perforated lining', 'cs3.lining_perforated'),
       ],
@@ -328,48 +357,36 @@ const SECTION_UPPER: CustomSection = {
       key: 'closure',
       label: { en: 'Closure', nl: 'Sluiting' },
       fields: [
+        // Checked by default; unchecking (= picking another closure) warns about surcharge.
+        { ...yn('Closure as model', CLOSURE_AS_MODEL_KEY), popup: SURCHARGE_CLOSURES, popupOn: 'uncheck' },
         // Laces
-        yn('Laces', 'cs3.cl_laces'),
-        { ...opt('Laces type', 'cs3.cl_laces_type', ['Standard', 'Elastic', 'Round', 'Flat'], 'global'), conditionalOn: 'cs3.cl_laces' },
+        { ...yn('Laces', 'cs3.cl_laces'), hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...opt('Laces type', 'cs3.cl_laces_type', ['Standard', 'Elastic', 'Round', 'Flat'], 'global'), conditionalOn: 'cs3.cl_laces', hiddenWhen: CLOSURE_AS_MODEL_KEY },
         // Velcro
-        yn('Velcro', 'cs3.cl_velcro'),
-        { ...opt('Velcro', 'cs3.cl_velcro_type', ['Velcro Direct', 'Velcro Passant'], 'global'), conditionalOn: 'cs3.cl_velcro' },
-        { ...opt('Passant side', 'cs3.cl_velcro_passant', ['Medial', 'Lateral'], 'global'), conditionalOn: 'cs3.cl_velcro' },
-        { ...yn('D-ring', 'cs3.cl_velcro_dring'), conditionalOn: 'cs3.cl_velcro' },
-        { ...mm('Make velcro longer', 'cs3.cl_velcro_longer', 'global'), conditionalOn: 'cs3.cl_velcro' },
-        { ...mm('Make velcro wider',  'cs3.cl_velcro_wider', 'global'), conditionalOn: 'cs3.cl_velcro' },
+        { ...yn('Velcro', 'cs3.cl_velcro'), hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...opt('Velcro', 'cs3.cl_velcro_type', ['Velcro Direct', 'Velcro Passant'], 'global'), conditionalOn: 'cs3.cl_velcro', hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...opt('Passant side', 'cs3.cl_velcro_passant', ['Medial', 'Lateral'], 'global'), conditionalOn: 'cs3.cl_velcro', hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...yn('D-ring', 'cs3.cl_velcro_dring'), conditionalOn: 'cs3.cl_velcro', hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...mm('Make velcro longer', 'cs3.cl_velcro_longer', 'global'), conditionalOn: 'cs3.cl_velcro', hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...mm('Make velcro wider',  'cs3.cl_velcro_wider', 'global'), conditionalOn: 'cs3.cl_velcro', hiddenWhen: CLOSURE_AS_MODEL_KEY },
         // Zipper (sided, medial/lateral)
-        yn('Zipper', 'cs3.cl_zipper'),
-        { ...opt('Zipper L', 'cs3.cl_zipper_l', ['Medial', 'Lateral'], 'left'),  conditionalOn: 'cs3.cl_zipper' },
-        { ...opt('Zipper R', 'cs3.cl_zipper_r', ['Medial', 'Lateral'], 'right'), conditionalOn: 'cs3.cl_zipper' },
+        { ...yn('Zipper', 'cs3.cl_zipper'), hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...opt('Zipper L', 'cs3.cl_zipper_l', ['Medial', 'Lateral'], 'left'),  conditionalOn: 'cs3.cl_zipper', hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...opt('Zipper R', 'cs3.cl_zipper_r', ['Medial', 'Lateral'], 'right'), conditionalOn: 'cs3.cl_zipper', hiddenWhen: CLOSURE_AS_MODEL_KEY },
         // Hooks & Eyelets
-        yn('Hooks and Eyelets', 'cs3.cl_hooks'),
-        { ...mm('Amount of hooks',   'cs3.cl_hooks_n',   'global'), conditionalOn: 'cs3.cl_hooks' },
-        { ...mm('Amount of eyelets', 'cs3.cl_eyelets_n', 'global'), conditionalOn: 'cs3.cl_hooks' },
+        { ...yn('Hooks and Eyelets', 'cs3.cl_hooks'), hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...mm('Amount of hooks',   'cs3.cl_hooks_n',   'global'), conditionalOn: 'cs3.cl_hooks', hiddenWhen: CLOSURE_AS_MODEL_KEY },
+        { ...mm('Amount of eyelets', 'cs3.cl_eyelets_n', 'global'), conditionalOn: 'cs3.cl_hooks', hiddenWhen: CLOSURE_AS_MODEL_KEY },
         // Twist lock
-        yn('Twist Lock System', 'cs3.cl_twist'),
+        { ...yn('Twist Lock System', 'cs3.cl_twist'), hiddenWhen: CLOSURE_AS_MODEL_KEY },
       ],
     },
     {
       key: 'stretch',
       label: { en: 'Stretch' },
       fields: [
-        { ...yn('Upper', 'cs3.stretch_upper'), thumb: '/custom/stretch/upper.png', thumbWide: true },
-        { ...yn('Medial and Lateral Side', 'cs3.stretch_med_lat'), thumb: '/custom/stretch/medial-lateral.png', thumbWide: true },
-      ],
-    },
-    {
-      key: 'ankle_heel_quarter',
-      label: { en: 'Ankle Heel and Quarter' },
-      fields: [
-        // Ankle Heel → medial/lateral × L/R × 3/6 mm
-        yn('Ankle Heel', 'cs3.ankle_heel'),
-        { ...opt('Medial', 'cs3.ankle_heel_medial', ['3 mm', '6 mm'], 'both'),  conditionalOn: 'cs3.ankle_heel' },
-        { ...opt('Lateral', 'cs3.ankle_heel_lateral', ['3 mm', '6 mm'], 'both'), conditionalOn: 'cs3.ankle_heel' },
-        // Quarter → same structure
-        yn('Quarter', 'cs3.quarter'),
-        { ...opt('Medial', 'cs3.quarter_medial', ['3 mm', '6 mm'], 'both'),  conditionalOn: 'cs3.quarter' },
-        { ...opt('Lateral', 'cs3.quarter_lateral', ['3 mm', '6 mm'], 'both'), conditionalOn: 'cs3.quarter' },
+        { ...yn('Upper', 'cs3.stretch_upper'), thumb: '/custom/stretch/upper.png', thumbWide: true, popup: STRETCH_POPUP, popupOn: 'check' },
+        { ...yn('Medial and Lateral Side', 'cs3.stretch_med_lat'), thumb: '/custom/stretch/medial-lateral.png', thumbWide: true, popup: STRETCH_POPUP, popupOn: 'check' },
       ],
     },
     {
@@ -395,30 +412,7 @@ const SECTION_UPPER: CustomSection = {
         yn('Tongue incision', 'cs3.tongue_incision'),
       ],
     },
-    {
-      key: 'afo',
-      label: { en: 'AFO' },
-      fields: [
-        yn('AFO Left', 'cs3.afo_l'),
-        { ...mm('Medial',    'cs3.afo_l_medial', 'left'),    conditionalOn: 'cs3.afo_l' },
-        { ...mm('Perimeter', 'cs3.afo_l_perimeter', 'left'), conditionalOn: 'cs3.afo_l' },
-        yn('AFO Right', 'cs3.afo_r'),
-        { ...mm('Medial',    'cs3.afo_r_medial', 'right'),    conditionalOn: 'cs3.afo_r' },
-        { ...mm('Perimeter', 'cs3.afo_r_perimeter', 'right'), conditionalOn: 'cs3.afo_r' },
-      ],
-    },
-    {
-      key: 'busk',
-      label: { en: 'Busk' },
-      fields: [
-        yn('Busk Left', 'cs3.busk_l'),
-        { ...mm('Medial',  'cs3.busk_l_medial', 'left'),  conditionalOn: 'cs3.busk_l' },
-        { ...mm('Lateral', 'cs3.busk_l_lateral', 'left'), conditionalOn: 'cs3.busk_l' },
-        yn('Busk Right', 'cs3.busk_r'),
-        { ...mm('Medial',  'cs3.busk_r_medial', 'right'),  conditionalOn: 'cs3.busk_r' },
-        { ...mm('Lateral', 'cs3.busk_r_lateral', 'right'), conditionalOn: 'cs3.busk_r' },
-      ],
-    },
+    // Ankle Heel and Quarter, AFO and Busk removed per Martin (slide 7).
     {
       key: 'upper_others',
       label: { en: 'Others' },
@@ -430,16 +424,12 @@ const SECTION_UPPER: CustomSection = {
 }
 
 // ─── Section cs4 — SHOE SOLES ─────────────────────────────────────────────────
-// Modelled from the Excel prose (rows 229–286). Each heel/wedge type reveals L/R
-// medial/lateral toggles. Rocker reuses the OSB rocker artwork; soles will get the
-// "same as pair-by-pair" photo chips once Piedro delivers the images.
-const heelType = (en: string, key: string, thumb?: string): CustomField[] => [
-  { ...yn(en, key), ...(thumb ? { thumb, thumbWide: true } : {}) },
-  { ...yn('Left — Medial',  `${key}_l_med`), conditionalOn: key },
-  { ...yn('Left — Lateral', `${key}_l_lat`), conditionalOn: key },
-  { ...yn('Right — Medial', `${key}_r_med`), conditionalOn: key },
-  { ...yn('Right — Lateral', `${key}_r_lat`), conditionalOn: key },
-]
+// Modelled from the Excel prose (rows 229–286). Heel types are plain toggles —
+// the L/R medial/lateral sub-options were dropped per Martin (slide 8). Rocker
+// sole sits behind a yes/no toggle. Height autofills from the Last heel height
+// (see CustomOrderForm) and is required when it can't be autofilled.
+export const SOLE_HEIGHT_KEY = 'cs4.height_lf_rf'
+export const HEEL_HEIGHT_KEY = 'cs1.0.02_lf_rf'
 const SECTION_SOLES: CustomSection = {
   key: 'soles',
   label: { en: 'Shoe Soles', nl: 'Zolen' },
@@ -448,12 +438,12 @@ const SECTION_SOLES: CustomSection = {
       key: 'heel_type',
       label: { en: 'Heel Type' },
       fields: [
-        ...heelType('Heel', 'cs4.heel', '/custom/heel/heel.png'),
-        ...heelType('Hollow Wedge', 'cs4.hollow_wedge', '/custom/heel/hollow-wedge.png'),
-        ...heelType('Fully Hollow Wedge', 'cs4.fully_hollow_wedge', '/custom/heel/fully-hollow-wedge.png'),
-        ...heelType('Wedge', 'cs4.wedge', '/custom/heel/wedge.png'),
-        mm('Height', 'cs4.height_lf_rf'),
-        yn('Measurement Back', 'cs4.measure_back'),
+        { ...yn('Heel', 'cs4.heel'), thumb: '/custom/heel/heel.png', thumbWide: true },
+        { ...yn('Hollow Wedge', 'cs4.hollow_wedge'), thumb: '/custom/heel/hollow-wedge.png', thumbWide: true },
+        { ...yn('Fully Hollow Wedge', 'cs4.fully_hollow_wedge'), thumb: '/custom/heel/fully-hollow-wedge.png', thumbWide: true },
+        { ...yn('Wedge', 'cs4.wedge'), thumb: '/custom/heel/wedge.png', thumbWide: true },
+        { ...mm('Height', SOLE_HEIGHT_KEY), required: true },
+        yn('Measurement Back', 'cs4.measure_back'),   // default on (Martin slide 8)
         yn('Measurement Side', 'cs4.measure_side'),
       ],
     },
@@ -461,13 +451,15 @@ const SECTION_SOLES: CustomSection = {
       key: 'rocker_sole',
       label: { en: 'Rocker Sole' },
       fields: [
-        yn('Heel', 'cs4.rocker_heel'),
+        // yes/no gate — the rocker block only appears when on (Martin slide 8)
+        yn('Rocker sole', 'cs4.rocker_yn'),
+        { ...yn('Heel', 'cs4.rocker_heel'), conditionalOn: 'cs4.rocker_yn' },
         { ...mm('Heel', 'cs4.rocker_heel_mm'), conditionalOn: 'cs4.rocker_heel' },
-        yn('Joint', 'cs4.rocker_joint'),
+        { ...yn('Joint', 'cs4.rocker_joint'), conditionalOn: 'cs4.rocker_yn' },
         { ...mm('Joint', 'cs4.rocker_joint_mm'), conditionalOn: 'cs4.rocker_joint' },
-        yn('Toes', 'cs4.rocker_toes'),
+        { ...yn('Toes', 'cs4.rocker_toes'), conditionalOn: 'cs4.rocker_yn' },
         { ...mm('Toes', 'cs4.rocker_toes_mm'), conditionalOn: 'cs4.rocker_toes' },
-        { key: 'cs4.rocker_type', type: 'image', side: 'global', collapse: true, label: { en: 'Rocker Sole Type' }, values: ROCKER_TYPES, images: ROCKER_IMAGES },
+        { key: 'cs4.rocker_type', type: 'image', side: 'global', collapse: true, label: { en: 'Rocker Sole Type' }, values: ROCKER_TYPES, images: ROCKER_IMAGES, conditionalOn: 'cs4.rocker_yn' },
         yn('Removable Carbon Insole', 'cs4.carbon_insole'),
         yn('Sole Stiffening', 'cs4.sole_stiffening'),
       ],
@@ -534,41 +526,50 @@ const STIFFENER_IMAGES: Record<string, string> = {
   'Hoge Peroneus Beide Zijde · Extra': `${STIFF}/hoge-peroneus-beide-zijde-extra-versteviging.png`,
   'Hoge Peroneus Beide Zijde · Dubbele': `${STIFF}/hoge-peroneus-beide-zijde-dubbele-versteviging.png`,
 }
+// Stiffener material list per Martin (slide 10) — spelling "Renoflex" pending
+// confirmation (brand is usually "Rhenoflex"), as is 1.2 vs the supplements' 1.1.
+export const STIFFENER_MATERIALS = [
+  'Renoflex 1.2', 'Renoflex 1.5', 'Renoflex 1.9',
+  'Renoflex 1.2 double', 'Renoflex 1.5 double', 'Renoflex 1.9 double',
+  'Ercoflex 2', 'Ercoflex 3',
+  'Ercoflex 2/Renoflex 1.2', 'Ercoflex 2/Renoflex 1.5', 'Ercoflex 2/Renoflex 1.9',
+  'Ercoflex 3/Renoflex 1.2', 'Ercoflex 3/Renoflex 1.5', 'Ercoflex 3/Renoflex 1.9',
+  'Leather',
+]
+export const STIFFENER_TYPE_L_KEY = 'cs5.stiffener_type_l'
+export const STIFFENER_TYPE_R_KEY = 'cs5.stiffener_type_r'
+export const STIFFENER_MATERIAL_L_KEY = 'cs5.stiffener_material_l'
+export const STIFFENER_MATERIAL_R_KEY = 'cs5.stiffener_material_r'
 const SECTION_STIFFENER: CustomSection = {
   key: 'stiffener',
   label: { en: 'Stiffeners & Toe', nl: 'Contreforts & Neus' },
   groups: [
     {
       key: 'stiffener_materials',
-      label: { en: 'Stiffeners Materials' },
+      label: { en: 'Stiffeners' },
+      // Martin slide 10 — placement note behind an ⓘ button.
+      info: { en: 'All requested modifications will be placed between the lining and the upper leather. If this is not possible, the modification will be built up on the lining, after which the upper leather will be made over it. This may incur additional costs.' },
       fields: [
-        { key: 'cs5.stiffener_type', type: 'image', side: 'global', collapse: true, label: { en: 'Stiffener Type' }, values: STIFFENER_TYPES, images: STIFFENER_IMAGES },
-        // First/second layer material heights, sided, back/medial/lateral
-        mm('1st layer — Back',    'cs5.l1_back'),
-        mm('1st layer — Medial',  'cs5.l1_medial'),
-        mm('1st layer — Lateral', 'cs5.l1_lateral'),
-        mm('2nd layer — Back',    'cs5.l2_back'),
-        mm('2nd layer — Medial',  'cs5.l2_medial'),
-        mm('2nd layer — Lateral', 'cs5.l2_lateral'),
+        // Independent stiffener choice per foot; each choice requires a material
+        // (validated in CustomOrderForm). The 1st/2nd layer mm table was removed.
+        { key: STIFFENER_TYPE_L_KEY, type: 'image', side: 'left', collapse: true, label: { en: 'Stiffener Type — Left' }, values: STIFFENER_TYPES, images: STIFFENER_IMAGES },
+        { key: STIFFENER_MATERIAL_L_KEY, type: 'option', side: 'left', dropdown: true, label: { en: 'Material — Left' }, values: STIFFENER_MATERIALS, conditionalOn: STIFFENER_TYPE_L_KEY },
+        { key: STIFFENER_TYPE_R_KEY, type: 'image', side: 'right', collapse: true, label: { en: 'Stiffener Type — Right' }, values: STIFFENER_TYPES, images: STIFFENER_IMAGES },
+        { key: STIFFENER_MATERIAL_R_KEY, type: 'option', side: 'right', dropdown: true, label: { en: 'Material — Right' }, values: STIFFENER_MATERIALS, conditionalOn: STIFFENER_TYPE_R_KEY },
       ],
     },
     {
       key: 'toe_options',
-      label: { en: 'Toe Options' },
+      label: { en: 'Toe reinforcement options' },
       fields: [
+        // 'Normal' is the default (set in CustomOrderForm); 'Front' dropped (slide 11).
         { key: 'cs5.toe_option', type: 'option', side: 'global', collapse: true,
-          label: { en: 'Toe Option' }, values: ['No toe', 'Normal', 'Short', 'Front', 'Wing'] },
+          label: { en: 'Toe reinforcement' }, values: ['No reinforcement', 'Normal', 'Short', 'Wing'] },
         { key: 'cs5.toe_material', type: 'text', side: 'global', label: { en: 'Toe material' }, conditionalOn: 'cs5.toe_option' },
         yn('External Protective Toe Cap', 'cs5.toe_protective'),
       ],
     },
-    {
-      key: 'order_flags',
-      label: { en: 'Order' },
-      fields: [
-        yn('Urgent order', 'cs5.urgent'),
-      ],
-    },
+    // Urgent order removed per Martin (slide 11).
   ],
 }
 

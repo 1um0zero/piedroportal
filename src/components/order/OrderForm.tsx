@@ -591,7 +591,6 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             addsExclude={(product as unknown as Record<string, string>).adds_exclude ?? ''}
             additions={additions}
             onChange={(a) => { setAdditions(a); if (missingAdds.length) { setMissingAdds([]); setError('') } }}
-            isNew={!draftData}
             missing={missingAdds}
             soleProfile={soleProfile}
             section={product.section}

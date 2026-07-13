@@ -25,7 +25,6 @@ type Props = {
   addsExclude: string     // comma-separated Dataverse field names to exclude
   additions: Additions
   onChange: (additions: Additions) => void
-  isNew?: boolean         // new order → start with all sections collapsed
   missing?: MissingRequired[]  // required children flagged empty on a failed advance
   soleProfile?: string | null  // sole group key for this model → restricts sole-amendment options
   section?: string | null      // product section (KIDS/MEN/WOMEN) → picks gender-specific sole photos
@@ -307,14 +306,15 @@ function SelectCombo({ values, value, onChange, t, fieldKey }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, isNew, missing, soleProfile = null, section = null, zsmGroup = null }: Props) {
+export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, missing, soleProfile = null, section = null, zsmGroup = null }: Props) {
   const t = useTranslations('additions')
   // Field keys flagged as missing-required on the last failed "Review and confirm".
   const missingKeys = new Set((missing ?? []).map(m => m.fieldKey))
-  // New orders open fully collapsed so the whole structure is visible; once the
-  // user navigates between tabs the chosen open/closed state is preserved.
-  const [expanded, setExpanded] = useState<Set<string>>(() =>
-    isNew ? new Set<string>() : new Set(['additions']))
+  // The Customization tab always opens fully collapsed so the whole structure is
+  // visible (client request via Anabela, 2026-07); once the user navigates between
+  // tabs the chosen open/closed state is preserved. Missing-required sections
+  // still force-open below.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>())
 
   // Per-section filter state (replaces single showOnlyActive)
   const [sectionFilter, setSectionFilter] = useState<Record<string, boolean>>({})
