@@ -35,7 +35,9 @@ export const dynamic = 'force-dynamic'
  *                        for VSI-direct visibility until a companies.vsi_direct
  *                        flag exists.
  *   since=<ISO>          only orders updated at/after this timestamp
- *   piedro_order=<csv>   CSV of Piedro Order numbers; * = wildcard (e.g. 65*).
+ *   piedro_order=<csv>   CSV of search terms; * = wildcard (e.g. 65*). Each term
+ *                        matches the Piedro Order nº, the customer reference
+ *                        (contains) or the console order nº (contains).
  *                        Mirrors the a-shell console filter: when present, the
  *                        pending/status defaults are dropped (search everything).
  *   created_from=<date>  only orders created at/after this date (YYYY-MM-DD or ISO)
@@ -114,11 +116,16 @@ export async function GET(req: Request) {
   if (exported) query = query.not('erp_exported_at', 'is', null)
   if (since) query = query.gte('updated_at', since)
   if (hasOrderFilter) {
-    query = query.or(piedroTerms.map(t =>
-      t.includes('*')
+    // The console's "Orders" box: a term may be the Piedro Order nº, the
+    // customer's own reference (e.g. PO2692 — VSI-direct orders never get a
+    // Piedro Order) or the console order nº — any of them identifies the order.
+    query = query.or(piedroTerms.map(t => {
+      const like = t.includes('*') ? t.replace(/\*/g, '%') : `%${t}%`
+      const pid = t.includes('*')
         ? `piedro_order_id.ilike.${t.replace(/\*/g, '%')}`
         : `piedro_order_id.eq.${t}`
-    ).join(','))
+      return `${pid},reference_customer.ilike.${like},erp_order_ref.ilike.${like}`
+    }).join(','))
   }
   if (createdFrom) query = query.gte('created_at', createdFrom)
   if (createdTo) query = query.lte('created_at', createdTo.length === 10 ? `${createdTo}T23:59:59.999Z` : createdTo)
