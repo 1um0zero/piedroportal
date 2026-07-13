@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { isLivingstone, clientSiglas } from '@/lib/exclusive'
 import { isBranchAdmin, isBranchStaff } from '@/lib/roles'
 import { compareWidths } from '@/lib/width-display'
+import { productHasSize } from '@/components/order/zsm-profiles'
 
 const SECTIONS: Section[] = ['KIDS', 'MEN', 'WOMEN']
 const SECTION_KEY: Record<Section, 'kids' | 'men' | 'women'> = {
@@ -69,7 +70,7 @@ export function applyFilters(
       if (!cons.some((c) => c.widths?.some((w) => f.widths.includes(w))))                                  return false
     }
     if (exclude !== 'sizes'         && f.sizes.length > 0
-      && !f.sizes.some((s) => s >= p.size_first && s <= p.size_last))                                     return false
+      && !f.sizes.some((s) => productHasSize(p, s)))                                                      return false
     if (f.styles.length > 0 && !f.styles.includes((p.style_name ?? '').replace(/K$/i, '')))                return false
     if (f.search && !matchesSearch(p.style_name, f.search))                                                return false
     if (exclude !== 'category'      && f.category > 0 && p.category !== f.category)                        return false
@@ -90,7 +91,7 @@ function availableSizes(products: Product[], wholeOnly = false): number[] {
   const out: number[] = []
   for (let s = min; s <= max + 0.001; s += step) {
     const r = wholeOnly ? Math.round(s) : Math.round(s * 2) / 2
-    if (products.some((p) => r >= p.size_first && r <= p.size_last)) out.push(r)
+    if (products.some((p) => productHasSize(p, r))) out.push(r)
   }
   return out
 }

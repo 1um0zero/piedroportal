@@ -8,7 +8,7 @@ import type { Product, Locale } from '@/types'
 import AdditionsForm from './AdditionsForm'
 import { emptyAdditions, getMissingRequiredAdditions, SECTIONS, type MissingRequired } from './additions-config'
 import { soleProfileFor } from './sole-profiles'
-import { zsmGroupFor } from './zsm-profiles'
+import { zsmGroupFor, zsmExcludedSizes } from './zsm-profiles'
 import { getFieldLabel } from '@/lib/additions-helpers'
 import OrderSummary from './OrderSummary'
 import { translateFilterValueSync, preloadFilterTranslations } from '@/lib/filter-translations'
@@ -332,11 +332,15 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     }
   }, [widthsR.length, widthRight, mirror, isDouble, unit]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Size list — kids scales have whole sizes only (no half sizes)
+  // Size list — kids scales have whole sizes only (no half sizes); ZSM (B-prefix)
+  // models skip the half sizes the factory does not make (zsm-profiles.ts).
   const sizeStep = product.section === 'KIDS' ? 1 : 0.5
+  const sizesExcluded = zsmExcludedSizes(product.style_name, product.section)
   const sizes: string[] = []
-  for (let s = product.size_first; s <= product.size_last; s += sizeStep)
-    sizes.push(String(Math.round(s * 2) / 2))
+  for (let s = product.size_first; s <= product.size_last; s += sizeStep) {
+    const r = Math.round(s * 2) / 2
+    if (!sizesExcluded.includes(r)) sizes.push(String(r))
+  }
 
   // Mirror helpers — PAIR mirrors both feet; LEFT_RIGHT copies to right if right is empty
   function setConstrLeft(v: string) {
@@ -1012,9 +1016,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
                   (constructionOpts.length > 0 && !constrRight && (unit === 'RIGHT' || isDouble)) ||
                   (widthsL.length > 0 && !widthLeft && unit !== 'RIGHT') ||
                   (widthsR.length > 0 && !widthRight && (unit === 'RIGHT' || isDouble)) ||
-                  (unit !== 'DIFF_SIZES' && unit !== 'RIGHT' && !sizeLeft) ||
-                  (unit !== 'DIFF_SIZES' && (unit === 'RIGHT' || isDouble) && !sizeRight) ||
-                  (unit === 'DIFF_SIZES' && !diffSizesPairs.some(p => p.size))
+                  (unit !== 'DIFF_SIZES' && unit !== 'RIGHT' && (!sizeLeft || !sizes.includes(sizeLeft))) ||
+                  (unit !== 'DIFF_SIZES' && (unit === 'RIGHT' || isDouble) && (!sizeRight || !sizes.includes(sizeRight))) ||
+                  (unit === 'DIFF_SIZES' && !diffSizesPairs.some(p => p.size)) ||
+                  (unit === 'DIFF_SIZES' && diffSizesPairs.some(p => p.size && !sizes.includes(p.size)))
                 }
                 onClick={() => setStep(showAdditions ? 2 : 3)}
                 className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl

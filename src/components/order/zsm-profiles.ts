@@ -48,6 +48,35 @@ export function isZsmModel(styleName: string | null | undefined): boolean {
   return zsmGroupFor(styleName) !== null
 }
 
+// ── ZSM size runs (Anabela e-mail 2026-07-13) ───────────────────────────────────
+// The ZSM factory does not make every half size. Available sizes:
+//   WOMEN 36–43 except 39.5 and 41.5
+//   MEN   38–48 except 38.5, 41.5, 43.5 and 45.5
+// Keyed on the B-prefix (every B-style is ZSM — see reference_style_nomenclature)
+// so new ZSM styles/colours inherit the rule without a per-style list.
+export const ZSM_EXCLUDED_SIZES: Record<string, number[]> = {
+  WOMEN: [39.5, 41.5],
+  MEN:   [38.5, 41.5, 43.5, 45.5],
+}
+
+/** Sizes ZSM does NOT make for this model — [] when not a ZSM (B-prefix) style. */
+export function zsmExcludedSizes(
+  styleName: string | null | undefined,
+  section: string | null | undefined,
+): number[] {
+  if (!(styleName ?? '').trim().toUpperCase().startsWith('B')) return []
+  return ZSM_EXCLUDED_SIZES[section ?? ''] ?? []
+}
+
+/** Whether a product is actually made in a given size (range + ZSM gaps). */
+export function productHasSize(
+  p: { style_name: string; section: string; size_first: number; size_last: number },
+  size: number,
+): boolean {
+  if (size < p.size_first || size > p.size_last) return false
+  return !zsmExcludedSizes(p.style_name, p.section).includes(size)
+}
+
 // ── Prefab Sole colours, by group (values are ERP-canonical labels) ─────────────
 export const ZSM_PREFAB_OPTIONS: Record<ZsmGroup, string[]> = {
   sneaker: ['Sneaker White 09', 'Sneaker Light Beige 19', 'Sneaker Black 81'],
