@@ -20,6 +20,7 @@ export interface AdditionField {
   side:            SideType
   values?:         (number | string)[]
   conditionalOn?:  string         // show only when this sibling key is truthy
+  optional?:       boolean        // conditional child that must NOT block submit when left empty
   dataverseKey?:   string         // Dataverse column name (without lf/rf suffix)
   dataverse?:      string         // for global (non-sided) fields
   closureOnly?:    'LACE' | 'VELCRO'  // show only when product has this closure
@@ -39,6 +40,8 @@ const mm4to10   = [4,6,8,10]
 const mm2to8    = [2,4,6,8]
 const mm1to20   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 const mm0to20   = [0,...mm1to20]                                 // Hak Wig + Zool Wig allow 0 (client, 2026-07-07)
+const mm2to20   = Array.from({ length: 19 }, (_, i) => i + 2)    // Generale Verhoging 2–20 (Anabela, UK, 2026-07)
+const mm20to200 = Array.from({ length: 181 }, (_, i) => i + 20)  // Additioneel op Generale Verhoging 20–200
 const mm1to60   = Array.from({ length: 60 }, (_, i) => i + 1)
 const mm0to60   = Array.from({ length: 61 }, (_, i) => i)        // Tenen allows 0 (Anabela, 2026-06-26)
 const mm5to25   = Array.from({ length: 21 }, (_, i) => i + 5)
@@ -135,15 +138,25 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'sole_float',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_3solefloat' },
       { key: 'sf_medial',    type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'sole_float', dataverseKey: 'cr56f_3sf_medial' },
       { key: 'sf_lateral',   type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'sole_float', dataverseKey: 'cr56f_3sf_lateral' },
+      // Aflopend (tapered) sub-options — optional toggles (Anabela, UK, 2026-07)
+      { key: 'sf_taper_joint', type: 'toggle', side: 'both', conditionalOn: 'sole_float', optional: true, dataverseKey: 'cr56f_3sf_taperedtojoint' },
+      { key: 'sf_taper_toes',  type: 'toggle', side: 'both', conditionalOn: 'sole_float', optional: true, dataverseKey: 'cr56f_3sf_taperedtotoes' },
       { key: 'heel_float',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_3heelfloat' },
       { key: 'hf_medial',    type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'heel_float', dataverseKey: 'cr56f_3hf_medial' },
       { key: 'hf_lateral',   type: 'mm',     side: 'both', values: mm1to20, conditionalOn: 'heel_float', dataverseKey: 'cr56f_3hf_lateral' },
       { key: 'sole_wedge',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_4solewedge' },
       { key: 'sw_medial',    type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'sole_wedge', dataverseKey: 'cr56f_4sw_medial' },
       { key: 'sw_lateral',   type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'sole_wedge', dataverseKey: 'cr56f_4sw_lateral' },
+      { key: 'sw_taper_joint', type: 'toggle', side: 'both', conditionalOn: 'sole_wedge', optional: true, dataverseKey: 'cr56f_4sw_taperedtojoint' },
+      { key: 'sw_taper_toes',  type: 'toggle', side: 'both', conditionalOn: 'sole_wedge', optional: true, dataverseKey: 'cr56f_4sw_taperedtotoes' },
       { key: 'heel_wedge',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_4heelwedge' },
       { key: 'hw_medial',    type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'heel_wedge', dataverseKey: 'cr56f_4hw_medial' },
       { key: 'hw_lateral',   type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'heel_wedge', dataverseKey: 'cr56f_4hw_lateral' },
+      { key: 'hw_taper_joint', type: 'toggle', side: 'both', conditionalOn: 'heel_wedge', optional: true, dataverseKey: 'cr56f_4hw_taperedtojoint' },
+      { key: 'hw_taper_toes',  type: 'toggle', side: 'both', conditionalOn: 'heel_wedge', optional: true, dataverseKey: 'cr56f_4hw_taperedtotoes' },
+      // Generale Verhoging (general raise) + optional additional (Anabela, UK, 2026-07)
+      { key: 'gen_raise',     type: 'mm', side: 'both', values: mm2to20,   dataverseKey: 'cr56f_generalraise' },
+      { key: 'gen_raise_add', type: 'mm', side: 'both', values: mm20to200, conditionalOn: 'gen_raise', optional: true, dataverseKey: 'cr56f_generalraiseadditional' },
       // Others
       { key: 'carb_insole',  type: 'toggle', side: 'both', dataverseKey: 'cr56f_6removablecarboninsole' },
       { key: 'carb_sole',    type: 'toggle', side: 'both', dataverseKey: 'cr56f_6fullcarbonsoleplate' },
@@ -295,6 +308,8 @@ export function getMissingRequiredAdditions(
     const fields = filterExcluded(section.fields, addsExclude)
     for (const field of fields) {
       if (!field.conditionalOn || field.side === 'global') continue
+      // Optional children (and toggles, which are never "required to be on") don't block submit.
+      if (field.optional || field.type === 'toggle') continue
       // Hidden by the model's sole profile → never required (would block submit invisibly).
       if (soleFieldHidden(soleProfile, field.key, (field.values ?? []) as string[])) continue
       // Hidden by ZSM status (ZSM fields on non-ZSM, or replaced fields on ZSM) → not required.

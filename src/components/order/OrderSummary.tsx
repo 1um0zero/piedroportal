@@ -93,7 +93,7 @@ export default function OrderSummary(props: OrderSummaryProps) {
         if (hasChildren(field.key, sec)) {
           return [{ label: getFieldLabel(field, ta), l: null, r: null, isParent: true }]
         }
-        return [{ label: getFieldLabel(field, ta), l: isCheckedL ? '✓' : null, r: isCheckedR ? '✓' : null }]
+        return [{ label: getFieldLabel(field, ta).replace(/↳\s*/g, '  · '), l: isCheckedL ? '✓' : null, r: isCheckedR ? '✓' : null }]
       }
 
       const hasL = sv?.l != null && sv.l !== '' && sv.l !== false

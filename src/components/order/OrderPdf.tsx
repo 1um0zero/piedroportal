@@ -145,9 +145,10 @@ export function OrderPdf({
             }]
           }
 
-          // Standalone toggle: show with no value (just the label)
+          // Standalone toggle: show with no value (just the label). A toggle that is
+          // also a conditional child (↳) renders as an indented "  · " row like other children.
           return [{
-            label: fieldLabel,
+            label: fieldLabel.replace(/↳\s*/g, '  · '),
             l: isCheckedL ? '' : null,
             r: isCheckedR ? '' : null,
             global: false

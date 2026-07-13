@@ -564,14 +564,33 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 if (!active) return null
               }
 
-              // Sub-fields: appear only when parent has a value (mandatory)
+              // Sub-fields: appear only when parent has a value. Required mm/option
+              // children carry a "*"; optional children (and toggle children, which
+              // default off) never block submit and show no marker.
               if (isSubField) {
+                const isToggleChild = field.type === 'toggle'
+                const required = !field.optional && !isToggleChild
+                const sv = additions[field.key] as SidedVal | null
                 if (!isDouble) {
                   if (!isParentActive(field, displaySide)) return null
                   const flagged = missingKeys.has(field.key)
+                  if (isToggleChild) {
+                    const checked = sv?.[displaySide] === true
+                    return (
+                      <div key={field.key} className="py-2 pl-4 ml-1 border-l-2 border-gold/20">
+                        <div className="flex items-center justify-between gap-3">
+                          <span onClick={() => updateField(field.key, displaySide, !checked)}
+                            className="text-xs text-stone-500 cursor-pointer flex-1">{cleanLabel}</span>
+                          <input type="checkbox" checked={checked}
+                            onChange={e => updateField(field.key, displaySide, e.target.checked)}
+                            className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
+                        </div>
+                      </div>
+                    )
+                  }
                   return (
                     <div key={field.key} className={`py-2 pl-4 ml-1 border-l-2 ${flagged ? 'border-red-400' : 'border-gold/20'}`}>
-                      <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel} <span className="text-red-400">*</span></p>
+                      <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel}{required && <span className="text-red-400"> *</span>}</p>
                       {renderControl(field, displaySide)}
                     </div>
                   )
@@ -582,15 +601,23 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const flagged = missingKeys.has(field.key)
                   return (
                     <div key={field.key} className={`py-2 pl-4 ml-1 border-l-2 ${flagged ? 'border-red-400' : 'border-gold/20'}`}>
-                      <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel} <span className="text-red-400">*</span></p>
+                      <p className={`text-xs mb-2 ${flagged ? 'text-red-500 font-medium' : 'text-stone-400'}`}>{cleanLabel}{required && <span className="text-red-400"> *</span>}</p>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           {parentFilledL && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('left')}</p>}
-                          {parentFilledL ? renderControl(field, 'l') : null}
+                          {parentFilledL && (isToggleChild
+                            ? <input type="checkbox" checked={sv?.l === true}
+                                onChange={e => updateField(field.key, 'l', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer custom-gold" />
+                            : renderControl(field, 'l'))}
                         </div>
                         <div className="space-y-1">
                           {parentFilledR && <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t('right')}</p>}
-                          {parentFilledR ? renderControl(field, 'r') : null}
+                          {parentFilledR && (isToggleChild
+                            ? <input type="checkbox" checked={sv?.r === true}
+                                onChange={e => updateField(field.key, 'r', e.target.checked)}
+                                className="w-4 h-4 cursor-pointer custom-gold" />
+                            : renderControl(field, 'r'))}
                         </div>
                       </div>
                     </div>
