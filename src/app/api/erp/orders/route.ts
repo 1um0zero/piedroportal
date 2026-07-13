@@ -15,6 +15,12 @@ export const dynamic = 'force-dynamic'
  * Query params:
  *   pending=1 (default)  only orders not yet exported (erp_exported_at IS NULL)
  *   all=1                include already-exported orders (overrides pending)
+ *   exported=1           only orders already imported by the console
+ *                        (erp_exported_at IS NOT NULL), regardless of status —
+ *                        a freshly-imported order is still `approved` (its
+ *                        production_state is just "order_received"), so a
+ *                        status-based filter would miss it. Drops the default
+ *                        status filter and implies all=1.
  *   status=submitted     CSV of statuses to include (default: submitted,approved)
  *   include_vsi_direct=1 also pull VSI-direct orders: accounts whose erp_code
  *                        starts with "08" (Voetmax/ZSM/Tallermade…) are billed
@@ -51,11 +57,12 @@ export async function GET(req: Request) {
     .split(',').map(s => s.trim()).filter(Boolean)
   const hasOrderFilter = piedroTerms.length > 0
   const all = url.searchParams.get('all') === '1'
+  const exported = url.searchParams.get('exported') === '1'
   const includeVsiDirect = url.searchParams.get('include_vsi_direct') === '1'
   const pendingParam = url.searchParams.get('pending')
-  const pending = !all && (hasOrderFilter ? pendingParam === '1' : pendingParam !== '0')
+  const pending = !all && !exported && (hasOrderFilter ? pendingParam === '1' : pendingParam !== '0')
   const since = url.searchParams.get('since')
-  const statusCsv = url.searchParams.get('status') ?? (hasOrderFilter ? '' : 'submitted,approved')
+  const statusCsv = url.searchParams.get('status') ?? ((hasOrderFilter || exported) ? '' : 'submitted,approved')
   const statuses = statusCsv.split(',').map(s => s.trim()).filter(Boolean)
   const createdFrom = url.searchParams.get('created_from')
   const createdTo = url.searchParams.get('created_to')
@@ -100,6 +107,7 @@ export async function GET(req: Request) {
     query = query.in('status', statuses)
   }
   if (pending) query = query.is('erp_exported_at', null)
+  if (exported) query = query.not('erp_exported_at', 'is', null)
   if (since) query = query.gte('updated_at', since)
   if (hasOrderFilter) {
     query = query.or(piedroTerms.map(t =>
