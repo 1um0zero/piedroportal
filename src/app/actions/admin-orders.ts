@@ -143,11 +143,15 @@ export async function reopenOrderAction(
       if (!scope.canCompany(order.company_id)) return { error: 'Not authorized' }
     }
 
-    // Same window as soft-cancel: a live order that production has not touched.
-    if (order.production_state) return { error: 'Order already in production' }
-    if (order.status !== 'submitted' && order.status !== 'approved') {
-      return { error: 'Only submitted or approved orders can be reopened' }
-    }
+    // Reopen window: a live order the FACTORY has not touched. 'order_received'
+    // only means the VSI console imported it (stage 0, sets status in_production)
+    // — still reopenable, with the extra ERP warning in the UI; any later stage
+    // means real work started and the order is locked.
+    const consoleOnly = order.production_state === 'order_received'
+    if (order.production_state && !consoleOnly) return { error: 'Order already in production' }
+    const statusOk = order.status === 'submitted' || order.status === 'approved'
+      || (order.status === 'in_production' && consoleOnly)
+    if (!statusOk) return { error: 'Only submitted or approved orders can be reopened' }
 
     const imp = await getImpersonation()
     const actorId = imp?.adminId ?? scope.userId
@@ -198,7 +202,7 @@ export async function undoReopenAction(
     const service = createServiceClient()
     const { data: order, error: fetchErr } = await service
       .from('orders')
-      .select('status, approval_state, company_id, products(style_name)')
+      .select('status, approval_state, production_state, company_id, products(style_name)')
       .eq('id', orderId)
       .single()
     if (fetchErr) return { error: fetchErr.message }
@@ -211,7 +215,10 @@ export async function undoReopenAction(
       if (!scope.canCompany(order.company_id)) return { error: 'Not authorized' }
     }
 
-    const restored = order.approval_state === 'approved' ? 'approved' : 'submitted'
+    // production_state is untouched while reopened, so it tells us whether the
+    // order was already at the console (order_received → status in_production).
+    const restored = order.production_state ? 'in_production'
+      : order.approval_state === 'approved' ? 'approved' : 'submitted'
     const { error } = await service.from('orders').update({
       status: restored, reopened_at: null, reopened_by: null, reopen_reason: null,
     }).eq('id', orderId)

@@ -90,9 +90,13 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
   const [showReopen, setShowReopen]     = useState(false)
   const [reopenReason, setReopenReason] = useState('')
   const [reopening, setReopening]       = useState(false)
+  // 'order_received' = the VSI console imported it (stage 0) — still reopenable,
+  // with the reinforced ERP warning; any later stage means the factory started.
+  const consoleOnly = order.production_state === 'order_received'
   const canReopen = canEdit
-    && !order.production_state
-    && (order.status === 'submitted' || order.status === 'approved')
+    && (!order.production_state || consoleOnly)
+    && (order.status === 'submitted' || order.status === 'approved'
+      || (order.status === 'in_production' && consoleOnly))
   const isReopened = order.status === 'changes_requested'
 
   async function handleReopen() {
@@ -449,7 +453,7 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
                 <p className="text-sm text-stone-600 leading-relaxed">{tOrder('reopen_modal_body')}</p>
                 {/* The VSI console already imported this order — until the client
                     re-submits, the console holds the OLD version. Confirm with VSI. */}
-                {order.erp_exported_at && (
+                {(order.erp_exported_at || consoleOnly) && (
                   <p className="text-xs text-amber-800 leading-relaxed bg-amber-50 border border-amber-200 rounded-lg p-2.5 font-medium">
                     {tOrder('reopen_modal_erp_warning')}
                   </p>

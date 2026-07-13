@@ -423,8 +423,10 @@ export async function updateOrderAction(
   // Re-submitting a reopened order: back to Piedro triage, and clear the ERP
   // import flag so the VSI console re-imports the corrected data (the console
   // upserts by order id, so the re-pull replaces the stale version).
+  // production_state is also cleared: it could only be 'order_received' (deeper
+  // stages can't be reopened) and the console re-emits it after the re-import.
   const reopenPatch = isReopened && submitting
-    ? { approval_state: 'registered', erp_exported_at: null, reopened_at: null, reopened_by: null, reopen_reason: null }
+    ? { approval_state: 'registered', erp_exported_at: null, production_state: null, reopened_at: null, reopened_by: null, reopen_reason: null }
     : {}
   const { data: updated, error } = await service
     .from('orders')
