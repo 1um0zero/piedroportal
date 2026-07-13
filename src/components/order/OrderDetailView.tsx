@@ -4,19 +4,20 @@ import { useState, useTransition } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import OrderSummary from './OrderSummary'
-import { updateOrderAdminAction, translateTextAction } from '@/app/actions/admin-orders'
+import { updateOrderAdminAction, translateTextAction, reopenOrderAction, undoReopenAction } from '@/app/actions/admin-orders'
 import { cancelOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
 import { orderNumber } from '@/lib/format'
 
 const PORTAL_STATUS_BADGE: Record<string, string> = {
   draft: 'bg-stone-100 text-stone-500', submitted: 'bg-blue-50 text-blue-600',
+  changes_requested: 'bg-amber-50 text-amber-700',
   approved: 'bg-green-50 text-green-700', in_production: 'bg-amber-50 text-amber-700',
   shipped: 'bg-violet-50 text-violet-700', delivered: 'bg-teal-50 text-teal-700',
   cancelled: 'bg-red-50 text-red-500',
 }
 const PORTAL_STATUS_LABEL: Record<string, string> = {
-  draft: 'Draft', submitted: 'New', approved: 'Approved',
+  draft: 'Draft', submitted: 'New', changes_requested: 'Changes requested', approved: 'Approved',
   in_production: 'In Production', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
 }
 
@@ -25,9 +26,9 @@ const LANG_LABEL: Record<TransLang, string> = {
   en: '🇬🇧 EN', pt: '🇵🇹 PT', nl: '🇳🇱 NL', fr: '🇫🇷 FR', de: '🇩🇪 DE',
 }
 
-export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, canEditDraft = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
+export default function OrderDetailView({ order, isAdmin, readOnly = false, isFullAdmin = false, canEditDraft = false, canEditReopened = false, prevId, nextId, clientEmail = '', clientCc = '', deskEmail = '' }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  order: any; isAdmin: boolean; readOnly?: boolean; isFullAdmin?: boolean; canEditDraft?: boolean; prevId?: string | null; nextId?: string | null
+  order: any; isAdmin: boolean; readOnly?: boolean; isFullAdmin?: boolean; canEditDraft?: boolean; canEditReopened?: boolean; prevId?: string | null; nextId?: string | null
   clientEmail?: string; clientCc?: string; deskEmail?: string
 }) {
   const router = useRouter()
@@ -78,6 +79,37 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
     setCancelling(false)
     if (res.error) { setMsg(res.error); setMsgErr(true); return }
     setShowCancel(false)
+    router.refresh()
+  }
+
+  // Reopen for client edits ("request changes") — anyone with the approval
+  // capability, over the same window as cancel: a live order production has not
+  // touched. If the VSI console already imported the order (erp_exported_at) the
+  // modal carries an extra warning — the console holds a stale version until the
+  // client re-submits (which clears the flag so the console re-imports).
+  const [showReopen, setShowReopen]     = useState(false)
+  const [reopenReason, setReopenReason] = useState('')
+  const [reopening, setReopening]       = useState(false)
+  const canReopen = canEdit
+    && !order.production_state
+    && (order.status === 'submitted' || order.status === 'approved')
+  const isReopened = order.status === 'changes_requested'
+
+  async function handleReopen() {
+    setReopening(true); setMsg(''); setMsgErr(false)
+    const res = await reopenOrderAction(order.id, reopenReason)
+    setReopening(false)
+    if (res.error) { setMsg(res.error); setMsgErr(true); return }
+    setShowReopen(false)
+    if (res.emailError) { setMsg(`${tOrder('reopen_done_email_failed')} (${res.emailError})`); setMsgErr(true) }
+    router.refresh()
+  }
+
+  async function handleUndoReopen() {
+    setReopening(true); setMsg(''); setMsgErr(false)
+    const res = await undoReopenAction(order.id)
+    setReopening(false)
+    if (res.error) { setMsg(res.error); setMsgErr(true); return }
     router.refresh()
   }
 
@@ -245,9 +277,21 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
               {tOrder('edit_draft')}
             </Link>
           )}
+          {/* Reopened for edits — the owner continues in the order form. */}
+          {canEditReopened && product?.id && (
+            <Link href={`/gallery/${product.id}/order?draft=${order.id}` as Parameters<typeof Link>[0]['href']}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gold rounded-lg hover:bg-gold-dark transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/>
+              </svg>
+              {tOrder('reopen_edit_btn')}
+            </Link>
+          )}
           {/* Current state: the Piedro approval (or portal status) badge, plus the
-              production stage badge alongside it whenever the factory has set one. */}
-          {approvalMeta && approvalSt !== 'registered' ? (
+              production stage badge alongside it whenever the factory has set one.
+              A reopened order always shows its portal state — the stored approval
+              state is only the memory undoReopenAction restores from. */}
+          {approvalMeta && approvalSt !== 'registered' && !isReopened ? (
             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${approvalMeta.color}`}>
               {approvalMeta.label}
             </span>
@@ -270,6 +314,21 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
               </svg>
               {tOrder('email_client')}
             </a>
+          )}
+          {canReopen && (
+            <button onClick={() => { setReopenReason(''); setShowReopen(true) }}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+              </svg>
+              {tOrder('reopen_btn')}
+            </button>
+          )}
+          {isReopened && canEdit && (
+            <button onClick={() => start(() => handleUndoReopen())} disabled={reopening}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors disabled:opacity-50">
+              {reopening ? tOrder('reopen_undoing') : tOrder('reopen_undo_btn')}
+            </button>
           )}
           {canCancel && (
             <button onClick={() => { setCancelReason(''); setShowCancel(true) }}
@@ -303,6 +362,29 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
       {msg && (
         <div className={`px-4 py-2 rounded-lg text-sm ${msgErr ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-green-50 border border-green-200 text-green-700'}`}>
           {msg}
+        </div>
+      )}
+
+      {/* Reopened banner — staff asked the client for changes; the creator gets
+          the edit CTA (canEditReopened), everyone else sees the state + reason. */}
+      {isReopened && (
+        <div className="bg-amber-50 border border-amber-200 rounded-[14px] p-4 flex items-start gap-3">
+          <span className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
+            <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/>
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-amber-800">{tOrder('reopen_banner_title')}</p>
+            <p className="text-sm text-amber-800/90 mt-0.5">
+              {canEditReopened ? tOrder('reopen_banner_body_owner') : tOrder('reopen_banner_body')}
+            </p>
+            {order.reopen_reason && (
+              <p className="text-sm text-amber-900 font-medium mt-2 whitespace-pre-wrap bg-white/60 border border-amber-100 rounded-lg px-3 py-2">
+                {order.reopen_reason}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -348,6 +430,56 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
           </div>
         ) : undefined}
       />
+
+      {/* ── Reopen ("request changes") confirmation modal ─────────────────── */}
+      {showReopen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40"
+          onClick={() => !reopening && setShowReopen(false)}>
+          <div className="bg-white rounded-[14px] max-w-md w-full p-6 space-y-4"
+            style={{ boxShadow: 'var(--shadow-card)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 w-9 h-9 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/>
+                </svg>
+              </span>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-stone-900">{tOrder('reopen_modal_title')}</h3>
+                <p className="text-sm text-stone-600 leading-relaxed">{tOrder('reopen_modal_body')}</p>
+                {/* The VSI console already imported this order — until the client
+                    re-submits, the console holds the OLD version. Confirm with VSI. */}
+                {order.erp_exported_at && (
+                  <p className="text-xs text-amber-800 leading-relaxed bg-amber-50 border border-amber-200 rounded-lg p-2.5 font-medium">
+                    {tOrder('reopen_modal_erp_warning')}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-600 uppercase tracking-wide">
+                {tOrder('reopen_reason_label')} <span className="text-red-400">*</span>
+              </label>
+              <textarea value={reopenReason} onChange={e => setReopenReason(e.target.value)}
+                rows={3} placeholder={tOrder('reopen_reason_placeholder')}
+                className="w-full px-3 py-2 text-sm bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold resize-none" />
+              <p className="text-[11px] text-stone-400">{tOrder('reopen_reason_hint')}</p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={() => setShowReopen(false)} disabled={reopening}
+                className="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors disabled:opacity-50">
+                {tOrder('cancel_keep_btn')}
+              </button>
+              <button onClick={handleReopen} disabled={reopening || !reopenReason.trim()}
+                className="px-4 py-2 text-sm font-semibold text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50">
+                {reopening ? tOrder('reopen_confirming') : tOrder('reopen_confirm_btn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Cancel confirmation modal ─────────────────────────────────────── */}
       {showCancel && (

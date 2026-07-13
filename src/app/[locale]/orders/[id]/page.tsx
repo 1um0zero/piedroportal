@@ -10,13 +10,13 @@ import { isPiedroAdmin } from '@/lib/roles'
 import OrderDetailView from '@/components/order/OrderDetailView'
 import { Link } from '@/i18n/navigation'
 
-const SELECT_BASE = `id, order_seq, status, unit, quantity, reference_customer, patient_name, clinician,
+const SELECT_BASE = `id, user_id, order_seq, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   diff_sizes_pairs, additions, comments, created_at, pdf_url,
   products(id, colour_id, color_name, closure, picture_name, style_name),
   companies(id, name)`
 
-const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date`
+const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, reopen_reason, reopened_at`
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
@@ -98,7 +98,8 @@ export default async function OrderDetailPage({ params }: Props) {
           ← {navT('orders')}
         </Link>
       </div>
-      <OrderDetailView order={order} isAdmin={false} prevId={prevId} nextId={nextId} />
+      <OrderDetailView order={order} isAdmin={false} prevId={prevId} nextId={nextId}
+        canEditReopened={order.status === 'changes_requested' && (order as { user_id?: string }).user_id === user.id} />
     </div>
   )
 }

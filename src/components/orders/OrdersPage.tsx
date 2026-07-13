@@ -16,7 +16,7 @@ import { matchesAny } from '@/lib/search'
 import { daysUntil } from '@/lib/dispatch'
 import { GridFloatingNav, ListPager } from '@/components/ui/table-controls'
 
-const STATUS_KEYS = ['draft', 'submitted', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
+const STATUS_KEYS = ['draft', 'submitted', 'changes_requested', 'approved', 'in_production', 'shipped', 'delivered', 'cancelled'] as const
 
 // Order unit → translation key in the `order` namespace.
 const UNIT_KEYS: Record<string, string> = {
@@ -547,6 +547,11 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                     <td className="px-2.5 py-3">
                       {(() => {
                         const apTitle = o.approval_state ? (ta.has(o.approval_state) ? ta(o.approval_state) : o.approval_state) : undefined
+                        // Reopened for client edits — takes precedence over the
+                        // Piedro number so the pending action is always visible.
+                        if (o.status === 'changes_requested') {
+                          return <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{ts('changes_requested')}</span>
+                        }
                         if (o.piedro_order_id) {
                           return (
                             <span className="inline-flex items-center gap-1.5">

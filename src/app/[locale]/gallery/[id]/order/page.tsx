@@ -96,16 +96,19 @@ export default async function OrderPage({ params, searchParams }: Props) {
   // order + patient data via a guessed ?draft= id. Sharing a draft with other
   // users is a deliberate future "on behalf" feature authorized by the creator —
   // see memory project_draft_on_behalf_future.
+  // Editable here: drafts, plus orders staff reopened for changes
+  // ('changes_requested') — the same statuses updateOrderAction accepts.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let draftData: Record<string, any> | null = null
   if (draftId && user) {
     const service = createServiceClient()
     const { data } = await service
       .from('orders')
-      .select('user_id,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,company_id')
+      .select('user_id,status,unit,clinician,patient_name,reference_customer,quantity,construction_left,construction_right,width_left,width_right,size_left,size_right,additions,comments,company_id,diff_sizes_pairs')
       .eq('id', draftId)
       .single()
-    if (data && (data.user_id === user.id || isAdmin)) draftData = data
+    const editableStatus = data?.status === 'draft' || data?.status === 'changes_requested'
+    if (data && editableStatus && (data.user_id === user.id || isAdmin)) draftData = data
   }
   // Only treat this as an editable draft when the order actually exists and is
   // accessible. A stale/deleted ?draft= id (or one belonging to someone else)

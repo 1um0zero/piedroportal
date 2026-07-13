@@ -392,29 +392,43 @@ export async function updateOrderAction(
   // creator — see memory project_draft_on_behalf_future.
   const { data: existing, error: fetchErr } = await service
     .from('orders')
-    .select('status, user_id')
+    .select('status, user_id, order_seq')
     .eq('id', draftId)
     .eq('user_id', user.id)
     .single()
 
   if (fetchErr || !existing) return { error: 'Order not found or access denied' }
 
-  // Security: Only draft orders can be updated by users
-  if (existing.status !== 'draft') {
+  // Security: users may only edit their drafts, or an order staff explicitly
+  // reopened for changes (reopenOrderAction). Anything else is locked.
+  const isReopened = existing.status === 'changes_requested'
+  if (existing.status !== 'draft' && !isReopened) {
     return { error: 'Cannot modify orders after submission' }
   }
+
+  // A reopened order saved without submitting keeps waiting for the corrected
+  // re-submit — "save draft" must never demote it to a private/deletable draft.
+  const effectiveStatus = isReopened && row.status !== 'submitted' ? 'changes_requested' : row.status
+  const submitting = effectiveStatus === 'submitted'
 
   // Confirm the update actually hit the row (an UPDATE matching 0 rows returns no
   // error). Only a returned id proves the order is persisted — PDF/email come
   // strictly after this.
-  const expected_dispatch_date = await computeDispatchDate(service, row.status, row.additions)
-  // Draft → submit: assign the sequential number now (the draft had none). Re-saving
-  // a draft as draft leaves order_seq untouched (column omitted from the update).
-  const assignedSeq = row.status === 'submitted' ? await nextOrderSeq(service) : null
-  const numberPatch = row.status === 'submitted' ? { order_seq: assignedSeq } : {}
+  const expected_dispatch_date = await computeDispatchDate(service, effectiveStatus, row.additions)
+  // Draft → submit: assign the sequential number now (the draft had none). An order
+  // that ALREADY has a number (reopened after submission) keeps it forever — the
+  // visible order number is a traceability anchor and is never re-minted.
+  const assignedSeq = submitting && existing.order_seq == null ? await nextOrderSeq(service) : null
+  const numberPatch = assignedSeq != null ? { order_seq: assignedSeq } : {}
+  // Re-submitting a reopened order: back to Piedro triage, and clear the ERP
+  // import flag so the VSI console re-imports the corrected data (the console
+  // upserts by order id, so the re-pull replaces the stale version).
+  const reopenPatch = isReopened && submitting
+    ? { approval_state: 'registered', erp_exported_at: null, reopened_at: null, reopened_by: null, reopen_reason: null }
+    : {}
   const { data: updated, error } = await service
     .from('orders')
-    .update({ ...row, user_id: user.id, status: row.status, expected_dispatch_date, ...numberPatch })
+    .update({ ...row, user_id: user.id, status: effectiveStatus, expected_dispatch_date, ...numberPatch, ...reopenPatch })
     .eq('id', draftId)
     .eq('user_id', user.id)
     .select('id')
@@ -422,10 +436,11 @@ export async function updateOrderAction(
   if (error || !updated?.id) {
     return { error: error ? `${error.message} [${error.code}]` : 'The order could not be saved.' }
   }
-  await logOnBehalf(`order_${row.status === 'submitted' ? 'submit' : 'draft'}_on_behalf`, draftId, { company_id: row.company_id })
+  await logOnBehalf(`order_${submitting ? 'submit' : 'draft'}_on_behalf`, draftId, { company_id: row.company_id })
 
-  if (row.status === 'submitted' && pdfMeta) {
-    const pdfResult = await generatePdf(draftId, row, pdfMeta, service, user.id, user.email, assignedSeq)
+  if (submitting && pdfMeta) {
+    const seq = existing.order_seq ?? assignedSeq
+    const pdfResult = await generatePdf(draftId, { ...row, status: effectiveStatus }, pdfMeta, service, user.id, user.email, seq)
     return { id: draftId, ...pdfResult }
   }
   return { id: draftId }

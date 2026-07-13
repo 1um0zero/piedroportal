@@ -216,6 +216,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const [submitIssue, setSubmitIssue] = useState(() => getInitialState('submitIssue', false))  // submitted OK but email/PDF failed
 
   const showAdditions = unit !== 'DIFF_SIZES'
+
+  // Editing an order staff reopened for changes — it keeps its order number and
+  // can't be discarded like a draft; "save draft" keeps it in the reopened state
+  // (updateOrderAction enforces both server-side).
+  const isReopenedEdit = d?.status === 'changes_requested'
   // Sole hierarchy: which sole group this model belongs to (null → full options, no restriction).
   const soleProfile = soleProfileFor(product.style_name)
   // ZSM models (B-prefix) get the Prefab + Sole Sheet block instead of PU/EVA + amend_sole.
@@ -541,6 +546,17 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
         </Link>
       </div>
 
+      {/* Editing an order reopened by Piedro — remind the user why and that
+          submitting sends the corrected order under the same number. */}
+      {isReopenedEdit && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/>
+          </svg>
+          <p className="text-sm text-amber-800">{t('reopened_edit_notice')}</p>
+        </div>
+      )}
+
       {closuresAhead.length > 0 && (
         <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
           <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -687,7 +703,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               )}
               {downloadingPdf ? t('generating') : t('preview_pdf')}
             </button>
-            {draftId && (
+            {draftId && !isReopenedEdit && (
               <button onClick={handleDiscard} disabled={submitting || discarding || !!successMsg}
                 className="px-4 py-2.5 border border-red-200 text-red-500 font-medium text-sm
                            rounded-xl hover:bg-red-50 transition-colors inline-flex items-center gap-1.5">
