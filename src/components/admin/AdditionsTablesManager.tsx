@@ -13,17 +13,20 @@ import {
 } from '@/app/actions/admin-additions'
 
 type Groups = Record<string, AdditionOption[]>
+type View = 'table' | 'cards'
 
 /**
  * /admin/additions — "Additions – Tabelas". Four editable option lists
- * (PU/EVA Bumper, Sole, Runner sole, Spoiler). PHASE 1: the order form still
- * reads the static config, so edits here don't yet change the customer view —
- * this is the editable source we'll wire up in a later phase.
+ * (PU/EVA Bumper, Sole, Runner sole, Spoiler), viewable as a compact table or a
+ * photo-card grid. PHASE 1: the order form still reads the static config, so
+ * edits here don't yet change the customer view — this is the editable source
+ * we'll wire up in a later phase.
  */
 export default function AdditionsTablesManager({ groups: initial }: { groups: Groups }) {
   const router = useRouter()
   const [groups, setGroups] = useState<Groups>(initial)
   const [tab, setTab] = useState<string>(ADDITION_TABLES[0].key)
+  const [view, setView] = useState<View>('table')
   const [error, setError] = useState<string | null>(null)
 
   const rows = groups[tab] ?? []
@@ -33,6 +36,9 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
 
   const removeRowLocal = (id: string) =>
     setGroups(g => ({ ...g, [tab]: (g[tab] ?? []).filter(r => r.id !== id) }))
+
+  const addRowLocal = (r: AdditionOption) =>
+    setGroups(g => ({ ...g, [tab]: [...(g[tab] ?? []), r] }))
 
   const move = async (index: number, dir: -1 | 1) => {
     const list = [...(groups[tab] ?? [])]
@@ -44,15 +50,34 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
     if (res.error) { setError(res.error); router.refresh() }
   }
 
+  const handlers = { onMove: move, onPatch: patchRow, onRemove: removeRowLocal, onError: setError }
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-stone-900">Additions — Tabelas</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Editable option lists for the sole-amendment fields. Create, edit, disable, reorder
-          options and upload an image per option.
-        </p>
-        <p className="mt-2 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-semibold text-stone-900">Additions — Tabelas</h1>
+            <p className="mt-1 text-sm text-stone-500">
+              Editable option lists for the sole-amendment fields. Create, edit, disable, reorder
+              options and upload an image per option.
+            </p>
+          </div>
+          {/* View toggle */}
+          <div className="inline-flex rounded-full border border-stone-200 bg-white p-0.5 text-sm shrink-0">
+            {(['table', 'cards'] as View[]).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`px-4 py-1.5 rounded-full font-medium transition-colors
+                  ${view === v ? 'bg-gold text-white' : 'text-stone-500 hover:text-stone-900'}`}
+              >
+                {v === 'table' ? 'Table' : 'Cards'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-3 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
           Fase 1 — estas tabelas são a fonte editável; o formulário de encomenda ainda lê da
           configuração estática, por isso <strong>editar aqui ainda não altera o que o cliente vê</strong>.
           A ligação ao form (e a associação a modelos) vem numa fase seguinte.
@@ -84,59 +109,44 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
         })}
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-[14px] border border-stone-100" style={{ boxShadow: 'var(--shadow-card)' }}>
-        <div className="grid grid-cols-[auto_56px_1fr_1fr_auto_auto] gap-3 items-center px-4 py-3 border-b border-stone-100 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
-          <span>Order</span>
-          <span>Image</span>
-          <span>Value</span>
-          <span>Family</span>
-          <span>Active</span>
-          <span></span>
+      {view === 'table' ? (
+        <div className="bg-white rounded-[14px] border border-stone-100" style={{ boxShadow: 'var(--shadow-card)' }}>
+          <div className="grid grid-cols-[auto_56px_1fr_1fr_auto_auto] gap-3 items-center px-4 py-3 border-b border-stone-100 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+            <span>Order</span><span>Image</span><span>Value</span><span>Family</span><span>Active</span><span></span>
+          </div>
+          {rows.length === 0 && <div className="px-4 py-8 text-center text-sm text-stone-400">No options yet.</div>}
+          {rows.map((row, i) => (
+            <OptionRow key={row.id} row={row} index={i} total={rows.length} {...handlers} />
+          ))}
+          <AddRow fieldKey={tab} onAdded={addRowLocal} onError={setError} variant="table" />
         </div>
-
-        {rows.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-stone-400">No options yet.</div>
-        )}
-
-        {rows.map((row, i) => (
-          <OptionRow
-            key={row.id}
-            row={row}
-            index={i}
-            total={rows.length}
-            onMove={move}
-            onPatch={patchRow}
-            onRemove={removeRowLocal}
-            onError={setError}
-          />
-        ))}
-
-        <AddRow fieldKey={tab} onAdded={(r) => setGroups(g => ({ ...g, [tab]: [...(g[tab] ?? []), r] }))} onError={setError} />
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {rows.map((row, i) => (
+            <OptionCard key={row.id} row={row} index={i} total={rows.length} {...handlers} />
+          ))}
+          <AddRow fieldKey={tab} onAdded={addRowLocal} onError={setError} variant="card" />
+        </div>
+      )}
     </div>
   )
 }
 
-// ── Single option row ────────────────────────────────────────────────────────
-function OptionRow({
-  row, index, total, onMove, onPatch, onRemove, onError,
-}: {
-  row: AdditionOption
-  index: number
-  total: number
+// ── Shared per-option editor state + handlers ────────────────────────────────
+interface RowHandlers {
   onMove: (index: number, dir: -1 | 1) => void
   onPatch: (id: string, patch: Partial<AdditionOption>) => void
   onRemove: (id: string) => void
   onError: (msg: string | null) => void
-}) {
+}
+
+function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: RowHandlers) {
   const [value, setValue] = useState(row.value)
   const [family, setFamily] = useState(row.family ?? '')
   const [labelNl, setLabelNl] = useState(row.label_nl ?? '')
   const [labelFr, setLabelFr] = useState(row.label_fr ?? '')
   const [labelDe, setLabelDe] = useState(row.label_de ?? '')
-  const [showI18n, setShowI18n] = useState(false)
-  const [bust, setBust] = useState<number>(0)
+  const [bust, setBust] = useState(0)
   const [pending, start] = useTransition()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -203,91 +213,149 @@ function OptionRow({
   const baseUrl = additionOptionImageUrl(row.image_path)
   const imgUrl = baseUrl ? (bust ? `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}t=${bust}` : baseUrl) : null
 
+  return {
+    value, setValue, family, setFamily,
+    labelNl, setLabelNl, labelFr, setLabelFr, labelDe, setLabelDe,
+    dirty, pending, fileRef, imgUrl,
+    save, toggleActive, del, onFile, removeImg,
+  }
+}
+
+// ── i18n sub-panel (shared) ──────────────────────────────────────────────────
+function I18nFields({ ed }: { ed: ReturnType<typeof useOptionEditor> }) {
+  const rows: Array<[string, string, (v: string) => void]> = [
+    ['NL', ed.labelNl, ed.setLabelNl], ['FR', ed.labelFr, ed.setLabelFr], ['DE', ed.labelDe, ed.setLabelDe],
+  ]
   return (
-    <div className={`border-b border-stone-50 ${row.active ? '' : 'opacity-55'} ${pending ? 'pointer-events-none opacity-70' : ''}`}>
-      <div className="grid grid-cols-[auto_56px_1fr_1fr_auto_auto] gap-3 items-center px-4 py-2.5">
-        {/* Order */}
-        <div className="flex flex-col text-stone-300">
-          <button onClick={() => onMove(index, -1)} disabled={index === 0} className="hover:text-gold disabled:opacity-30 leading-none">▲</button>
-          <button onClick={() => onMove(index, 1)} disabled={index === total - 1} className="hover:text-gold disabled:opacity-30 leading-none">▼</button>
-        </div>
-
-        {/* Image */}
-        <div>
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
-          <button
-            onClick={() => fileRef.current?.click()}
-            title={imgUrl ? 'Replace image' : 'Upload image'}
-            className="w-11 h-11 rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden hover:border-gold"
-          >
-            {imgUrl
-              // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={imgUrl} alt={row.value} className="w-full h-full object-contain" />
-              : <span className="text-stone-300 text-lg">＋</span>}
-          </button>
-          {imgUrl && (
-            <button onClick={removeImg} className="block mt-0.5 text-[10px] text-stone-400 hover:text-red-600">remove</button>
-          )}
-        </div>
-
-        {/* Value */}
-        <input
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          className="w-full text-sm px-2 py-1.5 rounded-lg border border-transparent hover:border-stone-200 focus:border-gold focus:outline-none"
-        />
-
-        {/* Family */}
-        <input
-          value={family}
-          onChange={e => setFamily(e.target.value)}
-          placeholder="—"
-          className="w-full text-sm text-stone-500 px-2 py-1.5 rounded-lg border border-transparent hover:border-stone-200 focus:border-gold focus:outline-none"
-        />
-
-        {/* Active */}
-        <button
-          onClick={toggleActive}
-          className={`relative w-9 h-5 rounded-full transition-colors ${row.active ? 'bg-gold' : 'bg-stone-300'}`}
-          title={row.active ? 'Active' : 'Disabled'}
-        >
-          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${row.active ? 'left-4.5' : 'left-0.5'}`} style={{ left: row.active ? '1.125rem' : '0.125rem' }} />
-        </button>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 justify-end">
-          <button onClick={() => setShowI18n(s => !s)} title="Translations" className={`text-sm ${showI18n ? 'text-gold' : 'text-stone-400 hover:text-stone-700'}`}>🌐</button>
-          {dirty && <button onClick={save} className="text-xs font-semibold text-white bg-gold hover:bg-gold-dark rounded-lg px-2.5 py-1">Save</button>}
-          <button onClick={del} title="Delete" className="text-stone-300 hover:text-red-600 text-sm">🗑</button>
-        </div>
-      </div>
-
-      {showI18n && (
-        <div className="grid grid-cols-3 gap-2 px-4 pb-3 pl-[4.75rem]">
-          {[['NL', labelNl, setLabelNl], ['FR', labelFr, setLabelFr], ['DE', labelDe, setLabelDe]].map(([lab, val, set]) => (
-            <label key={lab as string} className="text-[11px] text-stone-400">
-              <span className="block mb-0.5">{lab as string}</span>
-              <input
-                value={val as string}
-                onChange={e => (set as (v: string) => void)(e.target.value)}
-                placeholder="(English)"
-                className="w-full text-sm px-2 py-1 rounded-lg border border-stone-200 focus:border-gold focus:outline-none"
-              />
-            </label>
-          ))}
-        </div>
-      )}
+    <div className="grid grid-cols-3 gap-2">
+      {rows.map(([lab, val, set]) => (
+        <label key={lab} className="text-[11px] text-stone-400">
+          <span className="block mb-0.5">{lab}</span>
+          <input value={val} onChange={e => set(e.target.value)} placeholder="(English)"
+            className="w-full text-sm px-2 py-1 rounded-lg border border-stone-200 focus:border-gold focus:outline-none" />
+        </label>
+      ))}
     </div>
   )
 }
 
-// ── Add-new row ──────────────────────────────────────────────────────────────
+function ActiveToggle({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} title={active ? 'Active' : 'Disabled'}
+      className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${active ? 'bg-gold' : 'bg-stone-300'}`}>
+      <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: active ? '1.125rem' : '0.125rem' }} />
+    </button>
+  )
+}
+
+// ── Table row ────────────────────────────────────────────────────────────────
+function OptionRow({ row, index, total, ...h }: { row: AdditionOption; index: number; total: number } & RowHandlers) {
+  const ed = useOptionEditor(row, h)
+  const [showI18n, setShowI18n] = useState(false)
+
+  return (
+    <div className={`border-b border-stone-50 ${row.active ? '' : 'opacity-55'} ${ed.pending ? 'pointer-events-none opacity-70' : ''}`}>
+      <div className="grid grid-cols-[auto_56px_1fr_1fr_auto_auto] gap-3 items-center px-4 py-2.5">
+        <div className="flex flex-col text-stone-300">
+          <button onClick={() => h.onMove(index, -1)} disabled={index === 0} className="hover:text-gold disabled:opacity-30 leading-none">▲</button>
+          <button onClick={() => h.onMove(index, 1)} disabled={index === total - 1} className="hover:text-gold disabled:opacity-30 leading-none">▼</button>
+        </div>
+        <div>
+          <input ref={ed.fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
+          <button onClick={() => ed.fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
+            className="w-11 h-11 rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden hover:border-gold">
+            {ed.imgUrl
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={ed.imgUrl} alt={row.value} className="w-full h-full object-contain" />
+              : <span className="text-stone-300 text-lg">＋</span>}
+          </button>
+          {ed.imgUrl && <button onClick={ed.removeImg} className="block mt-0.5 text-[10px] text-stone-400 hover:text-red-600">remove</button>}
+        </div>
+        <input value={ed.value} onChange={e => ed.setValue(e.target.value)}
+          className="w-full text-sm px-2 py-1.5 rounded-lg border border-transparent hover:border-stone-200 focus:border-gold focus:outline-none" />
+        <input value={ed.family} onChange={e => ed.setFamily(e.target.value)} placeholder="—"
+          className="w-full text-sm text-stone-500 px-2 py-1.5 rounded-lg border border-transparent hover:border-stone-200 focus:border-gold focus:outline-none" />
+        <ActiveToggle active={row.active} onClick={ed.toggleActive} />
+        <div className="flex items-center gap-2 justify-end">
+          <button onClick={() => setShowI18n(s => !s)} title="Translations" className={`text-sm ${showI18n ? 'text-gold' : 'text-stone-400 hover:text-stone-700'}`}>🌐</button>
+          {ed.dirty && <button onClick={ed.save} className="text-xs font-semibold text-white bg-gold hover:bg-gold-dark rounded-lg px-2.5 py-1">Save</button>}
+          <button onClick={ed.del} title="Delete" className="text-stone-300 hover:text-red-600 text-sm">🗑</button>
+        </div>
+      </div>
+      {showI18n && <div className="px-4 pb-3 pl-[4.75rem]"><I18nFields ed={ed} /></div>}
+    </div>
+  )
+}
+
+// ── Photo card ───────────────────────────────────────────────────────────────
+function OptionCard({ row, index, total, ...h }: { row: AdditionOption; index: number; total: number } & RowHandlers) {
+  const ed = useOptionEditor(row, h)
+  const [showI18n, setShowI18n] = useState(false)
+
+  return (
+    <div className={`group relative bg-white rounded-[14px] border border-stone-100 overflow-hidden flex flex-col
+      ${row.active ? '' : 'opacity-60'} ${ed.pending ? 'pointer-events-none opacity-70' : ''}`}
+      style={{ boxShadow: 'var(--shadow-card)' }}>
+
+      {/* Reorder — top-left, appears on hover */}
+      <div className="absolute top-2 left-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={() => h.onMove(index, -1)} disabled={index === 0}
+          className="w-7 h-7 rounded-full bg-white/90 border border-stone-200 text-stone-500 hover:text-gold disabled:opacity-30 flex items-center justify-center text-xs shadow-sm">◀</button>
+        <button onClick={() => h.onMove(index, 1)} disabled={index === total - 1}
+          className="w-7 h-7 rounded-full bg-white/90 border border-stone-200 text-stone-500 hover:text-gold disabled:opacity-30 flex items-center justify-center text-xs shadow-sm">▶</button>
+      </div>
+
+      {/* Delete — top-right, appears on hover */}
+      <button onClick={ed.del} title="Delete"
+        className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-white/90 border border-stone-200 text-stone-400 hover:text-red-600 flex items-center justify-center text-xs shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">🗑</button>
+
+      {/* Big image — click to upload/replace */}
+      <input ref={ed.fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
+      <button onClick={() => ed.fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
+        className="relative aspect-square bg-stone-50 flex items-center justify-center overflow-hidden">
+        {ed.imgUrl
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={ed.imgUrl} alt={row.value} className="w-full h-full object-contain p-3" />
+          : <span className="text-stone-300 text-3xl">＋</span>}
+        <span className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+          <span className="text-[11px] font-medium text-white bg-black/45 rounded-full px-2.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {ed.imgUrl ? 'Replace' : 'Upload'}
+          </span>
+        </span>
+      </button>
+      {ed.imgUrl && (
+        <button onClick={ed.removeImg} className="text-[10px] text-stone-400 hover:text-red-600 py-1">remove image</button>
+      )}
+
+      {/* Body */}
+      <div className="p-3 pt-2 flex flex-col gap-2 flex-1">
+        <input value={ed.value} onChange={e => ed.setValue(e.target.value)}
+          className="w-full text-sm font-medium text-stone-800 px-2 py-1 rounded-lg border border-transparent hover:border-stone-200 focus:border-gold focus:outline-none" />
+        <input value={ed.family} onChange={e => ed.setFamily(e.target.value)} placeholder="Family"
+          className="w-full text-[12px] text-stone-500 px-2 py-1 rounded-lg border border-transparent hover:border-stone-200 focus:border-gold focus:outline-none" />
+
+        {showI18n && <I18nFields ed={ed} />}
+
+        <div className="mt-auto flex items-center justify-between pt-1">
+          <ActiveToggle active={row.active} onClick={ed.toggleActive} />
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowI18n(s => !s)} title="Translations" className={`text-sm ${showI18n ? 'text-gold' : 'text-stone-400 hover:text-stone-700'}`}>🌐</button>
+            {ed.dirty && <button onClick={ed.save} className="text-xs font-semibold text-white bg-gold hover:bg-gold-dark rounded-lg px-2.5 py-1">Save</button>}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Add-new (table row or card tile) ─────────────────────────────────────────
 function AddRow({
-  fieldKey, onAdded, onError,
+  fieldKey, onAdded, onError, variant,
 }: {
   fieldKey: string
   onAdded: (row: AdditionOption) => void
   onError: (msg: string | null) => void
+  variant: 'table' | 'card'
 }) {
   const [value, setValue] = useState('')
   const [family, setFamily] = useState('')
@@ -308,32 +376,35 @@ function AddRow({
     })
   }
 
+  if (variant === 'card') {
+    return (
+      <div className="rounded-[14px] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center gap-2 p-4 text-center min-h-[220px]">
+        <span className="text-stone-300 text-2xl">＋</span>
+        <input value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }}
+          placeholder="New option value…"
+          className="w-full text-sm px-2 py-1.5 rounded-lg border border-stone-200 focus:border-gold focus:outline-none" />
+        <input value={family} onChange={e => setFamily(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }}
+          placeholder="Family (optional)"
+          className="w-full text-[12px] px-2 py-1.5 rounded-lg border border-stone-200 focus:border-gold focus:outline-none" />
+        <button onClick={add} disabled={pending || !value.trim()}
+          className="text-xs font-semibold text-white bg-gold hover:bg-gold-dark disabled:opacity-40 rounded-lg px-4 py-1.5">Add</button>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-[auto_56px_1fr_1fr_auto_auto] gap-3 items-center px-4 py-3 bg-stone-50/60 rounded-b-[14px]">
       <span className="text-stone-300 text-lg pl-1">＋</span>
       <span />
-      <input
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter') add() }}
+      <input value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }}
         placeholder="New option value…"
-        className="w-full text-sm px-2 py-1.5 rounded-lg border border-stone-200 focus:border-gold focus:outline-none"
-      />
-      <input
-        value={family}
-        onChange={e => setFamily(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter') add() }}
+        className="w-full text-sm px-2 py-1.5 rounded-lg border border-stone-200 focus:border-gold focus:outline-none" />
+      <input value={family} onChange={e => setFamily(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }}
         placeholder="Family (optional)"
-        className="w-full text-sm px-2 py-1.5 rounded-lg border border-stone-200 focus:border-gold focus:outline-none"
-      />
+        className="w-full text-sm px-2 py-1.5 rounded-lg border border-stone-200 focus:border-gold focus:outline-none" />
       <span />
-      <button
-        onClick={add}
-        disabled={pending || !value.trim()}
-        className="text-xs font-semibold text-white bg-gold hover:bg-gold-dark disabled:opacity-40 rounded-lg px-3 py-1.5 justify-self-end"
-      >
-        Add
-      </button>
+      <button onClick={add} disabled={pending || !value.trim()}
+        className="text-xs font-semibold text-white bg-gold hover:bg-gold-dark disabled:opacity-40 rounded-lg px-3 py-1.5 justify-self-end">Add</button>
     </div>
   )
 }
