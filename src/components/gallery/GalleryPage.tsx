@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product, Section } from '@/types'
 import { useWishlist } from '@/contexts/WishlistContext'
+import PiedroLogoLoader from '@/components/ui/PiedroLogoLoader'
 import { getMyExclusiveProducts, getMyCatalogueAccess } from '@/app/actions/catalogue'
 import ProductCard from './ProductCard'
 import GalleryFilters from './GalleryFilters'
@@ -546,9 +547,7 @@ export default function GalleryPage({ initialSection = 'KIDS', initialProducts =
       {/* Grid */}
       {loading ? (
         <div className="py-24 text-center text-stone-400 text-sm">
-          <div className="inline-block w-6 h-6 border-2 border-stone-200 border-t-gold
-                          rounded-full animate-spin mb-3" />
-          <p>{t('loading')}</p>
+          <PiedroLogoLoader size={64} label={t('loading')} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-24 text-center text-stone-400 text-sm">

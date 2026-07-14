@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import PiedroLogoLoader from '@/components/ui/PiedroLogoLoader'
 
 const BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/3d/`
 const SCRIPT_URL = 'https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js'
@@ -37,7 +38,7 @@ export function GlbViewer({ file, inline = false }: { file: string; inline?: boo
         style={{ width: 128, height: 128 }}>
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-stone-300 border-t-gold rounded-full animate-spin" />
+            <PiedroLogoLoader size={40} />
           </div>
         )}
         {ready && (
@@ -60,7 +61,7 @@ export function GlbViewer({ file, inline = false }: { file: string; inline?: boo
       style={{ height: 200 }}>
       {!ready && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-stone-300 border-t-gold rounded-full animate-spin" />
+          <PiedroLogoLoader size={56} />
         </div>
       )}
       {ready && (

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useWishlist } from '@/contexts/WishlistContext'
+import PiedroLogoLoader from '@/components/ui/PiedroLogoLoader'
 import ProductCard from '@/components/gallery/ProductCard'
 import type { Product, Section } from '@/types'
 
@@ -41,8 +42,7 @@ export default function WishlistPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-        <div className="inline-block w-6 h-6 border-2 border-stone-200 border-t-gold
-                        rounded-full animate-spin" />
+        <PiedroLogoLoader size={64} />
       </div>
     )
   }

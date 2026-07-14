@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { PageFlip } from 'page-flip'
+import PiedroLogoLoader from '@/components/ui/PiedroLogoLoader'
 
 /**
  * A page-curl flip-book over pre-rendered catalogue leaves. The book rejoins
@@ -125,7 +126,7 @@ export default function Flipbook({ pages, labels }: {
       <div className="relative">
         {!ready && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+            <PiedroLogoLoader size={72} />
           </div>
         )}
         {/* page-flip mutates this node; keep it free of React-managed children */}
