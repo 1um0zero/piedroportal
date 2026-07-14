@@ -3,6 +3,7 @@ import { productImageUrl } from '@/lib/products/image-url'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireBackofficePage } from '@/lib/admin/scope'
 import { nz } from '@/lib/format'
+import { PeriodFilter } from './PeriodFilter'
 
 
 const STATUS_COLOR: Record<string, string> = {
@@ -73,7 +74,7 @@ function StatCard({ label, value, color = 'text-stone-800', sub }: { label: stri
   )
 }
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ from?: string; to?: string }> }) {
   const scope = await requireBackofficePage()
   const locale = await getLocale()
   const td = await getTranslations('dashboard')
@@ -86,7 +87,7 @@ export default async function AdminDashboard() {
     companies(id, name, country)`
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let all: any[] = []
+  let allOrders: any[] = []
   let offset = 0
   while (true) {
     const { data, error } = await service
@@ -94,13 +95,30 @@ export default async function AdminDashboard() {
       .order('created_at', { ascending: false })
       .range(offset, offset + 999)
     if (error || !data?.length) break
-    all = all.concat(data)
+    allOrders = allOrders.concat(data)
     if (data.length < 1000) break
     offset += 1000
   }
 
   // Branch staff dashboards are scoped to the models they manage and their client portfolio.
-  if (!scope.allModels) all = all.filter(o => scope.canModel(o.products?.style_name) && scope.canCompany(o.companies?.id))
+  if (!scope.allModels) allOrders = allOrders.filter(o => scope.canModel(o.products?.style_name) && scope.canCompany(o.companies?.id))
+
+  // ── Period filter ─────────────────────────────────────────────────────────
+  // A `YYYY-MM` range (?from&?to) scopes every KPI and breakdown below. The two
+  // relative "trend" widgets (daily last-4-weeks, monthly last-6-months) keep
+  // running over the full set — they are recent-activity windows by definition.
+  const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  const clampMonth = (m: string | undefined, lo: string, hi: string) =>
+    m && /^\d{4}-\d{2}$/.test(m) ? (m < lo ? lo : m > hi ? hi : m) : undefined
+  const nowM = monthKey(new Date())
+  // allOrders is sorted created_at desc, so the last row is the oldest order.
+  const minMonth = allOrders.length ? monthKey(new Date(allOrders[allOrders.length - 1].created_at)) : nowM
+  const maxMonth = nowM > minMonth ? nowM : minMonth
+  const { from: fromRaw, to: toRaw } = await searchParams
+  let fromM = clampMonth(fromRaw, minMonth, maxMonth) ?? minMonth
+  let toM   = clampMonth(toRaw,   minMonth, maxMonth) ?? maxMonth
+  if (fromM > toM) [fromM, toM] = [toM, fromM]
+  const all = allOrders.filter(o => { const k = monthKey(new Date(o.created_at)); return k >= fromM && k <= toM })
 
   const total   = all.length
   const urgent  = all.filter(o => (o.additions as Record<string,unknown>)?.urgent === true).length
@@ -190,7 +208,7 @@ export default async function AdminDashboard() {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
     return {
       label: d.toLocaleString(locale, { month: 'short' }),
-      count: all.filter(o => { const od = new Date(o.created_at); return od.getFullYear() === d.getFullYear() && od.getMonth() === d.getMonth() }).length,
+      count: allOrders.filter(o => { const od = new Date(o.created_at); return od.getFullYear() === d.getFullYear() && od.getMonth() === d.getMonth() }).length,
     }
   })
   const monthMax = Math.max(...months.map(m => m.count), 1)
@@ -200,7 +218,7 @@ export default async function AdminDashboard() {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
   const dailyCount = new Map<string, number>()
-  all.forEach(o => {
+  allOrders.forEach(o => {
     const k = dayKey(new Date(o.created_at))
     dailyCount.set(k, (dailyCount.get(k) ?? 0) + 1)
   })
@@ -243,6 +261,9 @@ export default async function AdminDashboard() {
         <h1 className="text-xl font-bold text-stone-900">{td('admin.title')}</h1>
         <p className="text-xs text-stone-400">{td('subtitle', { count: total, date: new Date().toLocaleDateString(locale, { day:'2-digit', month:'long', year:'numeric' }) })}</p>
       </div>
+
+      {/* Period filter — scopes the KPIs and breakdowns below */}
+      <PeriodFilter min={minMonth} max={maxMonth} from={fromM} to={toM} />
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">

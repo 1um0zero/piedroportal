@@ -705,6 +705,13 @@
     }
   },
   "dashboard": {
+    "period": {
+      "title": "Période",
+      "all": "Tout",
+      "reset": "Réinitialiser",
+      "start": "Début de période",
+      "end": "Fin de période"
+    },
     "title_user": "Mon tableau de bord",
     "title_company": "Tableau de bord de l'entreprise",
     "subtitle": "{count} commandes · {date}",

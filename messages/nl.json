@@ -705,6 +705,13 @@
     }
   },
   "dashboard": {
+    "period": {
+      "title": "Periode",
+      "all": "Alle tijd",
+      "reset": "Herstellen",
+      "start": "Begin periode",
+      "end": "Einde periode"
+    },
     "title_user": "Mijn dashboard",
     "title_company": "Bedrijfsdashboard",
     "subtitle": "{count} bestellingen · {date}",

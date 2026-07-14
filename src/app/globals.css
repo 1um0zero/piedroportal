@@ -98,6 +98,49 @@ input[type="checkbox"].custom-gold:checked::after {
   text-shadow: none;
 }
 
+/* ── Dashboard period slider — dual-thumb month range ─────────────────────────
+   Two of these stack over one shared track; the track itself is transparent and
+   ignores the pointer, so only the round gold thumbs are grabbable. The visible
+   grey track + gold selected segment are plain divs painted behind the inputs. */
+.period-range {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  left: 0; right: 0; width: 100%;
+  height: 1.5rem;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.period-range:focus { outline: none; }
+.period-range::-webkit-slider-runnable-track { background: transparent; height: 1.5rem; }
+.period-range::-moz-range-track { background: transparent; height: 1.5rem; }
+.period-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 1.1rem; height: 1.1rem;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 3px solid #B8975A;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+  cursor: grab;
+  transition: transform 0.12s;
+}
+.period-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 1.1rem; height: 1.1rem;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 3px solid #B8975A;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+  cursor: grab;
+}
+.period-range::-webkit-slider-thumb:hover { transform: scale(1.12); }
+.period-range:active::-webkit-slider-thumb { cursor: grabbing; }
+.period-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(184, 151, 90, 0.3); }
+.period-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px rgba(184, 151, 90, 0.3); }
+
 /* ── Sole swatch "hologram" hover preview ─────────────────────────────────── */
 @keyframes sole-pop {
   0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }

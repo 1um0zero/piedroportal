@@ -705,6 +705,13 @@
     }
   },
   "dashboard": {
+    "period": {
+      "title": "Zeitraum",
+      "all": "Gesamt",
+      "reset": "Zurücksetzen",
+      "start": "Beginn des Zeitraums",
+      "end": "Ende des Zeitraums"
+    },
     "title_user": "Mein Dashboard",
     "title_company": "Firmen-Dashboard",
     "subtitle": "{count} Bestellungen · {date}",

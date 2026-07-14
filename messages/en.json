@@ -705,6 +705,13 @@
     }
   },
   "dashboard": {
+    "period": {
+      "title": "Period",
+      "all": "All time",
+      "reset": "Reset",
+      "start": "Period start",
+      "end": "Period end"
+    },
     "title_user": "My Dashboard",
     "title_company": "Company Dashboard",
     "subtitle": "{count} orders · {date}",
