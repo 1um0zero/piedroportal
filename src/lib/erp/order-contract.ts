@@ -7,8 +7,13 @@
  * `contract_version`).
  */
 import { explodeAdditions, type ErpAddition } from '@/lib/additions-explode'
+import { effectiveAdditions, hasOverride } from '@/lib/additions-override'
 
-export const ERP_CONTRACT_VERSION = 2
+// v3 (2026-07-14): `additions` now reflects the EFFECTIVE additions — the client
+// additions with the Piedro staff override merged over them (migration 053). The
+// client's original submission is untouched in the DB; the ERP only ever needs
+// the effective set. `additions_adjusted` flags when an override was applied.
+export const ERP_CONTRACT_VERSION = 3
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>
@@ -50,7 +55,9 @@ export interface ErpOrder {
   replaced_by_order_id: string | null  // this (cancelled) order was replaced by that one
   pdf_url: string | null            // direct signed URL to the order PDF, read-only (or null)
   tracking: { code: string | null; link: string | null }   // written by the ERP, echoed back
-  additions: ErpAddition[]          // normalized 1:N list (only present items)
+  additions: ErpAddition[]          // normalized 1:N list (only present items) — EFFECTIVE (client + Piedro override)
+  additions_adjusted: boolean       // true when Piedro staff transcribed/adjusted additions (override applied)
+  additions_adjusted_at: string | null
   created_at: string | null
   updated_at: string | null
   exported_at: string | null
@@ -58,7 +65,12 @@ export interface ErpOrder {
 
 export function toErpOrder(row: Row, company?: Row): ErpOrder {
   const product = row.products ?? row.product ?? {}
-  const additions = (row.additions ?? null) as Record<string, unknown> | null
+  const clientAdditions = (row.additions ?? null) as Record<string, unknown> | null
+  const override = (row.additions_override ?? null) as Record<string, unknown> | null
+  // Effective additions = client's submission with the Piedro override merged over
+  // it. The DB `additions` column stays the untouched client record.
+  const additions = effectiveAdditions(clientAdditions, override)
+  const adjusted = hasOverride(override)
   return {
     contract_version: ERP_CONTRACT_VERSION,
     order_id: row.id,
@@ -100,6 +112,8 @@ export function toErpOrder(row: Row, company?: Row): ErpOrder {
     pdf_url: row.pdf_signed ?? null,
     tracking: { code: row.tracking_code ?? null, link: row.tracking_link ?? null },
     additions: explodeAdditions(additions),
+    additions_adjusted: adjusted,
+    additions_adjusted_at: adjusted ? (row.additions_override_at ?? null) : null,
     created_at: row.created_at ?? null,
     updated_at: row.updated_at ?? null,
     exported_at: row.erp_exported_at ?? null,

@@ -14,11 +14,11 @@ import { Link } from '@/i18n/navigation'
 const SELECT_BASE = `id, user_id, order_seq, status, unit, quantity, reference_customer, patient_name, clinician,
   construction_left, construction_right, width_left, width_right, size_left, size_right,
   diff_sizes_pairs, additions, comments, created_at, pdf_url,
-  products(id, colour_id, color_name, closure, picture_name, style_name),
+  products(id, colour_id, color_name, closure, picture_name, style_name, section, adds_exclude),
   companies(id, name, notify_cc)`
 
 // Extended select — requires SQL migrations to have been run
-const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, erp_exported_at, reopen_reason, reopened_at, replaces_order_id, replaced_by_order_id`
+const SELECT_FULL = `${SELECT_BASE}, piedro_order_id, piedro_notes, approval_state, production_state, tracking_code, tracking_link, expected_dispatch_date, erp_exported_at, reopen_reason, reopened_at, replaces_order_id, replaced_by_order_id, additions_override, additions_override_note, additions_override_at`
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 

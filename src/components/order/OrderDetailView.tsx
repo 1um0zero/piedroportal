@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import OrderSummary from './OrderSummary'
+import PiedroAdditionsLayer from './PiedroAdditionsLayer'
 import { updateOrderAdminAction, translateTextAction, reopenOrderAction, undoReopenAction } from '@/app/actions/admin-orders'
 import { cancelOrderAction, cancelReopenedOrderAction } from '@/app/actions/orders'
 import { APPROVAL_STATES, PRODUCTION_STATES, type ApprovalState, type ProductionState } from '@/lib/order-status'
@@ -473,6 +474,14 @@ export default function OrderDetailView({ order, isAdmin, readOnly = false, isFu
           </div>
         ) : undefined}
       />
+
+      {/* ── Piedro additions layer — staff-only. Lets approvers transcribe an
+          amendment from the comment into the structured additions WITHOUT
+          touching the client's submission; this override feeds the VSI import.
+          Never rendered on the client-facing order page (isAdmin === false). ── */}
+      {isAdmin && unit !== 'DIFF_SIZES' && (
+        <PiedroAdditionsLayer order={order} product={product ?? {}} unit={unit} canEdit={canEdit} />
+      )}
 
       {/* ── Client cancel (reopened order) confirmation modal ─────────────── */}
       {showClientCancel && (

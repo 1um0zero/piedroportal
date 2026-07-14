@@ -104,6 +104,82 @@ export async function updateOrderAdminAction(
   }
 }
 
+// ── Piedro additions override layer ───────────────────────────────────────────
+// Staff transcribe an amendment the client wrote in the comment into the
+// structured additions WITHOUT touching the client's submission. The patch is a
+// sparse object (only the fields Piedro set); it merges over the client additions
+// for the VSI export (see lib/additions-override + the ERP contract). Passing an
+// empty patch (or null) clears the override. Same authorization as approval.
+export async function updateOrderAdditionsOverrideAction(
+  orderId: string,
+  patch: Record<string, unknown> | null,
+  note?: string | null,
+): Promise<{ ok?: boolean; error?: string }> {
+  try {
+    const scope = await getAdminScope()
+    if (!scope) return { error: 'Not authenticated' }
+    if (scope.role === 'branch_staff' && !scope.branchId) return { error: 'Not authorized' }
+    if (!scope.canApproveOrders) return { error: 'Not authorized' }
+
+    const service = createServiceClient()
+
+    // Same model/company scoping as the approval action.
+    if (!scope.allModels) {
+      const { data: ord } = await service
+        .from('orders').select('company_id, products(style_name)').eq('id', orderId).single()
+      const style = (ord as { products?: { style_name?: string } } | null)?.products?.style_name
+      if (!scope.canModel(style)) return { error: 'Not authorized' }
+      if (!scope.canCompany((ord as { company_id?: string | null } | null)?.company_id)) return { error: 'Not authorized' }
+    }
+
+    // Sanitize: keep a plain object, never the top-level `comments` column.
+    let clean: Record<string, unknown> | null = null
+    if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
+      const entries = Object.entries(patch).filter(([k]) => k !== 'comments')
+      if (entries.length) clean = Object.fromEntries(entries)
+    }
+
+    const imp = await getImpersonation()
+    const actorId = imp?.adminId ?? scope.userId
+    const update = clean
+      ? {
+          additions_override: clean,
+          additions_override_note: note?.trim() || null,
+          additions_override_by: actorId,
+          additions_override_at: new Date().toISOString(),
+        }
+      : {
+          additions_override: null,
+          additions_override_note: null,
+          additions_override_by: null,
+          additions_override_at: null,
+        }
+
+    const { error } = await service.from('orders').update(update).eq('id', orderId)
+    if (error) {
+      console.error('updateOrderAdditionsOverrideAction update error', error)
+      return { error: error.message || error.details || error.hint || error.code || 'Update failed' }
+    }
+
+    await logAdminAction({
+      actorId,
+      actorRole: imp ? 'piedro_admin' : scope.role,
+      action:    clean ? 'order_additions_override' : 'order_additions_override_clear',
+      orderId,
+      details:   {
+        fields: clean ? Object.keys(clean) : [],
+        ...(note?.trim() ? { note: note.trim() } : {}),
+        ...(imp ? { target_name: imp.targetName } : {}),
+      },
+      impersonatedAsUserId: imp?.targetId,
+    })
+    return { ok: true }
+  } catch (e) {
+    console.error('updateOrderAdditionsOverrideAction threw', e)
+    return { error: e instanceof Error ? e.message : 'Unexpected error' }
+  }
+}
+
 // ── Reopen an order for client edits ("changes requested") ────────────────────
 // A staff member with the approval capability puts a submitted/approved order —
 // not yet in production — into 'changes_requested'. The user who CREATED the
