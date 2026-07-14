@@ -186,9 +186,8 @@ function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: Ro
     })
   }
 
-  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const uploadFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return onError('File must be an image')
     start(async () => {
       onError(null)
       const fd = new FormData()
@@ -199,6 +198,11 @@ function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: Ro
       onPatch(row.id, { image_path: res.path ?? row.image_path })
       setBust(Date.now())
     })
+  }
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) uploadFile(file)
     e.target.value = ''
   }
 
@@ -216,7 +220,7 @@ function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: Ro
     value, setValue, family, setFamily,
     labelNl, setLabelNl, labelFr, setLabelFr, labelDe, setLabelDe,
     dirty, pending, imgUrl,
-    save, toggleActive, del, onFile, removeImg,
+    save, toggleActive, del, onFile, uploadFile, removeImg,
   }
 }
 
@@ -291,6 +295,7 @@ function OptionRow({ row, index, total, ...h }: { row: AdditionOption; index: nu
 function OptionCard({ row, index, total, ...h }: { row: AdditionOption; index: number; total: number } & RowHandlers) {
   const ed = useOptionEditor(row, h)
   const [showI18n, setShowI18n] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -313,14 +318,24 @@ function OptionCard({ row, index, total, ...h }: { row: AdditionOption; index: n
       {/* Big image — click to upload/replace */}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
       <button onClick={() => fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
-        className="relative aspect-square bg-stone-50 flex items-center justify-center overflow-hidden">
+        onDragOver={e => { e.preventDefault(); if (!dragOver) setDragOver(true) }}
+        onDragLeave={e => { e.preventDefault(); setDragOver(false) }}
+        onDrop={e => {
+          e.preventDefault(); setDragOver(false)
+          const f = e.dataTransfer.files?.[0]
+          if (f) ed.uploadFile(f)
+        }}
+        className={`relative aspect-square bg-stone-50 flex items-center justify-center overflow-hidden transition-all
+          ${dragOver ? 'ring-2 ring-gold ring-inset bg-gold/5' : ''}`}>
         {ed.imgUrl
           // eslint-disable-next-line @next/next/no-img-element
-          ? <img src={ed.imgUrl} alt={row.value} className="w-full h-full object-contain p-3" />
-          : <span className="text-stone-300 text-3xl">＋</span>}
-        <span className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
-          <span className="text-[11px] font-medium text-white bg-black/45 rounded-full px-2.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {ed.imgUrl ? 'Replace' : 'Upload'}
+          ? <img src={ed.imgUrl} alt={row.value} className="w-full h-full object-contain p-3 pointer-events-none" />
+          : <span className="text-stone-300 text-3xl pointer-events-none">＋</span>}
+        <span className={`absolute inset-0 flex items-center justify-center transition-colors pointer-events-none
+          ${dragOver ? 'bg-gold/10' : 'bg-black/0 group-hover:bg-black/5'}`}>
+          <span className={`text-[11px] font-medium rounded-full px-2.5 py-1 transition-opacity
+            ${dragOver ? 'text-white bg-gold opacity-100' : 'text-white bg-black/45 opacity-0 group-hover:opacity-100'}`}>
+            {dragOver ? 'Drop image' : ed.imgUrl ? 'Replace' : 'Upload'}
           </span>
         </span>
       </button>
