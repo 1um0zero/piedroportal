@@ -16,7 +16,7 @@ import {
 type Groups = Record<string, AdditionOption[]>
 type View = 'table' | 'cards'
 
-const FORM_LABELS: Record<AdditionForm, string> = { standard: 'Standard', osb: 'OSB / Custom' }
+const FORM_LABELS: Record<AdditionForm, string> = { standard: 'Pair-by-Pair', osb: 'OSB / Custom' }
 const FORMS = [...new Set(ADDITION_TABLES.map(t => t.form))] as AdditionForm[]
 
 // The server always re-normalises to a 700 px square, so large originals only
