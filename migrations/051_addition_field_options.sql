@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration 051 — `addition_options` table (editable option lists for the
+-- Migration 051 — `addition_field_options` table (editable option lists for the
 --                 CUSTOM / Amendment Sole additions fields)
 -- ============================================================================
 --
@@ -9,6 +9,11 @@
 -- reorder options + per-option image), managed at /admin/additions.
 --
 --   field_key ∈ { 'pu_type', 'sole_type', 'runner_sole', 'spoiler' }
+--
+-- ⚠ NAME NOTE: there is a DEAD, empty legacy table `addition_options` from an
+--   abandoned early i18n attempt (supabase-migration-i18n.sql; its only reader,
+--   src/lib/i18n-db.ts::getAdditionOptions, is never called). We deliberately use
+--   a DISTINCT name here so this migration never touches that table.
 --
 -- ⚠ PHASE 1 SCOPE: this table is the editable SOURCE, seeded to exactly mirror
 --   the current config. The order FORM is deliberately NOT wired to it yet — it
@@ -23,7 +28,7 @@
 -- Idempotent.
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS addition_options (
+CREATE TABLE IF NOT EXISTS addition_field_options (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   field_key   text NOT NULL,                 -- pu_type | sole_type | runner_sole | spoiler
   value       text NOT NULL,                 -- canonical English string = ERP/Dataverse key
@@ -40,7 +45,7 @@ CREATE TABLE IF NOT EXISTS addition_options (
   UNIQUE (field_key, value)
 );
 
-CREATE INDEX IF NOT EXISTS addition_options_field_idx ON addition_options (field_key, sort_order);
+CREATE INDEX IF NOT EXISTS addition_field_options_field_idx ON addition_field_options (field_key, sort_order);
 
 -- ── Seed from the current config (family + A→Z order we just applied) ─────────
 -- image_path is set for the values that already have a picture in
@@ -48,7 +53,7 @@ CREATE INDEX IF NOT EXISTS addition_options_field_idx ON addition_options (field
 -- (PU Black::MEN vs ::WOMEN) so they are left NULL here — modelling the per-
 -- section variant is a documented follow-up. ON CONFLICT DO NOTHING keeps this
 -- re-runnable without clobbering later back-office edits.
-INSERT INTO addition_options (field_key, value, family, sort_order, image_path) VALUES
+INSERT INTO addition_field_options (field_key, value, family, sort_order, image_path) VALUES
   -- pu_type (PU/EVA Bumper) — family PU→EVA (matches the field name), A→Z within
   ('pu_type', 'PU Black',  'PU',  1, NULL),
   ('pu_type', 'PU White',  'PU',  2, NULL),
@@ -111,20 +116,20 @@ ON CONFLICT (field_key, value) DO NOTHING;
 -- RLS: authenticated may read (a future phase will let the order form read this
 -- directly); all writes go through the service role in hardened back-office
 -- actions. Mirrors the `styles` table policy (migration 043).
-ALTER TABLE addition_options ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS addition_options_select ON addition_options;
-CREATE POLICY addition_options_select ON addition_options
+ALTER TABLE addition_field_options ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS addition_field_options_select ON addition_field_options;
+CREATE POLICY addition_field_options_select ON addition_field_options
   FOR SELECT TO authenticated
   USING (true);
 
 -- keep updated_at fresh on any write
-CREATE OR REPLACE FUNCTION set_addition_options_updated_at() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION set_addition_field_options_updated_at() RETURNS trigger AS $$
 BEGIN NEW.updated_at = now(); RETURN NEW; END;
 $$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS trg_addition_options_updated_at ON addition_options;
-CREATE TRIGGER trg_addition_options_updated_at
-  BEFORE UPDATE ON addition_options
-  FOR EACH ROW EXECUTE FUNCTION set_addition_options_updated_at();
+DROP TRIGGER IF EXISTS trg_addition_field_options_updated_at ON addition_field_options;
+CREATE TRIGGER trg_addition_field_options_updated_at
+  BEFORE UPDATE ON addition_field_options
+  FOR EACH ROW EXECUTE FUNCTION set_addition_field_options_updated_at();
 
 -- ⚠ CLIENT ACTION: create a PUBLIC storage bucket named `additions`
 --   (Supabase → Storage → New bucket → name "additions", Public). Uploaded option

@@ -37,7 +37,7 @@ export async function listAdditionOptions(): Promise<Record<string, AdditionOpti
 
   const service = createServiceClient()
   const { data } = await service
-    .from('addition_options')
+    .from('addition_field_options')
     .select('*')
     .order('field_key', { ascending: true })
     .order('sort_order', { ascending: true })
@@ -72,7 +72,7 @@ export async function saveAdditionOption(
   }
 
   if (input.id) {
-    const { error } = await service.from('addition_options').update(patch).eq('id', input.id)
+    const { error } = await service.from('addition_field_options').update(patch).eq('id', input.id)
     if (error) {
       if (error.code === '23505') return { error: `"${value}" already exists in this field` }
       return { error: error.message }
@@ -83,7 +83,7 @@ export async function saveAdditionOption(
 
   // New option → append after the current max sort_order for this field.
   const { data: maxRow } = await service
-    .from('addition_options')
+    .from('addition_field_options')
     .select('sort_order')
     .eq('field_key', input.field_key)
     .order('sort_order', { ascending: false })
@@ -92,7 +92,7 @@ export async function saveAdditionOption(
   const nextOrder = ((maxRow?.sort_order as number | undefined) ?? 0) + 1
 
   const { data, error } = await service
-    .from('addition_options')
+    .from('addition_field_options')
     .insert({ ...patch, sort_order: nextOrder, created_by: auth.userId })
     .select('id')
     .single()
@@ -109,12 +109,12 @@ export async function deleteAdditionOption(id: string): Promise<{ ok?: boolean; 
   if ('error' in auth) return { error: auth.error }
   const service = createServiceClient()
   // Best-effort remove of an uploaded bucket image (legacy /soles/ paths are left).
-  const { data: row } = await service.from('addition_options').select('image_path').eq('id', id).maybeSingle()
+  const { data: row } = await service.from('addition_field_options').select('image_path').eq('id', id).maybeSingle()
   const path = row?.image_path as string | null | undefined
   if (path && !path.startsWith('/') && !path.startsWith('http')) {
     await service.storage.from(ADDITIONS_BUCKET).remove([path])
   }
-  const { error } = await service.from('addition_options').delete().eq('id', id)
+  const { error } = await service.from('addition_field_options').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/additions')
   return { ok: true }
@@ -132,7 +132,7 @@ export async function reorderAdditionOptions(
   // Sequential updates — the lists are tiny (≤20 rows).
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await service
-      .from('addition_options')
+      .from('addition_field_options')
       .update({ sort_order: i + 1 })
       .eq('id', orderedIds[i])
       .eq('field_key', fieldKey)
@@ -156,7 +156,7 @@ export async function uploadAdditionOptionImage(
 
   const service = createServiceClient()
   const { data: row } = await service
-    .from('addition_options')
+    .from('addition_field_options')
     .select('field_key, image_path')
     .eq('id', id)
     .maybeSingle()
@@ -177,7 +177,7 @@ export async function uploadAdditionOptionImage(
     .upload(objectName, png, { contentType: 'image/png', upsert: true })
   if (upErr) return { error: upErr.message }
 
-  const { error } = await service.from('addition_options').update({ image_path: objectName }).eq('id', id)
+  const { error } = await service.from('addition_field_options').update({ image_path: objectName }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/additions')
   return { ok: true, path: objectName }
@@ -188,12 +188,12 @@ export async function removeAdditionOptionImage(id: string): Promise<{ ok?: bool
   const auth = await requireAdmin()
   if ('error' in auth) return { error: auth.error }
   const service = createServiceClient()
-  const { data: row } = await service.from('addition_options').select('image_path').eq('id', id).maybeSingle()
+  const { data: row } = await service.from('addition_field_options').select('image_path').eq('id', id).maybeSingle()
   const path = row?.image_path as string | null | undefined
   if (path && !path.startsWith('/') && !path.startsWith('http')) {
     await service.storage.from(ADDITIONS_BUCKET).remove([path])
   }
-  const { error } = await service.from('addition_options').update({ image_path: null }).eq('id', id)
+  const { error } = await service.from('addition_field_options').update({ image_path: null }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/additions')
   return { ok: true }
