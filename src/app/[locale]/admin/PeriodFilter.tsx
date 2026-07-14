@@ -15,6 +15,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { useRouter, usePathname } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
+import PiedroLogoLoader from '@/components/ui/PiedroLogoLoader'
 
 /** Inclusive list of `YYYY-MM` keys from `min` to `max`. */
 function buildMonths(min: string, max: string): string[] {
@@ -83,9 +84,7 @@ export function PeriodFilter({ min, max, from, to }:
           <span className={`text-sm font-semibold truncate transition-opacity ${isPending ? 'opacity-40' : ''} ${active ? 'text-gold' : 'text-stone-500'}`}>
             {active ? `${label(lo)} → ${label(hi)}` : t('all')}
           </span>
-          {isPending && (
-            <span className="inline-block w-3.5 h-3.5 border-2 border-gold/30 border-t-gold rounded-full animate-spin shrink-0" />
-          )}
+          {isPending && <PiedroLogoLoader size={22} duration={1.1} className="shrink-0" />}
         </div>
         {active && (
           <button onClick={reset} disabled={isPending}
