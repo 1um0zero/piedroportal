@@ -21,6 +21,8 @@ export interface AdditionField {
   values?:         (number | string)[]
   conditionalOn?:  string         // show only when this sibling key is truthy
   optional?:       boolean        // conditional child that must NOT block submit when left empty
+  mirror?:         boolean        // sided in storage but L & R are always kept equal — one
+                                  // control, applies to both feet (can't be set on one side only)
   dataverseKey?:   string         // Dataverse column name (without lf/rf suffix)
   dataverse?:      string         // for global (non-sided) fields
   closureOnly?:    'LACE' | 'VELCRO'  // show only when product has this closure
@@ -92,7 +94,8 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'toe_puffs',     type: 'option', side: 'both', collapse: true, values: ['Soft','Standard','Hard'], dataverseKey: 'cr56f_toepuffs' },
       { key: 'toe_puffs_rim', type: 'toggle', side: 'both', dataverseKey: 'cr56f_toepuffsrim' },
       { key: 'str_leather',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_stretchleather' },
-      { key: 'instep_front',  type: 'mm',     side: 'both', values: mm5to25, dataverseKey: 'cr56f_instepmoretothefront' },
+      // Physically applied to both shoes at once — never one foot only (Anabela, 2026-07-14).
+      { key: 'instep_front',  type: 'mm',     side: 'both', mirror: true, values: mm5to25, dataverseKey: 'cr56f_instepmoretothefront' },
       { key: 'colour_mod',    type: 'text',   side: 'both', dataverseKey: 'cr56f_colourmodifications' },
       { key: 'pad_tongue',    type: 'mm',     side: 'both', values: mm4to10, dataverseKey: 'cr56f_extrapaddingontongue' },
       // Values mirror the Dataverse global option set cr56f_wpp_zipper (numeric-prefixed
@@ -186,6 +189,11 @@ export const SECTIONS: AdditionSection[] = [
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Keys of sided fields whose L & R must always stay equal (single control, both feet). */
+export const MIRROR_KEYS = new Set<string>(
+  SECTIONS.flatMap(s => s.fields).filter(f => f.mirror).map(f => f.key),
+)
 
 /** Build initial empty additions state from config */
 export function emptyAdditions() {

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
+import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, MIRROR_KEYS, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
 import { ZSM_PREFAB_OPTIONS, zsmSheetColours, type ZsmGroup } from './zsm-profiles'
 import { soleImages } from './sole-images'
@@ -352,7 +352,10 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   const updateField = useCallback((key: string, side: 'l'|'r', value: unknown) => {
     const existing = additions[key] as SidedVal ?? { l: null, r: null }
     let next: SidedVal
-    if (!isDouble) {
+    if (MIRROR_KEYS.has(key) && isDouble) {
+      // Mirror field: applies to both feet — always write L & R equal, even in LEFT_RIGHT.
+      next = { l: value, r: value }
+    } else if (!isDouble) {
       // Single mode: PAIR writes both, LEFT writes l, RIGHT writes r
       next = unit === 'PAIR'
         ? { l: value, r: value }
@@ -555,10 +558,13 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               const fieldLabel = getFieldLabel(field, t)
               const isSubField = fieldLabel.startsWith('↳')
               const cleanLabel = fieldLabel.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '')
+              // Mirror fields (e.g. Inschot meer naar voren) apply to both feet: render the
+              // single-control layout even in LEFT_RIGHT, and updateField keeps L & R equal.
+              const fieldDouble = isDouble && !field.mirror
 
               // Active filter — top-level only (sub-fields follow parent)
               if (effectiveFilter && !isSubField) {
-                const active = isDouble
+                const active = fieldDouble
                   ? (addExpanded.has(`${field.key}:l`) || addExpanded.has(`${field.key}:r`))
                   : addExpanded.has(`${field.key}:${displaySide}`)
                 if (!active) return null
@@ -571,7 +577,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const isToggleChild = field.type === 'toggle'
                 const required = !field.optional && !isToggleChild
                 const sv = additions[field.key] as SidedVal | null
-                if (!isDouble) {
+                if (!fieldDouble) {
                   if (!isParentActive(field, displaySide)) return null
                   const flagged = missingKeys.has(field.key)
                   if (isToggleChild) {
@@ -626,7 +632,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
               }
 
               // Top-level: single checkbox or two checkboxes
-              if (!isDouble) {
+              if (!fieldDouble) {
                 if (field.conditionalOn && !isParentActive(field, displaySide)) return null
                 const isChild = !!field.conditionalOn
 
@@ -677,6 +683,12 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                         }}
                         className="text-sm text-stone-700 cursor-pointer flex-1">
                         {cleanLabel}
+                        {field.mirror && isDouble && (
+                          <span className="ml-2 align-middle text-[10px] font-semibold text-stone-400
+                                           border border-stone-200 rounded px-1 py-px">
+                            {t('left_short')} + {t('right_short')}
+                          </span>
+                        )}
                       </span>
                       <input type="checkbox" checked={checked}
                         onChange={e => toggleAddField(field.key, displaySide, e.target.checked)}
