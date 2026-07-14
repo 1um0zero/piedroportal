@@ -437,6 +437,11 @@
     "right_short": "D",
     "empty_value": "—",
     "comments_placeholder": "Notes supplémentaires...",
+    "comment_suggest": {
+      "intro": "Vous semblez mentionner une adaptation qui possède son propre champ. Ajoutez-la ici pour que votre commande reste claire :",
+      "jump": "Aller à ce champ",
+      "dismiss": "Ignorer"
+    },
     "sections": {
       "additions": "Suppléments",
       "upper": "Principaux ajustements",

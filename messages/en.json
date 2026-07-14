@@ -437,6 +437,11 @@
     "right_short": "R",
     "empty_value": "—",
     "comments_placeholder": "Additional notes...",
+    "comment_suggest": {
+      "intro": "It looks like you mentioned an adaptation that has its own field. Please add it there so your order stays clear:",
+      "jump": "Go to this field",
+      "dismiss": "Dismiss"
+    },
     "sections": {
       "additions": "Additions",
       "upper": "Upper Adaptions",

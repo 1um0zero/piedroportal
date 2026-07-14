@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, MIRROR_KEYS, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
@@ -10,6 +10,7 @@ import SoleStage from './SoleStage'
 import { GlbViewer } from './GlbViewer'
 import { RangeField } from '@/components/ui/RangeField'
 import { getFieldLabel, getSectionLabel, translateOptionValue } from '@/lib/additions-helpers'
+import { detectAdditionsInComment } from '@/lib/comment-addition-detector'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -339,6 +340,73 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     return s
   })
 
+  // ── Comment → additions detector (nudge clients to use the structured field) ──
+  // Suggestions the client dismissed this session (never re-surface them).
+  const [dismissedSuggest, setDismissedSuggest] = useState<Set<string>>(() => new Set<string>())
+  // Section briefly ring-highlighted after a suggestion jump.
+  const [flashSection, setFlashSection] = useState<string | null>(null)
+
+  const allFields = useMemo(() => SECTIONS.flatMap(s => s.fields), [])
+  const fieldByKey = useMemo(
+    () => Object.fromEntries(allFields.map(f => [f.key, f])) as Record<string, AdditionField>,
+    [allFields],
+  )
+
+  // Localized top-level field labels → extra match terms (so a NL/FR/DE comment
+  // hits the label as shown, on top of the curated clinical synonyms).
+  const localizedTerms = useMemo(() => {
+    const m: Record<string, string[]> = {}
+    for (const f of allFields) {
+      if (f.conditionalOn) continue
+      const raw = getFieldLabel(f, t)
+      if (!raw || /field_labels/.test(raw)) continue
+      const clean = raw.replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '').trim()
+      if (clean.length >= 4) m[f.key] = [clean]
+    }
+    return m
+  }, [allFields, t])
+
+  // Empty + visible top-level fields — the only ones we ever suggest.
+  const candidateKeys = useMemo(() => {
+    const set = new Set<string>()
+    const has = (v: unknown) => v != null && v !== '' && v !== false
+    for (const section of SECTIONS) {
+      if (isSectionExcluded(section.key, addsExclude)) continue
+      for (const f of filterExcluded(section.fields, addsExclude)) {
+        if (f.conditionalOn) continue
+        if (f.closureOnly && f.closureOnly !== closure) continue
+        if (f.mirror && (unit === 'LEFT' || unit === 'RIGHT')) continue
+        if (soleFieldHidden(soleProfile, f.key, (f.values ?? []) as string[])) continue
+        if (zsmFieldHidden(zsmGroup, f.key)) continue
+        if (f.side === 'global') {
+          if (additions[f.key] !== true) set.add(f.key)
+        } else {
+          const sv = additions[f.key] as SidedVal | null
+          if (!has(sv?.l) && !has(sv?.r)) set.add(f.key)
+        }
+      }
+    }
+    return set
+  }, [additions, addsExclude, closure, unit, soleProfile, zsmGroup])
+
+  const commentText = String(additions['comments'] ?? '')
+  const commentSuggestions = useMemo(
+    () => detectAdditionsInComment(commentText, k => candidateKeys.has(k), localizedTerms)
+      .filter(s => !dismissedSuggest.has(s.fieldKey)),
+    [commentText, candidateKeys, localizedTerms, dismissedSuggest],
+  )
+
+  function jumpToField(sectionKey: string) {
+    setExpanded(prev => { const next = new Set(prev); next.add(sectionKey); return next })
+    setFlashSection(sectionKey)
+    setTimeout(() => setFlashSection(cur => (cur === sectionKey ? null : cur)), 1600)
+    // Wait two frames so the section body has expanded before we scroll to it.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.getElementById(`add-section-${sectionKey}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }))
+  }
+
   // Key concept: PAIR / LEFT / RIGHT → single column
   //              LEFT_RIGHT           → two columns
   const isDouble    = unit === 'LEFT_RIGHT'
@@ -497,7 +565,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     const unitColLabel = unit === 'PAIR' ? 'PAR' : unit === 'LEFT' ? 'L' : unit === 'RIGHT' ? 'R' : ''
 
     return (
-      <div key={section.key} className="border border-stone-100 rounded-xl overflow-hidden bg-white"
+      <div key={section.key} id={`add-section-${section.key}`}
+        className={`border rounded-xl overflow-hidden bg-white transition-shadow scroll-mt-4
+          ${flashSection === section.key ? 'border-gold ring-2 ring-gold/50' : 'border-stone-100'}`}
         style={{ boxShadow: 'var(--shadow-card)' }}>
 
         <button type="button" onClick={() => toggleSection(section.key)}
@@ -847,8 +917,9 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         }
 
         return (
-          <div key={section.key}
-            className="border border-stone-100 rounded-xl overflow-hidden bg-white"
+          <div key={section.key} id={`add-section-${section.key}`}
+            className={`border rounded-xl overflow-hidden bg-white transition-shadow scroll-mt-4
+              ${flashSection === section.key ? 'border-gold ring-2 ring-gold/50' : 'border-stone-100'}`}
             style={{ boxShadow: 'var(--shadow-card)' }}>
 
             {/* Section header */}
@@ -1054,6 +1125,40 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                      focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold
                      resize-none transition-colors"
         />
+
+        {/* Detected additions written in the comment → nudge to the real field */}
+        {commentSuggestions.length > 0 && (
+          <div className="rounded-lg border border-gold/30 bg-gold/5 px-3 py-2.5 space-y-2">
+            <p className="text-[11px] leading-snug text-gold-dark flex items-start gap-1.5">
+              <svg className="w-3.5 h-3.5 shrink-0 mt-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{t('comment_suggest.intro')}</span>
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {commentSuggestions.map(s => {
+                const label = localizedTerms[s.fieldKey]?.[0]
+                  ?? getFieldLabel(fieldByKey[s.fieldKey], t).replace(/↳\s*/g, '').replace(/\s*\(mm\)/gi, '').trim()
+                return (
+                  <span key={s.fieldKey}
+                    className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-white pl-2.5 pr-1 py-0.5 text-[11px]">
+                    <button type="button" onClick={() => jumpToField(s.sectionKey)}
+                      title={t('comment_suggest.jump')}
+                      className="font-medium text-gold-dark hover:text-gold flex items-center gap-1">
+                      {label}
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    <button type="button" aria-label={t('comment_suggest.dismiss')}
+                      onClick={() => setDismissedSuggest(prev => new Set(prev).add(s.fieldKey))}
+                      className="text-stone-300 hover:text-red-400 leading-none px-0.5">×</button>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

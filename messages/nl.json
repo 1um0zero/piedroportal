@@ -437,6 +437,11 @@
     "right_short": "R",
     "empty_value": "—",
     "comments_placeholder": "Aanvullende opmerkingen...",
+    "comment_suggest": {
+      "intro": "Het lijkt erop dat u een aanpassing noemt die een eigen veld heeft. Vul die daar in zodat uw bestelling duidelijk blijft:",
+      "jump": "Ga naar dit veld",
+      "dismiss": "Verbergen"
+    },
     "sections": {
       "additions": "Leest Aanpassingen",
       "upper": "Schacht aanpassingen",

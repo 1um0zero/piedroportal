@@ -437,6 +437,11 @@
     "right_short": "R",
     "empty_value": "—",
     "comments_placeholder": "Zusätzliche Notizen...",
+    "comment_suggest": {
+      "intro": "Sie erwähnen offenbar eine Anpassung, die ein eigenes Feld hat. Bitte tragen Sie sie dort ein, damit Ihre Bestellung eindeutig bleibt:",
+      "jump": "Zu diesem Feld",
+      "dismiss": "Ausblenden"
+    },
     "sections": {
       "additions": "Ergänzungen",
       "upper": "Anpassungen am Schaft",
