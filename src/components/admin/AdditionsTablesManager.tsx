@@ -78,8 +78,13 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
   }, [])
 
   // Reflect fresh server data after router.refresh() (e.g. after a config sync).
-  // Row components keyed by id keep their own draft state across this.
-  useEffect(() => { setGroups(initial) }, [initial])
+  // React's "adjust state during render" pattern (no effect → no cascading-render
+  // warning); row components keyed by id keep their own draft state across this.
+  const [prevInitial, setPrevInitial] = useState(initial)
+  if (initial !== prevInitial) {
+    setPrevInitial(initial)
+    setGroups(initial)
+  }
 
   const rows = groups[tab] ?? []
 
