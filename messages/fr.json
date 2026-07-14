@@ -189,7 +189,8 @@
     "drafts": "Brouillons",
     "factory_calendar": "Calendrier usine",
     "announcements": "Annonces",
-    "message_templates": "Modèles de message"
+    "message_templates": "Modèles de message",
+    "additions": "Tables d'additions"
   },
   "announcements": {
     "badge": "Message",

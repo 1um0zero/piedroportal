@@ -98,6 +98,7 @@ export function NavbarMobile({ isAdmin, isBackoffice, isOperator = false, isLogg
                       <Link href="/admin/branches"  onClick={close} className={linkCls}>{t('branches')}</Link>
                       <Link href="/admin/users"     onClick={close} className={linkCls}>{t('users')}</Link>
                       <Link href="/admin/translations" onClick={close} className={linkCls}>{t('translations')}</Link>
+                      <Link href="/admin/additions" onClick={close} className={linkCls}>{t('additions')}</Link>
                       <Link href="/admin/email" onClick={close} className={linkCls}>{t('email')}</Link>
                       <Link href="/admin/settings" onClick={close} className={linkCls}>{t('settings')}</Link>
                       <a href="/share/index.html" target="_blank" rel="noopener noreferrer" onClick={close} className={`${linkCls} !text-gold`}>{t('docs')}</a>

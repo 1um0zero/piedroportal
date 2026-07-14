@@ -38,6 +38,7 @@ export default function NavAdminMenu() {
     { href: '/admin/branches',     label: t('branches') },
     { href: '/admin/users',        label: t('users') },
     { href: '/admin/translations', label: t('translations') },
+    { href: '/admin/additions',    label: t('additions') },
     { href: '/admin/email',        label: t('email') },
     { href: '/admin/message-templates', label: t('message_templates') },
     { href: '/admin/announcements', label: t('announcements') },

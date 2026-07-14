@@ -189,7 +189,8 @@
     "drafts": "Entwürfe",
     "factory_calendar": "Werkskalender",
     "announcements": "Mitteilungen",
-    "message_templates": "Nachrichtenvorlagen"
+    "message_templates": "Nachrichtenvorlagen",
+    "additions": "Additions-Tabellen"
   },
   "announcements": {
     "badge": "Mitteilung",

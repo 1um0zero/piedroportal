@@ -189,7 +189,8 @@
     "drafts": "Drafts",
     "factory_calendar": "Factory calendar",
     "announcements": "Announcements",
-    "message_templates": "Message templates"
+    "message_templates": "Message templates",
+    "additions": "Additions tables"
   },
   "announcements": {
     "badge": "Message",

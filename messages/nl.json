@@ -189,7 +189,8 @@
     "drafts": "Concepten",
     "factory_calendar": "Fabriekskalender",
     "announcements": "Meldingen",
-    "message_templates": "Berichtsjablonen"
+    "message_templates": "Berichtsjablonen",
+    "additions": "Additions-tabellen"
   },
   "announcements": {
     "badge": "Bericht",
