@@ -155,6 +155,8 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'hw_medial',    type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'heel_wedge', dataverseKey: 'cr56f_4hw_medial' },
       { key: 'hw_lateral',   type: 'mm',     side: 'both', values: mm0to20, conditionalOn: 'heel_wedge', dataverseKey: 'cr56f_4hw_lateral' },
       { key: 'hw_taper', type: 'option', side: 'both', conditionalOn: 'heel_wedge', optional: true, values: ['Tapered to Joint','Tapered to Toes'], dataverseKey: 'cr56f_4hw_tapered' },
+      // Hak afronding (heel rounding) — YES/NO toggle, above General Raise (Anabela, 2026-07-14)
+      { key: 'heel_round',    type: 'toggle', side: 'both', dataverseKey: 'cr56f_heelrounding' },
       // Generale Verhoging (general raise) + optional additional (Anabela, UK, 2026-07)
       { key: 'gen_raise',     type: 'mm', side: 'both', values: mm2to20,   dataverseKey: 'cr56f_generalraise' },
       { key: 'gen_raise_add', type: 'mm', side: 'both', values: mm20to200, conditionalOn: 'gen_raise', optional: true, dataverseKey: 'cr56f_generalraiseadditional' },

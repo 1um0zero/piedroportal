@@ -3,17 +3,21 @@
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { additionOptionImageUrl } from '@/lib/additions/option-image'
-import { ADDITION_TABLES, type AdditionOption } from '@/lib/additions/option-tables'
+import { ADDITION_TABLES, type AdditionOption, type AdditionForm } from '@/lib/additions/option-tables'
 import {
   saveAdditionOption,
   deleteAdditionOption,
   reorderAdditionOptions,
   uploadAdditionOptionImage,
   removeAdditionOptionImage,
+  syncAdditionOptionsFromConfig,
 } from '@/app/actions/admin-additions'
 
 type Groups = Record<string, AdditionOption[]>
 type View = 'table' | 'cards'
+
+const FORM_LABELS: Record<AdditionForm, string> = { standard: 'Standard', osb: 'OSB / Custom' }
+const FORMS = [...new Set(ADDITION_TABLES.map(t => t.form))] as AdditionForm[]
 
 // The server always re-normalises to a 700 px square, so large originals only
 // waste bandwidth and can blow the Server Action body limit / Vercel's ~4.5 MB
@@ -52,9 +56,12 @@ async function prepareForUpload(file: File): Promise<File> {
 export default function AdditionsTablesManager({ groups: initial }: { groups: Groups }) {
   const router = useRouter()
   const [groups, setGroups] = useState<Groups>(initial)
+  const [form, setForm] = useState<AdditionForm>(ADDITION_TABLES[0].form)
   const [tab, setTab] = useState<string>(ADDITION_TABLES[0].key)
   const [view, setView] = useState<View>('table')
   const [error, setError] = useState<string | null>(null)
+  const [syncing, startSync] = useTransition()
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
 
   // Safety net: prevent the browser from navigating to (opening) a file dropped
   // anywhere on the page — a drop that misses a card's exact drop zone would
@@ -69,6 +76,10 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
       window.removeEventListener('drop', prevent)
     }
   }, [])
+
+  // Reflect fresh server data after router.refresh() (e.g. after a config sync).
+  // Row components keyed by id keep their own draft state across this.
+  useEffect(() => { setGroups(initial) }, [initial])
 
   const rows = groups[tab] ?? []
 
@@ -93,6 +104,24 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
 
   const handlers = { onMove: move, onPatch: patchRow, onRemove: removeRowLocal, onError: setError }
 
+  // Fields of the active form, grouped by their sub-heading (in registry order).
+  const formFields = ADDITION_TABLES.filter(t => t.form === form)
+  const groupOrder = [...new Set(formFields.map(t => t.group))]
+
+  const selectForm = (f: AdditionForm) => {
+    setForm(f); setError(null)
+    const first = ADDITION_TABLES.find(t => t.form === f)
+    if (first) setTab(first.key)
+  }
+
+  const runSync = () => startSync(async () => {
+    setSyncMsg(null); setError(null)
+    const res = await syncAdditionOptionsFromConfig()
+    if (res.error) return setError(res.error)
+    setSyncMsg(res.added ? `Added ${res.added} option(s) from config.` : 'Already up to date with config.')
+    router.refresh()
+  })
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <header className="mb-6">
@@ -100,28 +129,40 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
           <div>
             <h1 className="text-2xl font-semibold text-stone-900">Additions — Tabelas</h1>
             <p className="mt-1 text-sm text-stone-500">
-              Editable option lists for the sole-amendment fields. Create, edit, disable, reorder
+              Editable option lists for the Standard and OSB forms. Create, edit, disable, reorder
               options and upload an image per option.
             </p>
           </div>
-          {/* View toggle */}
-          <div className="inline-flex rounded-full border border-stone-200 bg-white p-0.5 text-sm shrink-0">
-            {(['table', 'cards'] as View[]).map(v => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={`px-4 py-1.5 rounded-full font-medium transition-colors
-                  ${view === v ? 'bg-gold text-white' : 'text-stone-500 hover:text-stone-900'}`}
-              >
-                {v === 'table' ? 'Table' : 'Cards'}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={runSync}
+              disabled={syncing}
+              title="Insert any options defined in the form config that are missing here (never overwrites edits)"
+              className="text-sm font-medium text-stone-600 border border-stone-200 rounded-full px-4 py-1.5 hover:border-gold hover:text-stone-900 disabled:opacity-50"
+            >
+              {syncing ? 'Syncing…' : 'Sync from config'}
+            </button>
+            {/* View toggle */}
+            <div className="inline-flex rounded-full border border-stone-200 bg-white p-0.5 text-sm">
+              {(['table', 'cards'] as View[]).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-4 py-1.5 rounded-full font-medium transition-colors
+                    ${view === v ? 'bg-gold text-white' : 'text-stone-500 hover:text-stone-900'}`}
+                >
+                  {v === 'table' ? 'Table' : 'Cards'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+        {syncMsg && <p className="mt-3 text-[12px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">{syncMsg}</p>}
         <p className="mt-3 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Fase 1 — estas tabelas são a fonte editável; o formulário de encomenda ainda lê da
+          Fase 1 — estas tabelas são a fonte editável; os formulários de encomenda ainda leem da
           configuração estática, por isso <strong>editar aqui ainda não altera o que o cliente vê</strong>.
-          A ligação ao form (e a associação a modelos) vem numa fase seguinte.
+          A ligação aos forms (e a associação a modelos) vem numa fase seguinte. Usa <strong>Sync from
+          config</strong> para popular campos novos a partir do config.
         </p>
       </header>
 
@@ -132,22 +173,44 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-5">
-        {ADDITION_TABLES.map(t => {
-          const count = (groups[t.key] ?? []).length
-          const on = tab === t.key
-          return (
+      {/* Form selector */}
+      {FORMS.length > 1 && (
+        <div className="inline-flex rounded-full border border-stone-200 bg-white p-0.5 text-sm mb-4">
+          {FORMS.map(f => (
             <button
-              key={t.key}
-              onClick={() => { setTab(t.key); setError(null) }}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border
-                ${on ? 'bg-gold text-white border-gold' : 'bg-white text-stone-600 border-stone-200 hover:border-gold'}`}
+              key={f}
+              onClick={() => selectForm(f)}
+              className={`px-5 py-1.5 rounded-full font-semibold transition-colors
+                ${form === f ? 'bg-stone-900 text-white' : 'text-stone-500 hover:text-stone-900'}`}
             >
-              {t.label} <span className={on ? 'opacity-80' : 'text-stone-400'}>({count})</span>
+              {FORM_LABELS[f]}
             </button>
-          )
-        })}
+          ))}
+        </div>
+      )}
+
+      {/* Grouped tabs for the active form */}
+      <div className="space-y-3 mb-5">
+        {groupOrder.map(grp => (
+          <div key={grp} className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 w-28 shrink-0">{grp}</span>
+            {formFields.filter(t => t.group === grp).map(t => {
+              const count = (groups[t.key] ?? []).length
+              const on = tab === t.key
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => { setTab(t.key); setError(null) }}
+                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors border inline-flex items-center gap-1.5
+                    ${on ? 'bg-gold text-white border-gold' : 'bg-white text-stone-600 border-stone-200 hover:border-gold'}`}
+                >
+                  {t.hasImages && <span className={on ? 'opacity-80' : 'text-stone-300'}>🖼</span>}
+                  {t.label} <span className={on ? 'opacity-80' : 'text-stone-400'}>({count})</span>
+                </button>
+              )
+            })}
+          </div>
+        ))}
       </div>
 
       {view === 'table' ? (
