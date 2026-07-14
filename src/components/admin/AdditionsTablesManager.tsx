@@ -148,7 +148,6 @@ function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: Ro
   const [labelDe, setLabelDe] = useState(row.label_de ?? '')
   const [bust, setBust] = useState(0)
   const [pending, start] = useTransition()
-  const fileRef = useRef<HTMLInputElement>(null)
 
   const dirty =
     value !== row.value ||
@@ -216,7 +215,7 @@ function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: Ro
   return {
     value, setValue, family, setFamily,
     labelNl, setLabelNl, labelFr, setLabelFr, labelDe, setLabelDe,
-    dirty, pending, fileRef, imgUrl,
+    dirty, pending, imgUrl,
     save, toggleActive, del, onFile, removeImg,
   }
 }
@@ -252,6 +251,7 @@ function ActiveToggle({ active, onClick }: { active: boolean; onClick: () => voi
 function OptionRow({ row, index, total, ...h }: { row: AdditionOption; index: number; total: number } & RowHandlers) {
   const ed = useOptionEditor(row, h)
   const [showI18n, setShowI18n] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   return (
     <div className={`border-b border-stone-50 ${row.active ? '' : 'opacity-55'} ${ed.pending ? 'pointer-events-none opacity-70' : ''}`}>
@@ -261,8 +261,8 @@ function OptionRow({ row, index, total, ...h }: { row: AdditionOption; index: nu
           <button onClick={() => h.onMove(index, 1)} disabled={index === total - 1} className="hover:text-gold disabled:opacity-30 leading-none">▼</button>
         </div>
         <div>
-          <input ref={ed.fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
-          <button onClick={() => ed.fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
+          <button onClick={() => fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
             className="w-11 h-11 rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden hover:border-gold">
             {ed.imgUrl
               // eslint-disable-next-line @next/next/no-img-element
@@ -291,6 +291,7 @@ function OptionRow({ row, index, total, ...h }: { row: AdditionOption; index: nu
 function OptionCard({ row, index, total, ...h }: { row: AdditionOption; index: number; total: number } & RowHandlers) {
   const ed = useOptionEditor(row, h)
   const [showI18n, setShowI18n] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   return (
     <div className={`group relative bg-white rounded-[14px] border border-stone-100 overflow-hidden flex flex-col
@@ -310,8 +311,8 @@ function OptionCard({ row, index, total, ...h }: { row: AdditionOption; index: n
         className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-white/90 border border-stone-200 text-stone-400 hover:text-red-600 flex items-center justify-center text-xs shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">🗑</button>
 
       {/* Big image — click to upload/replace */}
-      <input ref={ed.fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
-      <button onClick={() => ed.fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={ed.onFile} />
+      <button onClick={() => fileRef.current?.click()} title={ed.imgUrl ? 'Replace image' : 'Upload image'}
         className="relative aspect-square bg-stone-50 flex items-center justify-center overflow-hidden">
         {ed.imgUrl
           // eslint-disable-next-line @next/next/no-img-element
