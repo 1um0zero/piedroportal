@@ -6,8 +6,7 @@
  * docs/sole-hierarchy/zolen-master.md and zolen-canonical-map.md.
  *
  * Model (style_name, K/B-insensitive) → sole GROUP → allowed canonical option values
- * per underlying additions-config field (pu_type / sole_type / runner_sole; spoiler is
- * never used by Zolen, so it is hidden for any profiled model). A model WITHOUT a group
+ * per underlying additions-config field (pu_type / sole_type / runner_sole). A model WITHOUT a group
  * keeps the full option lists (general rule = current behaviour) — unclassified / pending
  * models are never broken.
  *
@@ -20,13 +19,13 @@ import { PROFILE_OPTIONS, PROFILE_STYLES, SOLE_GROUP_LABELS } from './sole-profi
 export { PROFILE_OPTIONS, PROFILE_STYLES, SOLE_GROUP_LABELS }
 
 /** Config fields the profiles control. A controlled field not allowed by a group is hidden. */
-export const SOLE_CONTROLLED_KEYS = ['pu_type', 'sole_type', 'spoiler', 'runner_sole'] as const
+export const SOLE_CONTROLLED_KEYS = ['pu_type', 'sole_type', 'runner_sole'] as const
 export type SoleControlledKey = typeof SOLE_CONTROLLED_KEYS[number]
 
 /** Toggle → its controlled child fields (for show/hide of the parent checkbox). */
 const TOGGLE_CHILDREN: Record<string, SoleControlledKey[]> = {
   pu_bumper: ['pu_type'],
-  amend_sole: ['sole_type', 'spoiler', 'runner_sole'],
+  amend_sole: ['sole_type', 'runner_sole'],
 }
 
 // Flat index: base style_name → group key (a style belongs to exactly one group).
@@ -55,7 +54,7 @@ export function soleProfileFor(styleName: string | null | undefined): string | n
 export function allowedSoleValues(profileKey: string | null, fieldKey: string, fullValues: string[]): string[] {
   if (!profileKey) return fullValues
   if (!(SOLE_CONTROLLED_KEYS as readonly string[]).includes(fieldKey)) return fullValues
-  const allowed = PROFILE_OPTIONS[profileKey]?.[fieldKey as Exclude<SoleControlledKey, 'spoiler'>]
+  const allowed = PROFILE_OPTIONS[profileKey]?.[fieldKey as SoleControlledKey]
   if (allowed === '*') return fullValues
   if (!allowed) return []
   return fullValues.filter(v => allowed.includes(v))
@@ -72,7 +71,7 @@ export function soleFieldHidden(profileKey: string | null, fieldKey: string, ful
 }
 
 function fieldEmpty(profileKey: string, key: SoleControlledKey, fullValues?: string[]): boolean {
-  const allowed = PROFILE_OPTIONS[profileKey]?.[key as Exclude<SoleControlledKey, 'spoiler'>]
+  const allowed = PROFILE_OPTIONS[profileKey]?.[key]
   if (allowed === '*') return false          // unrestricted → shown
   if (!allowed) return true                  // not listed → hidden
   if (!fullValues) return allowed.length === 0

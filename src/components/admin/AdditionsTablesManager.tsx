@@ -48,7 +48,7 @@ async function prepareForUpload(file: File): Promise<File> {
 
 /**
  * /admin/additions — "Additions – Tabelas". Four editable option lists
- * (PU/EVA Bumper, Sole, Runner sole, Spoiler), viewable as a compact table or a
+ * (PU/EVA Bumper, Sole, Runner sole), viewable as a compact table or a
  * photo-card grid. PHASE 1: the order form still reads the static config, so
  * edits here don't yet change the customer view — this is the editable source
  * we'll wire up in a later phase.

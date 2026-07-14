@@ -412,6 +412,8 @@ export const DATAVERSE_OPTION_CODES: Record<string, DataverseOptionSet> = {
     { code: 979580019, label: "Nora Sole Plate Black with Black Body Colour" },
     ],
   },
+  // LEGACY: spoiler was retired as a selectable addition on 2026-07-14 (now fixed to
+  // the sole). Kept here only to decode historical / migrated orders that carry a code.
   'cr56f_6spoiler': {
     optionSet: "cr56f_spoiler",
     options: [

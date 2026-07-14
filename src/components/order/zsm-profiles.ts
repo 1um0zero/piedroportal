@@ -7,7 +7,7 @@
  * against the legacy data). See docs/sole-hierarchy/dependencies.md.
  *
  * On ZSM models (B-prefix styles) the normal sole-amendment fields (PU/EVA
- * Bumper + Amendment Sole / spoiler / runner_sole) are REPLACED by:
+ * Bumper + Amendment Sole / runner_sole) are REPLACED by:
  *   • Amendment Prefab Sole (toggle) → Prefab Sole (colour, by Sneaker/Runner group)
  *   • Amendment Sole Sheet (toggle) → Sole Sheet (type) → Colour (subset by type)
  * All sided (L/R). The rest of the sole section (rocker, floats, wedges, carbon,
@@ -166,5 +166,5 @@ export const ZSM_FIELD_KEY_SET: Set<string> = new Set(Object.values(ZSM_FIELD_KE
 
 /** Normal sole-amendment fields that ZSM models REPLACE (hidden on ZSM models). */
 export const ZSM_REPLACED_KEYS: Set<string> = new Set([
-  'pu_bumper', 'pu_type', 'amend_sole', 'sole_type', 'spoiler', 'runner_sole',
+  'pu_bumper', 'pu_type', 'amend_sole', 'sole_type', 'runner_sole',
 ])

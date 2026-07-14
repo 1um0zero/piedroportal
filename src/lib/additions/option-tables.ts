@@ -31,7 +31,6 @@ export const ADDITION_TABLES: AdditionTableDef[] = [
   { key: 'pu_type',     label: 'PU/EVA Bumper', form: 'standard', group: 'Sole', hasImages: true },
   { key: 'sole_type',   label: 'Sole',          form: 'standard', group: 'Sole', hasImages: false },
   { key: 'runner_sole', label: 'Runner sole',   form: 'standard', group: 'Sole', hasImages: true },
-  { key: 'spoiler',     label: 'Spoiler',       form: 'standard', group: 'Sole', hasImages: false },
   { key: 'rocker',      label: 'Rocker sole',   form: 'standard', group: 'Sole', hasImages: true },
 
   // ── OSB / custom-made form ─────────────────────────────────────────────────

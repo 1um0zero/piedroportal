@@ -32,7 +32,6 @@ export const OPTION_SOURCES: Record<string, Source> = {
   pu_type:     { form: 'standard', src: 'pu_type',     boundKeys: ['pu_type'] },
   sole_type:   { form: 'standard', src: 'sole_type',   boundKeys: ['sole_type'] },
   runner_sole: { form: 'standard', src: 'runner_sole', boundKeys: ['runner_sole'] },
-  spoiler:     { form: 'standard', src: 'spoiler',     boundKeys: ['spoiler'] },
   rocker:      { form: 'standard', src: 'rocker',      boundKeys: ['rocker'] },
 
   // OSB / custom form (logical key groups one or more cs-code physical fields)
