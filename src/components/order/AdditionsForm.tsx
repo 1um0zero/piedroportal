@@ -832,6 +832,8 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
         const fields = filterExcluded(section.fields, addsExclude).filter(f => {
           // Hide closure-specific fields that don't match product closure
           if (f.closureOnly && f.closureOnly !== closure) return false
+          // Mirror fields apply to BOTH feet — meaningless on a single-shoe order.
+          if (f.mirror && (unit === 'LEFT' || unit === 'RIGHT')) return false
           return true
         })
         // Nothing left to show (every field excluded) → drop the section header too
