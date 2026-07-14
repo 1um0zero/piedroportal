@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useRef } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { additionOptionImageUrl } from '@/lib/additions/option-image'
 import { ADDITION_TABLES, type AdditionOption } from '@/lib/additions/option-tables'
@@ -28,6 +28,20 @@ export default function AdditionsTablesManager({ groups: initial }: { groups: Gr
   const [tab, setTab] = useState<string>(ADDITION_TABLES[0].key)
   const [view, setView] = useState<View>('table')
   const [error, setError] = useState<string | null>(null)
+
+  // Safety net: prevent the browser from navigating to (opening) a file dropped
+  // anywhere on the page — a drop that misses a card's exact drop zone would
+  // otherwise unload the app ("This page couldn't load"). The card's own onDrop
+  // still handles real uploads; this only cancels the browser default.
+  useEffect(() => {
+    const prevent = (e: DragEvent) => e.preventDefault()
+    window.addEventListener('dragover', prevent)
+    window.addEventListener('drop', prevent)
+    return () => {
+      window.removeEventListener('dragover', prevent)
+      window.removeEventListener('drop', prevent)
+    }
+  }, [])
 
   const rows = groups[tab] ?? []
 
