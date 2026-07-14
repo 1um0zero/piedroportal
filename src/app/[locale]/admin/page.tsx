@@ -77,11 +77,12 @@ export default async function AdminDashboard() {
   const scope = await requireBackofficePage()
   const locale = await getLocale()
   const td = await getTranslations('dashboard')
+  const tg = await getTranslations('gallery')
   const statusLabel = (st: string) => (td.has(`status.${st}`) ? td(`status.${st}`) : st)
 
   const service = createServiceClient()
   const SELECT = `id, status, unit, patient_name, reference_customer, created_at, additions,
-    products(id, colour_id, color_name, style_name, picture_name),
+    products(id, colour_id, color_name, style_name, picture_name, section),
     companies(id, name, country)`
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,24 +118,35 @@ export default async function AdminDashboard() {
     .map(([name, v]) => ({ name, ...v }))
     .sort((a, b) => b.count - a.count).slice(0, 8)
 
-  // ── Models grouped by style_name, colors with photos ─────────────────────
+  // ── Models grouped by style_name, colors with photos — split by section ───
   type ColorEntry = { count: number; picture_name: string; colour_id: string; color_name: string }
-  const styleMap = new Map<string, { total: number; colors: Map<string, ColorEntry> }>()
-  all.forEach(o => {
-    if (!o.products) return
-    const style = o.products.style_name ?? '—'
-    if (!styleMap.has(style)) styleMap.set(style, { total: 0, colors: new Map() })
-    const sd = styleMap.get(style)!
-    sd.total++
-    const cid = o.products.colour_id
-    const cc = sd.colors.get(cid) ?? { count: 0, picture_name: o.products.picture_name ?? '', colour_id: cid, color_name: o.products.color_name ?? '' }
-    cc.count++
-    sd.colors.set(cid, cc)
-  })
-  const topStyles = [...styleMap.entries()]
-    .map(([style, d]) => ({ style, total: d.total, colors: [...d.colors.values()].sort((a, b) => b.count - a.count) }))
-    .sort((a, b) => b.total - a.total).slice(0, 8)
-  const styleMax = topStyles[0]?.total ?? 1
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const computeTopStyles = (orders: any[]) => {
+    const styleMap = new Map<string, { total: number; colors: Map<string, ColorEntry> }>()
+    orders.forEach(o => {
+      if (!o.products) return
+      const style = o.products.style_name ?? '—'
+      if (!styleMap.has(style)) styleMap.set(style, { total: 0, colors: new Map() })
+      const sd = styleMap.get(style)!
+      sd.total++
+      const cid = o.products.colour_id
+      const cc = sd.colors.get(cid) ?? { count: 0, picture_name: o.products.picture_name ?? '', colour_id: cid, color_name: o.products.color_name ?? '' }
+      cc.count++
+      sd.colors.set(cid, cc)
+    })
+    const styles = [...styleMap.entries()]
+      .map(([style, d]) => ({ style, total: d.total, colors: [...d.colors.values()].sort((a, b) => b.count - a.count) }))
+      .sort((a, b) => b.total - a.total).slice(0, 8)
+    return { styles, max: styles[0]?.total ?? 1 }
+  }
+  const GENDER_SECTIONS: { key: 'KIDS' | 'MEN' | 'WOMEN'; label: string }[] = [
+    { key: 'KIDS',  label: tg('kids') },
+    { key: 'MEN',   label: tg('men') },
+    { key: 'WOMEN', label: tg('women') },
+  ]
+  const stylesBySection = GENDER_SECTIONS
+    .map(g => ({ ...g, ...computeTopStyles(all.filter(o => o.products?.section === g.key)) }))
+    .filter(g => g.styles.length > 0)
 
   // ── Countries ─────────────────────────────────────────────────────────────
   const countryMap = new Map<string, number>()
@@ -345,37 +357,44 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Models by style_name with color thumbnails */}
+      {/* Models by style_name with color thumbnails — split by gender section */}
       <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
         <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-5">{td('sections.top_models')}</h2>
-        <div className="space-y-5">
-          {topStyles.map(s => (
-            <div key={s.style}>
-              {/* Model header with bar */}
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-sm font-bold text-stone-800 w-20 shrink-0">{s.style}</span>
-                <div className="flex-1 bg-stone-100 rounded-full h-2">
-                  <div className="bg-gold h-2 rounded-full" style={{ width: `${Math.round((s.total / styleMax) * 100)}%` }} />
-                </div>
-                <span className="text-lg font-bold text-gold w-10 text-right shrink-0">{s.total}</span>
-              </div>
-              {/* Color swatches with photos and count badge */}
-              <div className="flex gap-2 flex-wrap pl-[92px]">
-                {s.colors.map(c => (
-                  <div key={c.colour_id} className="relative w-14 h-14 rounded-xl overflow-hidden bg-stone-100 border border-stone-100 group"
-                    title={`${c.colour_id} — ${c.color_name}`}>
-                    {c.picture_name ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={productImageUrl(c.picture_name)} alt={c.colour_id}
-                        className="w-full h-full object-contain p-1" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-[8px] text-stone-400 text-center px-0.5 leading-tight">{c.colour_id}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-6">
+          {stylesBySection.map(group => (
+            <div key={group.key}>
+              <h3 className="text-[11px] font-bold text-gold uppercase tracking-wider mb-4 pb-2 border-b border-stone-100">{group.label}</h3>
+              <div className="space-y-5">
+                {group.styles.map(s => (
+                  <div key={s.style}>
+                    {/* Model header with bar */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-sm font-bold text-stone-800 w-16 shrink-0">{s.style}</span>
+                      <div className="flex-1 bg-stone-100 rounded-full h-2">
+                        <div className="bg-gold h-2 rounded-full" style={{ width: `${Math.round((s.total / group.max) * 100)}%` }} />
                       </div>
-                    )}
-                    {/* Count badge */}
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent pt-2 pb-0.5 flex items-end justify-center">
-                      <span className="text-white text-[10px] font-bold">{c.count}</span>
+                      <span className="text-lg font-bold text-gold w-10 text-right shrink-0">{s.total}</span>
+                    </div>
+                    {/* Color swatches with photos and count badge */}
+                    <div className="flex gap-2 flex-wrap">
+                      {s.colors.map(c => (
+                        <div key={c.colour_id} className="relative w-12 h-12 rounded-xl overflow-hidden bg-stone-100 border border-stone-100 group"
+                          title={`${c.colour_id} — ${c.color_name}`}>
+                          {c.picture_name ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={productImageUrl(c.picture_name)} alt={c.colour_id}
+                              className="w-full h-full object-contain p-1" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-[8px] text-stone-400 text-center px-0.5 leading-tight">{c.colour_id}</span>
+                            </div>
+                          )}
+                          {/* Count badge */}
+                          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent pt-2 pb-0.5 flex items-end justify-center">
+                            <span className="text-white text-[10px] font-bold">{c.count}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
