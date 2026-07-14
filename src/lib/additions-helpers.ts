@@ -68,6 +68,9 @@ export function translateOptionValue(
     'zipper': 'zipper',
     'rocker': 'rocker',
     'pu_type': 'bumper',
+    'sf_taper': 'taper',
+    'sw_taper': 'taper',
+    'hw_taper': 'taper',
   }
 
   const category = categoryMap[fieldKey]

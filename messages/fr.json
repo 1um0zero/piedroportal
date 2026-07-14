@@ -497,12 +497,9 @@
       "heel_wedge": "Heel Wedge",
       "hw_medial": "↳ Heel Wedge Medial (mm)",
       "hw_lateral": "↳ Heel Wedge Lateral (mm)",
-      "sf_taper_joint": "↳ Dégressif jusqu'à l'articulation",
-      "sf_taper_toes": "↳ Dégressif jusqu'aux orteils",
-      "sw_taper_joint": "↳ Dégressif jusqu'à l'articulation",
-      "sw_taper_toes": "↳ Dégressif jusqu'aux orteils",
-      "hw_taper_joint": "↳ Dégressif jusqu'à l'articulation",
-      "hw_taper_toes": "↳ Dégressif jusqu'aux orteils",
+      "sf_taper": "↳ Dégressif",
+      "sw_taper": "↳ Dégressif",
+      "hw_taper": "↳ Dégressif",
       "gen_raise": "Rehausse générale (mm)",
       "gen_raise_add": "↳ Additionnel sur rehausse générale (mm)",
       "carb_insole": "Removable Carbon Insole",
@@ -640,6 +637,10 @@
         "pu_white": "PU White",
         "eva_black": "EVA Black",
         "eva_white": "EVA White"
+      },
+      "taper": {
+        "tapered_to_joint": "jusqu'à l'articulation",
+        "tapered_to_toes": "jusqu'aux orteils"
       },
       "no_additions": "Aucun suppléments",
       "additions_confirmed": "Suppléments confirmés"
