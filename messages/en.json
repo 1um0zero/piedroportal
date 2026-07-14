@@ -728,6 +728,9 @@
     },
     "sections": {
       "monthly_trend": "Monthly trend",
+      "daily_trend": "Orders per day",
+      "daily_trend_hint": "Last 4 weeks — all statuses",
+      "weekday_avg": "Average per weekday",
       "by_status": "By status",
       "top_models": "Most ordered models",
       "category_split": "By category",

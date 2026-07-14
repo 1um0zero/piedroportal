@@ -183,6 +183,46 @@ export default async function AdminDashboard() {
   })
   const monthMax = Math.max(...months.map(m => m.count), 1)
 
+  // ── Daily trend — last 4 weeks, every status, to reveal weekday patterns ──
+  const DAY_MS = 86_400_000
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+  const dailyCount = new Map<string, number>()
+  all.forEach(o => {
+    const k = dayKey(new Date(o.created_at))
+    dailyCount.set(k, (dailyCount.get(k) ?? 0) + 1)
+  })
+  const days = Array.from({ length: 28 }, (_, i) => {
+    const d = new Date(today.getTime() - (27 - i) * DAY_MS)
+    return {
+      date: d,
+      dow: d.getDay(), // 0 = Sunday
+      weekend: d.getDay() === 0 || d.getDay() === 6,
+      count: dailyCount.get(dayKey(d)) ?? 0,
+    }
+  })
+  const dailyMax = Math.max(...days.map(d => d.count), 1)
+  // Average per weekday (Mon→Sun); 28 days = exactly 4 of each weekday
+  const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]
+  const weekdayAvg = WEEK_ORDER.map(dow => {
+    const sample = days.filter(d => d.dow === dow)
+    const sum = sample.reduce((a, d) => a + d.count, 0)
+    return {
+      dow,
+      label: new Date(2024, 0, 7 + dow).toLocaleDateString(locale, { weekday: 'short' }),
+      avg: sample.length ? sum / sample.length : 0,
+      weekend: dow === 0 || dow === 6,
+    }
+  })
+  const weekdayMax = Math.max(...weekdayAvg.map(w => w.avg), 1)
+  // SVG line geometry
+  const CW = 700, CH = 150, PAD_T = 12, PAD_B = 22, PAD_X = 8
+  const plotW = CW - PAD_X * 2, plotH = CH - PAD_T - PAD_B
+  const xAt = (i: number) => PAD_X + (days.length === 1 ? plotW / 2 : (i / (days.length - 1)) * plotW)
+  const yAt = (v: number) => PAD_T + plotH - (v / dailyMax) * plotH
+  const linePts = days.map((d, i) => `${xAt(i).toFixed(1)},${yAt(d.count).toFixed(1)}`).join(' ')
+  const areaPts = `${PAD_X},${PAD_T + plotH} ${linePts} ${(PAD_X + plotW).toFixed(1)},${(PAD_T + plotH).toFixed(1)}`
+
   const recent = all.filter(o => o.status !== 'draft').slice(0, 8)
 
   return (
@@ -201,6 +241,72 @@ export default async function AdminDashboard() {
         <StatCard label={statusLabel('in_production')} value={bySt.in_production ?? 0} color="text-amber-600" />
         <StatCard label={statusLabel('delivered')} value={bySt.delivered    ?? 0} color="text-teal-600" />
         <StatCard label={`🔴 ${td('kpi.urgent')}`} value={urgent}                  color="text-red-500"  />
+      </div>
+
+      {/* Daily trend — last 4 weeks, all statuses, to reveal weekday patterns */}
+      <div className="bg-white rounded-[14px] p-6" style={{ boxShadow: 'var(--shadow-card)' }}>
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 className="text-xs font-bold text-stone-400 uppercase tracking-wider">{td('sections.daily_trend')}</h2>
+          <span className="text-[10px] text-stone-300">{td('sections.daily_trend_hint')}</span>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
+          {/* Line chart */}
+          <svg viewBox={`0 0 ${CW} ${CH}`} className="w-full h-auto" role="img"
+            aria-label={td('sections.daily_trend')}>
+            <defs>
+              <linearGradient id="dailyFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#B8975A" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="#B8975A" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* weekend bands */}
+            {days.map((d, i) => d.weekend ? (
+              <rect key={`w${i}`} x={xAt(i) - plotW / (days.length - 1) / 2} y={PAD_T}
+                width={plotW / (days.length - 1)} height={plotH} fill="#000" opacity="0.025" />
+            ) : null)}
+            {/* week separators (every Monday) */}
+            {days.map((d, i) => d.dow === 1 && i > 0 ? (
+              <line key={`s${i}`} x1={xAt(i) - plotW / (days.length - 1) / 2} y1={PAD_T}
+                x2={xAt(i) - plotW / (days.length - 1) / 2} y2={PAD_T + plotH}
+                stroke="#e7e5e4" strokeWidth="1" strokeDasharray="3 3" />
+            ) : null)}
+            {/* area + line */}
+            <polygon points={areaPts} fill="url(#dailyFill)" />
+            <polyline points={linePts} fill="none" stroke="#B8975A" strokeWidth="2"
+              strokeLinejoin="round" strokeLinecap="round" />
+            {/* dots + count labels + weekday initials */}
+            {days.map((d, i) => (
+              <g key={`p${i}`}>
+                <circle cx={xAt(i)} cy={yAt(d.count)} r={d.count > 0 ? 2.5 : 1.5}
+                  fill={d.weekend ? '#a8a29e' : '#B8975A'} />
+                {d.count > 0 && (
+                  <text x={xAt(i)} y={yAt(d.count) - 6} textAnchor="middle"
+                    fontSize="9" fill="#78716c" fontWeight="600">{d.count}</text>
+                )}
+                <text x={xAt(i)} y={CH - 8} textAnchor="middle" fontSize="8"
+                  fill={d.weekend ? '#d6d3d1' : '#a8a29e'}>
+                  {d.date.toLocaleDateString(locale, { weekday: 'narrow' })}
+                </text>
+              </g>
+            ))}
+          </svg>
+          {/* Weekday averages */}
+          <div className="lg:w-52">
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">{td('sections.weekday_avg')}</p>
+            <div className="space-y-1">
+              {weekdayAvg.map(w => (
+                <div key={w.dow} className="flex items-center gap-2">
+                  <span className={`text-[11px] w-8 capitalize ${w.weekend ? 'text-stone-300' : 'text-stone-500'}`}>{w.label}</span>
+                  <div className="flex-1 bg-stone-100 rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full ${w.weekend ? 'bg-stone-300' : 'bg-gold'}`}
+                      style={{ width: `${Math.round((w.avg / weekdayMax) * 100)}%` }} />
+                  </div>
+                  <span className="text-[11px] font-bold text-stone-600 w-7 text-right tabular-nums">{w.avg.toFixed(1)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Best clients + Countries */}

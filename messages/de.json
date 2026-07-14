@@ -728,6 +728,9 @@
     },
     "sections": {
       "monthly_trend": "Monatstrend",
+      "daily_trend": "Bestellungen pro Tag",
+      "daily_trend_hint": "Letzte 4 Wochen — alle Status",
+      "weekday_avg": "Durchschnitt pro Wochentag",
       "by_status": "Nach Status",
       "top_models": "Meistbestellte Modelle",
       "category_split": "Nach Kategorie",

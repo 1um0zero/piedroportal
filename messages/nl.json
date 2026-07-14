@@ -728,6 +728,9 @@
     },
     "sections": {
       "monthly_trend": "Maandtrend",
+      "daily_trend": "Bestellingen per dag",
+      "daily_trend_hint": "Laatste 4 weken — alle statussen",
+      "weekday_avg": "Gemiddelde per weekdag",
       "by_status": "Per status",
       "top_models": "Meest bestelde modellen",
       "category_split": "Per categorie",

@@ -728,6 +728,9 @@
     },
     "sections": {
       "monthly_trend": "Tendance mensuelle",
+      "daily_trend": "Commandes par jour",
+      "daily_trend_hint": "4 dernières semaines — tous les statuts",
+      "weekday_avg": "Moyenne par jour de semaine",
       "by_status": "Par statut",
       "top_models": "Modèles les plus commandés",
       "category_split": "Par catégorie",

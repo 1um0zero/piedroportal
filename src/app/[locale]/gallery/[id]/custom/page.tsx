@@ -5,6 +5,7 @@ import { getUserCompanies } from '@/lib/user-companies'
 import { getBranchAdminCompanies } from '@/lib/branch-admin'
 import { isPiedroAdmin } from '@/lib/roles'
 import CustomOrderForm from '@/components/custom/CustomOrderForm'
+import { getOsbOptionOverrides } from '@/lib/additions/option-seed'
 import type { Product } from '@/types'
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -46,8 +47,8 @@ export default async function CustomOrderPage({ params }: Props) {
     else if (merged.length > 1) companies = merged
   }
 
-  const product = await getProduct(id)
+  const [product, optionOverrides] = await Promise.all([getProduct(id), getOsbOptionOverrides()])
   if (!product) notFound()
 
-  return <CustomOrderForm product={product} userCompany={userCompany} companies={companies} isAdmin={admin} />
+  return <CustomOrderForm product={product} userCompany={userCompany} companies={companies} isAdmin={admin} optionOverrides={optionOverrides} />
 }

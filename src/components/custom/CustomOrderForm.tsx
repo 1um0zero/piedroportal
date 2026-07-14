@@ -16,6 +16,7 @@ import {
   type CustomField,
 } from './custom-additions-config'
 import { insertCustomOrderAction, type CustomOrderRow } from '@/app/actions/custom-orders'
+import type { OptionOverrides } from '@/lib/additions/option-tables'
 
 type Sided = { l?: number | string; r?: number | string }
 const sideEmpty = (v: unknown, s: 'l' | 'r') => {
@@ -27,12 +28,13 @@ type Company = { id: string; name: string; erp_code: string }
 const UNITS = ['PAIR', 'LEFT', 'RIGHT', 'LEFT_RIGHT'] as const
 
 export default function CustomOrderForm({
-  product, userCompany, companies, isAdmin,
+  product, userCompany, companies, isAdmin, optionOverrides,
 }: {
   product:     Product
   userCompany: Company | null
   companies:   Company[]
   isAdmin:     boolean
+  optionOverrides?: OptionOverrides
 }) {
   const locale = useLocale()
   const router = useRouter()
@@ -223,7 +225,7 @@ export default function CustomOrderForm({
       {/* ── Tab 2 — Customization ──────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-5">
-          <CustomAdditionsForm values={values} onChange={onValues} unit={unit} />
+          <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} />
           <div className="flex justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
             <button onClick={() => setStep(3)} className="rounded-lg bg-gold px-6 py-2.5 text-sm font-medium text-white">Next →</button>

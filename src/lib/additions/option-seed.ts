@@ -2,6 +2,9 @@ import 'server-only'
 
 import { SECTIONS } from '@/components/order/additions-config'
 import { CUSTOM_SECTIONS } from '@/components/custom/custom-additions-config'
+import { createServiceClient } from '@/lib/supabase/service'
+import { additionOptionImageUrl } from '@/lib/additions/option-image'
+import type { OptionOverride, OptionOverrides } from '@/lib/additions/option-tables'
 
 /**
  * Server-only source-of-truth resolver for seeding addition_field_options from
@@ -53,6 +56,44 @@ export const OPTION_SOURCES: Record<string, Source> = {
 
 const standardFields = () => SECTIONS.flatMap(s => s.fields)
 const customFields = () => CUSTOM_SECTIONS.flatMap(s => s.groups.flatMap(g => g.fields))
+
+/**
+ * DB-driven option overrides for the OSB/custom form (Phase 3 wiring), keyed by
+ * PHYSICAL field key. Each OSB logical set's active rows (sorted) are expanded to
+ * every physical field it feeds (boundKeys). A logical set with NO rows is
+ * omitted, so the form falls back to its static config — nothing breaks if the
+ * admin hasn't run "Sync from config" yet.
+ */
+export async function getOsbOptionOverrides(): Promise<OptionOverrides> {
+  const osbKeys = Object.entries(OPTION_SOURCES).filter(([, s]) => s.form === 'osb').map(([k]) => k)
+  const service = createServiceClient()
+  const { data } = await service
+    .from('addition_field_options')
+    .select('field_key, value, image_path, label_nl, label_fr, label_de, sort_order')
+    .in('field_key', osbKeys)
+    .eq('active', true)
+    .order('sort_order', { ascending: true })
+
+  const byLogical: Record<string, OptionOverride[]> = {}
+  for (const r of (data ?? []) as Array<{ field_key: string; value: string; image_path: string | null; label_nl: string | null; label_fr: string | null; label_de: string | null }>) {
+    ;(byLogical[r.field_key] ??= []).push({
+      value: r.value,
+      image: additionOptionImageUrl(r.image_path),
+      label_nl: r.label_nl,
+      label_fr: r.label_fr,
+      label_de: r.label_de,
+    })
+  }
+
+  const out: OptionOverrides = {}
+  for (const [logical, source] of Object.entries(OPTION_SOURCES)) {
+    if (source.form !== 'osb') continue
+    const opts = byLogical[logical]
+    if (!opts?.length) continue
+    for (const physical of source.boundKeys) out[physical] = opts
+  }
+  return out
+}
 
 /** Values + per-value image path for a logical option-set, read from the config. */
 export function optionSource(logicalKey: string): { values: string[]; images: Record<string, string> } | null {

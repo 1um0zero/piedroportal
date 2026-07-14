@@ -80,3 +80,26 @@ export interface SaveAdditionOptionInput {
   label_de?: string | null
   active?: boolean
 }
+
+/**
+ * A DB-driven option for a form field, resolved for consumption by the order
+ * forms (Phase 3 wiring). `value` is the canonical stored string; `image` is an
+ * already-resolved URL (or null); the per-locale labels override the display
+ * text only (never the stored value).
+ */
+export interface OptionOverride {
+  value: string
+  image: string | null
+  label_nl: string | null
+  label_fr: string | null
+  label_de: string | null
+}
+
+/** Overrides keyed by PHYSICAL form field key (one logical set may feed several). */
+export type OptionOverrides = Record<string, OptionOverride[]>
+
+/** Resolve the display label of an override for a locale (falls back to value). */
+export function overrideLabel(o: OptionOverride, locale: string): string {
+  const l = locale === 'nl' ? o.label_nl : locale === 'fr' ? o.label_fr : locale === 'de' ? o.label_de : null
+  return l || o.value
+}

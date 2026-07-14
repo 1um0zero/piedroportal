@@ -6,6 +6,7 @@ import {
   CUSTOM_SECTIONS, customLabel,
   type CustomField, type CustomSection,
 } from './custom-additions-config'
+import { overrideLabel, type OptionOverrides } from '@/lib/additions/option-tables'
 
 type Vals = Record<string, unknown>
 type Sided = { l?: number | string | ''; r?: number | string | '' }
@@ -145,13 +146,38 @@ function MeasurementGrid({
  *  simpler than the OSB AdditionsForm (no GLB/sole/ZSM machinery) — a clean
  *  canvas to iterate the custom-made set on. */
 export default function CustomAdditionsForm({
-  values, onChange, unit = 'PAIR',
+  values, onChange, unit = 'PAIR', optionOverrides,
 }: {
   values: Vals
   onChange: (next: Vals) => void
   unit?: Unit
+  optionOverrides?: OptionOverrides
 }) {
   const locale = useLocale()
+
+  // Effective options for an option/image field: DB-driven (back-office) when the
+  // field has overrides, else the static config. `values` are the canonical
+  // stored strings; `labelOf` is display-only; `imageOf` returns a resolved URL.
+  const fieldOptions = (f: CustomField): {
+    values: string[]
+    imageOf: (v: string) => string | undefined
+    labelOf: (v: string) => string
+  } => {
+    const ov = optionOverrides?.[f.key]
+    if (ov && ov.length) {
+      const byVal = new Map(ov.map(o => [o.value, o]))
+      return {
+        values: ov.map(o => o.value),
+        imageOf: v => byVal.get(v)?.image ?? undefined,
+        labelOf: v => { const o = byVal.get(v); return o ? overrideLabel(o, locale) : v },
+      }
+    }
+    return {
+      values: (f.values ?? []).map(String),
+      imageOf: v => f.images?.[v],
+      labelOf: v => v,
+    }
+  }
   // All sections start closed (Martin slide 1) so the whole structure is visible.
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const [popup, setPopup] = useState<string | null>(null)
@@ -201,27 +227,28 @@ export default function CustomAdditionsForm({
     }
 
     if (f.type === 'image') {
+      const opts = fieldOptions(f)
       const selected = (values[f.key] as string) || null
       // collapse: once a value is picked, show only it; click again to reveal all
-      const shown = f.collapse && selected ? [selected] : (f.values ?? [])
+      const shown = f.collapse && selected ? [selected] : opts.values
       return (
         <div key={f.key} className={`py-2 ${indent}`}>
           <label className="mb-2 block text-xs text-stone-500">{label}</label>
           <div className="flex flex-wrap gap-2.5">
             {shown.map(v => {
               const val = String(v)
-              const src = f.images?.[val]
+              const src = opts.imageOf(val)
               const on = selected === val
               return (
-                <button key={val} type="button" title={val}
+                <button key={val} type="button" title={opts.labelOf(val)}
                   onClick={() => set(f.key, on ? '' : val)}
                   className={`group relative flex w-[104px] flex-col items-center rounded-xl border p-2 transition-all
                     ${on ? 'border-gold bg-gold/5 ring-2 ring-gold/30 shadow-sm' : 'border-stone-200 bg-white hover:border-gold/60'}`}>
                   {src
                     // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={src} alt={val} className="pointer-events-none h-[68px] w-full object-contain" />
+                    ? <img src={src} alt={opts.labelOf(val)} className="pointer-events-none h-[68px] w-full object-contain" />
                     : <div className="flex h-[68px] w-full items-center justify-center text-[10px] text-stone-300">—</div>}
-                  <span className={`mt-1 text-[11px] font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>{val}</span>
+                  <span className={`mt-1 text-[11px] font-medium ${on ? 'text-gold' : 'text-stone-600'}`}>{opts.labelOf(val)}</span>
                   {on && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-white shadow-sm">
                       <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -239,11 +266,12 @@ export default function CustomAdditionsForm({
 
     if (f.type === 'option' && f.dropdown) {
       const sided = f.side === 'both'
+      const opts = fieldOptions(f)
       const selCls = 'w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm'
       const selectEl = (sel: string, pick: (v: string) => void, ph: string) => (
         <select value={sel} onChange={e => pick(e.target.value)} className={selCls} aria-label={`${label} ${ph}`.trim()}>
           <option value="">{ph ? `${ph} —` : '—'}</option>
-          {(f.values ?? []).map(v => <option key={String(v)} value={String(v)}>{String(v)}</option>)}
+          {opts.values.map(v => <option key={v} value={v}>{opts.labelOf(v)}</option>)}
         </select>
       )
       const sv = (values[f.key] as { l?: string; r?: string }) ?? {}
@@ -262,8 +290,9 @@ export default function CustomAdditionsForm({
 
     if (f.type === 'option') {
       const sided = f.side === 'both'
+      const opts = fieldOptions(f)
       const chipRow = (sel: string | null, pick: (v: string) => void) => {
-        const shown = f.collapse && sel ? [sel] : (f.values ?? [])
+        const shown = f.collapse && sel ? [sel] : opts.values
         return (
           <div className="flex flex-wrap gap-1.5">
             {shown.map(v => {
@@ -272,7 +301,7 @@ export default function CustomAdditionsForm({
                 <button key={val} type="button" onClick={() => pick(on ? '' : val)}
                   className={`rounded border px-3 py-1.5 text-xs font-medium transition-all
                     ${on ? 'border-gold bg-gold text-white shadow-sm' : 'border-stone-200 bg-white text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
-                  {val}
+                  {opts.labelOf(val)}
                 </button>
               )
             })}
