@@ -15,6 +15,33 @@ import {
 type Groups = Record<string, AdditionOption[]>
 type View = 'table' | 'cards'
 
+// The server always re-normalises to a 700 px square, so large originals only
+// waste bandwidth and can blow the Server Action body limit / Vercel's ~4.5 MB
+// platform cap. Downscale big photos in the browser first (mirrors the product
+// image uploader). EXIF orientation is baked in; PNG preserves transparency.
+const MAX_UPLOAD_DIM = 1600
+const SIZE_THRESHOLD = 1_500_000 // bytes; below this, send untouched
+async function prepareForUpload(file: File): Promise<File> {
+  if (file.size <= SIZE_THRESHOLD) return file
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const scale = Math.min(1, MAX_UPLOAD_DIM / Math.max(bmp.width, bmp.height))
+    const w = Math.round(bmp.width * scale)
+    const h = Math.round(bmp.height * scale)
+    const canvas = document.createElement('canvas')
+    canvas.width = w; canvas.height = h
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(bmp, 0, 0, w, h)
+    bmp.close?.()
+    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'))
+    if (!blob) return file
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.png', { type: 'image/png' })
+  } catch {
+    return file // fall back to the original; the server may still accept it
+  }
+}
+
 /**
  * /admin/additions — "Additions – Tabelas". Four editable option lists
  * (PU/EVA Bumper, Sole, Runner sole, Spoiler), viewable as a compact table or a
@@ -204,9 +231,10 @@ function useOptionEditor(row: AdditionOption, { onPatch, onRemove, onError }: Ro
     if (!file.type.startsWith('image/')) return onError('File must be an image')
     start(async () => {
       onError(null)
+      const prepared = await prepareForUpload(file)
       const fd = new FormData()
       fd.set('id', row.id)
-      fd.set('file', file)
+      fd.set('file', prepared)
       const res = await uploadAdditionOptionImage(fd)
       if (res.error) return onError(res.error)
       onPatch(row.id, { image_path: res.path ?? row.image_path })

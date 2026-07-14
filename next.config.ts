@@ -54,6 +54,14 @@ const nextConfig: NextConfig = {
   // at runtime instead of being bundled (bundling breaks it on Vercel — was the
   // cause of all product-image uploads failing with "fout").
   serverExternalPackages: ['sharp'],
+  experimental: {
+    // Server Actions cap request bodies at 1 MB by default; image uploads (e.g.
+    // /admin/additions option photos) need more. Kept under Vercel's ~4.5 MB
+    // platform limit; the client also downscales large photos before sending.
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_BUILD_TIME: buildTime,
