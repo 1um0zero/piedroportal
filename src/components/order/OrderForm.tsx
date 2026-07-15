@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { productImageUrl } from '@/lib/products/image-url'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, Link } from '@/i18n/navigation'
 import type { Product, Locale } from '@/types'
-import AdditionsForm from './AdditionsForm'
+import AdditionsForm, { type AdditionsFormHandle } from './AdditionsForm'
 import { emptyAdditions, getMissingRequiredAdditions, SECTIONS, type MissingRequired } from './additions-config'
 import { soleProfileFor } from './sole-profiles'
 import { zsmGroupFor, zsmExcludedSizes } from './zsm-profiles'
@@ -207,6 +207,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   )
   const [step,        setStep]      = useState<1 | 2 | 3>(getInitialState('step', 1))
   const [missingAdds, setMissingAdds] = useState<MissingRequired[]>([])
+  // Comment→addition nudge: fields the client mentioned in the comment but hasn't
+  // filled or dismissed. Advancing while any remain pops the "keep in comment?" modal.
+  const additionsFormRef = useRef<AdditionsFormHandle>(null)
+  const [pendingSuggest, setPendingSuggest] = useState<string[]>([])
+  const [showSuggestModal, setShowSuggestModal] = useState(false)
   const [submitting,  setSubmitting] = useState(false)
   const [discarding,  setDiscarding] = useState(false)
   const [downloadingPdf, setDownloadingPdf] = useState(false)
@@ -228,7 +233,9 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
   const zsmGroup = zsmGroupFor(product.style_name)
 
   // Gate Tab2 → Tab3: every active conditional child (the `*` fields) must be filled.
-  function goToConfirmation() {
+  // `suggestionsAcknowledged` is set when the user chose "dismiss and continue" in
+  // the recommendations modal — it skips the soft nudge guard for this pass.
+  function goToConfirmation(suggestionsAcknowledged = false) {
     const missing = getMissingRequiredAdditions(
       additions, unit, (product as unknown as Record<string, string>).adds_exclude ?? '', soleProfile, zsmGroup,
     )
@@ -248,6 +255,11 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
     }
     setMissingAdds([])
     setError('')
+    // Soft guard: recommendations still pending and not yet acknowledged → ask.
+    if (!suggestionsAcknowledged && pendingSuggest.length > 0) {
+      setShowSuggestModal(true)
+      return
+    }
     setStep(3)
   }
 
@@ -608,6 +620,7 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             </div>
           )}
           <AdditionsForm
+            ref={additionsFormRef}
             unit={unit}
             closure={product.closure}
             addsExclude={(product as unknown as Record<string, string>).adds_exclude ?? ''}
@@ -617,9 +630,10 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
             soleProfile={soleProfile}
             section={product.section}
             zsmGroup={zsmGroup}
+            onSuggestionsChange={setPendingSuggest}
           />
           <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
-            <button onClick={goToConfirmation}
+            <button onClick={() => goToConfirmation()}
               className="px-6 py-2.5 bg-gold text-white font-semibold text-sm rounded-xl
                          hover:bg-gold-dark transition-colors">
               {t('review_confirm')} →
@@ -633,6 +647,38 @@ export default function OrderForm({ product, userId, userProfile, userCompany, c
               className="text-sm text-stone-400 hover:text-stone-600 transition-colors ml-auto">
               ← {t('tab1')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Advance guard: recommendations detected in the comment but not yet used
+          nor dismissed — force an explicit "keep in comment?" choice. */}
+      {showSuggestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40"
+          onClick={() => setShowSuggestModal(false)}>
+          <div className="bg-white rounded-[14px] max-w-md w-full p-6 space-y-4"
+            style={{ boxShadow: 'var(--shadow-card)' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 w-9 h-9 rounded-full bg-gold/10 text-gold flex items-center justify-center">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
+                </svg>
+              </span>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-stone-900">{t('suggest_modal.title')}</h3>
+                <p className="text-sm text-stone-600 leading-relaxed">{t('suggest_modal.body')}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={() => setShowSuggestModal(false)}
+                className="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+                {t('suggest_modal.review')}
+              </button>
+              <button onClick={() => { additionsFormRef.current?.dismissAllSuggestions(); setShowSuggestModal(false); goToConfirmation(true) }}
+                className="px-4 py-2 text-sm font-semibold text-white bg-gold rounded-lg hover:bg-gold-dark transition-colors">
+                {t('suggest_modal.dismiss')}
+              </button>
+            </div>
           </div>
         </div>
       )}

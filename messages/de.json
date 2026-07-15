@@ -409,6 +409,12 @@
     "required": " ist erforderlich.",
     "review_confirm": "Prüfen und bestätigen",
     "fill_required_additions": "Bitte füllen Sie die erforderlichen Anpassungsfelder (mit * markiert) aus, bevor Sie fortfahren: {fields}",
+    "suggest_modal": {
+      "title": "Sie haben noch Empfehlungen",
+      "body": "Wir haben in Ihrem Kommentar Anpassungen gefunden, die ein eigenes Feld haben und noch nicht ausgefüllt wurden. Nutzen Sie die Felder (folgen Sie den blinkenden goldenen Pfeilen) oder verwerfen Sie die Empfehlungen, um sie im Kommentar zu behalten und fortzufahren.",
+      "dismiss": "Verwerfen und fortfahren",
+      "review": "Überprüfen"
+    },
     "prev": "",
     "next_additions": "Ergänzungen",
     "back_to_product": "zurück zu Kunde und Produkt",
@@ -461,7 +467,8 @@
     "comment_suggest": {
       "intro": "Sie erwähnen offenbar eine Anpassung, die ein eigenes Feld hat. Bitte tragen Sie sie dort ein, damit Ihre Bestellung eindeutig bleibt:",
       "jump": "Zu diesem Feld",
-      "dismiss": "Ausblenden"
+      "dismiss": "Ausblenden",
+      "dismiss_all": "Vorschläge verwerfen (im Kommentar behalten)"
     },
     "sections": {
       "additions": "Ergänzungen",

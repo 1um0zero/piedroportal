@@ -409,6 +409,12 @@
     "required": " is vereist.",
     "review_confirm": "Controleren en bevestigen",
     "fill_required_additions": "Vul de verplichte aanpassingsvelden (gemarkeerd met *) in voordat u verdergaat: {fields}",
+    "suggest_modal": {
+      "title": "U heeft nog aanbevelingen",
+      "body": "We hebben in uw opmerking aanpassingen gevonden die een eigen veld hebben en nog niet zijn ingevuld. Gebruik de velden (volg de knipperende gouden pijlen), of negeer de aanbevelingen om ze in de opmerking te houden en door te gaan.",
+      "dismiss": "Negeren en doorgaan",
+      "review": "Bekijken"
+    },
     "prev": "",
     "next_additions": "Aanpassingen",
     "back_to_product": "terug naar Klant en Product",
@@ -461,7 +467,8 @@
     "comment_suggest": {
       "intro": "Het lijkt erop dat u een aanpassing noemt die een eigen veld heeft. Vul die daar in zodat uw bestelling duidelijk blijft:",
       "jump": "Ga naar dit veld",
-      "dismiss": "Verbergen"
+      "dismiss": "Verbergen",
+      "dismiss_all": "Suggesties negeren (in opmerking houden)"
     },
     "sections": {
       "additions": "Leest Aanpassingen",

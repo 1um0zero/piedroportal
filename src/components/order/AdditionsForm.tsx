@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, MIRROR_KEYS, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
@@ -30,7 +30,19 @@ type Props = {
   soleProfile?: string | null  // sole group key for this model → restricts sole-amendment options
   section?: string | null      // product section (KIDS/MEN/WOMEN) → picks gender-specific sole photos
   zsmGroup?: ZsmGroup | null   // ZSM model → show ZSM prefab/sole-sheet block (replaces PU/EVA + amend_sole)
+  // Reports the fields currently suggested-but-unactioned (mentioned in the comment,
+  // still empty, not dismissed) so the parent can guard "advance" on them.
+  onSuggestionsChange?: (pendingKeys: string[]) => void
 }
+
+// Blinking gold arrow that marks a field the comment mentioned — deliberately loud
+// (this must be obvious to non-technical users), permanent until the field is
+// filled or the suggestion dismissed.
+function SuggestArrow() {
+  return <span className="pp-suggest-arrow" aria-hidden="true">➜</span>
+}
+
+export type AdditionsFormHandle = { dismissAllSuggestions: () => void }
 
 // ── Chip components ───────────────────────────────────────────────────────────
 
@@ -307,7 +319,10 @@ function SelectCombo({ values, value, onChange, t, fieldKey }: {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function AdditionsForm({ unit, closure, addsExclude, additions, onChange, missing, soleProfile = null, section = null, zsmGroup = null }: Props) {
+const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsForm(
+  { unit, closure, addsExclude, additions, onChange, missing, soleProfile = null, section = null, zsmGroup = null, onSuggestionsChange }: Props,
+  ref,
+) {
   const t = useTranslations('additions')
   // Field keys flagged as missing-required on the last failed "Review and confirm".
   const missingKeys = new Set((missing ?? []).map(m => m.fieldKey))
@@ -395,6 +410,24 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
       .filter(s => !dismissedSuggest.has(s.fieldKey)),
     [commentText, candidateKeys, localizedTerms, dismissedSuggest],
   )
+  // Field keys currently flagged — drives the permanent blinking arrows at each
+  // field title. Shrinks automatically as fields get filled (a filled field is no
+  // longer a candidate) or dismissed.
+  const pendingSet = useMemo(() => new Set(commentSuggestions.map(s => s.fieldKey)), [commentSuggestions])
+
+  // Tell the parent which fields are still pending (for the advance guard).
+  useEffect(() => { onSuggestionsChange?.(commentSuggestions.map(s => s.fieldKey)) }, [commentSuggestions, onSuggestionsChange])
+
+  // "Dispensar sugestões" / the advance-modal both dismiss everything at once.
+  useImperativeHandle(ref, () => ({
+    dismissAllSuggestions() {
+      setDismissedSuggest(prev => {
+        const next = new Set(prev)
+        for (const s of commentSuggestions) next.add(s.fieldKey)
+        return next
+      })
+    },
+  }), [commentSuggestions])
 
   function jumpToField(sectionKey: string, fieldKey: string) {
     setExpanded(prev => { const next = new Set(prev); next.add(sectionKey); return next })
@@ -527,12 +560,12 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
   function renderGlobal(field: AdditionField) {
     const val = additions[field.key] === true
     return (
-      <div key={field.key} className="flex items-center justify-between py-2
+      <div key={field.key} id={`add-field-${field.key}`} className="flex items-center justify-between py-2
            border-b border-stone-50 last:border-0">
         <span
           onClick={() => update(field.key, 'global', !val)}
           className="text-sm text-stone-700 cursor-pointer flex-1">
-          {getFieldLabel(field, t).replace(/\s*\(mm\)/gi, '')}
+          {pendingSet.has(field.key) && <SuggestArrow />}{getFieldLabel(field, t).replace(/\s*\(mm\)/gi, '')}
         </span>
         <input type="checkbox" checked={val}
           onChange={(e) => update(field.key, 'global', e.target.checked)}
@@ -728,7 +761,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             updateField(field.key, displaySide, !isChecked)
                           }}
                           className="text-sm text-stone-700 cursor-pointer flex-1">
-                          {cleanLabel}
+                          {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
                         </span>
                         <input type="checkbox" checked={isChecked}
                           onChange={e => updateField(field.key, displaySide, e.target.checked)}
@@ -761,7 +794,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           }
                         }}
                         className="text-sm text-stone-700 cursor-pointer flex-1">
-                        {cleanLabel}
+                        {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
                         {field.mirror && isDouble && (
                           <span className="ml-2 align-middle text-[10px] font-semibold text-stone-400
                                            border border-stone-200 rounded px-1 py-px">
@@ -817,7 +850,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                             onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
                           }}
                           className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
-                          {cleanLabel}
+                          {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
                         </span>
                       </div>
                       {/* Children are rendered separately as sub-fields when parent is active */}
@@ -865,7 +898,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                           }
                         }}
                         className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
-                        {cleanLabel}
+                        {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
                       </span>
                     </div>
                     {(checkedL || checkedR) && (
@@ -968,11 +1001,11 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       // PAIR/LEFT/RIGHT: single checkbox
                       const isChecked = sv?.[displaySide] === true
                       return (
-                        <div key={field.key} className="flex items-center justify-between py-2 border-b border-stone-50 last:border-0">
+                        <div key={field.key} id={`add-field-${field.key}`} className="flex items-center justify-between py-2 border-b border-stone-50 last:border-0">
                           <span
                             onClick={() => updateField(field.key, displaySide, !isChecked)}
                             className="text-sm text-stone-700 cursor-pointer flex-1">
-                            {fieldLabel}
+                            {pendingSet.has(field.key) && <SuggestArrow />}{fieldLabel}
                           </span>
                           <input type="checkbox" checked={isChecked}
                             onChange={e => updateField(field.key, displaySide, e.target.checked)}
@@ -984,7 +1017,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                       const isCheckedL = sv?.l === true
                       const isCheckedR = sv?.r === true
                       return (
-                        <div key={field.key} className="py-2 border-b border-stone-50 last:border-0">
+                        <div key={field.key} id={`add-field-${field.key}`} className="py-2 border-b border-stone-50 last:border-0">
                           <div className="flex items-center gap-3">
                             <div className="flex gap-5 shrink-0">
                               <input type="checkbox" checked={isCheckedL}
@@ -1002,7 +1035,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                                 onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
                               }}
                               className="flex-1 text-sm text-stone-700 cursor-pointer">
-                              {fieldLabel}
+                              {pendingSet.has(field.key) && <SuggestArrow />}{fieldLabel}
                             </span>
                           </div>
                         </div>
@@ -1166,9 +1199,21 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 )
               })}
             </div>
+            {/* "I've seen them, keep it in the comment" — the explicit acknowledgement. */}
+            <button type="button"
+              onClick={() => setDismissedSuggest(prev => {
+                const n = new Set(prev)
+                for (const s of commentSuggestions) n.add(s.fieldKey)
+                return n
+              })}
+              className="w-full text-[11px] font-semibold text-stone-500 hover:text-stone-700 border-t border-gold/20 pt-2 mt-1">
+              {t('comment_suggest.dismiss_all')}
+            </button>
           </div>
         )}
       </div>
     </div>
   )
-}
+})
+
+export default AdditionsForm

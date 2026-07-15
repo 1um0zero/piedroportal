@@ -183,3 +183,16 @@ input[type="checkbox"].custom-gold:checked::after {
   animation: pp-flash-kf 1.8s ease-out;
   border-radius: 10px;
 }
+
+/* Comment→addition nudge: permanent blinking gold arrow marking a suggested field. */
+.pp-suggest-arrow {
+  display: inline-block;
+  color: #B8975A;
+  font-weight: 900;
+  margin-right: 5px;
+  animation: pp-arrow-blink 0.85s ease-in-out infinite;
+}
+@keyframes pp-arrow-blink {
+  0%, 100% { opacity: 1;   transform: translateX(0); }
+  50%      { opacity: 0.2; transform: translateX(-3px); }
+}

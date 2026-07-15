@@ -409,6 +409,12 @@
     "required": " is required.",
     "review_confirm": "Review and confirm",
     "fill_required_additions": "Please fill in the required adaptation fields (marked *) before continuing: {fields}",
+    "suggest_modal": {
+      "title": "You still have recommendations",
+      "body": "We spotted adaptations in your comment that have their own field and haven't been filled in. Use the fields (follow the blinking gold arrows), or dismiss the recommendations to continue keeping them in the comment.",
+      "dismiss": "Dismiss and continue",
+      "review": "Review"
+    },
     "prev": "",
     "next_additions": "Additions",
     "back_to_product": "back to Customer and Product",
@@ -461,7 +467,8 @@
     "comment_suggest": {
       "intro": "It looks like you mentioned an adaptation that has its own field. Please add it there so your order stays clear:",
       "jump": "Go to this field",
-      "dismiss": "Dismiss"
+      "dismiss": "Dismiss",
+      "dismiss_all": "Dismiss suggestions (keep in comment)"
     },
     "sections": {
       "additions": "Additions",

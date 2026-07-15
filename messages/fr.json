@@ -409,6 +409,12 @@
     "required": " est requis.",
     "review_confirm": "Vérifier et confirmer",
     "fill_required_additions": "Veuillez renseigner les champs d'adaptation obligatoires (marqués *) avant de continuer : {fields}",
+    "suggest_modal": {
+      "title": "Vous avez encore des recommandations",
+      "body": "Nous avons repéré dans votre commentaire des adaptations qui possèdent leur propre champ et n'ont pas été renseignées. Utilisez les champs (suivez les flèches dorées clignotantes), ou ignorez les recommandations pour les garder dans le commentaire et continuer.",
+      "dismiss": "Ignorer et continuer",
+      "review": "Revoir"
+    },
     "prev": "",
     "next_additions": "Suppléments",
     "back_to_product": "retour aux Client et Produit",
@@ -461,7 +467,8 @@
     "comment_suggest": {
       "intro": "Vous semblez mentionner une adaptation qui possède son propre champ. Ajoutez-la ici pour que votre commande reste claire :",
       "jump": "Aller à ce champ",
-      "dismiss": "Ignorer"
+      "dismiss": "Ignorer",
+      "dismiss_all": "Ignorer les suggestions (garder dans le commentaire)"
     },
     "sections": {
       "additions": "Suppléments",
