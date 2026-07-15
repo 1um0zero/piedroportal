@@ -1,13 +1,19 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireOrdersViewPage } from '@/lib/admin/scope'
 import { signOrderPdfs } from '@/lib/order-pdf'
-import { attachOrderExtras } from '@/lib/order-tracking'
+import { slimOrdersForList } from '@/lib/orders/list-summary'
 import { getStockOrderRows } from '@/app/actions/stock'
 import OrdersPage from '@/components/orders/OrdersPage'
 
+// Tracking + dispatch columns live in the orders row and are selected inline
+// (they used to be fetched in separate, sequential per-column round-trips via
+// attachOrderExtras — ~18 extra queries on a big list). `comments` is dropped
+// entirely (the list never renders it) and `additions` is slimmed to two derived
+// booleans client-side. See src/lib/orders/list-summary.ts.
 const SELECT = `
   id, user_id, dataverse_id, order_seq, status, approval_state, production_state, piedro_order_id, unit, patient_name, clinician, reference_customer, quantity,
-  created_at, updated_at, size_left, size_right, additions, comments, pdf_url,
+  created_at, updated_at, size_left, size_right, additions, pdf_url,
+  tracking_link, tracking_code, expected_dispatch_date,
   products(id, style_name, colour_id, color_name, closure, picture_name, section),
   companies(id, name, erp_code)
 `
@@ -33,44 +39,53 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
   const cutoff = useRange ? null : ageCutoff(age)
 
   const service = createServiceClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let allOrders: any[] = []
-  let offset = 0
-  const PAGE = 1000
-  while (true) {
-    let q = service
-      .from('orders')
-      .select(SELECT)
-      // Drafts are private to their creator and live in /admin/drafts — they must
-      // not pollute the back-office Orders analysis. The viewer's OWN drafts are the
-      // exception: back-office users have no other list where they can resume them
-      // (their home is this view, not /orders). See project_draft_on_behalf_future.
-      .or(`status.neq.draft,user_id.eq.${scope.userId}`)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + PAGE - 1)
-    if (useRange) q = q.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
-    else if (cutoff) q = q.gte('created_at', cutoff)
-    const { data, error } = await q
-    if (error || !data?.length) break
-    allOrders = allOrders.concat(data)
-    if (data.length < PAGE) break
-    offset += PAGE
+
+  // The paginated orders fetch and the (independent) stock-orders fetch run in
+  // parallel — neither depends on the other's result.
+  async function fetchAllOrders() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let rows: any[] = []
+    let offset = 0
+    const PAGE = 1000
+    while (true) {
+      let q = service
+        .from('orders')
+        .select(SELECT)
+        // Drafts are private to their creator and live in /admin/drafts — they must
+        // not pollute the back-office Orders analysis. The viewer's OWN drafts are the
+        // exception: back-office users have no other list where they can resume them
+        // (their home is this view, not /orders). See project_draft_on_behalf_future.
+        .or(`status.neq.draft,user_id.eq.${scope.userId}`)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + PAGE - 1)
+      if (useRange) q = q.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
+      else if (cutoff) q = q.gte('created_at', cutoff)
+      const { data, error } = await q
+      if (error || !data?.length) break
+      rows = rows.concat(data)
+      if (data.length < PAGE) break
+      offset += PAGE
+    }
+    return rows
   }
+
+  const [allOrders, allStock] = await Promise.all([
+    fetchAllOrders(),
+    // STOCK orders (separate table), under the same scoping as configured orders:
+    // a stock order is in scope if ANY of its models is in the staff member's scope.
+    getStockOrderRows({
+      all: true,
+      fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
+      toISO: useRange ? `${sp.to}T23:59:59` : undefined,
+      cutoffISO: cutoff,
+    }),
+  ])
 
   // Branch staff only see orders whose product model is within their scope AND
   // whose company belongs to their portfolio (token-scoped branches, e.g. UK).
   const scopedOrders = scope.allModels
     ? allOrders
     : allOrders.filter(o => scope.canModel(o.products?.style_name) && scope.canCompany(o.companies?.id))
-
-  // STOCK orders (separate table), under the same scoping as configured orders:
-  // a stock order is in scope if ANY of its models is in the staff member's scope.
-  const allStock = await getStockOrderRows({
-    all: true,
-    fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
-    toISO: useRange ? `${sp.to}T23:59:59` : undefined,
-    cutoffISO: cutoff,
-  })
   const stockRows = scope.allModels
     ? allStock
     : allStock.filter(o => o.styleNames.some(sn => scope.canModel(sn)) && scope.canCompany(o.companies?.id))
@@ -79,7 +94,9 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     (a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''),
   )
 
-  await attachOrderExtras(all, service)
+  // Slim the heavy additions JSONB down to the two flags the list renders, and
+  // drop the never-used comments — keeps the RSC payload and egress small.
+  slimOrdersForList(all)
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   const signed = await signOrderPdfs(all.filter(o => o.pdf_url).map(o => o.id))

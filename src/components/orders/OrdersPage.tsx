@@ -119,22 +119,9 @@ const isNewOrder = (o: { status?: string; approval_state?: string | null }) =>
 const PENDING_STATES = new Set(['under_analysis', 'need_attention', 'awaiting_payment'])
 const isPending = (o: { status?: string; approval_state?: string | null }) =>
   o.status === 'submitted' && PENDING_STATES.has(o.approval_state ?? '')
-const isUrgent = (o: { additions?: { urgent?: boolean } | null }) => o.additions?.urgent === true
-
-// Whether an order carries at least one filled addition.
-function hasAdditions(adds: Record<string, unknown> | null | undefined): boolean {
-  if (!adds) return false
-  for (const v of Object.values(adds)) {
-    if (v === null || v === undefined || v === '' || v === false) continue
-    if (typeof v === 'object') {
-      const sv = v as { l?: unknown; r?: unknown }
-      if ((sv.l != null && sv.l !== '' && sv.l !== false) || (sv.r != null && sv.r !== '' && sv.r !== false)) return true
-      continue
-    }
-    return true
-  }
-  return false
-}
+// `urgent` and `has_additions` are derived server-side from the additions JSONB
+// (which is stripped before the rows reach the client). See lib/orders/list-summary.
+const isUrgent = (o: { urgent?: boolean }) => o.urgent === true
 
 export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, currentUserId, age = '3m', from, to, showDispatch = false }: Props) {
   const router = useRouter()
@@ -455,7 +442,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
               ) : filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(o => {
                 const product = o.products
                 const company = o.companies
-                const isUrgent = o.additions?.urgent === true
+                const isUrgent = o.urgent === true
                 const isStock = o.kind === 'stock'
                 // Drafts read clearly apart from real orders: warm-tinted row,
                 // pencil in the № cell and a "Draft" chip in the status column.
@@ -538,7 +525,7 @@ export default function OrdersPage({ orders, isAdmin, canSeeClinician = false, c
                     <td className="px-3 py-3 text-stone-500 text-xs">
                       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                         {o.unit && UNIT_KEYS[o.unit] ? tu(UNIT_KEYS[o.unit]) : (o.unit ?? '—')}
-                        {hasAdditions(o.additions) && <AdditionsMark title={t('additions_yes')} />}
+                        {o.has_additions && <AdditionsMark title={t('additions_yes')} />}
                       </span>
                     </td>
                     {/* Company — Piedro admin only (a company admin sees a single company) */}

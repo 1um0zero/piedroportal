@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { hasAnyCompany, getAdminCompanyIds } from '@/lib/user-companies'
 import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { signOrderPdfs } from '@/lib/order-pdf'
-import { attachOrderExtras } from '@/lib/order-tracking'
+import { slimOrdersForList } from '@/lib/orders/list-summary'
 import { getSettings } from '@/lib/settings'
 import { isPiedroAdmin as isPiedroAdminRole, isStaffViewer } from '@/lib/roles'
 import { getStockOrderRows } from '@/app/actions/stock'
@@ -75,51 +75,67 @@ export default async function OrdersRoute({ searchParams }: Props) {
 
   // Fetch orders: company_admin sees all orders from their admin companies, regular user sees only their own
   const service = createServiceClient()
+  // Tracking + dispatch columns are selected inline (previously fetched in
+  // separate sequential per-column round-trips via attachOrderExtras). `comments`
+  // is dropped (never rendered) and `additions` is slimmed to two derived
+  // booleans. See src/lib/orders/list-summary.ts.
   const SELECT = `
     id, user_id, dataverse_id, order_seq, status, approval_state, production_state, piedro_order_id, unit, patient_name, clinician, reference_customer, quantity,
-    created_at, updated_at, size_left, size_right, additions, comments, pdf_url,
+    created_at, updated_at, size_left, size_right, additions, pdf_url,
+    tracking_link, tracking_code, expected_dispatch_date,
     products(id, style_name, colour_id, color_name, closure, picture_name, section),
     companies(id, name, erp_code)
   `
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let allOrders: any[] = []
-  let offset = 0
-  const PAGE = 1000
-  while (true) {
-    let query = service
-      .from('orders')
-      .select(SELECT)
+  async function fetchAllOrders() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let rows: any[] = []
+    let offset = 0
+    const PAGE = 1000
+    while (true) {
+      let query = service
+        .from('orders')
+        .select(SELECT)
 
-    // Company admins / branch admins see all orders from their scoped companies
-    if (isCompanyAdmin) {
-      query = query.in('company_id', scopedCompanyIds)
-    } else {
-      // Regular users only see their own orders
-      query = query.eq('user_id', user.id)
+      // Company admins / branch admins see all orders from their scoped companies
+      if (isCompanyAdmin) {
+        query = query.in('company_id', scopedCompanyIds)
+      } else {
+        // Regular users only see their own orders
+        query = query.eq('user_id', user!.id)
+      }
+
+      if (useRange) query = query.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
+      else if (cutoff) query = query.gte('created_at', cutoff)
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + PAGE - 1)
+
+      if (error || !data?.length) break
+      rows = rows.concat(data)
+      if (data.length < PAGE) break
+      offset += PAGE
     }
-
-    if (useRange) query = query.gte('created_at', `${sp.from}T00:00:00`).lte('created_at', `${sp.to}T23:59:59`)
-    else if (cutoff) query = query.gte('created_at', cutoff)
-
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + PAGE - 1)
-
-    if (error || !data?.length) break
-    allOrders = allOrders.concat(data)
-    if (data.length < PAGE) break
-    offset += PAGE
+    return rows
   }
 
-  // Merge in STOCK orders (separate table) for the unified list.
-  const stockRows = await getStockOrderRows({
-    userId: isCompanyAdmin ? undefined : user.id,
-    companyIds: isCompanyAdmin ? scopedCompanyIds : undefined,
-    fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
-    toISO: useRange ? `${sp.to}T23:59:59` : undefined,
-    cutoffISO: cutoff,
-  })
+  // The orders fetch, the (independent) stock-orders fetch and the dispatch
+  // setting all run in parallel — none depends on the others' result.
+  const [allOrders, stockRows, dispatchSetting] = await Promise.all([
+    fetchAllOrders(),
+    // Merge in STOCK orders (separate table) for the unified list.
+    getStockOrderRows({
+      userId: isCompanyAdmin ? undefined : user.id,
+      companyIds: isCompanyAdmin ? scopedCompanyIds : undefined,
+      fromISO: useRange ? `${sp.from}T00:00:00` : undefined,
+      toISO: useRange ? `${sp.to}T23:59:59` : undefined,
+      cutoffISO: cutoff,
+    }),
+    // Users see the dispatch counter only if Piedro turned it on for everyone.
+    getSettings(['dispatch_show_all']),
+  ])
+
   // Drafts are private to their creator: a company/branch admin viewing the whole
   // company must NOT see colleagues' drafts (their own still show). Regular users
   // only fetch their own orders, so this is a no-op for them.
@@ -127,9 +143,11 @@ export default async function OrdersRoute({ searchParams }: Props) {
   const orders = [...allOrders, ...stockRows]
     .filter(o => o.status !== 'draft' || o.user_id === user.id)
     .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
-  await attachOrderExtras(orders, service)
-  // Users see the dispatch counter only if Piedro turned it on for everyone.
-  const showDispatch = (await getSettings(['dispatch_show_all'])).dispatch_show_all === '1'
+  const showDispatch = dispatchSetting.dispatch_show_all === '1'
+
+  // Slim the heavy additions JSONB down to the two flags the list renders, and
+  // drop the never-used comments — keeps the RSC payload and egress small.
+  slimOrdersForList(orders)
 
   // Replace the stored path with a short-lived signed URL (private bucket).
   const signed = await signOrderPdfs(orders.filter(o => o.pdf_url).map(o => o.id))
