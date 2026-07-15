@@ -18,6 +18,13 @@ export type LabPage = {
 
 export const LAB_PAGES: LabPage[] = [
   {
+    key: '3d-viewer',
+    title: 'Visualizador 3D (adições)',
+    href: '/admin/lab/3d-viewer',
+    status: 'active',
+    note: 'Sapato demo three.js que reflete as adições em tempo real (zonas + bandeiras). Ilustrativo — 5 de ~30 campos, deformação não calibrada por SKU. Fora do fluxo do cliente.',
+  },
+  {
     key: 'mm-fields',
     title: 'Campos numéricos (range)',
     href: '/lab/mm-fields',
