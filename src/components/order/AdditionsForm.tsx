@@ -396,14 +396,23 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
     [commentText, candidateKeys, localizedTerms, dismissedSuggest],
   )
 
-  function jumpToField(sectionKey: string) {
+  function jumpToField(sectionKey: string, fieldKey: string) {
     setExpanded(prev => { const next = new Set(prev); next.add(sectionKey); return next })
     setFlashSection(sectionKey)
-    setTimeout(() => setFlashSection(cur => (cur === sectionKey ? null : cur)), 1600)
-    // Wait two frames so the section body has expanded before we scroll to it.
+    setTimeout(() => setFlashSection(cur => (cur === sectionKey ? null : cur)), 1800)
+    // Wait two frames so the (now-expanded) section body is in the DOM, then
+    // scroll to the exact field and pulse it — highlighting the whole section
+    // isn't enough to pick one control out of dozens.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.getElementById(`add-section-${sectionKey}`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const field = document.getElementById(`add-field-${fieldKey}`)
+      const target = field ?? document.getElementById(`add-section-${sectionKey}`)
+      target?.scrollIntoView({ behavior: 'smooth', block: field ? 'center' : 'start' })
+      if (field) {
+        field.classList.remove('pp-flash')
+        void field.offsetWidth // restart the animation if it was already flashed
+        field.classList.add('pp-flash')
+        setTimeout(() => field.classList.remove('pp-flash'), 1900)
+      }
     }))
   }
 
@@ -712,7 +721,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const isChecked = sv?.[displaySide] === true
 
                   return (
-                    <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
+                    <div key={field.key} id={`add-field-${field.key}`} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                       <div className="flex items-center justify-between gap-3">
                         <span
                           onClick={() => {
@@ -734,7 +743,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const checked = addExpanded.has(`${field.key}:${displaySide}`)
                 const hasGlb = !!field.glb
                 return (
-                  <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
+                  <div key={field.key} id={`add-field-${field.key}`} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
                       <span
                         onClick={() => {
@@ -791,7 +800,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                   const isCheckedR = sv?.r === true
 
                   return (
-                    <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
+                    <div key={field.key} id={`add-field-${field.key}`} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                       <div className="flex items-center gap-3">
                         <div className="flex gap-5 shrink-0">
                           <input type="checkbox" checked={isCheckedL}
@@ -821,7 +830,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 const checkedR = addExpanded.has(`${field.key}:r`)
                 const hasGlb = !!field.glb
                 return (
-                  <div key={field.key} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
+                  <div key={field.key} id={`add-field-${field.key}`} className={`py-2.5 ${isChild ? 'ml-6' : ''}`}>
                     <div className="flex items-center gap-3">
                       <div className="flex gap-5 shrink-0">
                         <input type="checkbox" checked={checkedL}
@@ -1142,7 +1151,7 @@ export default function AdditionsForm({ unit, closure, addsExclude, additions, o
                 return (
                   <span key={s.fieldKey}
                     className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-white pl-2.5 pr-1 py-0.5 text-[11px]">
-                    <button type="button" onClick={() => jumpToField(s.sectionKey)}
+                    <button type="button" onClick={() => jumpToField(s.sectionKey, s.fieldKey)}
                       title={t('comment_suggest.jump')}
                       className="font-medium text-gold-dark hover:text-gold flex items-center gap-1">
                       {label}

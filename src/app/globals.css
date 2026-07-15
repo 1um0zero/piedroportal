@@ -172,3 +172,14 @@ input[type="checkbox"].custom-gold:checked::after {
   animation: sole-float 4.5s ease-in-out infinite;
   filter: drop-shadow(0 30px 50px rgba(0,0,0,0.55)) drop-shadow(0 8px 14px rgba(0,0,0,0.4));
 }
+
+/* Comment→addition nudge: pulse the target field after a suggestion jump. */
+@keyframes pp-flash-kf {
+  0%   { box-shadow: 0 0 0 0 rgba(184,151,90,0);    background-color: rgba(184,151,90,0); }
+  12%  { box-shadow: 0 0 0 3px rgba(184,151,90,0.6); background-color: rgba(184,151,90,0.12); }
+  100% { box-shadow: 0 0 0 0 rgba(184,151,90,0);    background-color: rgba(184,151,90,0); }
+}
+.pp-flash {
+  animation: pp-flash-kf 1.8s ease-out;
+  border-radius: 10px;
+}
