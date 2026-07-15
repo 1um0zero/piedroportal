@@ -1266,6 +1266,8 @@
       "addSelected": "Auswahl hinzufügen ({count})",
       "shiftHint": "Klicken zum Auswählen · Umschalt+Klick wählt einen Bereich",
       "model": "Modell",
+      "total": "Gesamt",
+      "grandTotal": "Gesamtsumme",
       "saveAll": "Alles speichern",
       "saveError": "Speichern fehlgeschlagen — erneut versuchen.",
       "unsaved": "{count, plural, one {# ungespeicherte Zeile} other {# ungespeicherte Zeilen}}",

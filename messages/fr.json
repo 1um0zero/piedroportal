@@ -1266,6 +1266,8 @@
       "addSelected": "Ajouter la sélection ({count})",
       "shiftHint": "Cliquez pour sélectionner · Maj+clic sélectionne une plage",
       "model": "Modèle",
+      "total": "Total",
+      "grandTotal": "Total général",
       "saveAll": "Tout enregistrer",
       "saveError": "Échec de l'enregistrement — réessayez.",
       "unsaved": "{count, plural, one {# ligne non enregistrée} other {# lignes non enregistrées}}",

@@ -1266,6 +1266,8 @@
       "addSelected": "Add selected ({count})",
       "shiftHint": "Click to select · Shift+click selects a range",
       "model": "Model",
+      "total": "Total",
+      "grandTotal": "Grand total",
       "saveAll": "Save all",
       "saveError": "Could not save — try again.",
       "unsaved": "{count, plural, one {# unsaved row} other {# unsaved rows}}",

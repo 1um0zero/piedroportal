@@ -1266,6 +1266,8 @@
       "addSelected": "Geselecteerde toevoegen ({count})",
       "shiftHint": "Klik om te selecteren · Shift+klik selecteert een reeks",
       "model": "Model",
+      "total": "Totaal",
+      "grandTotal": "Eindtotaal",
       "saveAll": "Alles opslaan",
       "saveError": "Opslaan mislukt — probeer opnieuw.",
       "unsaved": "{count, plural, one {# niet-opgeslagen rij} other {# niet-opgeslagen rijen}}",

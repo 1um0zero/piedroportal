@@ -11,6 +11,7 @@ import {
   searchProductsForStock,
 } from '@/app/actions/admin-stock'
 import { productImageUrl as imageUrl } from '@/lib/products/image-url'
+import { nz } from '@/lib/format'
 
 type SearchHit = { id: string; style_name: string; colour_id: string; color_name: string }
 
@@ -123,6 +124,22 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
     return out
   }, [rows])
 
+  // per-row on-hand total (reactive to edits) + grand total across all rows
+  const rowTotals = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const row of rows) {
+      let sum = 0
+      const q = qty[row.id] ?? {}
+      for (const s in q) sum += q[Number(s)] || 0
+      m[row.id] = sum
+    }
+    return m
+  }, [rows, qty])
+  const grandTotal = useMemo(
+    () => Object.values(rowTotals).reduce((a, b) => a + b, 0),
+    [rowTotals],
+  )
+
   // refs for keyboard navigation: cellRefs[rowIdx][colIdx]
   const cellRefs = useRef<Map<string, HTMLInputElement>>(new Map())
   const cellKey = (r: number, c: number) => `${r}:${c}`
@@ -213,6 +230,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                   {allSizes.map((s) => (
                     <th key={s} className="px-1 py-2 text-center font-medium tabular-nums">{s}</th>
                   ))}
+                  <th className="sticky right-0 z-10 bg-white border-l border-stone-200 px-3 py-2 text-center font-medium">{t('total')}</th>
                   <th className="px-2 py-2" />
                 </tr>
               </thead>
@@ -261,6 +279,9 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                         </td>
                       )
                     })}
+                    <td className="sticky right-0 z-10 bg-white border-l border-stone-200 px-3 py-1 text-center text-sm font-semibold tabular-nums text-stone-900">
+                      {nz(rowTotals[row.id] ?? 0)}
+                    </td>
                     <td className="px-2 py-1 text-right">
                       <button onClick={() => removeRow(row.id)} className="whitespace-nowrap text-xs text-red-500 hover:text-red-700">
                         {t('remove')}
@@ -269,6 +290,14 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-stone-200 text-sm">
+                  <td className="sticky left-0 z-10 bg-stone-50 px-4 py-2 font-semibold text-stone-700">{t('grandTotal')}</td>
+                  <td colSpan={allSizes.length} className="bg-stone-50" />
+                  <td className="sticky right-0 z-10 bg-stone-50 border-l border-stone-200 px-3 py-2 text-center font-bold tabular-nums text-stone-900">{nz(grandTotal)}</td>
+                  <td className="bg-stone-50" />
+                </tr>
+              </tfoot>
             </table>
           </div>
 
