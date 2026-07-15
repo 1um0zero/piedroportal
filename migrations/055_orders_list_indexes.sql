@@ -10,18 +10,18 @@
 -- Without composite (scope, created_at) indexes Postgres filters then sorts a large
 -- slice on every load. These DESC composite indexes let it walk rows already ordered.
 --
--- CONCURRENTLY so the build never locks the live orders table. Note: CREATE INDEX
--- CONCURRENTLY cannot run inside a transaction block — run these statements one at a
--- time in the Supabase SQL editor (do NOT wrap in BEGIN/COMMIT).
+-- NOTE: plain CREATE INDEX (not CONCURRENTLY). The Supabase SQL editor runs every
+-- statement inside a transaction block, where CONCURRENTLY is rejected (25001).
+-- `orders` is only a few thousand rows, so the brief build-time lock is negligible.
 
 -- Ordering/range scan for the back-office list (and the global sort in general).
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_created_at
+CREATE INDEX IF NOT EXISTS idx_orders_created_at
   ON public.orders (created_at DESC);
 
 -- Regular user: their own orders, newest first.
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_user_created_at
+CREATE INDEX IF NOT EXISTS idx_orders_user_created_at
   ON public.orders (user_id, created_at DESC);
 
 -- Company / branch admin: all orders of the scoped companies, newest first.
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_company_created_at
+CREATE INDEX IF NOT EXISTS idx_orders_company_created_at
   ON public.orders (company_id, created_at DESC);
