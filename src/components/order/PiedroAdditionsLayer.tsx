@@ -193,6 +193,8 @@ function PiedroAdditionsEditor({
   const [err, setErr] = useState('')
   const [confirmed, setConfirmed] = useState(false)
   const [note, setNote] = useState<string>(order.additions_override_note ?? '')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiMsg, setAiMsg] = useState('')
 
   // Seed the form with the effective additions so staff edit on top of what the
   // client submitted (and any prior override).
@@ -208,6 +210,33 @@ function PiedroAdditionsEditor({
 
   const soleProfile = soleProfileFor(product?.style_name)
   const zsmGroup = zsmGroupFor(product?.style_name)
+
+  // AI transcription: turn the client's free-text comment into an additions patch
+  // and merge it into the editor as a PROPOSAL — the live diff + this staff member
+  // are the validation (nothing is saved until "Save adjustments").
+  async function runAiFill() {
+    if (!order.comments || aiLoading) return
+    setAiLoading(true); setAiMsg('')
+    try {
+      const res = await fetch('/api/additions/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'fill', comment: order.comments, unit,
+          closure: product?.closure ?? '', addsExclude: (product?.adds_exclude as string) ?? '',
+          soleProfile, section: product?.section ?? null, zsmGroup,
+        }),
+      })
+      const data = await res.json()
+      const p = (data?.additions ?? {}) as Additions
+      const n = Object.keys(p).length
+      if (n) setEdited(prev => ({ ...prev, ...p }))
+      setAiMsg(t('piedro_layer.ai_done', { n }))
+    } catch {
+      setAiMsg(t('piedro_layer.ai_error'))
+    }
+    setAiLoading(false)
+  }
 
   function labelOf(key: string): string {
     const f = FIELD_BY_KEY[key]
@@ -247,11 +276,22 @@ function PiedroAdditionsEditor({
           <p className="text-sm text-stone-500 mt-1 leading-relaxed">{t('piedro_layer.modal_intro')}</p>
         </div>
 
-        {/* The client's comment, kept visible while transcribing. */}
+        {/* The client's comment, kept visible while transcribing — plus one-click
+            AI transcription into the additions (proposed, staff confirms via diff). */}
         {order.comments && (
-          <div className="bg-stone-50 border border-stone-100 rounded-lg p-3">
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wide mb-1">{t('piedro_layer.client_comment')}</p>
+          <div className="bg-stone-50 border border-stone-100 rounded-lg p-3 space-y-2">
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wide">{t('piedro_layer.client_comment')}</p>
             <p className="text-sm text-stone-700 whitespace-pre-wrap">{order.comments}</p>
+            <div className="flex items-center gap-2 pt-1">
+              <button type="button" onClick={runAiFill} disabled={aiLoading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gold border border-gold/40 rounded-lg hover:bg-gold/10 transition-colors disabled:opacity-50">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"/>
+                </svg>
+                {aiLoading ? t('piedro_layer.ai_filling') : t('piedro_layer.ai_fill')}
+              </button>
+              {aiMsg && <span className="text-[11px] text-stone-500">{aiMsg}</span>}
+            </div>
           </div>
         )}
 

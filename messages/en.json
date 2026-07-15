@@ -379,7 +379,11 @@
       "note_placeholder": "e.g. transcribed heel wedge from comment",
       "cancel": "Cancel",
       "save": "Save adjustments",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "ai_fill": "Transcribe comment → additions (AI)",
+      "ai_filling": "Transcribing…",
+      "ai_done": "{n} field(s) proposed — review below",
+      "ai_error": "Couldn't transcribe the comment"
     },
     "customer": "Customer",
     "clinician": "Clinician",

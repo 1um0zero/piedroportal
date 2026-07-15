@@ -28,7 +28,7 @@ export type CommentSuggestion = {
  * than 4 chars are ignored at match time. Extend freely: add the words clients
  * actually write, in every language they write them.
  */
-const SYNONYMS: Record<string, string[]> = {
+export const SYNONYMS: Record<string, string[]> = {
   // ── Additions ──────────────────────────────────────────────────────────────
   lat_joint_w:  ['lateral joint', 'laterale gewricht', 'gewricht lateraal'],
   med_joint_w:  ['medial joint', 'mediale gewricht', 'gewricht mediaal'],

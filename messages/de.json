@@ -379,7 +379,11 @@
       "note_placeholder": "z. B. Fersenkeil aus Kommentar übernommen",
       "cancel": "Abbrechen",
       "save": "Anpassungen speichern",
-      "saving": "Speichern…"
+      "saving": "Speichern…",
+      "ai_fill": "Kommentar → Zusätze (KI)",
+      "ai_filling": "Wird transkribiert…",
+      "ai_done": "{n} Feld(er) vorgeschlagen — unten prüfen",
+      "ai_error": "Kommentar konnte nicht transkribiert werden"
     },
     "customer": "Kunde",
     "clinician": "Arzt",

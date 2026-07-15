@@ -366,6 +366,14 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
     () => Object.fromEntries(allFields.map(f => [f.key, f])) as Record<string, AdditionField>,
     [allFields],
   )
+  const sectionByKey = useMemo(() => {
+    const m: Record<string, string> = {}
+    for (const s of SECTIONS) for (const f of s.fields) m[f.key] = s.key
+    return m
+  }, [])
+  // Fields the LLM detector flagged in the comment (runs automatically, debounced —
+  // augments the instant keyword detector; DETECT only, the human still fills them).
+  const [llmDetected, setLlmDetected] = useState<string[]>([])
 
   // Localized top-level field labels → extra match terms (so a NL/FR/DE comment
   // hits the label as shown, on top of the curated clinical synonyms).
@@ -405,11 +413,39 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
   }, [additions, addsExclude, closure, unit, soleProfile, zsmGroup])
 
   const commentText = String(additions['comments'] ?? '')
-  const commentSuggestions = useMemo(
-    () => detectAdditionsInComment(commentText, k => candidateKeys.has(k), localizedTerms)
-      .filter(s => !dismissedSuggest.has(s.fieldKey)),
-    [commentText, candidateKeys, localizedTerms, dismissedSuggest],
-  )
+
+  // Automatic LLM detection (no button, no validation): debounce ~700ms after the
+  // client stops typing, ask Claude Haiku which fields the comment mentions, and
+  // fold them into the same arrow/chip nudge. Best-effort — on any failure we keep
+  // just the instant keyword matches.
+  useEffect(() => {
+    const text = commentText.trim()
+    if (text.length < 6) { setLlmDetected(prev => (prev.length ? [] : prev)); return }
+    const ctrl = new AbortController()
+    const id = setTimeout(() => {
+      fetch('/api/additions/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'detect', comment: text, unit, closure, addsExclude, soleProfile, section, zsmGroup }),
+        signal: ctrl.signal,
+      })
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => { if (Array.isArray(d?.fields)) setLlmDetected(d.fields.map((f: { fieldKey: string }) => f.fieldKey)) })
+        .catch(() => {})
+    }, 700)
+    return () => { clearTimeout(id); ctrl.abort() }
+  }, [commentText, unit, closure, addsExclude, soleProfile, section, zsmGroup])
+
+  const commentSuggestions = useMemo(() => {
+    const map = new Map<string, { fieldKey: string; sectionKey: string }>()
+    for (const s of detectAdditionsInComment(commentText, k => candidateKeys.has(k), localizedTerms)) {
+      map.set(s.fieldKey, { fieldKey: s.fieldKey, sectionKey: s.sectionKey })
+    }
+    for (const k of llmDetected) {
+      if (candidateKeys.has(k) && !map.has(k)) map.set(k, { fieldKey: k, sectionKey: sectionByKey[k] ?? '' })
+    }
+    return [...map.values()].filter(s => !dismissedSuggest.has(s.fieldKey))
+  }, [commentText, candidateKeys, localizedTerms, dismissedSuggest, llmDetected, sectionByKey])
   // Field keys currently flagged — drives the permanent blinking arrows at each
   // field title. Shrinks automatically as fields get filled (a filled field is no
   // longer a candidate) or dismissed.

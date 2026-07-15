@@ -379,7 +379,11 @@
       "note_placeholder": "ex. coin talon transcrit depuis le commentaire",
       "cancel": "Annuler",
       "save": "Enregistrer les ajustements",
-      "saving": "Enregistrement…"
+      "saving": "Enregistrement…",
+      "ai_fill": "Transcrire le commentaire → ajouts (IA)",
+      "ai_filling": "Transcription…",
+      "ai_done": "{n} champ(s) proposé(s) — vérifiez ci-dessous",
+      "ai_error": "Impossible de transcrire le commentaire"
     },
     "customer": "Client",
     "clinician": "Spécialiste",

@@ -379,7 +379,11 @@
       "note_placeholder": "bv. hakwig overgenomen uit opmerking",
       "cancel": "Annuleren",
       "save": "Aanpassingen opslaan",
-      "saving": "Opslaan…"
+      "saving": "Opslaan…",
+      "ai_fill": "Opmerking → aanpassingen (AI)",
+      "ai_filling": "Bezig met transcriberen…",
+      "ai_done": "{n} veld(en) voorgesteld — controleer hieronder",
+      "ai_error": "Kon de opmerking niet transcriberen"
     },
     "customer": "Klant",
     "clinician": "Specialist",
