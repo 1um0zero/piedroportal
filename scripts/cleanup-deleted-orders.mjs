@@ -4,7 +4,7 @@
  *   1. write an admin_actions `order_delete` entry with IDENTIFIERS ONLY (no content),
  *      so the "this order existed and was deleted" trace survives;
  *   2. delete its orphan PDF from the order-pdfs bucket (no retained content).
- * After this runs clean, apply migration 055 to drop the deleted_orders table.
+ * After this runs clean, apply migration 056 to drop the deleted_orders table.
  *
  *   node scripts/cleanup-deleted-orders.mjs           # dry-run
  *   node scripts/cleanup-deleted-orders.mjs --apply   # write log + delete PDFs
@@ -71,4 +71,4 @@ for (const r of rows) {
     console.log(`  plan delete PDF ${path}`)
   }
 }
-console.log(`\n${APPLY ? `logged ${wroteLogs}, deleted ${delPdfs} PDFs` : 'dry-run (pass --apply)'}. Then run migration 055 to drop deleted_orders.`)
+console.log(`\n${APPLY ? `logged ${wroteLogs}, deleted ${delPdfs} PDFs` : 'dry-run (pass --apply)'}. Then run migration 056 to drop deleted_orders.`)

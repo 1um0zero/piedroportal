@@ -6,6 +6,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import { exclusiveTokens } from '@/lib/exclusive'
+import { logDeletion } from '@/lib/admin/audit'
 
 // ── Auth helper (piedro_admin only) ───────────────────────────────────────────
 
@@ -82,6 +83,16 @@ export async function deleteBranch(id: string): Promise<{ ok?: boolean; error?: 
   if (authErr) return { error: authErr }
 
   const service = createServiceClient()
+
+  // Attribute the deletion (WHO) — refuse if it can't be recorded (no invisible deletes).
+  const scope = await getAdminScope()
+  const { data: br } = await service.from('branches').select('name').eq('id', id).single()
+  const logged = await logDeletion({
+    actorId: scope?.userId ?? null, actorRole: scope?.role ?? null,
+    table: 'branches', recordId: id, label: br?.name ?? null,
+  })
+  if (!logged) return { error: 'Branch could not be deleted (audit failed)' }
+
   // Detach staff first (branch_id → null); branch_models cascade on delete.
   await service.from('profiles').update({ branch_id: null }).eq('branch_id', id)
   const { error } = await service.from('branches').delete().eq('id', id)

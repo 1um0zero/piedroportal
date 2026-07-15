@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPiedroAdmin } from '@/lib/roles'
 import { createSetPasswordLink } from '@/lib/password-reset'
+import { logDeletion } from '@/lib/admin/audit'
 
 type UserRole = 'user' | 'company_admin' | 'piedro_admin' | 'branch_staff' | 'branch_admin' | 'super_admin' | 'staff_viewer'
 
@@ -95,7 +96,7 @@ export async function deleteUserAction(
   if (userId === user.id) return { error: 'Cannot delete yourself' }
 
   const service = createServiceClient()
-  const { data: target } = await service.from('profiles').select('role').eq('id', userId).single()
+  const { data: target } = await service.from('profiles').select('role, email, full_name').eq('id', userId).single()
   if (isPiedroAdmin(target?.role)) return { error: 'Cannot delete an admin account' }
 
   // Hard guard: any linked orders (configured or stock) block deletion.
@@ -106,6 +107,16 @@ export async function deleteUserAction(
   if ((orders ?? 0) + (stockOrders ?? 0) > 0) {
     return { error: `User has ${(orders ?? 0) + (stockOrders ?? 0)} order(s) — cannot delete` }
   }
+
+  // Attribute the deletion (WHO) before touching anything — refuse if it can't be
+  // recorded, so no user is ever deleted invisibly.
+  const logged = await logDeletion({
+    actorId: user.id, actorRole: (me?.role as string | undefined) ?? null,
+    table: 'profiles', recordId: userId,
+    label: target?.email ?? target?.full_name ?? null,
+    extra: { target_role: target?.role ?? null },
+  })
+  if (!logged) return { error: 'User could not be deleted (audit failed)' }
 
   // Remove dependents first, then the profile, then the auth user.
   await service.from('user_companies').delete().eq('user_id', userId)

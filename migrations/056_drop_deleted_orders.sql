@@ -1,4 +1,4 @@
--- 055_drop_deleted_orders.sql
+-- 056_drop_deleted_orders.sql
 -- Reverses 054. Decision (Jorge, 2026-07-15): a deletion must leave a LOG (what/who/when),
 -- not a content archive. The deleted_orders snapshot preserved order content (patient data,
 -- additions) beyond intent and against RGPD data-minimisation for orders a client chose to
