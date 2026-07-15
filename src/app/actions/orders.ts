@@ -533,11 +533,9 @@ export async function deleteOrderAction(
   if (!user) return { error: 'Not authenticated' }
 
   const service = createServiceClient()
-  // Snapshot the WHOLE row — a hard delete must leave a full, reconstructable trace
-  // (MDR / ISO 13485). Losing it is exactly how #4980/#4992 vanished. See below.
   const { data: order, error: fetchErr } = await service
     .from('orders')
-    .select('*')
+    .select('id, user_id, status, approval_state, production_state, order_seq, patient_name, reference_customer, pdf_url')
     .eq('id', orderId)
     .single()
   if (fetchErr) return { error: fetchErr.message }
@@ -545,50 +543,43 @@ export async function deleteOrderAction(
   if (order.user_id !== user.id) return { error: 'Not allowed' }
   if (piedroHasIntervened(order)) return { error: 'Order can no longer be deleted' }
 
-  // ── Archive BEFORE deleting, and fail closed ────────────────────────────────
-  // No order may disappear without a trace. We persist the entire row into the
-  // immutable deleted_orders archive first; if that write fails we refuse the
-  // delete rather than lose the record.
+  // ── Log the deletion FIRST, and fail closed ─────────────────────────────────
+  // No deletion may be invisible: every delete leaves a trace of WHAT/WHO/WHEN in
+  // admin_actions (the same audit trail we use for sensitive ops). We write it
+  // before touching the row and refuse the delete if the log write fails. Only
+  // IDENTIFIERS are kept — never the order content (RGPD: a client who deletes a
+  // pre-intervention order does not leave their patient data behind).
   const imp = await getImpersonation()
-  const { error: archiveErr } = await service.from('deleted_orders').insert({
-    order_id:           order.id,
-    order_seq:          order.order_seq ?? null,
-    status:             order.status,
-    user_id:            order.user_id,
-    company_id:         order.company_id,
-    patient_name:       order.patient_name ?? null,
-    reference_customer: order.reference_customer ?? null,
-    deleted_by:         imp?.adminId ?? user.id,
-    deleted_by_role:    imp ? 'piedro_admin' : 'client',
-    impersonated_as:    imp?.targetId ?? null,
-    reason:             'client_hard_delete',
-    pdf_url:            order.pdf_url ?? null,
-    snapshot:           order,
+  const { error: logErr } = await service.from('admin_actions').insert({
+    actor_id:        imp?.adminId ?? user.id,
+    actor_role:      imp ? 'piedro_admin' : 'client',
+    action:          'order_delete',
+    order_id:        orderId,   // FK is ON DELETE SET NULL; identifiers also live in details
+    impersonated_as: imp?.targetId ?? null,
+    details: {
+      deleted_order_id:   orderId,
+      order_seq:          order.order_seq ?? null,
+      status:             order.status,
+      patient_name:       order.patient_name ?? null,
+      reference_customer: order.reference_customer ?? null,
+      ...(imp ? { target_name: imp.targetName } : {}),
+    },
   })
-  if (archiveErr) {
-    console.error('deleteOrderAction: archive failed, refusing delete', orderId, archiveErr.message)
-    return { error: 'Order could not be deleted (archive failed)' }
+  if (logErr) {
+    console.error('deleteOrderAction: audit write failed, refusing delete', orderId, logErr.message)
+    return { error: 'Order could not be deleted (audit failed)' }
   }
 
   const { error } = await service.from('orders').delete().eq('id', orderId)
   if (error) return { error: error.message }
 
-  // Always record the event in the back-office trail (not only under impersonation).
-  await logAdminAction({
-    actorId:              imp?.adminId ?? user.id,
-    actorRole:            imp ? 'piedro_admin' : 'client',
-    action:               'order_delete',
-    orderId,   // FK is ON DELETE SET NULL — the durable copy lives in details + deleted_orders
-    impersonatedAsUserId: imp?.targetId ?? null,
-    details: {
-      order_seq:          order.order_seq ?? null,
-      status:             order.status,
-      patient_name:       order.patient_name ?? null,
-      reference_customer: order.reference_customer ?? null,
-      pdf_url:            order.pdf_url ?? null,
-      ...(imp ? { target_name: imp.targetName } : {}),
-    },
-  })
+  // RGPD: remove the order's content (its PDF) too — deleted content is not retained.
+  // Best-effort: the audit trace is already written, so a lingering PDF is a storage
+  // leftover, not a lost record.
+  if (order.pdf_url) {
+    const { error: rmErr } = await service.storage.from('order-pdfs').remove([order.pdf_url])
+    if (rmErr) console.error('deleteOrderAction: PDF removal failed (order deleted, PDF lingers)', orderId, rmErr.message)
+  }
   return { ok: true }
 }
 
