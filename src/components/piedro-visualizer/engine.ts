@@ -1,10 +1,9 @@
 // engine.ts — motor 3D do visualizador PiedroPortal (TypeScript puro, sem React)
 //
-// Responsável por: cena three.js, modelo demo procedimental, carregamento de
-// GLB/GLTF/STL/OBJ (reorientar + normalizar a 270 mm), deformação paramétrica,
-// realce por zonas (vertex colors), bandeiras/alfinetes e export STL.
-//
-// Não depende de nenhuma framework — pode ser usado a partir de React, Vue ou JS.
+// Cena three.js, modelo demo procedimental, carregamento de GLB/GLTF/STL/OBJ
+// (reorientar + normalizar a 270 mm), deformação paramétrica CONFIG-DRIVEN
+// (percorre REFLECT_FIELDS), realce por zonas (vertex colors), bandeiras com
+// deteção de lado oculto e export STL.
 //
 // ⚠ PROTÓTIPO INTERNO: a deformação é uma APROXIMAÇÃO por janelas normalizadas
 // (não calibrada por SKU) — ilustra, não representa o produto fabricado.
@@ -16,24 +15,10 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
 
-import {
-  Adaptations,
-  ViewerOptions,
-  FlagLabels,
-  DEFAULT_LABELS,
-  NEUTRAL_ADAPTATIONS,
-} from './types';
+import { ViewerOptions, ViewerState } from './types';
+import { REFLECT_FIELDS, ReflectField } from './reflect-fields';
 
 const LENGTH_MM = 270; // comprimento normalizado do modelo
-
-// cores das zonas (têm de bater com a legenda/CSS do portal)
-const ZONE = {
-  width: 0x3d8bff,
-  toe: 0xff9f43,
-  arch: 0x2ecc71,
-  wedge: 0xb06bff,
-  lift: 0xff5d6c,
-};
 
 interface MeshRecord {
   mesh: THREE.Mesh;
@@ -49,6 +34,7 @@ interface FlagAnchor {
   color: number;
   text: string;
   el: HTMLDivElement;
+  occluded: boolean; // do lado oculto face à câmara
 }
 
 // helpers de perfil (modelo demo)
@@ -82,16 +68,22 @@ export class PiedroViewer {
   private soleSlab: THREE.Mesh | null = null;
   private flagAnchors: FlagAnchor[] = [];
   private flipLen = false;
+  private modelMaxY = 0;
 
-  private params: Adaptations = { ...NEUTRAL_ADAPTATIONS };
-  private opts: Required<Omit<ViewerOptions, 'labels' | 'onReady'>> & {
-    labels: FlagLabels;
-    onReady?: () => void;
-  };
+  private state: ViewerState = { foot: 'L', values: {} };
+  private opts: Required<Omit<ViewerOptions, 'onReady'>> & { onReady?: () => void };
 
   private raf = 0;
   private disposed = false;
   private readonly onResize = () => this.resize();
+
+  // oclusão / bandeiras
+  private raycaster = new THREE.Raycaster();
+  private tmpDir = new THREE.Vector3();
+  private tmpTop = new THREE.Vector3();
+  private pv = new THREE.Vector3();
+  private lastCamPos = new THREE.Vector3(Infinity, 0, 0);
+  private occlusionDirty = true;
 
   constructor(container: HTMLElement, options: ViewerOptions = {}) {
     this.container = container;
@@ -99,7 +91,6 @@ export class PiedroViewer {
       showZones: options.showZones ?? true,
       showFlags: options.showFlags ?? true,
       background: options.background ?? 0x0f1419,
-      labels: { ...DEFAULT_LABELS, ...(options.labels ?? {}) },
       onReady: options.onReady,
     };
 
@@ -173,15 +164,14 @@ export class PiedroViewer {
   // API pública
   // ---------------------------------------------------------------------------
 
-  setParams(next: Adaptations): void {
-    this.params = { ...next };
+  setParams(next: ViewerState): void {
+    this.state = { foot: next.foot, values: { ...next.values } };
     this.applyDeformations();
   }
 
   setOptions(next: Partial<ViewerOptions>): void {
     if (next.showZones !== undefined) this.opts.showZones = next.showZones;
     if (next.showFlags !== undefined) this.opts.showFlags = next.showFlags;
-    if (next.labels) this.opts.labels = { ...this.opts.labels, ...next.labels };
     this.applyDeformations();
   }
 
@@ -441,25 +431,31 @@ export class PiedroViewer {
   }
 
   // ---------------------------------------------------------------------------
-  // Deformação paramétrica + realce por zonas
+  // Deformação paramétrica (config-driven) + realce por zonas
   // ---------------------------------------------------------------------------
 
   private medialSign(): number {
-    return this.params.foot === 'L' ? 1 : -1;
+    return this.state.foot === 'L' ? 1 : -1;
   }
 
   private applyDeformations(): void {
-    const p = this.params;
+    const vals = this.state.values;
     const hl = this.opts.showZones;
     const s = this.medialSign();
     const flip = this.flipLen;
 
-    const best = {
-      width: { w: 0, p: new THREE.Vector3() },
-      toe: { w: 0, p: new THREE.Vector3() },
-      arch: { w: 0, p: new THREE.Vector3() },
-      wedge: { w: 0, p: new THREE.Vector3() },
-    };
+    // campos ativos (valor != 0)
+    const active: ReflectField[] = REFLECT_FIELDS.filter((f) => (vals[f.key] ?? 0) !== 0);
+    const liftTotal = active
+      .filter((f) => f.effect === 'lift')
+      .reduce((acc, f) => acc + (vals[f.key] || 0), 0);
+
+    // melhor âncora (ponto de pico) por campo, para a bandeira
+    const best: Record<string, { w: number; p: THREE.Vector3 }> = {};
+    for (const f of active) best[f.key] = { w: 0, p: new THREE.Vector3() };
+
+    const A = active.length;
+    const contrib = new Float64Array(A);
 
     for (const rec of this.records) {
       const { orig, posAttr, colorAttr, norm, mesh } = rec;
@@ -469,73 +465,104 @@ export class PiedroViewer {
 
       for (let i = 0; i < n; i++) {
         const x = orig[i * 3];
-        let y = orig[i * 3 + 1];
-        let z = orig[i * 3 + 2];
+        const y0 = orig[i * 3 + 1];
+        const z0 = orig[i * 3 + 2];
         let tx = norm.tx[i];
         if (flip) tx = 1 - tx;
         const ny = norm.ny[i];
         const nz = norm.nz[i] * (flip ? -1 : 1);
+        const m = nz * s; // >0 = medial, <0 = lateral
 
-        const zW = p.forefootWidthMm ? win(tx, 0.58, 0.98) : 0;
-        const zT = p.toeBoxMm ? win(tx, 0.8, 1.0) * Math.max(0, ny) : 0;
-        const zA = p.medialArchMm
-          ? win(tx, 0.3, 0.62) * Math.max(0, nz * s) * Math.max(0, 1 - ny)
-          : 0;
+        let dy = 0;
+        let dz = 0;
+        let colW = 0;
+        let colC = 0xffffff;
 
-        if (p.forefootWidthMm)
-          z += Math.sign(z || 1) * p.forefootWidthMm * zW * (0.5 + 0.5 * Math.abs(nz));
-        if (p.toeBoxMm) y += p.toeBoxMm * zT;
-        if (p.medialArchMm) {
-          const a = p.medialArchMm * zA;
-          z -= s * a * 0.6;
-          y += a * 0.8;
-        }
-        if (p.wedgeMm) y += nz * p.wedgeMm * 0.5 * s;
-        y += p.liftMm;
-
-        if (zW > best.width.w) {
-          best.width.w = zW;
-          best.width.p.set(x, y, z);
-        }
-        if (zT > best.toe.w) {
-          best.toe.w = zT;
-          best.toe.p.set(x, y, z);
-        }
-        if (zA > best.arch.w) {
-          best.arch.w = zA;
-          best.arch.p.set(x, y, z);
-        }
-        if (p.wedgeMm) {
-          const ww = Math.max(0, nz * Math.sign(p.wedgeMm)) * win(tx, 0.2, 0.85);
-          if (ww > best.wedge.w) {
-            best.wedge.w = ww;
-            best.wedge.p.set(x, y, z);
+        for (let k = 0; k < A; k++) {
+          const f = active[k];
+          const val = vals[f.key] || 0;
+          const w = f.effect === 'lift' ? 0 : win(tx, f.a ?? 0, f.b ?? 1);
+          let c = 0;
+          switch (f.effect) {
+            case 'heelRaise':
+              dy += val * w;
+              c = w;
+              break;
+            case 'toeSpring':
+              dy += val * w;
+              c = w;
+              break;
+            case 'raiseTop': {
+              const g = w * Math.max(0, ny);
+              dy += val * g;
+              c = g;
+              break;
+            }
+            case 'widen': {
+              const g = w * (0.5 + 0.5 * Math.abs(nz));
+              dz += Math.sign(z0 || 1) * val * g;
+              c = w;
+              break;
+            }
+            case 'widenSide': {
+              const gate = f.side === 'lateral' ? Math.max(0, -m) : Math.max(0, m);
+              const g = w * gate;
+              dz += Math.sign(z0 || 1) * val * g;
+              dy += val * g * 0.15;
+              c = g;
+              break;
+            }
+            case 'wedge': {
+              const dir = f.side === 'lateral' ? -1 : 1;
+              dy += m * dir * val * 0.5 * w;
+              c = Math.max(0, m * dir) * w;
+              break;
+            }
+            case 'arch': {
+              const gate = Math.max(0, m) * Math.max(0, 1 - ny);
+              const g = w * gate;
+              dz -= s * val * g * 0.6;
+              dy += val * g * 0.8;
+              c = g;
+              break;
+            }
+            case 'lift':
+              c = 0;
+              break;
+          }
+          contrib[k] = c;
+          if (hl && c > colW) {
+            colW = c;
+            colC = f.color;
           }
         }
 
-        v.set(x, y, z).applyMatrix4(w2w);
+        dy += liftTotal;
+
+        const fx = x;
+        const fy = y0 + dy;
+        const fz = z0 + dz;
+
+        for (let k = 0; k < A; k++) {
+          const rk = best[active[k].key];
+          if (contrib[k] > rk.w) {
+            rk.w = contrib[k];
+            rk.p.set(fx, fy, fz);
+          }
+        }
+
+        v.set(fx, fy, fz).applyMatrix4(w2w);
         posAttr.setXYZ(i, v.x, v.y, v.z);
 
         let cr = 1;
         let cg = 1;
         let cb = 1;
-        if (hl) {
-          const cand: [number, number][] = [
-            [zW * 1.0, ZONE.width],
-            [zT * 1.2, ZONE.toe],
-            [zA * 1.4, ZONE.arch],
-            [(Math.abs(nz) * Math.abs(p.wedgeMm)) / 12 * (p.wedgeMm ? 1 : 0), ZONE.wedge],
-            [p.liftMm ? (ny < 0.12 ? 0.9 : 0) : 0, ZONE.lift],
-          ];
-          cand.sort((a, b) => b[0] - a[0]);
-          const bestC = cand[0];
-          if (bestC[0] > 0.08) {
-            const col = new THREE.Color(bestC[1]);
-            const k = Math.min(0.85, bestC[0]);
-            cr = 1 * (1 - k) + col.r * k;
-            cg = 1 * (1 - k) + col.g * k;
-            cb = 1 * (1 - k) + col.b * k;
-          }
+        if (hl && colW > 0.08) {
+          const col = new THREE.Color(colC);
+          const kk = Math.min(0.85, colW);
+          cr = 1 - kk + col.r * kk;
+          cg = 1 - kk + col.g * kk;
+          cb = 1 - kk + col.b * kk;
         }
         colorAttr.setXYZ(i, cr, cg, cb);
       }
@@ -544,32 +571,32 @@ export class PiedroViewer {
       rec.geo.computeVertexNormals();
     }
 
-    this.buildSoleSlab();
-    this.buildFlags(best);
+    this.buildSoleSlab(liftTotal);
+    this.buildFlags(active, best, liftTotal);
   }
 
-  private buildSoleSlab(): void {
+  private buildSoleSlab(liftTotal: number): void {
     if (this.soleSlab) {
       this.modelGroup.remove(this.soleSlab);
       this.soleSlab.geometry.dispose();
       (this.soleSlab.material as THREE.Material).dispose();
       this.soleSlab = null;
     }
-    if (this.params.liftMm <= 0) return;
+    if (liftTotal <= 0) return;
     const box = new THREE.Box3().setFromObject(this.modelGroup);
     const s = new THREE.Vector3();
     box.getSize(s);
     const c = new THREE.Vector3();
     box.getCenter(c);
-    const g = new THREE.BoxGeometry(s.x * 0.98, this.params.liftMm, s.z);
-    const m = new THREE.MeshStandardMaterial({
-      color: ZONE.lift,
+    const g = new THREE.BoxGeometry(s.x * 0.98, liftTotal, s.z);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x9aa7b3,
       roughness: 0.8,
       transparent: true,
       opacity: this.opts.showZones ? 0.9 : 0.5,
     });
-    this.soleSlab = new THREE.Mesh(g, m);
-    this.soleSlab.position.set(c.x, this.params.liftMm / 2, c.z);
+    this.soleSlab = new THREE.Mesh(g, mat);
+    this.soleSlab.position.set(c.x, liftTotal / 2, c.z);
     this.modelGroup.add(this.soleSlab);
   }
 
@@ -577,30 +604,38 @@ export class PiedroViewer {
   // Bandeiras / alfinetes
   // ---------------------------------------------------------------------------
 
-  private buildFlags(best: {
-    width: { w: number; p: THREE.Vector3 };
-    toe: { w: number; p: THREE.Vector3 };
-    arch: { w: number; p: THREE.Vector3 };
-    wedge: { w: number; p: THREE.Vector3 };
-  }): void {
+  private buildFlags(
+    active: ReflectField[],
+    best: Record<string, { w: number; p: THREE.Vector3 }>,
+    liftTotal: number,
+  ): void {
     this.flagLayer.innerHTML = '';
     this.flagAnchors = [];
-    const p = this.params;
-    const L = this.opts.labels;
 
+    // topo da forma (para o cue de lado oculto)
+    const mb = new THREE.Box3().setFromObject(this.modelGroup);
+    this.modelMaxY = mb.max.y;
+
+    const vals = this.state.values;
     const items: { pos: THREE.Vector3; color: number; text: string }[] = [];
-    if (p.forefootWidthMm && best.width.w > 0)
-      items.push({ pos: best.width.p, color: ZONE.width, text: L.width(p.forefootWidthMm) });
-    if (p.toeBoxMm && best.toe.w > 0)
-      items.push({ pos: best.toe.p, color: ZONE.toe, text: L.toe(p.toeBoxMm) });
-    if (p.medialArchMm && best.arch.w > 0)
-      items.push({ pos: best.arch.p, color: ZONE.arch, text: L.arch(p.medialArchMm) });
-    if (p.wedgeMm && best.wedge.w > 0)
-      items.push({ pos: best.wedge.p, color: ZONE.wedge, text: L.wedge(p.wedgeMm) });
-    if (p.liftMm > 0 && this.soleSlab) {
-      const pos = this.soleSlab.position.clone();
-      pos.y = p.liftMm;
-      items.push({ pos, color: ZONE.lift, text: L.lift(p.liftMm) });
+
+    for (const f of active) {
+      if (f.effect === 'lift') continue; // as bandeiras de lift vão no topo do slab
+      const rk = best[f.key];
+      if (rk.w > 0) {
+        items.push({ pos: rk.p, color: f.color, text: `${f.label} ${vals[f.key]} ${f.unit ?? 'mm'}` });
+      }
+    }
+
+    // lift(s): âncora no topo do slab, empilhadas
+    const lifts = active.filter((f) => f.effect === 'lift');
+    if (liftTotal > 0 && this.soleSlab) {
+      lifts.forEach((f, idx) => {
+        const pos = this.soleSlab!.position.clone();
+        pos.y = liftTotal;
+        pos.x += (idx - (lifts.length - 1) / 2) * 40;
+        items.push({ pos, color: f.color, text: `${f.label} ${vals[f.key]} ${f.unit ?? 'mm'}` });
+      });
     }
 
     for (const it of items) {
@@ -619,7 +654,7 @@ export class PiedroViewer {
         boxShadow: '0 3px 10px rgba(0,0,0,.45)',
       } as CSSStyleDeclaration);
       // texto vem de labels controladas (não de dados do utente) — sem risco XSS.
-      // ⚠ NUNCA passar aqui nomes de doentes / texto livre do utilizador via innerHTML.
+      // ⚠ NUNCA passar aqui nomes de doentes / texto livre via innerHTML.
       const dot = document.createElement('span');
       Object.assign(dot.style, {
         display: 'inline-block',
@@ -633,12 +668,24 @@ export class PiedroViewer {
       el.appendChild(dot);
       el.appendChild(document.createTextNode(it.text));
       this.flagLayer.appendChild(el);
-      this.flagAnchors.push({ pos: it.pos.clone(), color: it.color, text: it.text, el });
+      this.flagAnchors.push({ pos: it.pos.clone(), color: it.color, text: it.text, el, occluded: false });
     }
+    this.occlusionDirty = true;
     this.updateFlags();
   }
 
-  private readonly pv = new THREE.Vector3();
+  /** Raio câmara→ponto: se bate na malha ANTES do ponto, está do lado oculto. */
+  private isOccluded(pos: THREE.Vector3, meshes: THREE.Mesh[]): boolean {
+    this.tmpDir.copy(pos).sub(this.camera.position);
+    const dist = this.tmpDir.length();
+    if (dist < 2) return false;
+    this.tmpDir.normalize();
+    this.raycaster.set(this.camera.position, this.tmpDir);
+    this.raycaster.near = 0.1;
+    this.raycaster.far = dist - 2; // margem: ignora a própria superfície do ponto
+    return this.raycaster.intersectObjects(meshes, false).length > 0;
+  }
+
   private updateFlags(): void {
     const show = this.opts.showFlags;
     this.flagLayer.style.display = show ? '' : 'none';
@@ -649,6 +696,16 @@ export class PiedroViewer {
     }
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
+
+    // recalcular oclusão só quando a câmara mexe (ou as bandeiras mudam)
+    const moved = this.camera.position.distanceToSquared(this.lastCamPos) > 0.25;
+    if (moved || this.occlusionDirty) {
+      this.lastCamPos.copy(this.camera.position);
+      this.occlusionDirty = false;
+      const meshes = this.records.map((r) => r.mesh);
+      for (const f of this.flagAnchors) f.occluded = this.isOccluded(f.pos, meshes);
+    }
+
     let lines = '';
     this.flagAnchors.forEach((f, i) => {
       this.pv.copy(f.pos).project(this.camera);
@@ -657,17 +714,40 @@ export class PiedroViewer {
         return;
       }
       f.el.style.display = '';
+      const hex = '#' + new THREE.Color(f.color).getHexString();
       const sx = (this.pv.x * 0.5 + 0.5) * w;
       const sy = (-this.pv.y * 0.5 + 0.5) * h;
-      const lx = sx;
-      const ly = sy - 52 - (i % 3) * 24;
-      f.el.style.left = lx + 'px';
-      f.el.style.top = ly + 'px';
-      const hex = '#' + new THREE.Color(f.color).getHexString();
-      lines +=
-        `<line x1="${sx}" y1="${sy}" x2="${lx}" y2="${ly}" stroke="${hex}" ` +
-        `stroke-width="1.5" stroke-dasharray="3 2"/>`;
-      lines += `<circle cx="${sx}" cy="${sy}" r="4.5" fill="${hex}" stroke="#0f1419" stroke-width="1.5"/>`;
+
+      if (f.occluded) {
+        // ponto no TOPO da forma, por cima da âncora oculta
+        this.tmpTop.set(f.pos.x, this.modelMaxY, f.pos.z);
+        this.pv.copy(this.tmpTop).project(this.camera);
+        const ex = (this.pv.x * 0.5 + 0.5) * w;
+        const ey = (-this.pv.y * 0.5 + 0.5) * h;
+        const lx = ex;
+        const ly = ey - 66 - (i % 3) * 24; // sobe mais a label
+        f.el.style.left = lx + 'px';
+        f.el.style.top = ly + 'px';
+        f.el.style.opacity = '0.72'; // atenuada = lado oculto
+        f.el.style.borderStyle = 'dashed';
+        // o traço PARA no topo da forma (não entra até ao ponto escondido)
+        lines +=
+          `<line x1="${ex}" y1="${ey}" x2="${lx}" y2="${ly}" stroke="${hex}" ` +
+          `stroke-width="1.5" stroke-dasharray="3 2"/>`;
+        // marcador oco = está do outro lado
+        lines += `<circle cx="${ex}" cy="${ey}" r="4" fill="none" stroke="${hex}" stroke-width="1.5"/>`;
+      } else {
+        const lx = sx;
+        const ly = sy - 52 - (i % 3) * 24;
+        f.el.style.left = lx + 'px';
+        f.el.style.top = ly + 'px';
+        f.el.style.opacity = '1';
+        f.el.style.borderStyle = 'solid';
+        lines +=
+          `<line x1="${sx}" y1="${sy}" x2="${lx}" y2="${ly}" stroke="${hex}" ` +
+          `stroke-width="1.5" stroke-dasharray="3 2"/>`;
+        lines += `<circle cx="${sx}" cy="${sy}" r="4.5" fill="${hex}" stroke="#0f1419" stroke-width="1.5"/>`;
+      }
     });
     this.flagSvg.innerHTML = lines;
   }

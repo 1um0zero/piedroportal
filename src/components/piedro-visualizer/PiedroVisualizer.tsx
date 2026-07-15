@@ -1,27 +1,25 @@
 'use client';
 
 // PiedroVisualizer.tsx — Client Component "controlado".
-// Recebe as adaptações por props (do formulário de encomenda) e sincroniza
-// com o motor three.js. Não tem estado próprio das adaptações.
+// Recebe o estado (pé + valores) por props e sincroniza com o motor three.js.
+// Não tem estado próprio.
 
 import { useEffect, useRef } from 'react';
 import { PiedroViewer } from './engine';
-import type { Adaptations, FlagLabels } from './types';
+import type { ViewerState } from './types';
 
 export interface PiedroVisualizerProps {
-  /** Adaptações a representar (vêm do estado do formulário). */
-  params: Adaptations;
+  /** Estado a representar (vem do painel / formulário). */
+  params: ViewerState;
   /** URL do GLB do catálogo. Se omitido, mostra o modelo demo. */
   model?: string;
   /** Colorir zonas ativas. Default: true. */
   showZones?: boolean;
   /** Mostrar bandeiras/alfinetes. Default: true. */
   showFlags?: boolean;
-  /** Textos das bandeiras já traduzidos (next-intl). */
-  labels?: Partial<FlagLabels>;
   /** Classe do contentor (usar tokens Tailwind do portal). */
   className?: string;
-  /** Expõe a função de export STL ao pai (ex.: botão "enviar para produção"). */
+  /** Expõe a função de export STL ao pai. */
   onExportReady?: (exportSTL: () => string) => void;
   /** Chamado após o primeiro render. */
   onReady?: () => void;
@@ -32,7 +30,6 @@ export default function PiedroVisualizer({
   model,
   showZones = true,
   showFlags = true,
-  labels,
   className,
   onExportReady,
   onReady,
@@ -47,7 +44,6 @@ export default function PiedroVisualizer({
     const viewer = new PiedroViewer(containerRef.current, {
       showZones,
       showFlags,
-      labels,
       onReady,
     });
     viewerRef.current = viewer;
@@ -81,8 +77,8 @@ export default function PiedroVisualizer({
 
   // sincronizar opções de apresentação
   useEffect(() => {
-    viewerRef.current?.setOptions({ showZones, showFlags, labels });
-  }, [showZones, showFlags, labels]);
+    viewerRef.current?.setOptions({ showZones, showFlags });
+  }, [showZones, showFlags]);
 
   return <div ref={containerRef} className={className} />;
 }

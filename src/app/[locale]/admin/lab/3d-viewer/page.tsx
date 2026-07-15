@@ -18,12 +18,14 @@ export default async function Viewer3DLabPage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="mb-1 text-2xl font-light text-stone-800">3D additions viewer — lab</h1>
       <p className="mb-4 text-sm text-stone-500">
-        Sapato base (GLB real das adições pair-by-pair) que reflete as adaptações em tempo real:
-        alteamento, largura extra, biqueira, arco medial e cunha varo/valgo — com zonas realçadas e bandeiras.
+        Sapato base (GLB real das adições pair-by-pair) que reflete em tempo real as adições
+        <strong> CUSTOM</strong> com tradução geométrica — alturas, suplementos, larguras por zona,
+        cunhas, rocker e alteamento — com zonas realçadas e bandeiras.
       </p>
       <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-        ⚠ Protótipo interno. A deformação é <strong>ilustrativa</strong> (janelas não calibradas por SKU)
-        e cobre só 5 dos ~30 campos de adição. Não representa o produto fabricado e não está no fluxo do cliente.
+        ⚠ Protótipo interno. Só aparecem as adições CUSTOM que <strong>têm forma</strong> (as de material,
+        forro, fecho e cor ficam de fora). A deformação é <strong>ilustrativa</strong> — janelas não
+        calibradas por horma/SKU. Não representa o produto fabricado e não está no fluxo do cliente.
       </div>
 
       <Viewer3DLab />
