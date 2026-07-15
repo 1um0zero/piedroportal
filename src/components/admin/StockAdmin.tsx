@@ -15,6 +15,18 @@ import { nz } from '@/lib/format'
 
 type SearchHit = { id: string; style_name: string; colour_id: string; color_name: string }
 
+// Sticky-right summary block geometry. Inline px offsets (not Tailwind arbitrary
+// classes) so the columns tile exactly regardless of header text width.
+const COL_W = 84
+const SUM = {
+  stock: { right: COL_W * 2, borderL: true },
+  reserved: { right: COL_W, borderL: false },
+  sold: { right: 0, borderL: false },
+}
+function sumStyle(right: number): React.CSSProperties {
+  return { right, width: COL_W, minWidth: COL_W }
+}
+
 export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow[] }) {
   const t = useTranslations('admin.stock')
   const [rows, setRows] = useState(initialRows)
@@ -23,9 +35,11 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const lastIndexRef = useRef<number | null>(null)
   const [adding, setAdding] = useState(false)
+  const [editMode, setEditMode] = useState(false)
 
-  // qty[productId][size]; only sizes within each product's range exist
-  const [qty, setQty] = useState<Record<string, Record<number, number>>>(() => initGrid(initialRows))
+  // free[productId][size] = free stock = on_hand − reserved (what the admin sees
+  // and edits). The persisted value is on_hand; on save we store reserved + free.
+  const [free, setFree] = useState<Record<string, Record<number, number>>>(() => initGrid(initialRows))
   const [dirty, setDirty] = useState<Set<string>>(new Set())
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
@@ -33,7 +47,9 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
     const g: Record<string, Record<number, number>> = {}
     for (const r of rs) {
       const m: Record<number, number> = {}
-      for (let s = r.size_first; s <= r.size_last; s++) m[s] = r.stock[s] ?? 0
+      for (let s = r.size_first; s <= r.size_last; s++) {
+        m[s] = Math.max(0, (r.stock[s] ?? 0) - (r.reserved[s] ?? 0))
+      }
       g[r.id] = m
     }
     return g
@@ -74,7 +90,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
     setAdding(false)
     if (res.rows) {
       setRows(res.rows)
-      setQty((prev) => {
+      setFree((prev) => {
         const fresh = initGrid(res.rows!)
         // keep any unsaved edits already typed for existing rows
         for (const id of Object.keys(prev)) if (fresh[id]) fresh[id] = { ...fresh[id], ...prev[id] }
@@ -85,6 +101,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
       lastIndexRef.current = null
       setQuery('')
       setHits([])
+      setEditMode(true) // adding a model implies you want to set its stock
     }
   }
 
@@ -95,7 +112,7 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
   }
 
   function setCell(productId: string, size: number, value: number) {
-    setQty((g) => ({ ...g, [productId]: { ...g[productId], [size]: value } }))
+    setFree((g) => ({ ...g, [productId]: { ...g[productId], [size]: value } }))
     setDirty((d) => new Set(d).add(productId))
     if (status === 'saved') setStatus('idle')
   }
@@ -103,10 +120,18 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
   async function saveAll() {
     if (dirty.size === 0) return
     setStatus('saving')
-    const entries = [...dirty].map((productId) => ({
-      productId,
-      quantities: Object.entries(qty[productId] ?? {}).map(([size, q]) => ({ size: Number(size), qty: q })),
-    }))
+    // Persist on_hand = reserved + free. reserved is the snapshot loaded from the
+    // server; free is what the admin typed. on_hand is the only stored value.
+    const entries = [...dirty].map((productId) => {
+      const reserved = rows.find((r) => r.id === productId)?.reserved ?? {}
+      return {
+        productId,
+        quantities: Object.entries(free[productId] ?? {}).map(([size, f]) => ({
+          size: Number(size),
+          qty: (reserved[Number(size)] ?? 0) + f,
+        })),
+      }
+    })
     const res = await saveStockGridAction(entries)
     if (res.error) { setStatus('error'); return }
     setDirty(new Set())
@@ -124,22 +149,24 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
     return out
   }, [rows])
 
-  // per-row on-hand total (reactive to edits) + grand total across all rows
-  const rowTotals = useMemo(() => {
+  // Per-row stock (Σ free, reactive to edits) + reserved/sold totals + grand totals.
+  const stockByRow = useMemo(() => {
     const m: Record<string, number> = {}
     for (const row of rows) {
       let sum = 0
-      const q = qty[row.id] ?? {}
+      const q = free[row.id] ?? {}
       for (const s in q) sum += q[Number(s)] || 0
       m[row.id] = sum
     }
     return m
-  }, [rows, qty])
-  const grandTotal = useMemo(
-    () => Object.values(rowTotals).reduce((a, b) => a + b, 0),
-    [rowTotals],
-  )
-  const reservedGrand = useMemo(() => rows.reduce((a, r) => a + r.reserved, 0), [rows])
+  }, [rows, free])
+  const reservedByRow = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const r of rows) m[r.id] = Object.values(r.reserved).reduce((a, b) => a + b, 0)
+    return m
+  }, [rows])
+  const stockGrand = useMemo(() => Object.values(stockByRow).reduce((a, b) => a + b, 0), [stockByRow])
+  const reservedGrand = useMemo(() => Object.values(reservedByRow).reduce((a, b) => a + b, 0), [reservedByRow])
   const soldGrand = useMemo(() => rows.reduce((a, r) => a + r.sold, 0), [rows])
 
   // refs for keyboard navigation: cellRefs[rowIdx][colIdx]
@@ -224,6 +251,18 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
         <p className="text-sm text-stone-400">{t('noStock')}</p>
       ) : (
         <div className="rounded-[14px] border border-stone-200 bg-white" style={{ boxShadow: 'var(--shadow-card)' }}>
+          <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-4 py-3">
+            <p className="text-xs text-stone-500">
+              {editMode ? t('editHint') : t('viewHint')}
+            </p>
+            <button
+              onClick={() => setEditMode((v) => !v)}
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${editMode ? 'bg-stone-800 text-white hover:bg-stone-900' : 'border border-gold text-gold hover:bg-gold/10'}`}
+            >
+              {editMode ? t('doneBtn') : t('editBtn')}
+            </button>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
@@ -232,11 +271,9 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                   {allSizes.map((s) => (
                     <th key={s} className="px-1 py-2 text-center font-medium tabular-nums">{s}</th>
                   ))}
-                  <th className="px-2 py-2" />
-                  <th className="sticky right-[192px] z-10 w-16 bg-stone-50 border-l-2 border-stone-200 px-2 py-2 text-center font-medium">{t('onHandCol')}</th>
-                  <th className="sticky right-[128px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-medium">{t('reservedCol')}</th>
-                  <th className="sticky right-[64px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-medium text-stone-600">{t('availableCol')}</th>
-                  <th className="sticky right-0 z-10 w-16 bg-stone-50 px-2 py-2 text-center font-medium">{t('soldCol')}</th>
+                  <th style={sumStyle(SUM.stock.right)} className="sticky z-10 bg-stone-50 border-l-2 border-stone-200 px-2 py-2 text-center font-semibold text-stone-600">{t('stockCol')}</th>
+                  <th style={sumStyle(SUM.reserved.right)} className="sticky z-10 bg-stone-50 px-2 py-2 text-center font-medium">{t('reservedCol')}</th>
+                  <th style={sumStyle(SUM.sold.right)} className="sticky z-10 bg-stone-50 px-2 py-2 text-center font-medium">{t('soldCol')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -250,9 +287,18 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                           )}
                         </div>
                         <div>
-                          <div className="font-semibold text-stone-900">
+                          <div className="flex items-center gap-2 font-semibold text-stone-900">
                             {row.colour_id}
-                            {dirty.has(row.id) && <span className="ml-1 text-gold">•</span>}
+                            {dirty.has(row.id) && <span className="text-gold">•</span>}
+                            {editMode && (
+                              <button
+                                onClick={() => removeRow(row.id)}
+                                title={t('remove')}
+                                className="text-xs font-normal text-red-500 hover:text-red-700"
+                              >
+                                {t('remove')}
+                              </button>
+                            )}
                           </div>
                           <div className="text-[11px] text-stone-400">{row.color_name} · {row.size_unit ?? 'EU'}</div>
                         </div>
@@ -261,7 +307,14 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                     {allSizes.map((s, colIdx) => {
                       const inRange = s >= row.size_first && s <= row.size_last
                       if (!inRange) return <td key={s} className="bg-stone-50/60 px-0.5 py-1" />
-                      const v = qty[row.id]?.[s] ?? 0
+                      const v = free[row.id]?.[s] ?? 0
+                      if (!editMode) {
+                        return (
+                          <td key={s} className="px-1 py-1.5 text-center tabular-nums text-stone-700">
+                            {nz(v)}
+                          </td>
+                        )
+                      }
                       return (
                         <td key={s} className="px-0.5 py-1">
                           <input
@@ -284,53 +337,40 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                         </td>
                       )
                     })}
-                    <td className="px-2 py-1 text-right">
-                      <button onClick={() => removeRow(row.id)} className="whitespace-nowrap text-xs text-red-500 hover:text-red-700">
-                        {t('remove')}
-                      </button>
-                    </td>
-                    {(() => {
-                      const onHand = rowTotals[row.id] ?? 0
-                      const available = onHand - row.reserved
-                      return (
-                        <>
-                          <td className="sticky right-[192px] z-10 w-16 bg-stone-50 border-l-2 border-stone-200 px-2 py-1 text-center text-sm font-semibold tabular-nums text-stone-900">{nz(onHand)}</td>
-                          <td className="sticky right-[128px] z-10 w-16 bg-stone-50 px-2 py-1 text-center text-sm tabular-nums text-stone-500">{nz(row.reserved)}</td>
-                          <td className={`sticky right-[64px] z-10 w-16 bg-stone-50 px-2 py-1 text-center text-sm font-bold tabular-nums ${available < 0 ? 'text-red-600' : 'text-stone-900'}`}>{nz(available)}</td>
-                          <td className="sticky right-0 z-10 w-16 bg-stone-50 px-2 py-1 text-center text-sm tabular-nums text-stone-500">{nz(row.sold)}</td>
-                        </>
-                      )
-                    })()}
+                    <td style={sumStyle(SUM.stock.right)} className="sticky z-10 bg-stone-50 border-l-2 border-stone-200 px-2 py-1 text-center text-sm font-bold tabular-nums text-stone-900">{nz(stockByRow[row.id] ?? 0)}</td>
+                    <td style={sumStyle(SUM.reserved.right)} className="sticky z-10 bg-stone-50 px-2 py-1 text-center text-sm tabular-nums text-stone-500">{nz(reservedByRow[row.id] ?? 0)}</td>
+                    <td style={sumStyle(SUM.sold.right)} className="sticky z-10 bg-stone-50 px-2 py-1 text-center text-sm tabular-nums text-stone-500">{nz(row.sold)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-stone-200 text-sm">
                   <td className="sticky left-0 z-10 bg-stone-50 px-4 py-2 font-semibold text-stone-700">{t('grandTotal')}</td>
-                  <td colSpan={allSizes.length + 1} className="bg-stone-50" />
-                  <td className="sticky right-[192px] z-10 w-16 bg-stone-50 border-l-2 border-stone-200 px-2 py-2 text-center font-bold tabular-nums text-stone-900">{nz(grandTotal)}</td>
-                  <td className="sticky right-[128px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-semibold tabular-nums text-stone-500">{nz(reservedGrand)}</td>
-                  <td className={`sticky right-[64px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-bold tabular-nums ${grandTotal - reservedGrand < 0 ? 'text-red-600' : 'text-stone-900'}`}>{nz(grandTotal - reservedGrand)}</td>
-                  <td className="sticky right-0 z-10 w-16 bg-stone-50 px-2 py-2 text-center font-semibold tabular-nums text-stone-500">{nz(soldGrand)}</td>
+                  <td colSpan={allSizes.length} className="bg-stone-50" />
+                  <td style={sumStyle(SUM.stock.right)} className="sticky z-10 bg-stone-50 border-l-2 border-stone-200 px-2 py-2 text-center font-bold tabular-nums text-stone-900">{nz(stockGrand)}</td>
+                  <td style={sumStyle(SUM.reserved.right)} className="sticky z-10 bg-stone-50 px-2 py-2 text-center font-semibold tabular-nums text-stone-500">{nz(reservedGrand)}</td>
+                  <td style={sumStyle(SUM.sold.right)} className="sticky z-10 bg-stone-50 px-2 py-2 text-center font-semibold tabular-nums text-stone-500">{nz(soldGrand)}</td>
                 </tr>
               </tfoot>
             </table>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-stone-200 px-4 py-3">
-            {status === 'saved' && <span className="text-xs text-green-600">{t('saved')}</span>}
-            {status === 'error' && <span className="text-xs text-red-600">{t('saveError')}</span>}
-            {dirty.size > 0 && status !== 'saving' && (
-              <span className="text-xs text-stone-400">{t('unsaved', { count: dirty.size })}</span>
-            )}
-            <button
-              onClick={saveAll}
-              disabled={status === 'saving' || dirty.size === 0}
-              className="rounded-lg bg-gold px-5 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
-            >
-              {status === 'saving' ? t('saving') : t('saveAll')}
-            </button>
-          </div>
+          {editMode && (
+            <div className="flex items-center justify-end gap-3 border-t border-stone-200 px-4 py-3">
+              {status === 'saved' && <span className="text-xs text-green-600">{t('saved')}</span>}
+              {status === 'error' && <span className="text-xs text-red-600">{t('saveError')}</span>}
+              {dirty.size > 0 && status !== 'saving' && (
+                <span className="text-xs text-stone-400">{t('unsaved', { count: dirty.size })}</span>
+              )}
+              <button
+                onClick={saveAll}
+                disabled={status === 'saving' || dirty.size === 0}
+                className="rounded-lg bg-gold px-5 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-40"
+              >
+                {status === 'saving' ? t('saving') : t('saveAll')}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

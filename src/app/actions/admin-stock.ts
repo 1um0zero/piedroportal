@@ -21,9 +21,9 @@ export type StockAdminRow = {
   size_first: number
   size_last: number
   size_unit: 'EU' | 'UK' | null
-  stock: Record<number, number>  // size → qty_on_hand
-  reserved: number               // Σ qty across sizes, open (non-terminal) orders
-  sold: number                   // Σ qty across sizes, shipped/delivered orders
+  stock: Record<number, number>     // size → qty_on_hand (physical, the only stored value)
+  reserved: Record<number, number>  // size → reserved qty (open, non-terminal orders)
+  sold: number                      // Σ qty across sizes, shipped/delivered orders
 }
 
 /** All STOCK-flagged products with their per-size on-hand quantities. */
@@ -53,25 +53,27 @@ export async function getStockAdminRows(): Promise<StockAdminRow[]> {
     byProduct.set(s.product_id, m)
   }
 
-  // Reserved (open orders) + sold (shipped/delivered), aggregated per product.
+  // Reserved (open orders, per size) + sold (shipped/delivered, per product).
   // paged read — stock_order_items grows unbounded (Supabase 1000-row rule).
   const ids = rows.map((r) => r.id)
-  const items = await fetchAll<{ product_id: string; qty: number; stock_orders: { status: string } | { status: string }[] }>(
+  const items = await fetchAll<{ product_id: string; size: number; qty: number; stock_orders: { status: string } | { status: string }[] }>(
     (page) => service
       .from('stock_order_items')
-      .select('product_id, qty, stock_orders!inner(status)')
+      .select('product_id, size, qty, stock_orders!inner(status)')
       .in('product_id', ids)
       .range(page.from, page.to),
   )
 
-  const reserved = new Map<string, number>()
+  const reserved = new Map<string, Record<number, number>>()
   const sold = new Map<string, number>()
   for (const it of items) {
     const so = Array.isArray(it.stock_orders) ? it.stock_orders[0] : it.stock_orders
     const status = so?.status
     if (!status) continue
     if (!RESERVING_EXCLUDED.includes(status)) {
-      reserved.set(it.product_id, (reserved.get(it.product_id) ?? 0) + it.qty)
+      const m = reserved.get(it.product_id) ?? {}
+      m[Number(it.size)] = (m[Number(it.size)] ?? 0) + it.qty
+      reserved.set(it.product_id, m)
     } else if (SOLD_STATUSES.includes(status)) {
       sold.set(it.product_id, (sold.get(it.product_id) ?? 0) + it.qty)
     }
@@ -80,7 +82,7 @@ export async function getStockAdminRows(): Promise<StockAdminRow[]> {
   return rows.map((r) => ({
     ...r,
     stock: byProduct.get(r.id) ?? {},
-    reserved: reserved.get(r.id) ?? 0,
+    reserved: reserved.get(r.id) ?? {},
     sold: sold.get(r.id) ?? 0,
   }))
 }
