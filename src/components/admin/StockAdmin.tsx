@@ -139,6 +139,8 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
     () => Object.values(rowTotals).reduce((a, b) => a + b, 0),
     [rowTotals],
   )
+  const reservedGrand = useMemo(() => rows.reduce((a, r) => a + r.reserved, 0), [rows])
+  const soldGrand = useMemo(() => rows.reduce((a, r) => a + r.sold, 0), [rows])
 
   // refs for keyboard navigation: cellRefs[rowIdx][colIdx]
   const cellRefs = useRef<Map<string, HTMLInputElement>>(new Map())
@@ -230,8 +232,11 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                   {allSizes.map((s) => (
                     <th key={s} className="px-1 py-2 text-center font-medium tabular-nums">{s}</th>
                   ))}
-                  <th className="sticky right-0 z-10 bg-white border-l border-stone-200 px-3 py-2 text-center font-medium">{t('total')}</th>
                   <th className="px-2 py-2" />
+                  <th className="sticky right-[192px] z-10 w-16 bg-stone-50 border-l-2 border-stone-200 px-2 py-2 text-center font-medium">{t('onHandCol')}</th>
+                  <th className="sticky right-[128px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-medium">{t('reservedCol')}</th>
+                  <th className="sticky right-[64px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-medium text-stone-600">{t('availableCol')}</th>
+                  <th className="sticky right-0 z-10 w-16 bg-stone-50 px-2 py-2 text-center font-medium">{t('soldCol')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -279,23 +284,34 @@ export default function StockAdmin({ initialRows }: { initialRows: StockAdminRow
                         </td>
                       )
                     })}
-                    <td className="sticky right-0 z-10 bg-white border-l border-stone-200 px-3 py-1 text-center text-sm font-semibold tabular-nums text-stone-900">
-                      {nz(rowTotals[row.id] ?? 0)}
-                    </td>
                     <td className="px-2 py-1 text-right">
                       <button onClick={() => removeRow(row.id)} className="whitespace-nowrap text-xs text-red-500 hover:text-red-700">
                         {t('remove')}
                       </button>
                     </td>
+                    {(() => {
+                      const onHand = rowTotals[row.id] ?? 0
+                      const available = onHand - row.reserved
+                      return (
+                        <>
+                          <td className="sticky right-[192px] z-10 w-16 bg-stone-50 border-l-2 border-stone-200 px-2 py-1 text-center text-sm font-semibold tabular-nums text-stone-900">{nz(onHand)}</td>
+                          <td className="sticky right-[128px] z-10 w-16 bg-stone-50 px-2 py-1 text-center text-sm tabular-nums text-stone-500">{nz(row.reserved)}</td>
+                          <td className={`sticky right-[64px] z-10 w-16 bg-stone-50 px-2 py-1 text-center text-sm font-bold tabular-nums ${available < 0 ? 'text-red-600' : 'text-stone-900'}`}>{nz(available)}</td>
+                          <td className="sticky right-0 z-10 w-16 bg-stone-50 px-2 py-1 text-center text-sm tabular-nums text-stone-500">{nz(row.sold)}</td>
+                        </>
+                      )
+                    })()}
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-stone-200 text-sm">
                   <td className="sticky left-0 z-10 bg-stone-50 px-4 py-2 font-semibold text-stone-700">{t('grandTotal')}</td>
-                  <td colSpan={allSizes.length} className="bg-stone-50" />
-                  <td className="sticky right-0 z-10 bg-stone-50 border-l border-stone-200 px-3 py-2 text-center font-bold tabular-nums text-stone-900">{nz(grandTotal)}</td>
-                  <td className="bg-stone-50" />
+                  <td colSpan={allSizes.length + 1} className="bg-stone-50" />
+                  <td className="sticky right-[192px] z-10 w-16 bg-stone-50 border-l-2 border-stone-200 px-2 py-2 text-center font-bold tabular-nums text-stone-900">{nz(grandTotal)}</td>
+                  <td className="sticky right-[128px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-semibold tabular-nums text-stone-500">{nz(reservedGrand)}</td>
+                  <td className={`sticky right-[64px] z-10 w-16 bg-stone-50 px-2 py-2 text-center font-bold tabular-nums ${grandTotal - reservedGrand < 0 ? 'text-red-600' : 'text-stone-900'}`}>{nz(grandTotal - reservedGrand)}</td>
+                  <td className="sticky right-0 z-10 w-16 bg-stone-50 px-2 py-2 text-center font-semibold tabular-nums text-stone-500">{nz(soldGrand)}</td>
                 </tr>
               </tfoot>
             </table>

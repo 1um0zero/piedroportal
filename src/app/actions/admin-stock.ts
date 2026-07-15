@@ -4,6 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requirePiedroAdminPage } from '@/lib/admin/scope'
 import { toIlikePattern } from '@/lib/search'
+import { fetchAll } from '@/lib/fetch-all'
+
+// A stock_order_items row keeps reserving until its order reaches a terminal
+// state. Of those terminal states, shipped/delivered are real sales (the pair
+// left the shelf); cancelled un-reserves without a sale. Mirrors stock.ts.
+const RESERVING_EXCLUDED = ['shipped', 'delivered', 'cancelled']
+const SOLD_STATUSES = ['shipped', 'delivered']
 
 export type StockAdminRow = {
   id: string
@@ -15,6 +22,8 @@ export type StockAdminRow = {
   size_last: number
   size_unit: 'EU' | 'UK' | null
   stock: Record<number, number>  // size → qty_on_hand
+  reserved: number               // Σ qty across sizes, open (non-terminal) orders
+  sold: number                   // Σ qty across sizes, shipped/delivered orders
 }
 
 /** All STOCK-flagged products with their per-size on-hand quantities. */
@@ -44,7 +53,36 @@ export async function getStockAdminRows(): Promise<StockAdminRow[]> {
     byProduct.set(s.product_id, m)
   }
 
-  return rows.map((r) => ({ ...r, stock: byProduct.get(r.id) ?? {} }))
+  // Reserved (open orders) + sold (shipped/delivered), aggregated per product.
+  // paged read — stock_order_items grows unbounded (Supabase 1000-row rule).
+  const ids = rows.map((r) => r.id)
+  const items = await fetchAll<{ product_id: string; qty: number; stock_orders: { status: string } | { status: string }[] }>(
+    (page) => service
+      .from('stock_order_items')
+      .select('product_id, qty, stock_orders!inner(status)')
+      .in('product_id', ids)
+      .range(page.from, page.to),
+  )
+
+  const reserved = new Map<string, number>()
+  const sold = new Map<string, number>()
+  for (const it of items) {
+    const so = Array.isArray(it.stock_orders) ? it.stock_orders[0] : it.stock_orders
+    const status = so?.status
+    if (!status) continue
+    if (!RESERVING_EXCLUDED.includes(status)) {
+      reserved.set(it.product_id, (reserved.get(it.product_id) ?? 0) + it.qty)
+    } else if (SOLD_STATUSES.includes(status)) {
+      sold.set(it.product_id, (sold.get(it.product_id) ?? 0) + it.qty)
+    }
+  }
+
+  return rows.map((r) => ({
+    ...r,
+    stock: byProduct.get(r.id) ?? {},
+    reserved: reserved.get(r.id) ?? 0,
+    sold: sold.get(r.id) ?? 0,
+  }))
 }
 
 /** Search active products by colour_id / style to add to the STOCK area. */
