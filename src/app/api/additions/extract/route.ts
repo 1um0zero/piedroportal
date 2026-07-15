@@ -26,7 +26,28 @@ function getClient(): Anthropic {
 
 const FIELD_TYPE: Record<string, string> = {}
 const FIELD_SIDE: Record<string, string> = {}
-for (const s of SECTIONS) for (const f of s.fields) { FIELD_TYPE[f.key] = f.type; FIELD_SIDE[f.key] = f.side }
+const FIELD_PARENT: Record<string, string | undefined> = {}
+const FIELD_MM: Record<string, number[]> = {}
+for (const s of SECTIONS) for (const f of s.fields) {
+  FIELD_TYPE[f.key] = f.type
+  FIELD_SIDE[f.key] = f.side
+  FIELD_PARENT[f.key] = f.conditionalOn
+  if (f.type === 'mm') FIELD_MM[f.key] = (f.values ?? []) as number[]
+}
+
+/** Walk conditionalOn up to the visible top-level field (for the client arrow). */
+function topLevelOf(key: string): string {
+  let k = key, guard = 0
+  while (FIELD_PARENT[k] && guard++ < 6) k = FIELD_PARENT[k] as string
+  return k
+}
+
+/** Snap an mm value to the nearest value the field actually offers. */
+function snapMm(key: string, n: number): number {
+  const vals = FIELD_MM[key]
+  if (!vals?.length) return n
+  return vals.reduce((best, v) => (Math.abs(v - n) < Math.abs(best - n) ? v : best), vals[0])
+}
 
 const REPORT_TOOL: Anthropic.Tool = {
   name: 'report_additions',
@@ -114,12 +135,15 @@ export async function POST(req: Request) {
     const clean = items.filter(it => it?.field && validKeys.has(it.field))
 
     if (mode === 'detect') {
+      // Map any detected child up to its visible top-level field so the client's
+      // arrow lands on a control the user can actually see.
       const seen = new Set<string>()
       const fields: Array<{ fieldKey: string; sectionKey: string }> = []
       for (const it of clean) {
-        if (seen.has(it.field!)) continue
-        seen.add(it.field!)
-        fields.push({ fieldKey: it.field!, sectionKey: sectionOf(it.field!) })
+        const top = topLevelOf(it.field!)
+        if (seen.has(top)) continue
+        seen.add(top)
+        fields.push({ fieldKey: top, sectionKey: sectionOf(top) })
       }
       return Response.json({ fields })
     }
@@ -135,7 +159,7 @@ export async function POST(req: Request) {
       else if (type === 'mm') {
         const n = Number(String(it.value ?? '').replace(/[^0-9.]/g, ''))
         if (!Number.isFinite(n)) continue
-        value = n
+        value = snapMm(key, n) // clamp to a value the field actually offers
       } else {
         const v = String(it.value ?? '').trim()
         if (!v) continue
@@ -145,6 +169,26 @@ export async function POST(req: Request) {
       const side = it.side === 'l' || it.side === 'r' ? it.side : 'both'
       const cur = (additions[key] as { l: unknown; r: unknown }) ?? { l: null, r: null }
       additions[key] = side === 'both' ? { l: value, r: value } : { ...cur, [side]: value }
+    }
+
+    // Harden conditional children: a child value is inert unless its parent is
+    // active. When the parent is a toggle we can safely switch it on (per side)
+    // even if the LLM forgot to. Non-toggle parents (rocker/haglund/ankle/general
+    // raise) can't be invented — the prompt asks the model to emit those, and the
+    // staff diff surfaces any that are still missing.
+    const has = (v: unknown) => v != null && v !== '' && v !== false
+    for (const key of Object.keys(additions)) {
+      const parent = FIELD_PARENT[key]
+      if (!parent || FIELD_TYPE[parent] !== 'toggle') continue
+      const child = additions[key]
+      const cur = (additions[parent] as { l: unknown; r: unknown }) ?? { l: false, r: false }
+      const next = { ...cur }
+      if (child && typeof child === 'object') {
+        const sv = child as { l?: unknown; r?: unknown }
+        if (has(sv.l)) next.l = true
+        if (has(sv.r)) next.r = true
+      }
+      additions[parent] = next
     }
     return Response.json({ additions })
   } catch (e) {
