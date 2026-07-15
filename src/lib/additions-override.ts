@@ -63,6 +63,11 @@ export function computeOverridePatch(
   const patch: Additions = {}
   for (const key of Object.keys(next)) {
     if (key === 'comments') continue
+    // Both empty → no change. Critical for OLD orders: the editor seeds every
+    // field (incl. config fields added AFTER the order) via emptyAdditions, so a
+    // new field is `{l:null,r:null}` in `edited` but `undefined` in the original —
+    // that must NOT count as an adjustment.
+    if (isEmptyVal(next[key]) && isEmptyVal(base[key])) continue
     if (!sameVal(next[key], base[key])) patch[key] = next[key]
   }
   return patch

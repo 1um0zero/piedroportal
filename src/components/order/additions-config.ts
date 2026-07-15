@@ -228,8 +228,10 @@ export function countFilled(
     if (val == null) continue
     if (field.side === 'global') { if (val === true) count++; continue }
     const sv = val as { l: unknown; r: unknown }
-    if (sv?.l != null && sv.l !== false && sv.l !== '') count++
-    if (sv?.r != null && sv.r !== false && sv.r !== '') count++
+    // Count the FIELD once if either side is set — an addition applied to both
+    // feet (PAIR) is one addition, not two.
+    const filled = (sv?.l != null && sv.l !== false && sv.l !== '') || (sv?.r != null && sv.r !== false && sv.r !== '')
+    if (filled) count++
   }
   return count
 }
