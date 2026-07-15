@@ -23,6 +23,32 @@ const PiedroVisualizer = dynamic(
   },
 );
 
+// GLBs reais das adições pair-by-pair (bucket `products/3d/`). São sapatos/hormas
+// completos (~3.2 MB) — servem de modelo BASE. O lado _l/_r deriva do toggle do pé.
+// Rota admin, tráfego baixo — carregar raw é aceitável aqui (cf. egress CANON).
+const GLB_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/3d/`;
+
+const MODELS: { base: string; label: string }[] = [
+  { base: 'width_cone', label: 'Extra width (cone)' },
+  { base: 'toe_box', label: 'Toe box' },
+  { base: 'depth_forefoot', label: 'Depth forefoot' },
+  { base: 'depth_plantair', label: 'Depth plantair' },
+  { base: 'hammer_toe', label: 'Hammer toe' },
+  { base: 'bunionette', label: 'Bunionette' },
+  { base: 'hallux_valgus', label: 'Hallux valgus' },
+  { base: 'joint_medial', label: 'Joint medial' },
+  { base: 'joint_lateral', label: 'Joint lateral' },
+  { base: 'heel_medial', label: 'Heel medial' },
+  { base: 'heel_lateral', label: 'Heel lateral' },
+  { base: 'heel_depth', label: 'Heel depth' },
+  { base: 'heel_exostosis', label: 'Haglund (heel exostosis)' },
+  { base: 'straighten_heel', label: 'Straighten heel' },
+  { base: 'ankle_medial', label: 'Ankle medial' },
+  { base: 'ankle_lateral', label: 'Ankle lateral' },
+];
+
+const DEFAULT_MODEL = 'width_cone';
+
 interface SliderDef {
   key: keyof Omit<Adaptations, 'foot'>;
   label: string;
@@ -43,17 +69,20 @@ export default function Viewer3DLab() {
   const [params, setParams] = useState<Adaptations>({ ...NEUTRAL_ADAPTATIONS });
   const [showZones, setShowZones] = useState(true);
   const [showFlags, setShowFlags] = useState(true);
-  const [modelUrl, setModelUrl] = useState('');
-  const [activeModel, setActiveModel] = useState<string | undefined>(undefined);
+  const [modelBase, setModelBase] = useState<string>(DEFAULT_MODEL); // '' = demo procedural
   const exportRef = useRef<(() => string) | null>(null);
+
+  // URL do GLB derivada do modelo escolhido + lado do pé (real _l/_r do bucket).
+  const activeModel = modelBase
+    ? `${GLB_BASE}${modelBase}_${params.foot.toLowerCase()}.glb`
+    : undefined;
 
   const set = (key: keyof Adaptations, value: number | Foot) =>
     setParams((p) => ({ ...p, [key]: value }));
 
   const reset = () => {
     setParams({ ...NEUTRAL_ADAPTATIONS });
-    setActiveModel(undefined);
-    setModelUrl('');
+    setModelBase(DEFAULT_MODEL);
   };
 
   const handleExport = () => {
@@ -154,34 +183,23 @@ export default function Viewer3DLab() {
           </label>
         </div>
 
-        {/* Modelo GLB opcional */}
+        {/* Modelo base */}
         <div className="mt-5 border-t border-stone-100 pt-4">
           <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-stone-400">
-            Modelo GLB (opcional)
+            Modelo base
           </span>
-          <input
-            type="text"
-            value={modelUrl}
-            onChange={(e) => setModelUrl(e.target.value)}
-            placeholder="URL de um .glb…"
+          <select
+            value={modelBase}
+            onChange={(e) => setModelBase(e.target.value)}
             className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
-          />
-          <div className="mt-2 flex gap-2">
-            <button
-              onClick={() => setActiveModel(modelUrl.trim() || undefined)}
-              className="flex-1 rounded-lg bg-stone-800 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700"
-            >
-              Carregar
-            </button>
-            <button
-              onClick={() => { setActiveModel(undefined); }}
-              className="rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-600 hover:border-stone-300"
-            >
-              Demo
-            </button>
-          </div>
+          >
+            {MODELS.map((m) => (
+              <option key={m.base} value={m.base}>{m.label}</option>
+            ))}
+            <option value="">Demo procedural</option>
+          </select>
           <p className="mt-2 text-xs text-stone-400">
-            Sem URL usa o sapato demo procedural. O bucket só tem GLBs por adição, não sapatos inteiros.
+            GLBs reais das adições pair-by-pair (sapato completo). O lado {params.foot === 'L' ? 'esquerdo' : 'direito'} segue o toggle do pé.
           </p>
         </div>
 

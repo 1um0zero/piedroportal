@@ -18,8 +18,8 @@ export default async function Viewer3DLabPage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="mb-1 text-2xl font-light text-stone-800">3D additions viewer — lab</h1>
       <p className="mb-4 text-sm text-stone-500">
-        Sapato demo que reflete as adaptações em tempo real: alteamento, largura extra,
-        biqueira, arco medial e cunha varo/valgo — com zonas realçadas e bandeiras.
+        Sapato base (GLB real das adições pair-by-pair) que reflete as adaptações em tempo real:
+        alteamento, largura extra, biqueira, arco medial e cunha varo/valgo — com zonas realçadas e bandeiras.
       </p>
       <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
         ⚠ Protótipo interno. A deformação é <strong>ilustrativa</strong> (janelas não calibradas por SKU)
