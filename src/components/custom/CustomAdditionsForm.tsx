@@ -146,7 +146,7 @@ function MeasurementGrid({
  *  simpler than the OSB AdditionsForm (no GLB/sole/ZSM machinery) — a clean
  *  canvas to iterate the custom-made set on. */
 export default function CustomAdditionsForm({
-  values, onChange, unit = 'PAIR', optionOverrides,
+  values, onChange, unit = 'LEFT_RIGHT', optionOverrides,
 }: {
   values: Vals
   onChange: (next: Vals) => void

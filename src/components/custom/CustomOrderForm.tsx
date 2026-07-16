@@ -27,7 +27,9 @@ const sideEmpty = (v: unknown, s: 'l' | 'r') => {
 }
 
 type Company = { id: string; name: string; erp_code: string }
-const UNITS = ['PAIR', 'LEFT', 'RIGHT', 'LEFT_RIGHT'] as const
+// PAIR removido a pedido do Martijn (PPT): em custom, L e R raramente são iguais,
+// por isso o par independente (LEFT_RIGHT) é o default. Fica LEFT / RIGHT / LEFT_RIGHT.
+const UNITS = ['LEFT_RIGHT', 'LEFT', 'RIGHT'] as const
 
 export default function CustomOrderForm({
   product, userCompany, companies, isAdmin, optionOverrides,
@@ -43,7 +45,7 @@ export default function CustomOrderForm({
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [companyId, setCompanyId] = useState(userCompany?.id ?? companies[0]?.id ?? '')
-  const [unit, setUnit] = useState<(typeof UNITS)[number]>('PAIR')
+  const [unit, setUnit] = useState<(typeof UNITS)[number]>('LEFT_RIGHT')
   const [patient, setPatient] = useState('')
   const [reference, setReference] = useState('')
   const [clinician, setClinician] = useState('')

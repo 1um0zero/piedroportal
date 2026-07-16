@@ -9,9 +9,11 @@ Legenda: ✅ claro · ❓ precisa de esclarecimento (ver lista no fim).
 ## Slide 1 — Tab 1 (Customer & Product) + comportamento geral
 
 - ✅ **Company** e **Customer/Patient** passam a campos obrigatórios.
-- ❓ **"Isn't this the same?"** — setas apontam para os botões de Type **PAIR** e **LEFT/RIGHT**.
-  É uma pergunta, não um pedido: PAIR = par com configuração igual; LEFT/RIGHT = par com
-  configurações independentes. Responder ao Martin e/ou repensar labels para tirar a dúvida.
+- ✅ **"Isn't this the same?"** — setas nos botões de Type **PAIR** e **LEFT/RIGHT**.
+  RESOLVIDO 2026-07-16: depois de esclarecido, o Martin pediu **remover o PAIR**
+  ("Please remove Pair. When making custom shoes, it rarely occurs that the values
+  for left and right are both the same."). Feito: UNITS = LEFT_RIGHT / LEFT / RIGHT,
+  default LEFT_RIGHT. (Ver Q1 abaixo — fechada.)
 - ✅ Se o Type for **LEFT** ou **RIGHT**, o resto do formulário mostra apenas esse lado.
 - ✅ Tab 2 (Customization) abre com **todas as secções fechadas** (hoje não abre assim).
 
@@ -139,8 +141,8 @@ Legenda: ✅ claro · ❓ precisa de esclarecimento (ver lista no fim).
 
 ## ❓ Questões a esclarecer (Martin / Anabela)
 
-1. **PAIR vs LEFT/RIGHT** ("Isn't this the same?") — explicar a diferença; se preferir,
-   propomos labels mais claros ("Pair — identical" / "Pair — different per foot").
+1. ~~**PAIR vs LEFT/RIGHT** ("Isn't this the same?")~~ — RESOLVIDO 2026-07-16: Martin pediu
+   **remover o PAIR** (em custom L≠R quase sempre). Feito: LEFT_RIGHT / LEFT / RIGHT, default LEFT_RIGHT.
 2. **Last height dropdown** — um dropdown por pé (L/R separados)?
 3. **Regra da circunferência obrigatória** — também para 120/220 mm? "Low last" isenta tudo?
 4. **Toe shapes** — enviar os desenhos corretos em alta resolução.
