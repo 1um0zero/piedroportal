@@ -340,7 +340,7 @@ const SECTION_UPPER: CustomSection = {
       key: 'model',
       label: { en: 'Model' },
       fields: [
-        { key: 'cs3.article', type: 'text', side: 'global', label: { en: 'Article number' } },  // autofilled from the chosen model
+        { key: 'cs3.article', type: 'text', side: 'global', required: true, label: { en: 'Article number' } },  // autofilled from the chosen model; can't be emptied
         { ...mm('Upper Height', 'cs3.upper_height_lf_rf'), required: true },
       ],
     },
@@ -577,7 +577,7 @@ const SECTION_STIFFENER: CustomSection = {
       label: { en: 'Toe reinforcement options' },
       fields: [
         // 'Normal' is the default (set in CustomOrderForm); 'Front' dropped (slide 11).
-        { key: 'cs5.toe_option', type: 'option', side: 'global', collapse: true,
+        { key: 'cs5.toe_option', type: 'option', side: 'global', collapse: true, required: true,
           label: { en: 'Toe reinforcement' }, values: ['No reinforcement', 'Normal', 'Short', 'Wing'] },
         { key: 'cs5.toe_material', type: 'text', side: 'global', label: { en: 'Toe material' }, conditionalOn: 'cs5.toe_option' },
         yn('External Protective Toe Cap', 'cs5.toe_protective'),

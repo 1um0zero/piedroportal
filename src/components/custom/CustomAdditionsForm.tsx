@@ -147,12 +147,13 @@ function MeasurementGrid({
  *  simpler than the OSB AdditionsForm (no GLB/sole/ZSM machinery) — a clean
  *  canvas to iterate the custom-made set on. */
 export default function CustomAdditionsForm({
-  values, onChange, unit = 'LEFT_RIGHT', optionOverrides,
+  values, onChange, unit = 'LEFT_RIGHT', optionOverrides, articleDefault,
 }: {
   values: Vals
   onChange: (next: Vals) => void
   unit?: Unit
   optionOverrides?: OptionOverrides
+  articleDefault?: string
 }) {
   const locale = useLocale()
 
@@ -231,7 +232,8 @@ export default function CustomAdditionsForm({
       const opts = fieldOptions(f)
       const selected = (values[f.key] as string) || null
       // collapse: once a value is picked, show only it; click again to reveal all
-      const shown = f.collapse && selected ? [selected] : opts.values
+      // (required não colapsa — não é desmarcável, ficaria preso)
+      const shown = f.collapse && selected && !f.required ? [selected] : opts.values
       return (
         <div key={f.key} className={`py-2 ${indent}`}>
           <label className="mb-2 block text-xs text-stone-500">{label}</label>
@@ -242,7 +244,7 @@ export default function CustomAdditionsForm({
               const on = selected === val
               return (
                 <button key={val} type="button" title={opts.labelOf(val)}
-                  onClick={() => set(f.key, on ? '' : val)}
+                  onClick={() => set(f.key, on && !f.required ? '' : val)}
                   className={`group relative flex w-[104px] flex-col items-center rounded-xl border p-2 transition-all
                     ${on ? 'border-gold bg-gold/5 ring-2 ring-gold/30 shadow-sm' : 'border-stone-200 bg-white hover:border-gold/60'}`}>
                   {src
@@ -293,13 +295,14 @@ export default function CustomAdditionsForm({
       const sided = f.side === 'both'
       const opts = fieldOptions(f)
       const chipRow = (sel: string | null, pick: (v: string) => void) => {
-        const shown = f.collapse && sel ? [sel] : opts.values
+        // required não colapsa: como não é desmarcável, colapsar prendia-o no default
+        const shown = f.collapse && sel && !f.required ? [sel] : opts.values
         return (
           <div className="flex flex-wrap gap-1.5">
             {shown.map(v => {
               const val = String(v); const on = sel === val
               return (
-                <button key={val} type="button" onClick={() => pick(on ? '' : val)}
+                <button key={val} type="button" onClick={() => pick(on && !f.required ? '' : val)}
                   className={`rounded border px-3 py-1.5 text-xs font-medium transition-all
                     ${on ? 'border-gold bg-gold text-white shadow-sm' : 'border-stone-200 bg-white text-stone-600 hover:border-gold/60 hover:text-gold'}`}>
                   {opts.labelOf(val)}
@@ -364,14 +367,20 @@ export default function CustomAdditionsForm({
 
   function renderSection(s: CustomSection) {
     const isOpen = open[s.key]
-    // Conta só o que o utilizador escolheu de facto: exclui o artigo (metadata) e
-    // os defaults semeados enquanto continuam no valor de fábrica (senão uma
-    // encomenda nova parece já preenchida — ver Martin seed defaults).
-    const filled = s.groups.flatMap(g => g.fields).filter(f =>
-      isActive(values, f.key)
-      && f.key !== CUSTOM_ARTICLE_KEY
-      && !(f.key in CUSTOM_SEED_DEFAULTS && values[f.key] === CUSTOM_SEED_DEFAULTS[f.key]),
-    ).length
+    // Regras (Jorge 2026-07-16): valores por defeito (artigo, as-model, measure
+    // back, toe Normal) NÃO são adaptações à partida; contam só quando o
+    // utilizador os muda para um valor diferente do default (e não-vazio).
+    const seedDefaultOf = (key: string): unknown =>
+      key === CUSTOM_ARTICLE_KEY ? articleDefault
+      : (key in CUSTOM_SEED_DEFAULTS ? CUSTOM_SEED_DEFAULTS[key] : undefined)
+    const filled = s.groups.flatMap(g => g.fields).filter(f => {
+      const def = seedDefaultOf(f.key)
+      if (def !== undefined) {
+        const cur = values[f.key]
+        return cur != null && cur !== '' && cur !== def
+      }
+      return isActive(values, f.key)
+    }).length
     const empty = s.groups.every(g => g.fields.length === 0)
     return (
       <div key={s.key} className="rounded-[14px] border border-stone-200 bg-white" style={{ boxShadow: 'var(--shadow-card)' }}>
