@@ -329,6 +329,28 @@ export const CUSTOM_SEED_DEFAULTS: Record<string, unknown> = {
   'cs4.measure_back': true,
   'cs5.toe_option': 'Normal',
 }
+
+// Campos mm de ADAPTAÇÃO com limites claros → usam o RangeField (slider + label,
+// como no OSB). As MEDIÇÕES livres (circunferências cs1.21-26, medidas da forma
+// cs1.11-18, toe heights I-V, alturas de shaft) ficam em texto livre — não têm
+// range fixo e não podem ser cortadas. Ranges PROVISÓRIOS: afinar com o Martin.
+// Formato: [min, max, step?] (step default 1).
+export const CUSTOM_MM_RANGES: Record<string, [number, number, number?]> = {
+  'cs1.0.02_lf_rf': [0, 50],   // Heel Height (spec)
+  'cs1.0.03_lf_rf': [0, 30],   // Toe Jump
+  'cs1.0.04_lf_rf': [0, 20],   // Toe Height
+  'cs2.31_lt_lf_rf': [0, 60],  // Supplement — Heel
+  'cs2.32_lt_lf_rf': [0, 30],  // Supplement — Ball medial
+  'cs2.32_md_lt_rf': [0, 30],  // Supplement — Ball lateral
+  'cs2.33': [0, 30],           // Supplement — Toe
+  'cs2.41_lf_rf': [0, 60],     // Rocker (supplement)
+  'cs2.51': [0, 50],           // Leg-length difference
+  'cs2.52': [0, 50],
+  'cs4.height_lf_rf': [0, 60], // Sole Height
+  'cs4.rocker_heel_mm': [0, 60],
+  'cs4.rocker_joint_mm': [0, 60],
+  'cs4.rocker_toes_mm': [0, 60],
+}
 const SURCHARGE_COLOURS  = 'A surcharge may apply if colors other than the standard colors are chosen.'
 const SURCHARGE_CLOSURES = 'A surcharge may apply if closures other than the standard closure is chosen.'
 const STRETCH_POPUP      = 'Stretch is only possible if the model allows it.'

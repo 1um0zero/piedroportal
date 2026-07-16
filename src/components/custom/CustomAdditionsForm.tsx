@@ -4,10 +4,21 @@ import { useLocale } from 'next-intl'
 import { useState } from 'react'
 import {
   CUSTOM_SECTIONS, customLabel,
-  CUSTOM_ARTICLE_KEY, CUSTOM_SEED_DEFAULTS,
+  CUSTOM_ARTICLE_KEY, CUSTOM_SEED_DEFAULTS, CUSTOM_MM_RANGES,
   type CustomField, type CustomSection,
 } from './custom-additions-config'
 import { overrideLabel, type OptionOverrides } from '@/lib/additions/option-tables'
+import { RangeField } from '@/components/ui/RangeField'
+
+// Expande [min,max,step?] à lista de valores que o RangeField percorre.
+const rangeToValues = ([min, max, step = 1]: [number, number, number?]): number[] => {
+  const out: number[] = []
+  for (let v = min; v <= max; v += step) out.push(v)
+  return out
+}
+// Valor para o RangeField: '' / null → null (campo vazio).
+const mmVal = (v: unknown): number | string | null =>
+  v === '' || v == null ? null : (v as number | string)
 
 type Vals = Record<string, unknown>
 type Sided = { l?: number | string | ''; r?: number | string | '' }
@@ -341,19 +352,30 @@ export default function CustomAdditionsForm({
     const sided = f.side === 'both'
     const sv = (values[f.key] as Sided) ?? {}
     const single = (values[f.key] as number | '' | undefined) ?? ''
+    // Adaptações limitadas → slider RangeField; medições livres → texto.
+    const range = CUSTOM_MM_RANGES[f.key]
+    const rvals = range ? rangeToValues(range) : null
     return (
       <div key={f.key} className={`py-1.5 ${indent}`}>
         <label className="block text-xs text-stone-500 mb-1">
           {label}{hint && <span className="ml-1 text-stone-400">· {hint}</span>}
         </label>
         {sided ? (
-          <div className="flex items-center gap-2">
-            {showL && <input inputMode="numeric" placeholder="L" value={sv.l ?? ''} onChange={e => setSide(f.key, 'l', num(e))}
-              className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />}
-            {showR && <input inputMode="numeric" placeholder="R" value={sv.r ?? ''} onChange={e => setSide(f.key, 'r', num(e))}
-              className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />}
-            <span className="text-sm text-stone-400 shrink-0">mm</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {showL && (rvals
+              ? <span className="inline-flex items-center gap-1.5"><span className="text-[10px] text-stone-400">L</span>
+                  <RangeField values={rvals} value={mmVal(sv.l)} onChange={v => setSide(f.key, 'l', v ?? '')} unit="mm" /></span>
+              : <input inputMode="numeric" placeholder="L" value={sv.l ?? ''} onChange={e => setSide(f.key, 'l', num(e))}
+                  className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />)}
+            {showR && (rvals
+              ? <span className="inline-flex items-center gap-1.5"><span className="text-[10px] text-stone-400">R</span>
+                  <RangeField values={rvals} value={mmVal(sv.r)} onChange={v => setSide(f.key, 'r', v ?? '')} unit="mm" /></span>
+              : <input inputMode="numeric" placeholder="R" value={sv.r ?? ''} onChange={e => setSide(f.key, 'r', num(e))}
+                  className="flex-1 min-w-0 rounded-lg border border-stone-300 px-3 py-2 text-sm" />)}
+            {!rvals && <span className="text-sm text-stone-400 shrink-0">mm</span>}
           </div>
+        ) : rvals ? (
+          <RangeField values={rvals} value={mmVal(single)} onChange={v => set(f.key, v ?? '')} unit="mm" />
         ) : (
           <div className="flex items-center gap-2">
             <input inputMode="numeric" value={single} onChange={e => set(f.key, num(e))}
