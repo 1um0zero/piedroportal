@@ -6,6 +6,8 @@ import { isPiedroAdmin } from '@/lib/roles'
 import { hasChatConsent, logChatMessage } from '@/lib/chat-consent'
 import { fetchAll } from '@/lib/fetch-all'
 import { getContactInfo } from '@/lib/contact-info.server'
+import { summarizeAdditions } from '@/lib/additions-explode'
+import { getTranslations } from 'next-intl/server'
 
 // Lazily construct the client — the SDK throws at construction if the key is
 // missing, which would 500 the whole route (incl. the GET health check).
@@ -139,7 +141,7 @@ const tools: Anthropic.Tool[] = [
   },
   {
     name: 'get_order',
-    description: 'Get full details of a specific order by its ID or reference number.',
+    description: 'Get full details of a specific order by its reference. Includes an `additions` summary: `count` is the number of distinct additions (orthopaedic modifications); `items` lists each with its value(s) — `both` when left and right are equal, `left`/`right` when they differ, `on` for yes/no toggles — and nested `children` (conditional sub-parameters). Do NOT sum children or count them separately; report `count` as the number of additions.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -199,23 +201,36 @@ async function executeTool(
 
   switch (name) {
     case 'search_orders': {
-      const q = String(input.q ?? '').toLowerCase()
+      // Strip chars that would break a PostgREST or() filter, then match with ilike
+      // so the search runs in SQL across ALL of the company's orders — not just a
+      // recent slice. (The old code fetched only the 50 newest rows and filtered in
+      // memory, so any older order was invisible.)
+      const safe = String(input.q ?? '').replace(/[,()"\\]/g, ' ').trim()
+      if (!safe) return []
+      const like = `%${safe}%`
+
+      // The model code lives on the joined products row; resolve matching product
+      // ids first so they can fold into the same or() filter.
+      const { data: prods } = await service
+        .from('products')
+        .select('id')
+        .or(`colour_id.ilike.${like},style_name.ilike.${like}`)
+        .limit(300)
+      const pids = (prods ?? []).map((p: { id: string }) => p.id)
+
+      let orFilter = `reference_customer.ilike.${like},patient_name.ilike.${like}`
+      if (pids.length) orFilter += `,product_id.in.(${pids.join(',')})`
+
       const { data } = await service
         .from('orders')
-        .select('id, status, reference_customer, patient_name, unit, created_at, products(colour_id, color_name, style_name)')
+        .select('id, status, reference_customer, patient_name, unit, created_at, product_id, products(colour_id, color_name, style_name)')
         .in('company_id', companyIds)
+        .or(orFilter)
         .order('created_at', { ascending: false })
-        .limit(50)
-      const orders = (data ?? []).filter((o: Record<string, unknown>) => {
-        const ref = String(o.reference_customer ?? '').toLowerCase()
-        const pat = String(o.patient_name ?? '').toLowerCase()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const prod = (Array.isArray(o.products) ? o.products[0] : o.products) as any
-        const model = String(prod?.colour_id ?? '').toLowerCase()
-        return ref.includes(q) || pat.includes(q) || model.includes(q)
-      })
+        .limit(25)
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return orders.slice(0, 10).map((o: any) => {
+      return (data ?? []).map((o: any) => {
         const prod = Array.isArray(o.products) ? o.products[0] : o.products
         return { id: o.id, reference: o.reference_customer, patient: o.patient_name, status: o.status, model: prod?.colour_id, date: o.created_at?.slice(0, 10) }
       })
@@ -225,7 +240,7 @@ async function executeTool(
       const ref = String(input.reference ?? '')
       const { data } = await service
         .from('orders')
-        .select('id, status, unit, quantity, reference_customer, patient_name, clinician, construction_left, construction_right, width_left, width_right, size_left, size_right, comments, created_at, products(colour_id, color_name, closure, style_name)')
+        .select('id, status, unit, quantity, reference_customer, patient_name, clinician, construction_left, construction_right, width_left, width_right, size_left, size_right, additions, comments, created_at, products(colour_id, color_name, closure, style_name)')
         .in('company_id', companyIds)
         .ilike('reference_customer', `%${ref}%`)
         .limit(1)
@@ -233,6 +248,17 @@ async function executeTool(
       if (!data) return { error: `Order with reference "${ref}" not found` }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prod = (Array.isArray((data as any).products) ? (data as any).products[0] : (data as any).products) as any
+
+      // Structured additions summary — parents/children nested, L/R collapsed when
+      // equal, `count` = distinct top-level additions (children never counted or
+      // summed). English labels; the assistant translates to the user's language.
+      const t = await getTranslations({ locale: 'en', namespace: 'additions' })
+      const label = (k: string) => {
+        try { return t(`field_labels.${k}`) || k } catch { return k }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const additions = summarizeAdditions((data as any).additions, label)
+
       return {
         id: data.id, reference: data.reference_customer, patient: data.patient_name,
         clinician: data.clinician, status: data.status, unit: data.unit, quantity: data.quantity,
@@ -240,6 +266,7 @@ async function executeTool(
         construction_left: data.construction_left, construction_right: data.construction_right,
         width_left: data.width_left, width_right: data.width_right,
         size_left: data.size_left, size_right: data.size_right,
+        additions,
         comments: data.comments, date: data.created_at?.slice(0, 10),
       }
     }
