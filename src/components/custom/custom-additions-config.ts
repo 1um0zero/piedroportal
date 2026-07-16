@@ -317,6 +317,18 @@ const SECTION_SUPPLEMENT: CustomSection = {
 // sheet (text for now until wired to the catalogue).
 export const LEATHER_AS_MODEL_KEY = 'cs3.leather_as_model'
 export const CLOSURE_AS_MODEL_KEY = 'cs3.closure_as_model'
+
+// Campos semeados por defeito numa encomenda nova (pedido do Martin, PPT 30-6):
+// "as model" ligados, Measurement Back on, toe reinforcement Normal. Não são
+// escolhas do utilizador → o contador de secção NÃO os conta enquanto no default.
+// O artigo (autofill do modelo) é metadata, nunca conta.
+export const CUSTOM_ARTICLE_KEY = 'cs3.article'
+export const CUSTOM_SEED_DEFAULTS: Record<string, unknown> = {
+  [LEATHER_AS_MODEL_KEY]: true,
+  [CLOSURE_AS_MODEL_KEY]: true,
+  'cs4.measure_back': true,
+  'cs5.toe_option': 'Normal',
+}
 const SURCHARGE_COLOURS  = 'A surcharge may apply if colors other than the standard colors are chosen.'
 const SURCHARGE_CLOSURES = 'A surcharge may apply if closures other than the standard closure is chosen.'
 const STRETCH_POPUP      = 'Stretch is only possible if the model allows it.'

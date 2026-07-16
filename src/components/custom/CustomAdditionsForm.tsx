@@ -4,6 +4,7 @@ import { useLocale } from 'next-intl'
 import { useState } from 'react'
 import {
   CUSTOM_SECTIONS, customLabel,
+  CUSTOM_ARTICLE_KEY, CUSTOM_SEED_DEFAULTS,
   type CustomField, type CustomSection,
 } from './custom-additions-config'
 import { overrideLabel, type OptionOverrides } from '@/lib/additions/option-tables'
@@ -363,7 +364,14 @@ export default function CustomAdditionsForm({
 
   function renderSection(s: CustomSection) {
     const isOpen = open[s.key]
-    const filled = s.groups.flatMap(g => g.fields).filter(f => isActive(values, f.key)).length
+    // Conta só o que o utilizador escolheu de facto: exclui o artigo (metadata) e
+    // os defaults semeados enquanto continuam no valor de fábrica (senão uma
+    // encomenda nova parece já preenchida — ver Martin seed defaults).
+    const filled = s.groups.flatMap(g => g.fields).filter(f =>
+      isActive(values, f.key)
+      && f.key !== CUSTOM_ARTICLE_KEY
+      && !(f.key in CUSTOM_SEED_DEFAULTS && values[f.key] === CUSTOM_SEED_DEFAULTS[f.key]),
+    ).length
     const empty = s.groups.every(g => g.fields.length === 0)
     return (
       <div key={s.key} className="rounded-[14px] border border-stone-200 bg-white" style={{ boxShadow: 'var(--shadow-card)' }}>

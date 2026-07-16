@@ -10,7 +10,7 @@ import {
   CUSTOM_SECTIONS, allCustomFields, customLabel,
   LAST_HEIGHT_KEY, CIRC_BY_HEIGHT, HEEL_HEIGHT_KEY, SOLE_HEIGHT_KEY,
   FITTING_SHOE_TYPE_KEY, FITTING_SHOE_WITH_SUPPLEMENT,
-  LEATHER_AS_MODEL_KEY, CLOSURE_AS_MODEL_KEY,
+  CUSTOM_ARTICLE_KEY, CUSTOM_SEED_DEFAULTS,
   STIFFENER_TYPE_L_KEY, STIFFENER_TYPE_R_KEY,
   STIFFENER_MATERIAL_L_KEY, STIFFENER_MATERIAL_R_KEY,
   type CustomField,
@@ -53,11 +53,8 @@ export default function CustomOrderForm({
   // Defaults per Martin (pptx 30-6-2026): article nr autofilled from the model,
   // "as model" boxes checked, Measurement Back on, Normal toe reinforcement.
   const [values, setValues] = useState<Record<string, unknown>>({
-    'cs3.article': product.colour_id,
-    [LEATHER_AS_MODEL_KEY]: true,
-    [CLOSURE_AS_MODEL_KEY]: true,
-    'cs4.measure_back': true,
-    'cs5.toe_option': 'Normal',
+    [CUSTOM_ARTICLE_KEY]: product.colour_id,
+    ...CUSTOM_SEED_DEFAULTS,
   })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
