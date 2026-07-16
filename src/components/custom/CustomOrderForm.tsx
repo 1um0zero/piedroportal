@@ -17,6 +17,8 @@ import {
 } from './custom-additions-config'
 import { insertCustomOrderAction, type CustomOrderRow } from '@/app/actions/custom-orders'
 import type { OptionOverrides } from '@/lib/additions/option-tables'
+import Custom3DPreview from './Custom3DPreview'
+import { reflectableCount } from './custom-3d-map'
 
 type Sided = { l?: number | string; r?: number | string }
 const sideEmpty = (v: unknown, s: 'l' | 'r') => {
@@ -58,6 +60,7 @@ export default function CustomOrderForm({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
+  const [show3D, setShow3D] = useState(false)
 
   const needsCompany = !userCompany && companies.length > 0
   const canNext1 = reference.trim() !== '' && patient.trim() !== '' && (!needsCompany || companyId)
@@ -226,9 +229,12 @@ export default function CustomOrderForm({
       {step === 2 && (
         <div className="space-y-5">
           <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} />
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
-            <button onClick={() => setStep(3)} className="rounded-lg bg-gold px-6 py-2.5 text-sm font-medium text-white">Next →</button>
+            <div className="flex items-center gap-3">
+              <Preview3DButton n={reflectableCount(values)} onClick={() => setShow3D(true)} />
+              <button onClick={() => setStep(3)} className="rounded-lg bg-gold px-6 py-2.5 text-sm font-medium text-white">Next →</button>
+            </div>
           </div>
         </div>
       )}
@@ -248,7 +254,8 @@ export default function CustomOrderForm({
           </Field>
           <div className="flex justify-between">
             <button onClick={() => setStep(2)} className="text-sm text-stone-500">← Back</button>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <Preview3DButton n={reflectableCount(values)} onClick={() => setShow3D(true)} />
               <button disabled={busy} onClick={() => save('draft')}
                 className="rounded-lg border border-stone-300 px-5 py-2.5 text-sm text-stone-600 disabled:opacity-40">Save draft</button>
               <button disabled={busy} onClick={() => save('submitted')}
@@ -258,10 +265,30 @@ export default function CustomOrderForm({
         </div>
       )}
 
+      {show3D && (
+        <Custom3DPreview values={values} unit={unit} onClose={() => setShow3D(false)} />
+      )}
+
       <style jsx>{`
         :global(.input) { width: 100%; border-radius: 0.5rem; border: 1px solid #d6d3d1; padding: 0.5rem 0.75rem; font-size: 0.875rem; }
       `}</style>
     </div>
+  )
+}
+
+// Botão do rodapé (Tab2/Tab3) que abre o preview 3D das adições geométricas.
+function Preview3DButton({ n, onClick }: { n: number; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-lg border border-gold/40 px-4 py-2.5 text-sm font-medium text-gold hover:bg-gold/5"
+    >
+      View in 3D
+      {n > 0 && (
+        <span className="rounded-full bg-gold px-1.5 text-[11px] font-semibold text-white">{n}</span>
+      )}
+    </button>
   )
 }
 
