@@ -8,8 +8,9 @@ import {
   saveAnnouncement, setAnnouncementActive, deleteAnnouncement, proposeAnnouncementTranslations,
 } from '@/app/actions/announcements'
 import {
-  ANNOUNCEMENT_DISPLAYS, ANNOUNCEMENT_PLACEMENTS, ANNOUNCEMENT_LOCALES,
-  type Announcement, type AnnouncementDisplay, type AnnouncementPlacement, type AnnouncementVariant,
+  ANNOUNCEMENT_DISPLAYS, ANNOUNCEMENT_PLACEMENTS, ANNOUNCEMENT_LOCALES, ANNOUNCEMENT_AUDIENCES,
+  type Announcement, type AnnouncementAudience, type AnnouncementDisplay, type AnnouncementPlacement,
+  type AnnouncementVariant,
 } from '@/lib/announcements-types'
 
 // datetime-local <-> ISO helpers (value is wall-clock in the browser's tz).
@@ -37,6 +38,7 @@ export default function AnnouncementComposer({ announcements }: { announcements:
   const [editorInitial, setEditorInitial] = useState(blankBody)
   const [displayType, setDisplayType] = useState<AnnouncementDisplay>('popup')
   const [placement, setPlacement] = useState<AnnouncementPlacement[]>(['after_login'])
+  const [audience, setAudience] = useState<AnnouncementAudience>('clients')
   const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt] = useState('')
   const [active, setActive] = useState(true)
@@ -54,7 +56,7 @@ export default function AnnouncementComposer({ announcements }: { announcements:
 
   function reset() {
     setEditingId(null); setTitle(''); setBody(blankBody); setEditorInitial(blankBody); setEditorKey(k => k + 1)
-    setDisplayType('popup'); setPlacement(['after_login']); setStartsAt(''); setEndsAt('')
+    setDisplayType('popup'); setPlacement(['after_login']); setAudience('clients'); setStartsAt(''); setEndsAt('')
     setActive(true); setDismissible(true)
     setVariants({}); setActiveVar(null); setVarKey(k => k + 1)
   }
@@ -62,7 +64,7 @@ export default function AnnouncementComposer({ announcements }: { announcements:
   function edit(a: Announcement) {
     setEditingId(a.id); setTitle(a.title); setSrcLocale(a.sourceLocale)
     setBody(a.bodyHtml); setEditorInitial(a.bodyHtml); setEditorKey(k => k + 1)
-    setDisplayType(a.displayType); setPlacement(a.placement)
+    setDisplayType(a.displayType); setPlacement(a.placement); setAudience(a.audience)
     setStartsAt(toLocalInput(a.startsAt)); setEndsAt(toLocalInput(a.endsAt))
     setActive(a.active); setDismissible(a.dismissible)
     setVariants(a.translations ?? {}); setActiveVar(a.translations ? Object.keys(a.translations)[0] ?? null : null)
@@ -93,7 +95,7 @@ export default function AnnouncementComposer({ announcements }: { announcements:
         id: editingId ?? undefined,
         title, sourceLocale: srcLocale, bodyHtml: body,
         translations: Object.keys(variants).length ? variants : undefined,
-        displayType, placement,
+        displayType, placement, audience,
         startsAt: fromLocalInput(startsAt), endsAt: fromLocalInput(endsAt),
         active, dismissible,
       })
@@ -200,6 +202,19 @@ export default function AnnouncementComposer({ announcements }: { announcements:
           </div>
         </div>
 
+        {/* Audience — WHO sees it, orthogonal to placement (see migration 058) */}
+        <div>
+          <p className="text-xs font-semibold tracking-wider uppercase text-stone-400 mb-2">{t('audience')}</p>
+          <div className="flex flex-wrap gap-2">
+            {ANNOUNCEMENT_AUDIENCES.map(a => (
+              <button key={a} type="button" className={chip(audience === a)} onClick={() => setAudience(a)}>
+                {t(`aud_${a}`)}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-stone-400 mt-1.5">{t(`aud_${audience}_hint`)}</p>
+        </div>
+
         {/* Window + flags */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
@@ -253,6 +268,7 @@ export default function AnnouncementComposer({ announcements }: { announcements:
                   <th className="py-2 pr-4">{t('field_title')}</th>
                   <th className="py-2 pr-4">{t('display_type')}</th>
                   <th className="py-2 pr-4">{t('placement')}</th>
+                  <th className="py-2 pr-4">{t('audience')}</th>
                   <th className="py-2 pr-4">{t('window')}</th>
                   <th className="py-2 pr-4">{t('active')}</th>
                   <th className="py-2" />
@@ -266,6 +282,7 @@ export default function AnnouncementComposer({ announcements }: { announcements:
                       <td className="py-2.5 pr-4 font-medium text-stone-700 max-w-[240px] truncate">{a.title}</td>
                       <td className="py-2.5 pr-4 text-stone-500">{t(`type_${a.displayType}`)}</td>
                       <td className="py-2.5 pr-4 text-stone-500">{a.placement.map(p => t(`place_${p}`)).join(', ')}</td>
+                      <td className="py-2.5 pr-4 text-stone-500 whitespace-nowrap">{t(`aud_${a.audience}`)}</td>
                       <td className="py-2.5 pr-4 text-stone-500 whitespace-nowrap">{fmt(a.startsAt)} → {fmt(a.endsAt)}</td>
                       <td className="py-2.5 pr-4">
                         <button type="button" disabled={pending}

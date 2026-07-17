@@ -3,9 +3,16 @@
 
 export type AnnouncementDisplay = 'popup' | 'chip' | 'banner'
 export type AnnouncementPlacement = 'after_login' | 'homepage' | 'order_start'
+/**
+ * WHO sees the message — orthogonal to `placement` (WHERE it shows). `clients`
+ * covers clinics, branch offices and anonymous visitors; `staff` is the Piedro
+ * back-office (piedro_admin / super_admin / staff_viewer). See migration 058.
+ */
+export type AnnouncementAudience = 'all' | 'clients' | 'staff'
 
 export const ANNOUNCEMENT_DISPLAYS: AnnouncementDisplay[] = ['popup', 'chip', 'banner']
 export const ANNOUNCEMENT_PLACEMENTS: AnnouncementPlacement[] = ['after_login', 'homepage', 'order_start']
+export const ANNOUNCEMENT_AUDIENCES: AnnouncementAudience[] = ['clients', 'staff', 'all']
 export const ANNOUNCEMENT_LOCALES = ['en', 'nl', 'fr', 'de'] as const
 
 /** A per-locale variant of the message. The source-locale copy lives on the row itself. */
@@ -23,6 +30,7 @@ export interface Announcement {
   translations: Record<string, AnnouncementVariant> | null
   displayType: AnnouncementDisplay
   placement: AnnouncementPlacement[]
+  audience: AnnouncementAudience
   startsAt: string | null
   endsAt: string | null
   active: boolean

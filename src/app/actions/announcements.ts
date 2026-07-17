@@ -6,9 +6,11 @@ import { getAdminScope } from '@/lib/admin/scope'
 import { isPiedroAdmin } from '@/lib/roles'
 import { sanitizeEmailHtml } from '@/lib/email-campaigns'
 import {
+  ANNOUNCEMENT_AUDIENCES,
   ANNOUNCEMENT_DISPLAYS,
   ANNOUNCEMENT_LOCALES,
   ANNOUNCEMENT_PLACEMENTS,
+  type AnnouncementAudience,
   type AnnouncementDisplay,
   type AnnouncementPlacement,
   type AnnouncementVariant,
@@ -37,6 +39,7 @@ export interface SaveAnnouncementInput {
   translations?: Record<string, AnnouncementVariant>
   displayType: AnnouncementDisplay
   placement: AnnouncementPlacement[]
+  audience: AnnouncementAudience
   startsAt: string | null // ISO or null
   endsAt: string | null
   active: boolean
@@ -55,6 +58,7 @@ export async function saveAnnouncement(input: SaveAnnouncementInput): Promise<{ 
 
   const placement = [...new Set(input.placement)].filter(p => ANNOUNCEMENT_PLACEMENTS.includes(p))
   if (!placement.length) return { error: 'Pick at least one place where the message appears' }
+  if (!ANNOUNCEMENT_AUDIENCES.includes(input.audience)) return { error: 'Invalid audience' }
 
   const starts = input.startsAt ? new Date(input.startsAt) : null
   const ends = input.endsAt ? new Date(input.endsAt) : null
@@ -79,6 +83,7 @@ export async function saveAnnouncement(input: SaveAnnouncementInput): Promise<{ 
     translations,
     display_type: input.displayType,
     placement,
+    audience: input.audience,
     starts_at: starts ? starts.toISOString() : null,
     ends_at: ends ? ends.toISOString() : null,
     active: input.active,

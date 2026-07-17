@@ -2,10 +2,12 @@ import 'server-only'
 import { createServiceClient } from '@/lib/supabase/service'
 import {
   type Announcement,
+  type AnnouncementAudience,
   type AnnouncementPlacement,
   type LiveAnnouncement,
   localiseAnnouncement,
 } from '@/lib/announcements-types'
+import { getViewerAudiences } from '@/lib/viewer-audience'
 
 /**
  * Announcements data layer (service-role; RLS has no policies — see migration
@@ -22,6 +24,7 @@ function mapRow(r: any): Announcement {
     translations: r.translations ?? null,
     displayType: r.display_type,
     placement: (r.placement ?? []) as AnnouncementPlacement[],
+    audience: (r.audience ?? 'clients') as AnnouncementAudience,
     startsAt: r.starts_at,
     endsAt: r.ends_at,
     active: r.active,
@@ -32,28 +35,35 @@ function mapRow(r: any): Announcement {
 }
 
 const SELECT =
-  'id, title, source_locale, body_html, translations, display_type, placement, starts_at, ends_at, active, dismissible, created_at, updated_at'
+  'id, title, source_locale, body_html, translations, display_type, placement, audience, starts_at, ends_at, active, dismissible, created_at, updated_at'
 
 /**
  * Live announcements for a placement, already localised for the viewer. Filters
  * to active rows whose [starts_at, ends_at] window contains "now" — that window
- * is the rule that decides when a message appears and disappears.
+ * is the rule that decides when a message appears and disappears — and to the
+ * rows whose `audience` includes this viewer, so a client-facing notice never
+ * follows Piedro staff into the back-office (and vice versa).
  */
 export async function getLiveAnnouncements(
   placement: AnnouncementPlacement,
   locale: string,
 ): Promise<LiveAnnouncement[]> {
   const nowIso = new Date().toISOString()
+  const audiences = await getViewerAudiences()
   const service = createServiceClient()
   const { data, error } = await service
     .from('announcements')
     .select(SELECT)
     .eq('active', true)
     .contains('placement', [placement])
+    .in('audience', audiences)
     .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
     .or(`ends_at.is.null,ends_at.gte.${nowIso}`)
     .order('created_at', { ascending: false })
-  if (error || !data) return []
+  if (error || !data) {
+    if (error) console.error('getLiveAnnouncements failed:', error.message)
+    return []
+  }
 
   return data.map(mapRow).map(a => {
     const { title, bodyHtml } = localiseAnnouncement(a, locale)
