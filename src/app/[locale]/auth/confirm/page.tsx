@@ -65,14 +65,18 @@ export default async function ConfirmPage({
           {failed ? (
             <>
               <h1 className="font-semibold text-stone-800">{t('confirm_failed_title')}</h1>
+              {/* What happened, then what to do — an expired token is indistinguishable
+                  from an already-used one (verifyOtp returns otp_expired for both), so
+                  offer both exits: a fresh link, and login for the already-confirmed. */}
               <p className="text-sm text-stone-500">{t('confirm_failed_body')}</p>
-              <EmailDeliveryTips />
-              <div className="pt-2 text-left">
+              <p className="text-sm text-stone-600 font-medium">{t('confirm_failed_what_now')}</p>
+              <div className="pt-1 text-left">
                 <ResendConfirmation />
               </div>
-              <a href={locale === 'en' ? '/register' : `/${locale}/register`}
+              <EmailDeliveryTips />
+              <a href={locale === 'en' ? '/login' : `/${locale}/login`}
                  className="inline-block text-sm text-gold hover:underline">
-                {t('register')}
+                {t('confirm_failed_already')}
               </a>
             </>
           ) : (
