@@ -36,7 +36,7 @@ A portal for orthopaedic clinicians and distributors to order custom Piedro foot
   - **Thumbnail strip** below the image lets you pick a specific photo; the ▶ play button auto-rotates through them.
 - **Stock / Pair-by-Pair** (/stock) — grid of stock models that can be ordered immediately with a quantity, no patient or additions. Shows available quantity per size (available = on hand − reserved). Submitting a stock order reserves the quantity immediately; drafts do not reserve.
 - **Catalogues** (/catalogues) — page-flip viewer of the printed Kids and Adults catalogues (EN/NL).
-- **My Orders** (/orders) — all orders placed by the company (custom and stock, unified). Shows status, expected-dispatch countdown badge, PDF link, repeat button. Clickable metric cards (Total, Draft, Submitted, …), status filter, full-text search, urgent flag, pagination.
+- **My Orders** (/orders) — the user's orders (custom and stock, unified). By default this is the orders they placed themselves; for a company they are company admin of, it is every order of that company. Drafts are the exception: they are always private to whoever created them, so a company admin does not see colleagues' drafts. Shows status, expected-dispatch countdown badge, PDF link, repeat button. Clickable metric cards (Total, Draft, Submitted, …), status filter, full-text search, urgent flag, pagination.
 - **Order detail** (/orders/[id]) — view a single order; stock orders open at /orders/stock/[id].
 - **Dashboard** (/orders/dashboard) — KPIs: total, pending, in production, delivered. Top models, monthly trend.
 - **Wishlist** (/wishlist) — favourites list; viewable without login, but ordering requires login.
@@ -65,7 +65,7 @@ draft → submitted → approved → in_production → shipped → delivered (or
 - **Size units** — most models use EU sizes, some use UK; the form follows the model's scale
 - **Expected dispatch** — submitted orders show a countdown to the expected dispatch date, computed from the factory production calendar (working days, holidays, factory closures)
 - **Company membership** — a user is linked to one or more companies. The link ITSELF is what allows ordering for that company: linked = may place orders for it. A link may additionally carry a per-company "company admin" flag, which widens what the user SEES: without it they see only the orders they placed themselves; with it they see every order of that company (and the clinician/patient details on them). That flag does NOT let them manage users, companies, or anything in the back-office. There is no "view-only" link and no group/parent-company structure: a client with several stores/locations is simply several separate companies, and a user is linked to each one they need.
-- **Roles** — user (the normal client user), branch_staff / branch_admin (order and view on behalf of the client companies of a branch office), staff_viewer (global read-only consultant of orders), piedro_admin (Piedro back-office), super_admin (technical admin, superset of piedro_admin). "company_admin" is NOT a role — it is the per-company flag described above.
+- **Roles** — user (the normal client user), branch_staff / branch_admin (order and view on behalf of the client companies of a branch office), staff_viewer (global read-only consultant of ORDERS — orders only, not the rest of the back-office), piedro_admin (Piedro back-office), super_admin (technical admin, superset of piedro_admin). "company_admin" is a legacy role value that still exists on some accounts and still shows as a badge in the back-office, but it grants nothing beyond a normal user — the real per-company power is the membership flag described above, which is where it moved. Do not tell anyone the role does not exist; tell them it no longer grants anything.
 - **Additions** — millimetre modifications applied to the shoe last. Common ones: Toe Box, Hallux Valgus, Bunionette, Hammer Toe, Heel Depth, etc. Each has a 3D model preview.
 - **Wishlist** — activate "Wishlist" button in gallery to show heart icons on cards, then select favourites.
 - **Repeat order** — in My Orders, click the ↺ icon to duplicate any order as a draft. Opens the pre-filled form for editing.
@@ -119,7 +119,7 @@ const SYSTEM_ADMIN = `
   - Each user card lists the companies. **Ticking a company** links the user to it — that link alone lets them place orders for that company and see their OWN orders in it.
   - The **"Admin" button** next to a ticked company sets the per-company company-admin flag: that user then sees **every order of that company**, not just their own (including clinician/patient details). Despite the name it grants nothing else — no back-office, no managing that company's users.
   - **To give a user access to all orders of a client that has several stores/locations** (each store is its own company — there is no group/parent structure): tick EVERY one of that client's companies for the user and press "Admin" on each. There is no shortcut and no "all companies of the group" switch.
-  - **Important trade-off to state honestly when asked:** viewing and ordering cannot currently be separated. Any linked company can be ordered for, so a user given the Admin flag on several companies in order to SEE all their orders can also PLACE orders in all of them. A per-company "view but not order" option does not exist. The only read-only construct is the staff_viewer role, which is global across the whole portal (built for VSI) — not per-company, and not appropriate for a client.
+  - **Important trade-off to state honestly when asked:** viewing and ordering cannot currently be separated. Any linked company can be ordered for, so a user given the Admin flag on several companies in order to SEE all their orders can also PLACE orders in all of them. A per-company "view but not order" option does not exist. The only read-only-over-orders role is staff_viewer, which is global across every order in the portal (built for VSI) — not per-company, and not appropriate for a client.
   - Other per-user toggles: role, and "can approve orders" (lets branch staff approve orders and set the Piedro order number without being an admin).
 - **Translations** (/admin/translations) — translate filter values (closure / type / construction / colour) for EN/NL/FR/DE.
 - **Factory calendar** (/admin/factory-calendar) — factory closure days used by the expected-dispatch computation.
@@ -268,10 +268,46 @@ const tools: Anthropic.Tool[] = [
 ]
 
 // ── Tool executor ──────────────────────────────────────────────────────────────
+
+/**
+ * Who this conversation may read orders for. Mirrors the /orders page exactly —
+ * see scopeOrders below.
+ */
+type ChatScope = {
+  companyIds:      string[]   // every company the user is linked to
+  adminCompanyIds: string[]   // subset carrying user_companies.is_company_admin
+  userId:          string
+}
+
+/**
+ * Apply the portal's order-visibility rules to a chat tool query.
+ *
+ * The chat used to filter by company_id alone, which silently granted every
+ * linked user their colleagues' orders — patient_name and clinician included —
+ * through a channel nobody scoped. The /orders page has always been stricter;
+ * this makes the assistant obey the same three rules:
+ *
+ *   1. cross-company is blocked (only linked companies, ever);
+ *   2. without the per-company admin flag you see only the orders you created;
+ *   3. drafts are private to their creator — even from a company admin
+ *      (project_draft_on_behalf_future).
+ *
+ * Chained .or() calls AND together, so this yields:
+ *   company_id IN (linked) AND (admin-company OR mine) AND (not-draft OR mine)
+ */
+function scopeOrders<T>(query: T, scope: ChatScope): T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let q: any = (query as any).in('company_id', scope.companyIds)
+  q = scope.adminCompanyIds.length
+    ? q.or(`company_id.in.(${scope.adminCompanyIds.join(',')}),user_id.eq.${scope.userId}`)
+    : q.eq('user_id', scope.userId)
+  return q.or(`status.neq.draft,user_id.eq.${scope.userId}`) as T
+}
+
 async function executeTool(
   name: string,
   input: Record<string, unknown>,
-  companyIds: string[],
+  scope: ChatScope,
   userId: string,
 ) {
   const service = createServiceClient()
@@ -298,10 +334,9 @@ async function executeTool(
       let orFilter = `reference_customer.ilike.${like},patient_name.ilike.${like}`
       if (pids.length) orFilter += `,product_id.in.(${pids.join(',')})`
 
-      const { data } = await service
+      const { data } = await scopeOrders(service
         .from('orders')
-        .select('id, status, reference_customer, patient_name, unit, created_at, product_id, products(colour_id, color_name, style_name)')
-        .in('company_id', companyIds)
+        .select('id, status, reference_customer, patient_name, unit, created_at, product_id, products(colour_id, color_name, style_name)'), scope)
         .or(orFilter)
         .order('created_at', { ascending: false })
         .limit(25)
@@ -315,10 +350,9 @@ async function executeTool(
 
     case 'get_order': {
       const ref = String(input.reference ?? '')
-      const { data } = await service
+      const { data } = await scopeOrders(service
         .from('orders')
-        .select('id, status, unit, quantity, reference_customer, patient_name, clinician, construction_left, construction_right, width_left, width_right, size_left, size_right, additions, comments, created_at, products(colour_id, color_name, closure, style_name)')
-        .in('company_id', companyIds)
+        .select('id, status, unit, quantity, reference_customer, patient_name, clinician, construction_left, construction_right, width_left, width_right, size_left, size_right, additions, comments, created_at, products(colour_id, color_name, closure, style_name)'), scope)
         .ilike('reference_customer', `%${ref}%`)
         .limit(1)
         .single()
@@ -350,10 +384,9 @@ async function executeTool(
 
     case 'get_my_orders': {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let q: any = service
+      let q: any = scopeOrders(service
         .from('orders')
-        .select('id, status, reference_customer, patient_name, unit, created_at, size_left, size_right, products(colour_id, style_name)')
-        .in('company_id', companyIds)
+        .select('id, status, reference_customer, patient_name, unit, created_at, size_left, size_right, products(colour_id, style_name)'), scope)
         .order('created_at', { ascending: false })
         .limit(Number(input.limit ?? 10))
       if (input.status) q = q.eq('status', input.status)
@@ -367,11 +400,10 @@ async function executeTool(
 
     case 'duplicate_order': {
       const orderId = String(input.order_id)
-      const { data: src } = await service
+      const { data: src } = await scopeOrders(service
         .from('orders')
         .select('*')
-        .eq('id', orderId)
-        .in('company_id', companyIds)
+        .eq('id', orderId), scope)
         .single()
       if (!src) return { error: 'Order not found or not accessible' }
 
@@ -417,10 +449,9 @@ async function executeTool(
       const limit = Number(input.limit ?? 5)
       // Paginated: an unbounded select truncates at 1000 rows and skews the ranking.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = await fetchAll<any>(page => service
+      const data = await fetchAll<any>(page => scopeOrders(service
         .from('orders')
-        .select('products(colour_id, color_name, style_name)')
-        .in('company_id', companyIds)
+        .select('products(colour_id, color_name, style_name)'), scope)
         .neq('status', 'draft')
         .range(page.from, page.to))
       const counts = new Map<string, { count: number; color: string }>()
@@ -467,6 +498,14 @@ export async function POST(request: Request) {
   const companies = await getUserCompanies(user.id)
   const companyIds = companies.map(c => c.id)
   if (companyIds.length === 0) return new Response('No company', { status: 403 })
+
+  // The assistant reads orders under exactly the /orders page's rules — never
+  // wider. See scopeOrders.
+  const scope: ChatScope = {
+    companyIds,
+    adminCompanyIds: companies.filter(c => c.is_company_admin).map(c => c.id),
+    userId: user.id,
+  }
 
   // Defence-in-depth: never answer without recorded consent, even if a client
   // somehow bypasses the gate.
@@ -558,7 +597,7 @@ export async function POST(request: Request) {
                 const result = await executeTool(
                   block.name,
                   block.input as Record<string, unknown>,
-                  companyIds,
+                  scope,
                   user.id,
                 )
                 toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) })
