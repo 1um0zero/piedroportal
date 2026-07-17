@@ -7,7 +7,10 @@ import { getChatConsentStatus, acceptChatConsent, submitChatFeedback } from '@/a
 
 type Role = 'user' | 'assistant'
 type Message = { role: Role; content: string; pending?: boolean }
-type Consent = 'loading' | 'needed' | 'ok' | 'declined'
+// 'impersonating' — an admin is viewing as a user who never accepted the notice.
+// Consent is personal, so the admin cannot accept it for them; the assistant
+// stays closed for that user rather than fabricating their consent.
+type Consent = 'loading' | 'needed' | 'ok' | 'declined' | 'impersonating'
 
 const STARTERS = [
   'How do I place a new order?',
@@ -48,7 +51,12 @@ export function ChatWidget() {
 
   const accept = useCallback(async () => {
     setConsent('ok')
-    try { await acceptChatConsent(locale) } catch { /* recorded best-effort */ }
+    try {
+      const r = await acceptChatConsent(locale)
+      // The server refuses to record consent on someone else's behalf — reflect
+      // that instead of leaving the panel optimistically open.
+      if (!r.ok && r.reason === 'impersonating') setConsent('impersonating')
+    } catch { /* recorded best-effort */ }
   }, [locale])
 
   const flag = useCallback(async (idx: number) => {
@@ -217,19 +225,27 @@ export function ChatWidget() {
                   <p className="text-xs leading-relaxed text-stone-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">{t('advise')}</p>
                   <p className="text-xs leading-relaxed text-stone-500">{t('breach')}</p>
                   <p className="text-[11px] leading-relaxed text-stone-400">{t('emailNote')}</p>
-                  {consent === 'declined' && (
-                    <p className="text-xs text-stone-500 italic">{t('declined')}</p>
+                  {consent === 'impersonating' ? (
+                    <p className="text-xs leading-relaxed text-stone-700 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2">
+                      {t('impersonating')}
+                    </p>
+                  ) : (
+                    <>
+                      {consent === 'declined' && (
+                        <p className="text-xs text-stone-500 italic">{t('declined')}</p>
+                      )}
+                      <div className="flex gap-2 pt-1">
+                        <button onClick={accept}
+                          className="flex-1 h-10 rounded-xl bg-gold text-white text-sm font-semibold hover:bg-gold-dark transition-colors">
+                          {t('accept')}
+                        </button>
+                        <button onClick={() => setConsent('declined')}
+                          className="px-4 h-10 rounded-xl border border-stone-200 text-stone-500 text-sm hover:bg-stone-50 transition-colors">
+                          {t('decline')}
+                        </button>
+                      </div>
+                    </>
                   )}
-                  <div className="flex gap-2 pt-1">
-                    <button onClick={accept}
-                      className="flex-1 h-10 rounded-xl bg-gold text-white text-sm font-semibold hover:bg-gold-dark transition-colors">
-                      {t('accept')}
-                    </button>
-                    <button onClick={() => setConsent('declined')}
-                      className="px-4 h-10 rounded-xl border border-stone-200 text-stone-500 text-sm hover:bg-stone-50 transition-colors">
-                      {t('decline')}
-                    </button>
-                  </div>
                 </div>
               )}
             </div>

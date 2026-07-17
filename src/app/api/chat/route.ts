@@ -515,13 +515,16 @@ export async function POST(request: Request) {
   const system = buildSystem(profile?.role, contactEmail, identity)
 
   // Audit log: the latest user prompt (in). The assistant reply (out) is logged
-  // once assembled, at the end of the stream.
+  // once assembled, at the end of the stream. Under "view as" the session is the
+  // target's, so the row is stamped with the real admin — otherwise the client's
+  // record would absorb messages they never sent (migration 058).
   const roleSeen = profile?.role ?? null
+  const actingAdminId = imp?.targetId === user.id ? imp.adminId : null
   const lastUser = [...messages].reverse().find(m => m.role === 'user')
   const promptText = typeof lastUser?.content === 'string'
     ? lastUser.content
     : (lastUser?.content ?? []).map(b => (b.type === 'text' ? b.text : '')).join(' ').trim()
-  if (promptText) void logChatMessage(user.id, roleSeen, 'in', promptText)
+  if (promptText) void logChatMessage(user.id, roleSeen, 'in', promptText, actingAdminId)
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
@@ -577,7 +580,7 @@ export async function POST(request: Request) {
       } catch (e) {
         send(JSON.stringify({ type: 'error', text: e instanceof Error ? e.message : 'Unknown error' }))
       } finally {
-        if (outText.trim()) void logChatMessage(user.id, roleSeen, 'out', outText)
+        if (outText.trim()) void logChatMessage(user.id, roleSeen, 'out', outText, actingAdminId)
         send(JSON.stringify({ type: 'done' }))
         controller.close()
       }

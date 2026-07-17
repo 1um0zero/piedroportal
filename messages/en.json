@@ -1634,7 +1634,8 @@
     "emailNote": "By continuing you accept these terms. A confirmation email is sent to you and to the portal administrator.",
     "accept": "I accept",
     "decline": "Not now",
-    "declined": "No problem — you can accept any time to use the assistant."
+    "declined": "No problem — you can accept any time to use the assistant.",
+    "impersonating": "You are viewing the portal as this user, and they have not accepted this notice yet. Consent is personal and cannot be given on someone else’s behalf, so the assistant stays unavailable in this view."
   },
   "chatFeedback": {
     "prompt": "Should this answer be improved?",

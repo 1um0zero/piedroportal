@@ -1634,7 +1634,8 @@
     "emailNote": "Mit dem Fortfahren akzeptieren Sie diese Bedingungen. Eine Bestätigungs-E-Mail wird an Sie und an den Portaladministrator gesendet.",
     "accept": "Ich stimme zu",
     "decline": "Jetzt nicht",
-    "declined": "Kein Problem — Sie können jederzeit zustimmen, um den Assistenten zu verwenden."
+    "declined": "Kein Problem — Sie können jederzeit zustimmen, um den Assistenten zu verwenden.",
+    "impersonating": "Sie sehen das Portal als dieser Benutzer, und dieser hat diesen Hinweis noch nicht akzeptiert. Die Einwilligung ist persönlich und kann nicht stellvertretend erteilt werden; der Assistent bleibt in dieser Ansicht daher nicht verfügbar."
   },
   "chatFeedback": {
     "prompt": "Sollte diese Antwort verbessert werden?",

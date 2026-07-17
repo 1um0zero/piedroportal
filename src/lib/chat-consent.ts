@@ -82,18 +82,25 @@ export async function recordChatConsent(
   }
 }
 
-/** Append one in/out message to the audit log (fire-and-forget). */
+/**
+ * Append one in/out message to the audit log (fire-and-forget).
+ *
+ * `impersonatedBy` is the REAL admin when the message was exchanged under
+ * "view as" — the session is the target's, so without it the client's record
+ * would silently absorb messages they never sent (see migration 058).
+ */
 export async function logChatMessage(
   userId: string,
   roleSeen: string | null,
   direction: 'in' | 'out',
   content: string,
+  impersonatedBy: string | null = null,
 ): Promise<void> {
   if (!content?.trim()) return
   const service = createServiceClient()
   await service
     .from('chat_logs')
-    .insert({ user_id: userId, role_seen: roleSeen, direction, content })
+    .insert({ user_id: userId, role_seen: roleSeen, direction, content, impersonated_by: impersonatedBy })
     .then(undefined, err => console.error('chat log failed:', err))
 }
 
@@ -103,11 +110,12 @@ export async function recordChatFeedback(
   roleSeen: string | null,
   question: string,
   answer: string,
+  impersonatedBy: string | null = null,
 ): Promise<void> {
   const service = createServiceClient()
   await service
     .from('chat_feedback')
-    .insert({ user_id: userId, role_seen: roleSeen, question, answer })
+    .insert({ user_id: userId, role_seen: roleSeen, question, answer, impersonated_by: impersonatedBy })
 
   const apiKey = process.env.RESEND_API_KEY
   const cfg = await getSettings(['chat_notify_email', 'admin_notify_email', 'email_from'])

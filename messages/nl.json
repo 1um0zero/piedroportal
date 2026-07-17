@@ -1634,7 +1634,8 @@
     "emailNote": "Door verder te gaan accepteert u deze voorwaarden. Er wordt een bevestigingsmail gestuurd naar u en naar de portaalbeheerder.",
     "accept": "Ik ga akkoord",
     "decline": "Niet nu",
-    "declined": "Geen probleem — u kunt op elk moment akkoord gaan om de assistent te gebruiken."
+    "declined": "Geen probleem — u kunt op elk moment akkoord gaan om de assistent te gebruiken.",
+    "impersonating": "U bekijkt het portaal als deze gebruiker, en die heeft deze kennisgeving nog niet geaccepteerd. Toestemming is persoonlijk en kan niet namens iemand anders worden gegeven; de assistent blijft in deze weergave dus niet beschikbaar."
   },
   "chatFeedback": {
     "prompt": "Moet dit antwoord beter?",

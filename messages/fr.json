@@ -1634,7 +1634,8 @@
     "emailNote": "En continuant, vous acceptez ces conditions. Un e-mail de confirmation vous est envoyé ainsi qu’à l’administrateur du portail.",
     "accept": "J’accepte",
     "decline": "Pas maintenant",
-    "declined": "Pas de souci — vous pouvez accepter à tout moment pour utiliser l’assistant."
+    "declined": "Pas de souci — vous pouvez accepter à tout moment pour utiliser l’assistant.",
+    "impersonating": "Vous consultez le portail en tant que cet utilisateur, et celui-ci n’a pas encore accepté cet avis. Le consentement est personnel et ne peut être donné au nom d’autrui ; l’assistant reste donc indisponible dans cette vue."
   },
   "chatFeedback": {
     "prompt": "Cette réponse doit-elle être améliorée ?",
