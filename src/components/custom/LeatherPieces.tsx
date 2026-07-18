@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { LeatherPiece } from './custom-additions-config'
-import { maquetteUrl } from '@/lib/custom/maquette'
+import { maquetteUrl, leatherGroups } from '@/lib/custom/maquette'
 
 /**
  * Leather-by-piece assignment for a custom upper. Shows the model's maquette
@@ -21,17 +21,26 @@ export function LeatherPieces({
   onChange: (v: LeatherPiece[]) => void
 }) {
   const url = maquetteUrl(styleName)
+  const groups = leatherGroups(styleName)   // how many numbered pieces the model has (null = unknown)
   const [zoom, setZoom] = useState(false)
 
   const pieces = value ?? []
+  const atCap = groups != null && pieces.length >= groups   // can't assign more leathers than pieces
   const setPiece = (i: number, patch: Partial<LeatherPiece>) =>
     onChange(pieces.map((p, j) => (j === i ? { ...p, ...patch } : p)))
-  const add = () => onChange([...pieces, { colour: '', material: '' }])
+  const add = () => { if (!atCap) onChange([...pieces, { colour: '', material: '' }]) }
   const remove = (i: number) => onChange(pieces.filter((_, j) => j !== i))
 
   return (
     <div>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 flex items-center gap-2 text-xs text-stone-500">
+        {label}
+        {groups != null && (
+          <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-medium text-gold">
+            {pieces.length}/{groups} {groups === 1 ? 'piece' : 'pieces'}
+          </span>
+        )}
+      </label>
       {hint && <p className="mb-2 text-[11px] text-stone-400">{hint}</p>}
 
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
@@ -78,13 +87,19 @@ export function LeatherPieces({
               </button>
             </div>
           ))}
-          <button type="button" onClick={add}
-            className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-gold/60 px-3 py-1.5 text-xs font-medium text-gold transition-colors hover:bg-gold hover:text-white">
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
-            </svg>
-            Add piece {pieces.length + 1}
-          </button>
+          {atCap ? (
+            <p className="mt-1 text-[11px] text-stone-400">
+              All {groups} {groups === 1 ? 'piece' : 'pieces'} of this model assigned.
+            </p>
+          ) : (
+            <button type="button" onClick={add}
+              className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-gold/60 px-3 py-1.5 text-xs font-medium text-gold transition-colors hover:bg-gold hover:text-white">
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+              </svg>
+              Add piece {pieces.length + 1}
+            </button>
+          )}
         </div>
       </div>
 

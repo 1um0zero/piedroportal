@@ -7,9 +7,11 @@
 // offers the leather-by-piece picker when one exists (no broken-image flashes).
 
 import manifest from '@/lib/maquettes-manifest.json'
+import groups from '@/lib/maquette-groups.json'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const MAQUETTE_STYLES = new Set(manifest as string[])
+const LEATHER_GROUPS = groups as Record<string, number>
 
 export function hasMaquette(styleName?: string | null): boolean {
   return !!styleName && MAQUETTE_STYLES.has(styleName)
@@ -18,4 +20,15 @@ export function hasMaquette(styleName?: string | null): boolean {
 export function maquetteUrl(styleName?: string | null): string | null {
   if (!hasMaquette(styleName)) return null
   return `${SUPABASE_URL}/storage/v1/object/public/maquettes/${styleName}.svg`
+}
+
+/**
+ * How many numbered leather groups this model's maquette carries (its highest
+ * ①②③… number). Bounds the leather-by-piece picker so the user can only assign
+ * as many leathers as the drawing has pieces. Null = unknown → picker stays
+ * uncapped. Curated in maquette-groups.json (read off the drawings).
+ */
+export function leatherGroups(styleName?: string | null): number | null {
+  if (!styleName) return null
+  return LEATHER_GROUPS[styleName] ?? null
 }
