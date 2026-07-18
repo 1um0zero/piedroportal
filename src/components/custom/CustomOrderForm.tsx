@@ -227,7 +227,7 @@ export default function CustomOrderForm({
       {/* ── Tab 2 — Customization ──────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-5">
-          <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} articleDefault={product.colour_id} />
+          <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} articleDefault={product.colour_id} styleName={product.style_name} />
           <div className="flex items-center justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
             <div className="flex items-center gap-3">
@@ -304,10 +304,17 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function CustomSummary({ values, locale }: { values: Record<string, unknown>; locale: string }) {
-  const has = (v: unknown) => v != null && v !== '' && v !== false &&
-    !(typeof v === 'object' && !(v as { l?: unknown; r?: unknown }).l && !(v as { l?: unknown; r?: unknown }).r)
+  const isLeathers = (v: unknown): v is { colour?: string; material?: string }[] => Array.isArray(v)
+  const has = (v: unknown) => {
+    if (isLeathers(v)) return v.some(p => p && (p.colour || p.material))
+    return v != null && v !== '' && v !== false &&
+      !(typeof v === 'object' && !(v as { l?: unknown; r?: unknown }).l && !(v as { l?: unknown; r?: unknown }).r)
+  }
   const fmt = (v: unknown): string => {
     if (v === true) return 'Yes'
+    if (isLeathers(v)) return v
+      .map((p, i) => `${i + 1}: ${[p.colour, p.material].filter(Boolean).join(' — ') || '—'}`)
+      .join(' · ')
     if (typeof v === 'object' && v) { const s = v as { l?: unknown; r?: unknown }; return `L ${s.l ?? '—'} / R ${s.r ?? '—'}` }
     return String(v)
   }

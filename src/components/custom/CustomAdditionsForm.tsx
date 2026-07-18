@@ -5,10 +5,11 @@ import { useState } from 'react'
 import {
   CUSTOM_SECTIONS, customLabel,
   CUSTOM_ARTICLE_KEY, CUSTOM_SEED_DEFAULTS, CUSTOM_MM_RANGES,
-  type CustomField, type CustomSection,
+  type CustomField, type CustomSection, type LeatherPiece,
 } from './custom-additions-config'
 import { overrideLabel, type OptionOverrides } from '@/lib/additions/option-tables'
 import { RangeField } from '@/components/ui/RangeField'
+import { LeatherPieces } from './LeatherPieces'
 
 // Expande [min,max,step?] à lista de valores que o RangeField percorre.
 const rangeToValues = ([min, max, step = 1]: [number, number, number?]): number[] => {
@@ -28,6 +29,7 @@ function isActive(values: Vals, key?: string): boolean {
   if (!key) return true
   const v = values[key]
   if (v == null || v === '' || v === false) return false
+  if (Array.isArray(v)) return v.some((p: LeatherPiece) => p && (p.colour || p.material))
   if (typeof v === 'object') { const s = v as Sided; return !!(s.l || s.r) }
   return true
 }
@@ -158,13 +160,15 @@ function MeasurementGrid({
  *  simpler than the OSB AdditionsForm (no GLB/sole/ZSM machinery) — a clean
  *  canvas to iterate the custom-made set on. */
 export default function CustomAdditionsForm({
-  values, onChange, unit = 'LEFT_RIGHT', optionOverrides, articleDefault,
+  values, onChange, unit = 'LEFT_RIGHT', optionOverrides, articleDefault, styleName,
 }: {
   values: Vals
   onChange: (next: Vals) => void
   unit?: Unit
   optionOverrides?: OptionOverrides
   articleDefault?: string
+  /** The chosen model's style number — resolves its maquette drawing. */
+  styleName?: string
 }) {
   const locale = useLocale()
 
@@ -344,6 +348,20 @@ export default function CustomAdditionsForm({
           <input type="text" value={(values[f.key] as string) ?? ''} onChange={e => set(f.key, e.target.value)}
             placeholder={f.type === 'upload' ? 'file upload — coming soon' : ''}
             className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+      )
+    }
+
+    if (f.type === 'leather-pieces') {
+      return (
+        <div key={f.key} className={`py-1.5 ${indent}`}>
+          <LeatherPieces
+            styleName={styleName}
+            label={label}
+            hint={hint}
+            value={(values[f.key] as LeatherPiece[]) ?? []}
+            onChange={v => set(f.key, v)}
+          />
         </div>
       )
     }

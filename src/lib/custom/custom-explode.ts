@@ -20,6 +20,28 @@ type Sided = { l?: unknown; r?: unknown }
 
 const DB_TYPE: Record<CustomField['type'], CustomAdditionRow['type']> = {
   mm: 'mm', option: 'option', text: 'text', toggle: 'toggle', upload: 'text', image: 'image',
+  'leather-pieces': 'text',
+}
+
+type LeatherPiece = { colour?: string; material?: string }
+
+/** Expand a leather-pieces array into one text row per numbered piece
+ *  (cs3.leather_1, cs3.leather_2, …) — keeps ERP continuity with the old
+ *  per-piece keys. Empty pieces are skipped. */
+function leatherRows(section: string, raw: unknown): CustomAdditionRow[] {
+  if (!Array.isArray(raw)) return []
+  const out: CustomAdditionRow[] = []
+  raw.forEach((p: LeatherPiece, i) => {
+    const colour = (p?.colour ?? '').trim()
+    const material = (p?.material ?? '').trim()
+    if (!colour && !material) return
+    out.push({
+      section, field: `cs3.leather_${i + 1}`, parent: null, side: 'g', type: 'text',
+      value_num: null, value_bool: null,
+      value_text: [colour, material].filter(Boolean).join(' — '),
+    })
+  })
+  return out
 }
 
 function row(field: CustomField, section: string, side: CustomAdditionRow['side'], raw: unknown): CustomAdditionRow | null {
@@ -57,7 +79,9 @@ export function explodeCustomAdditions(values: Record<string, unknown> | null | 
   for (const field of allCustomFields()) {
     const section = secOf.get(field.key) ?? 'unknown'
     const v = values[field.key]
-    if (field.side === 'both') {
+    if (field.type === 'leather-pieces') {
+      out.push(...leatherRows(section, v))
+    } else if (field.side === 'both') {
       const sv = v as Sided | null
       const l = row(field, section, 'l', sv?.l); if (l) out.push(l)
       const r = row(field, section, 'r', sv?.r); if (r) out.push(r)

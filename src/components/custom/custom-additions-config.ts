@@ -23,6 +23,7 @@ export type CustomFieldType =
   | 'image'    // single-select image chips (collapses others once picked)
   | 'text'     // free text
   | 'upload'   // file upload (blueprint, footscan)
+  | 'leather-pieces' // per-numbered-piece leather assignment, beside the model maquette
 
 // 'both'   → independent L/R values { l, r }
 // 'global' → one value for the whole order
@@ -30,6 +31,9 @@ export type CustomFieldType =
 export type CustomSide = 'both' | 'global' | 'left' | 'right'
 
 export interface CustomI18n { en: string; nl?: string; fr?: string; de?: string }
+
+/** One numbered piece of a model's upper, and the leather assigned to it. */
+export interface LeatherPiece { colour: string; material: string }
 
 export interface CustomField {
   key:           string          // Excel cs-code (stable id, also the order_additions.field)
@@ -316,6 +320,7 @@ const SECTION_SUPPLEMENT: CustomSection = {
 // Customization customjs. Upper-leather lists come from the picked model's product
 // sheet (text for now until wired to the catalogue).
 export const LEATHER_AS_MODEL_KEY = 'cs3.leather_as_model'
+export const LEATHERS_KEY = 'cs3.leathers'
 export const CLOSURE_AS_MODEL_KEY = 'cs3.closure_as_model'
 
 // Campos semeados por defeito numa encomenda nova (pedido do Martin, PPT 30-6):
@@ -372,10 +377,11 @@ const SECTION_UPPER: CustomSection = {
       fields: [
         // Checked by default; unchecking (= picking own colours) warns about surcharge.
         { ...yn('Leathers as model', LEATHER_AS_MODEL_KEY), popup: SURCHARGE_COLOURS, popupOn: 'uncheck' },
-        { key: 'cs3.leather_1', type: 'text', side: 'global', label: { en: 'Upper 1' }, hiddenWhen: LEATHER_AS_MODEL_KEY, hint: { en: 'from product sheet' } },
-        { key: 'cs3.leather_2', type: 'text', side: 'global', label: { en: 'Upper 2' }, hiddenWhen: LEATHER_AS_MODEL_KEY },
-        { key: 'cs3.leather_3', type: 'text', side: 'global', label: { en: 'Upper 3' }, hiddenWhen: LEATHER_AS_MODEL_KEY },
-        { key: 'cs3.leather_4', type: 'text', side: 'global', label: { en: 'Upper 4' }, hiddenWhen: LEATHER_AS_MODEL_KEY },
+        // Off "as model" → assign a colour + material to each numbered piece on
+        // the model's maquette drawing (① ② ③…). Value = array of { colour, material }.
+        { key: LEATHERS_KEY, type: 'leather-pieces', side: 'global', hiddenWhen: LEATHER_AS_MODEL_KEY,
+          label: { en: 'Upper leather per piece', nl: 'Bovenleer per deel' },
+          hint: { en: 'Assign a leather to each numbered piece on the drawing.' } },
       ],
     },
     {
