@@ -42,22 +42,49 @@ A portal for orthopaedic clinicians and distributors to order custom Piedro foot
 - **Wishlist** (/wishlist) — favourites list; viewable without login, but ordering requires login.
 - **Profile** (/profile) — account details and password.
 
-## Order form — 3 tabs
-**Tab 1 — Customer & Product**
-- Customer: company (auto-filled), clinician name, patient name/number, customer reference (required)
-- Unit: PAIR (L=R), LEFT only, RIGHT only, L≠R (independent left and right), Different sizes
-- Quantity, Construction (select style), Width (select width), Size (EU, type or pick)
+## Standard order form — 3 tabs (custom footwear, one patient per order)
+This is the standard per-patient custom-footwear order. You reach it from a specific model, so the **style/model is already fixed** — the form never picks a style.
 
-**Tab 2 — Additions (optional)**
-Sections: Additions (mm modifications to the last), Upper Adaptions, Sole & Heel, Others.
-Each field has a checkbox — check to activate and enter the value. Fields with 3D models show a rotating shoe.
-In L≠R mode, two independent columns appear (Left / Right).
+**Tab 1 — Customer & Product**
+- **Customer fields:** only **Customer Reference is required** (blank reference blocks advancing and blocks Submit). Clinician and Patient name are free-text and **optional**; there is a single Patient text field, no separate patient-number field.
+- **Company field — two behaviours:** a user in exactly one company (and not an admin) sees their company as **static read-only text**, pre-selected. An admin, or a user linked to more than one company, gets a **dropdown defaulting to "— Select company —"** that must be chosen; submit is refused with "Please select a company." if left empty.
+- **Unit — five modes:**
+  - **PAIR** — one set of values, left mirrored to right (both feet written identical).
+  - **LEFT** — writes the left side only.
+  - **RIGHT** — writes the right side only.
+  - **L≠R** (LEFT_RIGHT) — two independent Left / Right columns.
+  - **Different sizes** (DIFF_SIZES) — a table of up to **10 quantity + size pairs**; duplicate sizes are filtered out. In this mode the single Quantity and Size inputs are hidden, replaced by the pairs table.
+- **Construction** — construction-type chips from the model's own constructions (e.g. AGO/ZWA), per relevant foot; auto-selected when the model has only one. Not a style picker. Changing construction clears the previously chosen width.
+- **Width** — cascades off Construction: the widths belonging to the chosen construction; auto-selected when only one.
+- **Size** — type-or-pick datalist from the model's scale (step 0.5, whole steps for KIDS, excluded sizes removed). The header shows the model's scale unit (**EU or UK**) and range. On blur an entered value snaps to the nearest valid size.
+- **What gates Tab 1 → next tab:** the Next button stays disabled until (1) Customer Reference is filled; (2) a construction is chosen on each relevant side (when the model offers constructions); (3) a width is chosen on each relevant side (when offered); and (4) a valid in-range size is set on each relevant side. Exception: in Different-sizes mode it needs at least one pair carrying a valid size, and no entered pair size may be invalid. If a user is stuck on Tab 1, check construction/width/size on every relevant side, not just the reference.
+
+**Tab 2 — Additions** (present in PAIR / LEFT / RIGHT / L≠R; **absent in Different-sizes mode** — that mode runs Tab 1 → Tab 3 only, with no Additions tab).
+- **What "Additions" means:** the whole of Tab 2, in four fixed sections in this order: **Additions** (mostly millimetre modifications to the last, plus free-text medial/lateral ankle fields), **Upper Adaptions** (lining, laces/velcro closure, stiffener & toe-puff hardness, stretch leather, zipper placement), **Sole & Heel Adaptions** (rockers, PU/EVA bumper, sole & runner materials, floats/wedges, general raise, Thomas heel, carbon sole), and **Others**. It is not only mm last-modifications.
+- Each section is a **collapsible accordion**; Additions, Upper and Sole start collapsed. The header shows a gold badge counting filled fields (a field set on both feet counts once).
+- **Activating a field:** non-toggle fields have a checkbox — tick it to reveal the value control. Ticking Right when Left already has a value pre-fills Right with it. Clicking a **toggle** field's label flips both its Left and Right checkboxes at once.
+- **Sided controls:** in PAIR / LEFT / RIGHT / Different-sizes each sided field shows one control; only in **L≠R** do two independent Left / Right controls appear.
+- **Mirror exception:** the single field **"Instep more to the front"** always renders one shared control that writes Left = Right, even in L≠R (marked "L + R"), and is hidden entirely on single-foot LEFT or RIGHT orders. It cannot be set independently per foot.
+- **Required conditional children (this is what usually blocks Tab 2 → Tab 3):** activating an addition that has sub-parameters can make those children **mandatory**. A visible, active, non-optional, non-toggle child that is empty shows a **red asterisk and red border** and **blocks advancing to Confirmation** until filled; the form lists which are missing. Children marked optional, and toggle-type children, never block. If a clinician cannot proceed past Additions, the cause is an unfilled required child field — not a Tab-1 field.
+- **mm fields** are a slider: the box shows the raw number with unit "mm" and the range "(min–max)" beside it; a floating slider opens on focus; a typed value snaps to the nearest allowed value on blur. Some mm fields allow **0** as a valid value (e.g. Rocker Toes, sole/heel wedges, the Hak Wig/Zool Wig ranges).
+- **3D preview:** a rotating auto-rotating 3D shoe appears **only for fields that carry a 3D model**, and only once that field is activated — chiefly the mm modifications in the Additions section (e.g. Toe Box, Hallux Valgus, Bunionette, Hammer Toe, Heel Depth) plus the two ankle extra-space fields. In PAIR mode both feet's models show; otherwise the active foot's model. **Many additions have NO 3D model:** all of Upper Adaptions and Others, the conditional height sub-fields (Haglund height/position, ankle height), the sole types, and the Rocker (which uses 2D diagram images, not a 3D shoe). Do not promise a 3D preview for a field unless it is one of these.
+- **Option fields** flagged to collapse (e.g. Lining, closure, stiffener, sole type) collapse to only the chosen chip after selection; the **Rocker Sole type image picker does not collapse** and keeps all diagrams visible.
+- **Others section** = global on/off toggles, one checkbox each, never sided: welt protector, protective toe cap, extra pair of laces, no Piedro logo, plastic fitting shoes, urgent.
+- **Options and fields vary by model.** The additions form is **not uniform across models.** Sole-amendment options (PU/EVA Bumper type, Amendment Sole type, Runner Sole) may be hidden or narrowed per model by its "sole profile"; a model with no group keeps the full lists. **ZSM (B-prefix) models** replace the PU/EVA Bumper + Amendment Sole fields with **ZSM Prefab Sole + Sole Sheet** selectors, and the ZSM factory omits some half sizes (WOMEN 36–43 except 39.5 and 41.5; MEN 38–48 except 38.5, 41.5, 43.5, 45.5). If asked why a field, option or size is missing on a given model and the answer is not one of these, say you don't have that detail rather than inventing a reason.
 
 **Tab 3 — Confirmation**
-Reviews all data. Submit Order (generates PDF + sends email). Save Draft (keeps for later). Discard (deletes draft).
+- A full read-only review of the whole order: customer (company, clinician, patient, reference), product, unit, quantity or the different-sizes pairs, construction/width/size, additions grouped by section, and comments.
+- **Preview PDF** — POSTs the current form to generate a **watermarked "NOT CONFIRMED" PDF** in a new tab **without saving** the order. This exists — offer it when a user wants to see or download the order before submitting.
+- **Submit Order** — disabled until a customer reference is entered (and while submitting or once a success banner shows). Only after a confirmed DB save does it generate the final PDF (no watermark) and send notification emails: internal order-desk notice, a client confirmation to the ordering user, and any branch-office copies. On a clean submit it shows a green banner and auto-redirects to /orders after ~2.5s; if PDF or email generation failed it shows an amber banner that stays until the user clicks Continue.
+- **Save Draft** — persists the order as a draft with **no PDF and no email**; available on **all three tabs**, not only here.
+- **Discard** — appears only when editing an existing draft that is **not** a reopened order. It hard-deletes the order (written to the audit trail first) and is refused once Piedro has intervened.
+- **Order number:** an order gets its portal order number **only on submit**; drafts stay unnumbered. Only the creator may update or submit their own draft — not even a Piedro admin can submit someone else's draft. An order may be edited only while draft or changes_requested; any other status is refused.
+- **Re-submitting a reopened (changes_requested) order is a REPLACEMENT:** a brand-new order with a **new number** is created and the original is soft-cancelled — it is not updated in place. Saving a changes_requested order as a draft keeps it in changes_requested, not a private draft.
+
+Note on languages: French and German addition field labels are largely still shown in English (most field names are untranslated); Dutch is fully translated. Some sole option values (EVA, Full Rubber, Vibram, Nora, Piedro Runner) stay in English in every language by design.
 
 ## Order statuses
-draft → submitted → approved → in_production → shipped → delivered (or cancelled)
+draft → submitted → **changes_requested** → approved → in_production → shipped → delivered (or cancelled). changes_requested sits between submitted and approved and means Piedro reopened the order for the client to edit.
 
 ## Key concepts
 - **colour_id** — full product reference, format "1700.0393.01" (shown in gallery and orders)
