@@ -26,6 +26,27 @@ function revalidate(companyId?: string) {
   revalidatePath('/gallery')
 }
 
+/**
+ * Toggle whether a company may see the Additions Insights dashboard (opt-in,
+ * migration 059). Enabling it makes the nav link + /orders/insights available to
+ * that company's users; disabling hides them again.
+ */
+export async function setCompanyInsightsEnabled(
+  companyId: string,
+  enabled: boolean,
+): Promise<{ ok?: boolean; error?: string }> {
+  const authErr = await assertPiedroAdmin()
+  if (authErr) return { error: authErr }
+
+  const service = createServiceClient()
+  const { error } = await service
+    .from('companies').update({ insights_enabled: enabled }).eq('id', companyId)
+  if (error) return { error: error.message }
+
+  revalidate(companyId)
+  return { ok: true }
+}
+
 // ── Company exclusive siglas (N:N company_exclusives — the source of truth) ─────
 // A company may hold SEVERAL siglas (e.g. "LIV" + "ZSM"); unlike a sigla→model
 // tag, a sigla is shared by many companies (the Livingstone group). The legacy

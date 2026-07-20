@@ -185,6 +185,28 @@ export async function userSeesGeneralCatalogue(userId: string): Promise<boolean>
 }
 
 /**
+ * Whether the user may see the customer-facing Additions Insights dashboard.
+ * Opt-in per company (migration 059): true when ANY of the user's companies has
+ * `insights_enabled = true`. A user with no companies, or whose companies all have
+ * it off, does not. Resilient to migration 059 not being applied yet (a missing
+ * column errors the select → treated as "off", so the feature simply stays hidden
+ * until the migration runs). This is the single gate shared by the nav link and
+ * the /orders/insights page guard.
+ */
+export async function userHasInsights(userId: string): Promise<boolean> {
+  const service = createServiceClient()
+  const { data, error } = await service
+    .from('user_companies')
+    .select('companies (insights_enabled)')
+    .eq('user_id', userId)
+
+  if (error || !data || data.length === 0) return false
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const flags = (data as any[]).map((uc) => uc.companies?.insights_enabled)
+  return flags.some((f) => f === true)
+}
+
+/**
  * The full set of exclusive siglas a user may see, branch-augmented.
  *
  * = the user's own company siglas (getUserExclusiveLabels), PLUS — for a

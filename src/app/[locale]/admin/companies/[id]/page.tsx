@@ -6,6 +6,7 @@ import { requirePiedroAdminPage } from '@/lib/admin/scope'
 import CompanyExclusiveModels from '@/components/admin/CompanyExclusiveModels'
 import CompanyNotifyForm from '@/components/admin/CompanyNotifyForm'
 import CompanyCatalogueAccess from '@/components/admin/CompanyCatalogueAccess'
+import CompanyInsightsAccess from '@/components/admin/CompanyInsightsAccess'
 import CompanyMembers, { type Member, type UserOption } from '@/components/admin/CompanyMembers'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
@@ -19,6 +20,13 @@ export default async function CompanyDetailPage({ params }: Props) {
   const { data: company } = await service
     .from('companies').select('id, name, erp_code, exclusive_label, notify_cc, notify_bcc, sees_general_catalogue').eq('id', id).single()
   if (!company) notFound()
+
+  // insights_enabled fetched separately + tolerantly: if migration 059 hasn't run
+  // yet the column is absent and the select would error — we must NOT let that
+  // 404 the whole company page. Absent/false → treat as "off".
+  const { data: insRow } = await service
+    .from('companies').select('insights_enabled').eq('id', id).single()
+  const insightsEnabled = (insRow as { insights_enabled?: boolean } | null)?.insights_enabled === true
 
   // The company's siglas live in company_exclusives (N:N). Include any stray
   // legacy `exclusive_label` value so nothing is lost while it's deprecated.
@@ -88,6 +96,10 @@ export default async function CompanyDetailPage({ params }: Props) {
       <CompanyCatalogueAccess
         companyId={company.id}
         initial={company.sees_general_catalogue !== false}
+      />
+      <CompanyInsightsAccess
+        companyId={company.id}
+        initial={insightsEnabled}
       />
       <CompanyExclusiveModels
         companyId={company.id}

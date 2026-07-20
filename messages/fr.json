@@ -1,4 +1,63 @@
 {
+  "insights": {
+    "title": "Additions Insights",
+    "subtitle": "{count, number} commandes analysées",
+    "empty": "Aucune commande à analyser pour l’instant. Dès que des commandes sont passées, vous verrez ici comment les additions se répartissent sur la chaussure.",
+    "no_clinician": "Aucun praticien",
+    "export": "Exporter CSV",
+    "map_title": "Carte de chaleur des additions",
+    "showing_group": "Affichage de {group}",
+    "clear": "effacer",
+    "period": {
+      "30d": "30 jours",
+      "90d": "90 jours",
+      "12m": "12 mois",
+      "all": "Tout"
+    },
+    "axis": {
+      "location": "Par site",
+      "clinician": "Par praticien"
+    },
+    "kpi": {
+      "orders": "Commandes",
+      "additions": "Additions",
+      "per_order": "Additions / commande",
+      "outliers": "Au-dessus du schéma"
+    },
+    "legend": {
+      "less": "Moins",
+      "more": "Plus"
+    },
+    "drill_title": "{zone} · additions",
+    "drill_hint_title": "Détail de la zone",
+    "drill_hint": "Cliquez sur une zone de la chaussure pour voir les additions qui la composent.",
+    "conformity": {
+      "by_location": "Par site vs la moyenne",
+      "by_clinician": "Par praticien vs la moyenne",
+      "baseline": "Moyenne {n} / commande",
+      "n_orders": "{n, number} commandes",
+      "footnote": "▲ signale un site ou un praticien dépassant de plus de {factor}% la moyenne d’additions par commande (min. {min} commandes)."
+    },
+    "zones": {
+      "toe": "Orteils / avant-pied",
+      "upper": "Tige",
+      "closure": "Fermeture",
+      "ankle": "Cheville / col",
+      "heel": "Talon",
+      "joint": "Cou-de-pied / médio-pied",
+      "sole": "Semelle"
+    },
+    "csv": {
+      "period": "Période",
+      "orders": "Commandes",
+      "zone": "Zone",
+      "occurrences": "Occurrences",
+      "per_order": "Par commande",
+      "deviation": "Écart",
+      "outlier": "Au-dessus du schéma",
+      "addition": "Addition"
+    }
+  },
   "setPassword": {
     "title": "Définissez votre mot de passe",
     "description": "Bienvenue sur le nouveau Portail Piedro. Veuillez définir un mot de passe pour votre compte afin de continuer.",
@@ -163,6 +222,7 @@
     "live_users": "Utilisateurs prêts à se connecter"
   },
   "nav": {
+    "insights": "Analyses",
     "gallery": "Pair-by-Pair",
     "back": "Retour",
     "orders": "Commandes",
@@ -1212,6 +1272,12 @@
       "catalogue_mode_general": "Ce client voit le catalogue général ainsi que les modèles exclusifs qui lui sont attribués.",
       "catalogue_mode_exclusive": "Exclusif uniquement : ce client ne voit que ses propres modèles exclusifs.",
       "catalogue_saved": "Enregistré.",
+      "insights_title": "Additions Insights",
+      "insights_hint": "Si ce client peut voir le tableau de bord Additions Insights (carte de chaleur de la chaussure + suivi de conformité).",
+      "insights_enable": "Afficher Additions Insights pour ce client",
+      "insights_mode_on": "Activé : les utilisateurs de ce client voient le tableau de bord Insights dans leur menu.",
+      "insights_mode_off": "Désactivé : le tableau de bord Insights est masqué pour ce client.",
+      "insights_saved": "Enregistré.",
       "members_title": "Membres & administrateurs de la société",
       "members_hint": "Utilisateurs appartenant à cette société. Cochez « Admin » pour qu'un utilisateur gère toutes les commandes de la société.",
       "admin_label": "Admin",

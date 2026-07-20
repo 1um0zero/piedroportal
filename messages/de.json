@@ -1,4 +1,63 @@
 {
+  "insights": {
+    "title": "Additions Insights",
+    "subtitle": "{count, number} Bestellungen analysiert",
+    "empty": "Noch keine Bestellungen zur Analyse. Sobald Bestellungen eingehen, sehen Sie hier, wie sich die Additions über den Schuh verteilen.",
+    "no_clinician": "Kein Behandler",
+    "export": "CSV exportieren",
+    "map_title": "Additions-Heatmap",
+    "showing_group": "{group} angezeigt",
+    "clear": "zurücksetzen",
+    "period": {
+      "30d": "30 Tage",
+      "90d": "90 Tage",
+      "12m": "12 Monate",
+      "all": "Gesamt"
+    },
+    "axis": {
+      "location": "Nach Standort",
+      "clinician": "Nach Behandler"
+    },
+    "kpi": {
+      "orders": "Bestellungen",
+      "additions": "Additions",
+      "per_order": "Additions / Bestellung",
+      "outliers": "Über dem Muster"
+    },
+    "legend": {
+      "less": "Weniger",
+      "more": "Mehr"
+    },
+    "drill_title": "{zone} · Additions",
+    "drill_hint_title": "Zonendetail",
+    "drill_hint": "Klicken Sie auf eine Zone des Schuhs, um zu sehen, aus welchen Additions sie besteht.",
+    "conformity": {
+      "by_location": "Nach Standort vs. Durchschnitt",
+      "by_clinician": "Nach Behandler vs. Durchschnitt",
+      "baseline": "Durchschnitt {n} / Bestellung",
+      "n_orders": "{n, number} Bestellungen",
+      "footnote": "▲ kennzeichnet einen Standort oder Behandler mit mehr als {factor}% über dem Durchschnitt an Additions pro Bestellung (mind. {min} Bestellungen)."
+    },
+    "zones": {
+      "toe": "Zehen / Vorfuß",
+      "upper": "Obermaterial",
+      "closure": "Verschluss",
+      "ankle": "Knöchel / Schaft",
+      "heel": "Ferse",
+      "joint": "Rist / Mittelfuß",
+      "sole": "Sohle"
+    },
+    "csv": {
+      "period": "Zeitraum",
+      "orders": "Bestellungen",
+      "zone": "Zone",
+      "occurrences": "Anzahl",
+      "per_order": "Pro Bestellung",
+      "deviation": "Abweichung",
+      "outlier": "Über dem Muster",
+      "addition": "Addition"
+    }
+  },
   "setPassword": {
     "title": "Passwort festlegen",
     "description": "Willkommen im neuen Piedro Portal. Bitte legen Sie ein Passwort für Ihr Konto fest, um fortzufahren.",
@@ -163,6 +222,7 @@
     "live_users": "Benutzer bereit zum Anmelden"
   },
   "nav": {
+    "insights": "Analysen",
     "gallery": "Pair-by-Pair",
     "back": "Zurück",
     "orders": "Bestellungen",
@@ -1212,6 +1272,12 @@
       "catalogue_mode_general": "Dieser Kunde sieht den allgemeinen Katalog plus die ihm zugewiesenen exklusiven Modelle.",
       "catalogue_mode_exclusive": "Nur exklusiv: Dieser Kunde sieht nur seine eigenen exklusiven Modelle.",
       "catalogue_saved": "Gespeichert.",
+      "insights_title": "Additions Insights",
+      "insights_hint": "Ob dieser Kunde das Additions-Insights-Dashboard sehen kann (Schuh-Heatmap + Konformitätsüberwachung).",
+      "insights_enable": "Additions Insights für diesen Kunden anzeigen",
+      "insights_mode_on": "Aktiviert: Die Benutzer dieses Kunden sehen das Insights-Dashboard in ihrem Menü.",
+      "insights_mode_off": "Deaktiviert: Das Insights-Dashboard ist für diesen Kunden ausgeblendet.",
+      "insights_saved": "Gespeichert.",
       "members_title": "Mitglieder & Firmenadministratoren",
       "members_hint": "Benutzer dieser Firma. Aktivieren Sie „Admin\", damit ein Benutzer alle Bestellungen der Firma verwalten kann.",
       "admin_label": "Admin",

@@ -1,4 +1,63 @@
 {
+  "insights": {
+    "title": "Additions Insights",
+    "subtitle": "{count, number} bestellingen geanalyseerd",
+    "empty": "Nog geen bestellingen om te analyseren. Zodra er wordt besteld, ziet u hier hoe de additions over de schoen zijn verdeeld.",
+    "no_clinician": "Geen behandelaar",
+    "export": "CSV exporteren",
+    "map_title": "Warmtekaart additions",
+    "showing_group": "{group} weergegeven",
+    "clear": "wissen",
+    "period": {
+      "30d": "30 dagen",
+      "90d": "90 dagen",
+      "12m": "12 maanden",
+      "all": "Alles"
+    },
+    "axis": {
+      "location": "Per locatie",
+      "clinician": "Per behandelaar"
+    },
+    "kpi": {
+      "orders": "Bestellingen",
+      "additions": "Additions",
+      "per_order": "Additions / bestelling",
+      "outliers": "Boven het patroon"
+    },
+    "legend": {
+      "less": "Minder",
+      "more": "Meer"
+    },
+    "drill_title": "{zone} · additions",
+    "drill_hint_title": "Zonedetail",
+    "drill_hint": "Klik op een zone van de schoen om te zien uit welke additions deze bestaat.",
+    "conformity": {
+      "by_location": "Per locatie t.o.v. het gemiddelde",
+      "by_clinician": "Per behandelaar t.o.v. het gemiddelde",
+      "baseline": "Gemiddeld {n} / bestelling",
+      "n_orders": "{n, number} bestellingen",
+      "footnote": "▲ markeert een locatie of behandelaar met meer dan {factor}% boven het gemiddelde aantal additions per bestelling (min. {min} bestellingen)."
+    },
+    "zones": {
+      "toe": "Teen / voorvoet",
+      "upper": "Bovenwerk",
+      "closure": "Sluiting",
+      "ankle": "Enkel / boord",
+      "heel": "Hiel",
+      "joint": "Wreef / middenvoet",
+      "sole": "Zool"
+    },
+    "csv": {
+      "period": "Periode",
+      "orders": "Bestellingen",
+      "zone": "Zone",
+      "occurrences": "Aantal",
+      "per_order": "Per bestelling",
+      "deviation": "Afwijking",
+      "outlier": "Boven het patroon",
+      "addition": "Addition"
+    }
+  },
   "setPassword": {
     "title": "Stel uw wachtwoord in",
     "description": "Welkom op het nieuwe Piedro Portal. Stel een wachtwoord in voor uw account om verder te gaan.",
@@ -163,6 +222,7 @@
     "live_users": "Gebruikers klaar om in te loggen"
   },
   "nav": {
+    "insights": "Inzichten",
     "gallery": "OSB",
     "back": "Terug",
     "orders": "Bestellingen",
@@ -1212,6 +1272,12 @@
       "catalogue_mode_general": "Deze klant ziet de algemene catalogus plus eventuele toegewezen exclusieve modellen.",
       "catalogue_mode_exclusive": "Alleen exclusief: deze klant ziet alleen de eigen exclusieve modellen.",
       "catalogue_saved": "Opgeslagen.",
+      "insights_title": "Additions Insights",
+      "insights_hint": "Of deze klant het Additions Insights-dashboard kan zien (warmtekaart van de schoen + conformiteitsbewaking).",
+      "insights_enable": "Additions Insights tonen aan deze klant",
+      "insights_mode_on": "Ingeschakeld: de gebruikers van deze klant zien het Insights-dashboard in hun menu.",
+      "insights_mode_off": "Uitgeschakeld: het Insights-dashboard is verborgen voor deze klant.",
+      "insights_saved": "Opgeslagen.",
       "members_title": "Leden & bedrijfsbeheerders",
       "members_hint": "Gebruikers die bij dit bedrijf horen. Vink \"Beheerder\" aan om een gebruiker alle bestellingen van het bedrijf te laten beheren.",
       "admin_label": "Beheerder",

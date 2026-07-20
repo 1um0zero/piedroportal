@@ -1,4 +1,63 @@
 {
+  "insights": {
+    "title": "Additions Insights",
+    "subtitle": "{count, number} orders analysed",
+    "empty": "No orders to analyse yet. Once orders are placed, this is where you’ll see how additions are distributed across the shoe.",
+    "no_clinician": "No clinician",
+    "export": "Export CSV",
+    "map_title": "Additions heat map",
+    "showing_group": "Showing {group}",
+    "clear": "clear",
+    "period": {
+      "30d": "30 days",
+      "90d": "90 days",
+      "12m": "12 months",
+      "all": "All time"
+    },
+    "axis": {
+      "location": "By location",
+      "clinician": "By clinician"
+    },
+    "kpi": {
+      "orders": "Orders",
+      "additions": "Additions",
+      "per_order": "Additions / order",
+      "outliers": "Above pattern"
+    },
+    "legend": {
+      "less": "Fewer",
+      "more": "More"
+    },
+    "drill_title": "{zone} · additions",
+    "drill_hint_title": "Zone detail",
+    "drill_hint": "Click a zone on the shoe to see which additions make it up.",
+    "conformity": {
+      "by_location": "By location vs the average",
+      "by_clinician": "By clinician vs the average",
+      "baseline": "Average {n} / order",
+      "n_orders": "{n, number} orders",
+      "footnote": "▲ marks a location or clinician running more than {factor}% above the average additions per order (min. {min} orders)."
+    },
+    "zones": {
+      "toe": "Toe / forefoot",
+      "upper": "Upper",
+      "closure": "Closure",
+      "ankle": "Ankle / collar",
+      "heel": "Heel",
+      "joint": "Joint / midfoot",
+      "sole": "Sole"
+    },
+    "csv": {
+      "period": "Period",
+      "orders": "Orders",
+      "zone": "Zone",
+      "occurrences": "Occurrences",
+      "per_order": "Per order",
+      "deviation": "Deviation",
+      "outlier": "Above pattern",
+      "addition": "Addition"
+    }
+  },
   "setPassword": {
     "title": "Set your password",
     "description": "Welcome to the new Piedro Portal. Please set a password for your account to continue.",
@@ -163,6 +222,7 @@
     "live_users": "Users ready to log in"
   },
   "nav": {
+    "insights": "Insights",
     "gallery": "Pair-by-Pair",
     "back": "Back",
     "orders": "Orders",
@@ -1212,6 +1272,12 @@
       "catalogue_mode_general": "This customer sees the general catalogue plus any exclusive models assigned to them.",
       "catalogue_mode_exclusive": "Exclusive-only: this customer sees only their own exclusive models.",
       "catalogue_saved": "Saved.",
+      "insights_title": "Additions Insights",
+      "insights_hint": "Whether this customer can see the Additions Insights dashboard (shoe heat map + conformity monitoring).",
+      "insights_enable": "Show Additions Insights to this customer",
+      "insights_mode_on": "Enabled: this customer’s users see the Insights dashboard in their menu.",
+      "insights_mode_off": "Disabled: the Insights dashboard is hidden for this customer.",
+      "insights_saved": "Saved.",
       "members_title": "Members & company admins",
       "members_hint": "Users belonging to this company. Tick \"Admin\" to let a user manage all of the company's orders.",
       "admin_label": "Admin",

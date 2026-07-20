@@ -10,7 +10,7 @@ import NavbarShell from './NavbarShell'
 import HeaderSectionSwitch from './HeaderSectionSwitch'
 import NavGalleryLink from './NavGalleryLink'
 import HeaderLivingstonLink from './HeaderLivingstonLink'
-import { getUserExclusiveLabels } from '@/lib/user-companies'
+import { getUserExclusiveLabels, userHasInsights } from '@/lib/user-companies'
 import { NavbarLocale } from './NavbarLocale'
 import { NavbarMobile } from './NavbarMobile'
 import NavAdminMenu from './NavAdminMenu'
@@ -48,6 +48,11 @@ export default async function Navbar({ locale }: Props) {
       canSeeLiv = labels.some((l) => l.toUpperCase() === 'LIV')
     }
   }
+
+  // Additions Insights entry: customers whose company has the feature enabled
+  // (migration 059). Back-office users have their own analytics under /admin.
+  let canSeeInsights = false
+  if (user && !isBackoffice) canSeeInsights = await userHasInsights(user.id)
 
   // Count of portal-origin orders awaiting staff validation (badge on Orders).
   let newOrdersCount = 0
@@ -102,6 +107,11 @@ export default async function Navbar({ locale }: Props) {
               <Link href="/orders/dashboard" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('dashboard')}
               </Link>
+              {canSeeInsights && (
+                <Link href="/orders/insights" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
+                  {t('insights')}
+                </Link>
+              )}
               <Link href="/orders" className="text-xs font-semibold tracking-wider text-stone-500 hover:text-stone-900 uppercase transition-colors">
                 {t('orders')}
               </Link>
