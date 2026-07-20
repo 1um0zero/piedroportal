@@ -142,6 +142,32 @@ function OptionChips({ values, value, onChange, collapse = false, label }: {
   )
 }
 
+// Small explanatory illustration shown beside a field label (e.g. the Achilles
+// heel-counter cutout). A thumbnail; click to enlarge in a lightbox.
+function FieldIllustration({ src, alt }: { src: string; alt: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button type="button" onClick={e => { e.stopPropagation(); setOpen(true) }}
+        title={alt} aria-label={alt}
+        className="shrink-0 rounded-md border border-stone-200 bg-white p-0.5 hover:border-gold/60 transition-colors">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className="h-9 w-9 object-contain" />
+      </button>
+      {open && (
+        <div onClick={() => setOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 cursor-zoom-out">
+          <div className="max-h-[85vh] max-w-[90vw] rounded-xl bg-white p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={alt} className="max-h-[70vh] max-w-full object-contain" />
+            <p className="mt-2 text-center text-sm text-stone-600">{alt}</p>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 // Image picker — selectable diagram cards (used for the Rocker Sole type field)
 function ImageChips({ values, value, onChange, images, label }: {
   values: (number | string)[]
@@ -799,6 +825,7 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
                           className="text-sm text-stone-700 cursor-pointer flex-1">
                           {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
                         </span>
+                        {field.illustration && <FieldIllustration src={field.illustration} alt={cleanLabel} />}
                         <input type="checkbox" checked={isChecked}
                           onChange={e => updateField(field.key, displaySide, e.target.checked)}
                           className="w-4 h-4 cursor-pointer custom-gold shrink-0" />
@@ -888,6 +915,7 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
                           className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
                           {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
                         </span>
+                        {field.illustration && <FieldIllustration src={field.illustration} alt={cleanLabel} />}
                       </div>
                       {/* Children are rendered separately as sub-fields when parent is active */}
                     </div>

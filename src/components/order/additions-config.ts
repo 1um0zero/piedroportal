@@ -29,6 +29,7 @@ export interface AdditionField {
   collapse?:       boolean        // hide other chips once one is selected
   glb?:            { l: string; r: string }  // 3D model filenames in Supabase products/3d/
   images?:         Record<string, string>    // for type 'image': value → /public path of the diagram
+  illustration?:   string         // static /public illustration shown beside the label (click to enlarge)
 }
 
 export interface AdditionSection {
@@ -91,6 +92,10 @@ export const SECTIONS: AdditionSection[] = [
       { key: 'cl_laces',      type: 'option', side: 'both', collapse: true, closureOnly: 'LACE', values: ['Eyelets','Hooks','D-Rings','Blind Eyelets','Buckle & Strap','BOA Closure'], dataverseKey: 'cr56f_closurelaces' },
       { key: 'cl_velcro',     type: 'option', side: 'both', collapse: true, closureOnly: 'VELCRO', values: ['Return Velcro','Lap-Over Velcro','Single Hand Velcro','Velcro Seperate'], dataverseKey: 'cr56f_closurevelcrostraps' },
       { key: 'stiff_hard',    type: 'option', side: 'both', collapse: true, values: ['Soft','Standard','Hard','Double','Extra padding'], dataverseKey: 'cr56f_stiffenerhardness' },
+      // Heel-counter cutout for the Achilles tendon — sided yes/no (Anabela, 2026-07-20).
+      // NOTE: new field key → the A-Shell side in `dsv` (shuz_portal_integration) must be
+      // adjusted to receive `stiff_cutout` with L/R sides (Jorge's rule).
+      { key: 'stiff_cutout',  type: 'toggle', side: 'both', dataverseKey: 'cr56f_stiffenercutoutachilles', illustration: '/additions/stiff-cutout-achilles.png' },
       { key: 'toe_puffs',     type: 'option', side: 'both', collapse: true, values: ['Soft','Standard','Hard'], dataverseKey: 'cr56f_toepuffs' },
       { key: 'toe_puffs_rim', type: 'toggle', side: 'both', dataverseKey: 'cr56f_toepuffsrim' },
       { key: 'str_leather',   type: 'toggle', side: 'both', dataverseKey: 'cr56f_stretchleather' },
