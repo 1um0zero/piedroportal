@@ -3,8 +3,9 @@
 // Custom3DPreview.tsx — modal que mostra as adições GEOMÉTRICAS da encomenda
 // CUSTOM aplicadas num sapato 3D. Aberto pelo botão do rodapé (Tab2/Tab3).
 //
-// Base = sapato demo procedural (neutro, sem adição embutida) para as
-// deformações lerem limpo. three.js entra só aqui (next/dynamic ssr:false).
+// Base = GLB real das adições pair-by-pair (horma/sapato completo em
+// `products/3d/`), com o lado a seguir o toggle do pé — nunca a forma demo
+// procedural. three.js entra só aqui (next/dynamic ssr:false).
 
 import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -23,6 +24,11 @@ const PiedroVisualizer = dynamic(
   },
 );
 
+// Horma/sapato base = GLB real das adições pair-by-pair (bucket `products/3d/`).
+// `width_cone` a 0 mm lê como horma limpa; o lado _l/_r segue o pé selecionado.
+const GLB_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/3d/`;
+const BASE_MODEL = 'width_cone';
+
 export default function Custom3DPreview({
   values,
   unit,
@@ -34,6 +40,7 @@ export default function Custom3DPreview({
 }) {
   const [foot, setFoot] = useState<Foot>(unit === 'RIGHT' ? 'R' : 'L');
   const params = useMemo(() => customValuesToViewer(values, foot), [values, foot]);
+  const model = `${GLB_BASE}${BASE_MODEL}_${foot.toLowerCase()}.glb`;
   const bothFeet = unit === 'PAIR' || unit === 'LEFT_RIGHT';
   const activeCount = Object.keys(params.values).length;
 
@@ -81,7 +88,7 @@ export default function Custom3DPreview({
 
         {/* Palco */}
         <div className="relative flex-1 bg-[#0f1419]">
-          <PiedroVisualizer params={params} showZones showFlags className="h-full w-full" />
+          <PiedroVisualizer params={params} model={model} showZones showFlags className="h-full w-full" />
           {activeCount === 0 && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <span className="rounded-lg bg-black/60 px-4 py-2 text-sm text-stone-200">
