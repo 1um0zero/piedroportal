@@ -12,7 +12,7 @@
 
 import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
-import ShoeHeatmap, { type HeatZone } from './ShoeHeatmap'
+import ShoeHeatmap, { HEAT_STOPS, type HeatZone } from './ShoeHeatmap'
 import { computeInsights, type InsightOrder } from '@/lib/insights/metrics'
 import { SHOE_ZONES, ZONE_LABEL_KEY, type ShoeZone } from '@/lib/insights/addition-zones'
 
@@ -167,7 +167,8 @@ export default function InsightsDashboard({ orders, multiCompany }: { orders: Cl
             onSelectZone={z => setSelectedZone(prev => prev === z ? null : z)} className="w-full h-auto" />
           <div className="flex items-center gap-3 mt-1">
             <span className="text-[11px] text-stone-400">{t('legend.less')}</span>
-            <div className="flex-1 h-2.5 rounded-full" style={{ background: 'linear-gradient(90deg,#f7ead9,#f6cf9f,#f0a45c,#e5762f,#c9511a,#98350b)' }} />
+            <div className="flex-1 h-2.5 rounded-full"
+                 style={{ background: `linear-gradient(90deg,${HEAT_STOPS.map(s => s[1]).join(',')})` }} />
             <span className="text-[11px] text-stone-400">{t('legend.more')}</span>
           </div>
         </div>
