@@ -56,6 +56,16 @@
       "deviation": "Écart",
       "outlier": "Au-dessus du schéma",
       "addition": "Addition"
+    },
+    "admin": {
+      "title": "Additions Insights",
+      "subtitle": "Vue personnel — choisissez un client pour analyser son profil d'additions et sa conformité.",
+      "client": "Client",
+      "search_client": "Rechercher un client ou un code ERP…",
+      "pick_client": "Choisissez un client ci-dessus pour voir sa carte de chaleur et sa conformité.",
+      "n_stores": "{n} sites",
+      "n_orders": "{n} commandes",
+      "scope": "{client} · {stores} site(s) · {orders} commandes analysées"
     }
   },
   "setPassword": {
@@ -250,7 +260,8 @@
     "factory_calendar": "Calendrier usine",
     "announcements": "Annonces",
     "message_templates": "Modèles de message",
-    "additions": "Tables d'additions"
+    "additions": "Tables d'additions",
+    "insights_admin": "Additions Insights"
   },
   "announcements": {
     "badge": "Message",

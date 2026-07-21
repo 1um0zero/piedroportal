@@ -56,6 +56,16 @@
       "deviation": "Deviation",
       "outlier": "Above pattern",
       "addition": "Addition"
+    },
+    "admin": {
+      "title": "Additions Insights",
+      "subtitle": "Staff view — pick a client to analyse their additions pattern and conformity.",
+      "client": "Client",
+      "search_client": "Search client or ERP code…",
+      "pick_client": "Pick a client above to see their shoe heat map and conformity.",
+      "n_stores": "{n} locations",
+      "n_orders": "{n} orders",
+      "scope": "{client} · {stores} location(s) · {orders} orders analysed"
     }
   },
   "setPassword": {
@@ -250,7 +260,8 @@
     "factory_calendar": "Factory calendar",
     "announcements": "Announcements",
     "message_templates": "Message templates",
-    "additions": "Additions tables"
+    "additions": "Additions tables",
+    "insights_admin": "Additions Insights"
   },
   "announcements": {
     "badge": "Message",

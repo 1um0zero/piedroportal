@@ -56,6 +56,16 @@
       "deviation": "Afwijking",
       "outlier": "Boven het patroon",
       "addition": "Addition"
+    },
+    "admin": {
+      "title": "Additions Insights",
+      "subtitle": "Medewerkersweergave — kies een klant om hun additiespatroon en conformiteit te analyseren.",
+      "client": "Klant",
+      "search_client": "Zoek klant of ERP-code…",
+      "pick_client": "Kies hierboven een klant om hun heatmap en conformiteit te zien.",
+      "n_stores": "{n} locaties",
+      "n_orders": "{n} orders",
+      "scope": "{client} · {stores} locatie(s) · {orders} orders geanalyseerd"
     }
   },
   "setPassword": {
@@ -250,7 +260,8 @@
     "factory_calendar": "Fabriekskalender",
     "announcements": "Meldingen",
     "message_templates": "Berichtsjablonen",
-    "additions": "Additions-tabellen"
+    "additions": "Additions-tabellen",
+    "insights_admin": "Additions Insights"
   },
   "announcements": {
     "badge": "Bericht",

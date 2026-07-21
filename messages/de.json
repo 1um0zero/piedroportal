@@ -56,6 +56,16 @@
       "deviation": "Abweichung",
       "outlier": "Über dem Muster",
       "addition": "Addition"
+    },
+    "admin": {
+      "title": "Additions Insights",
+      "subtitle": "Mitarbeiteransicht — wählen Sie einen Kunden, um dessen Additions-Muster und Konformität zu analysieren.",
+      "client": "Kunde",
+      "search_client": "Kunde oder ERP-Code suchen…",
+      "pick_client": "Wählen Sie oben einen Kunden, um dessen Heatmap und Konformität zu sehen.",
+      "n_stores": "{n} Standorte",
+      "n_orders": "{n} Bestellungen",
+      "scope": "{client} · {stores} Standort(e) · {orders} Bestellungen ausgewertet"
     }
   },
   "setPassword": {
@@ -250,7 +260,8 @@
     "factory_calendar": "Werkskalender",
     "announcements": "Mitteilungen",
     "message_templates": "Nachrichtenvorlagen",
-    "additions": "Additions-Tabellen"
+    "additions": "Additions-Tabellen",
+    "insights_admin": "Additions Insights"
   },
   "announcements": {
     "badge": "Mitteilung",
