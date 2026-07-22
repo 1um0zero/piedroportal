@@ -32,4 +32,13 @@ if [ -n "$files" ]; then
   fi
 fi
 
+# Additions ↔ dsv hand-off guard: every OSB addition must be prepared for the
+# A-Shell side (a row in docs/erp-additions-map.csv). Cheap; blocks a new/renamed
+# addition that forgot to prepare the dsv info. See docs/erp/ADDITIONS-FOR-DSV.md.
+echo "▶ pre-commit: additions → dsv map guard…"
+if ! node scripts/check-additions-map.mjs; then
+  echo "✖ additions-map guard failed — commit blocked."
+  exit 1
+fi
+
 echo "✓ pre-commit checks passed"

@@ -30,6 +30,18 @@ Response: `{ contract_version, count, orders: ErpOrder[] }`.
 Body: `{ "order_ids": ["uuid", ...] }`. Sets `erp_exported_at = now()` so those orders stop appearing
 in the pending feed. Response: `{ acknowledged: n }`.
 
+### `GET /api/erp/additions` — pull the canonical additions catalog ✅ built
+The living, always-current description of **every** addition the portal knows
+(OSB + CUSTOM), generated from the form config so it never drifts. Each entry's
+`key` is exactly the `field` emitted by `/api/erp/orders`, so the A-Shell side
+maps on it. Params: `channel=osb|custom`, `hash_only=1` (cheap change-poll →
+`{ catalog_version, hash, count }`). Full response adds `generated_at` +
+`additions[]`. **This is the machine half of the "additions change → prepare
+everything for dsv" rule** — human guide + CHANGELOG in
+[`docs/erp/ADDITIONS-FOR-DSV.md`](../erp/ADDITIONS-FOR-DSV.md); the portal↔A-Shell
+slot map is [`docs/erp-additions-map.csv`](../erp-additions-map.csv), guarded by
+`npm run check:additions` (also in pre-commit).
+
 ### `POST /api/erp/orders/status` — write order state back (Q6.4) ✅ built
 Body: `{ order_id, production_state?, approval_state?, piedro_order_id?, piedro_notes? }`. Only the
 provided fields are updated; `orders.status` is kept in sync. Idempotent — replaces the brittle

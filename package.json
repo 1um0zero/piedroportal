@@ -9,6 +9,7 @@
     "lint": "eslint",
     "type-check": "tsc --noEmit",
     "optimize-images": "node scripts/optimize-images.mjs",
+    "check:additions": "node scripts/check-additions-map.mjs",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
