@@ -1,13 +1,13 @@
 'use client'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ShoeHeatmap — paints addition occurrences onto the REAL Piedro last.
+// ShoeHeatmap — paints addition occurrences onto a real Piedro shoe.
 //
-// The backdrop is a baked side view of `no_additions_l.glb` — the same clean
-// model the CUSTOM 3D preview uses as its base — rendered to an image by
-// scripts/build-shoe-maquette.mjs. Heat is drawn as blurred blobs multiplied
-// over that render and masked to its exact silhouette, so the 3D shading shows
-// through the colour and nothing bleeds outside the shoe.
+// The backdrop is the clean outer contour of an actual model maquette (the
+// per-model technical side-drawing), extracted by scripts/build-shoe-maquette.mjs
+// with its interior seams and colour numbers stripped. Heat is painted as
+// blurred blobs clipped to the shoe silhouette (a warm floor fills the rest so
+// there are never bare-white holes), then the crisp outline is drawn on top.
 //
 // Presentational only: it receives already-aggregated, already-translated zone
 // data and reports clicks. All numbers/labels come from props, so the component
@@ -35,44 +35,43 @@ interface ShoeHeatmapProps {
   className?:    string
 }
 
-// The baked render's own pixel space (see shoe-geometry.json). The canvas adds a
-// band above and below for the label chips.
-const IMG_W = geometry.width      // 1600
-const IMG_H = geometry.height     // 1000
-const TOP_BAND = 190
-const BOTTOM_BAND = 210
+// The maquette render's own pixel space (see shoe-geometry.json). The canvas adds
+// a band above and below for the label chips.
+const IMG_W = geometry.width       // 1400
+const IMG_H = geometry.height      // 669
+const TOP_BAND = 140
+const BOTTOM_BAND = 160
 const VB_W = IMG_W
 const VB_H = TOP_BAND + IMG_H + BOTTOM_BAND
 
-// Chip box.
-const W = 300, H = 96
+const W = 280, H = 88              // chip box
+const CHIP_TOP = 24
+const CHIP_BOTTOM = VB_H - BOTTOM_BAND + 20
 
 /**
- * Zone anchors, in the render's pixel space (the shoe silhouette occupies
- * x 86…1515, y 246…755 — heel left, toe right). `c` is the heat centre, `r` its
- * radii [rx, ry] (the sole is a long flat ellipse so it reads along the whole
- * base rather than as a blob), `chip` the top-left of the label box.
+ * Zone anchors, in the maquette's pixel space (heel left, toe right). `c` is the
+ * heat centre, `r` its radii [rx, ry] (the sole is a long flat ellipse so it
+ * reads along the whole base), `chip` the top-left of the label box on the full
+ * canvas.
  */
 const GEO: Record<ShoeZone, { c: [number, number]; r: [number, number]; chip: [number, number] }> = {
-  ankle:   { c: [300, 300],  r: [140, 140], chip: [40, 34] },
-  closure: { c: [620, 330],  r: [165, 165], chip: [530, 34] },
-  upper:   { c: [890, 455],  r: [170, 170], chip: [1080, 34] },
-  toe:     { c: [1340, 645], r: [160, 150], chip: [1250, VB_H - 150] },
-  joint:   { c: [1090, 610], r: [155, 155], chip: [860, VB_H - 150] },
-  sole:    { c: [800, 730],  r: [470, 145], chip: [470, VB_H - 150] },
-  heel:    { c: [175, 545],  r: [170, 170], chip: [40, VB_H - 150] },
+  ankle:   { c: [340, 180],  r: [140, 140], chip: [40, CHIP_TOP] },
+  closure: { c: [690, 235],  r: [165, 150], chip: [560, CHIP_TOP] },
+  upper:   { c: [930, 340],  r: [160, 150], chip: [1080, CHIP_TOP] },
+  heel:    { c: [150, 380],  r: [150, 150], chip: [40, CHIP_BOTTOM] },
+  sole:    { c: [700, 600],  r: [430, 80],  chip: [380, CHIP_BOTTOM] },
+  joint:   { c: [1010, 430], r: [150, 140], chip: [720, CHIP_BOTTOM] },
+  toe:     { c: [1255, 470], r: [150, 130], chip: [1080, CHIP_BOTTOM] },
 }
 
-/**
- * Warm single-hue heat ramp (0 → max). Kept light and saturated rather than dark:
- * the shoe render is multiplied ON TOP of this, which darkens it again, so a ramp
- * tuned to look right on its own would come out muddy brown in the composite.
- */
+/** Warm single-hue heat ramp (0 → max). Light "few" end matches the maquette so
+ *  a cool zone reads as a faint tint on the shoe, not a hole. */
 export const HEAT_STOPS: [number, string][] = [
   [0, '#fdf4e9'], [0.15, '#fbd9a8'], [0.35, '#f7b36a'],
   [0.55, '#f0873c'], [0.75, '#dd5a1e'], [1, '#b83a10'],
 ]
 const STOPS = HEAT_STOPS
+
 function hx(h: string): [number, number, number] {
   return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]
 }
@@ -88,56 +87,43 @@ function heat(t: number): string {
   return STOPS[STOPS.length - 1][1]
 }
 
-/** How far the render is lifted toward white before being multiplied over the
- *  heat. 1 = full-strength shading (crushes the colour), 0 = no form at all. */
-const SHADE_STRENGTH = 0.7
+/** The colour the whole silhouette is tinted before the per-zone blobs, so gaps
+ *  between blobs read as the "few" end of the ramp instead of bare white. */
+const FLOOR = 0.05
 
 export default function ShoeHeatmap({ zones, max, selectedZone, onSelectZone, className }: ShoeHeatmapProps) {
   const uid = useId().replace(/:/g, '')
-  const maskId = `shoeMask-${uid}`, blurId = `soft-${uid}`, shadeId = `shade-${uid}`
+  const maskId = `shoeMask-${uid}`, blurId = `soft-${uid}`
   const norm = max > 0 ? max : 1
 
-  // `isolation: isolate` keeps the multiply blend inside this SVG — without it
-  // the shoe would darken whatever card sits behind it.
   return (
     <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className={className} role="img"
-         style={{ isolation: 'isolate' }}
          aria-label="Shoe with addition zones coloured by occurrence intensity">
       <defs>
-        {/* Luminance mask straight from the render's alpha — heat can never
-            bleed outside the real silhouette. */}
+        {/* Luminance mask straight from the maquette silhouette — heat can never
+            bleed outside the real shoe outline. */}
         <mask id={maskId}>
           <image href="/insights/shoe-mask.png" x={0} y={TOP_BAND} width={IMG_W} height={IMG_H} />
         </mask>
         <filter id={blurId} x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="34" />
-        </filter>
-        {/* Lift the render toward white so multiplying it over the heat adds
-            form without crushing the colour. */}
-        <filter id={shadeId} x="0%" y="0%" width="100%" height="100%">
-          <feComponentTransfer>
-            <feFuncR type="linear" slope={SHADE_STRENGTH} intercept={1 - SHADE_STRENGTH} />
-            <feFuncG type="linear" slope={SHADE_STRENGTH} intercept={1 - SHADE_STRENGTH} />
-            <feFuncB type="linear" slope={SHADE_STRENGTH} intercept={1 - SHADE_STRENGTH} />
-          </feComponentTransfer>
+          <feGaussianBlur stdDeviation="30" />
         </filter>
       </defs>
 
-      {/* Heat first, clipped to the real silhouette… */}
+      {/* Heat: a warm floor tint + per-zone blobs, clipped to the shoe */}
       <g mask={`url(#${maskId})`}>
+        <rect x={0} y={TOP_BAND} width={IMG_W} height={IMG_H} fill={heat(FLOOR)} />
         <g filter={`url(#${blurId})`}>
           {zones.map(z => (
             <ellipse key={z.zone} cx={GEO[z.zone].c[0]} cy={GEO[z.zone].c[1] + TOP_BAND}
                      rx={GEO[z.zone].r[0]} ry={GEO[z.zone].r[1]}
-                     fill={heat(z.count / norm)} opacity={0.85} />
+                     fill={heat(z.count / norm)} opacity={0.9} />
           ))}
         </g>
       </g>
 
-      {/* …then the real last (baked from no_additions_l.glb) multiplied over it,
-          so the 3D form reads through the colour. */}
-      <image href="/insights/shoe.webp" x={0} y={TOP_BAND} width={IMG_W} height={IMG_H}
-             filter={`url(#${shadeId})`} style={{ mixBlendMode: 'multiply' }} />
+      {/* The clean shoe outline (from maquette 3467), drawn over the heat */}
+      <image href="/insights/shoe-outline.png" x={0} y={TOP_BAND} width={IMG_W} height={IMG_H} />
 
       {/* Label chips */}
       <g>
@@ -145,7 +131,6 @@ export default function ShoeHeatmap({ zones, max, selectedZone, onSelectZone, cl
           const g = GEO[z.zone]
           const [bx, by] = g.chip
           const cx = g.c[0], cy = g.c[1] + TOP_BAND
-          // Leader starts at the chip edge nearest the zone.
           const anchorX = Math.max(bx, Math.min(cx, bx + W))
           const anchorY = by < cy ? by + H : by
           const selected = selectedZone === z.zone
@@ -157,14 +142,14 @@ export default function ShoeHeatmap({ zones, max, selectedZone, onSelectZone, cl
                  style={{ cursor: onSelectZone ? 'pointer' : 'default' }}
                  onClick={() => onSelectZone?.(z.zone)}
                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectZone?.(z.zone) } }}>
-                <rect x={bx} y={by} width={W} height={H} rx={18}
+                <rect x={bx} y={by} width={W} height={H} rx={16}
                       fill="#ffffff" fillOpacity={0.94}
                       stroke={z.outlier ? '#d03b3b' : selected ? '#B8975A' : 'rgba(27,23,18,0.12)'}
                       strokeWidth={z.outlier || selected ? 3 : 1.6} />
-                <text x={bx + 24} y={by + 38} fill="#6b6258" fontSize={22} fontWeight={600}>{z.label}</text>
-                <text x={bx + 24} y={by + 80} fill="#1b1712" fontSize={42} fontWeight={700}
+                <text x={bx + 22} y={by + 34} fill="#6b6258" fontSize={21} fontWeight={600}>{z.label}</text>
+                <text x={bx + 22} y={by + 74} fill="#1b1712" fontSize={38} fontWeight={700}
                       style={{ fontVariantNumeric: 'tabular-nums' }}>{nz(z.count)}</text>
-                {z.outlier && <text x={bx + W - 26} y={by + 80} fill="#d03b3b" fontSize={24} fontWeight={700} textAnchor="end">▲</text>}
+                {z.outlier && <text x={bx + W - 22} y={by + 74} fill="#d03b3b" fontSize={22} fontWeight={700} textAnchor="end">▲</text>}
               </g>
             </g>
           )
