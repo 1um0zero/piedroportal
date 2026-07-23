@@ -23,7 +23,7 @@ upper;lining;option;l/r;;cr56f_lining;add03_lining;037;01;valor longo: add1=#50=
 upper;cl_laces;option;l/r;;cr56f_closurelaces;add03_closure'laces;038;02;
 upper;cl_velcro;option;l/r;;cr56f_closurevelcrostraps;add03_closure'velcro'straps;039;03;
 upper;stiff_hard;option;l/r;;cr56f_stiffenerhardness;add03_stiffener'hardness;040;04;
-upper;stiff_cutout;toggle;l/r;;cr56f_stiffenercutoutachilles;;;;TODO-DSV 2026-07-20: nova addition (Contrefort uitsparing achillespees / recorte do contraforte p/ tendao de Aquiles), toggle L/R. Atribuir ashell_add1_field + add1_no + add3_slot e tratar o lado L/R
+upper;stiff_cutout;toggle;l/r;;cr56f_stiffenercutoutachilles;add03_stiffener'cutout'achilles;095;;DSV 2026-07-23: slot 095 (era livre); toggle L/R generico via seed 03.04.1 (addportal.bpi); cl000 226.7(011)
 upper;toe_puffs;option;l/r;;cr56f_toepuffs;add03_toe'puffs;041;05;
 upper;toe_puffs_rim;toggle;l/r;;cr56f_toepuffsrim;add03_toe'puffs'rim;086;;
 upper;str_leather;toggle;l/r;;cr56f_stretchleather;add03_stretch'leather;042;;
@@ -41,26 +41,26 @@ sole;amend_sole;toggle;l/r;;cr56f_6soleamendement1;add04_sole'amendement;078;;DI
 sole;sole_type;option;l/r;amend_sole;cr56f_6evawedgecolour;add0407_eva'wedge'colour;081;12;
 sole;spoiler;option;l/r;amend_sole;cr56f_6spoiler;add0407_spoiler;080;11;DIVERGENCIA: a-shell le cr56f_6runnersolematerial; portal usa cr56f_6spoiler
 sole;runner_sole;option;l/r;amend_sole;cr56f_6runnersole;add0407_runner'sole;079;10;
-sole;zsm_prefab;toggle;l/r;;cr56f_7zsmprefabsoleamendement;;;;ZSM: gate do amendment prefab; sem slot proprio — confirmar com DSV se so o colour vai p/ A-Shell
+sole;zsm_prefab;toggle;l/r;;cr56f_7zsmprefabsoleamendement;add04_zsm'prefabsole'amendement;087;;DSV 2026-07-23 confirma: toggle TEM slot proprio (087), inserido no load do addportal.bpi
 sole;zsm_prefab_colour;option;l/r;zsm_prefab;cr56f_7zsmprefabsole;add0408_zsm'prefabsole;088;14;A-Shell JA existe (era linha SO-ASHELL): ligado a portal_key zsm_prefab_colour
-sole;zsm_sheet;toggle;l/r;;cr56f_7zsmsolesheetamendement;;;;ZSM: gate do amendment sheet; sem slot proprio — confirmar com DSV
+sole;zsm_sheet;toggle;l/r;;cr56f_7zsmsolesheetamendement;add04_zsm'sole'amendement;089;;DSV 2026-07-23 confirma: toggle TEM slot proprio (089), inserido no load do addportal.bpi
 sole;zsm_sheet_type;option;l/r;zsm_sheet;cr56f_7zsmsolesheet;add0409_zsm'sole;090;15;A-Shell JA existe (era linha SO-ASHELL): ligado a portal_key zsm_sheet_type
 sole;zsm_sheet_colour;option;l/r;zsm_sheet;cr56f_7zsmsolesheetcolour;add0409_zsm'sole'colour;091;16;A-Shell JA existe (era linha SO-ASHELL): ligado a portal_key zsm_sheet_colour
 sole;sole_float;toggle;l/r;;cr56f_3solefloat;add04_sole'float;052;;
 sole;sf_medial;mm;l/r;sole_float;cr56f_3sf_medial;add0403_sf'medial;053;;
 sole;sf_lateral;mm;l/r;sole_float;cr56f_3sf_lateral;add0403_sf'lateral;054;;
-sole;sf_taper;option;l/r;sole_float;cr56f_3sf_tapered;;;;TODO-DSV: addition posterior ao mapa (Aflopend, Tapered to Joint/Toes); atribuir slot A-Shell
+sole;sf_taper;option;l/r;sole_float;cr56f_3sf_tapered;add0403_sf'tapered;092;17;DSV 2026-07-14: valor longo add1=#50=17, conteudo no icecadd2
 sole;heel_float;toggle;l/r;;cr56f_3heelfloat;add04_heel'float;055;;
 sole;hf_medial;mm;l/r;heel_float;cr56f_3hf_medial;add0404_hf'medial;056;;
 sole;hf_lateral;mm;l/r;heel_float;cr56f_3hf_lateral;add0404_hf'lateral;057;;
 sole;sole_wedge;toggle;l/r;;cr56f_4solewedge;add04_sole'wegde;058;;
 sole;sw_medial;mm;l/r;sole_wedge;cr56f_4sw_medial;add0405_sw'medial;059;;
 sole;sw_lateral;mm;l/r;sole_wedge;cr56f_4sw_lateral;add0405_sw'lateral;060;;
-sole;sw_taper;option;l/r;sole_wedge;cr56f_4sw_tapered;;;;TODO-DSV: addition posterior ao mapa (Aflopend, Tapered to Joint/Toes); atribuir slot A-Shell
+sole;sw_taper;option;l/r;sole_wedge;cr56f_4sw_tapered;add0405_sw'tapered;094;18;DSV 2026-07-14: valor longo add1=#50=18, conteudo no icecadd2
 sole;heel_wedge;toggle;l/r;;cr56f_4heelwedge;add04_heel'wegde;061;;
 sole;hw_medial;mm;l/r;heel_wedge;cr56f_4hw_medial;add0406_hw'medial;062;;
 sole;hw_lateral;mm;l/r;heel_wedge;cr56f_4hw_lateral;add0406_hw'lateral;063;;
-sole;hw_taper;option;l/r;heel_wedge;cr56f_4hw_tapered;;;;TODO-DSV: addition posterior ao mapa (Aflopend, Tapered to Joint/Toes); atribuir slot A-Shell
+sole;hw_taper;option;l/r;heel_wedge;cr56f_4hw_tapered;add0406_hw'tapered;096;19;DSV 2026-07-14: valor longo add1=#50=19, conteudo no icecadd2
 sole;carb_insole;toggle;l/r;;cr56f_6removablecarboninsole;add04_removable'carbon'insole;064;;
 sole;carb_sole;toggle;l/r;;cr56f_6fullcarbonsoleplate;add04_full'carbon'sole'plate;065;;
 sole;sach_heel;toggle;l/r;;cr56f_6sachheel;add04_sach'heel;067;;
@@ -68,9 +68,9 @@ sole;sep_soles;toggle;l/r;;cr56f_6separatesoles;add04_separate'soles;068;;
 sole;sep_sheets;toggle;l/r;;cr56f_6separatesheets;add04_separate'sheets;083;;
 sole;thomas_med;toggle;l/r;;cr56f_6thomasheelmedial;add04_thomas'heel'medial;069;;
 sole;thomas_lat;toggle;l/r;;cr56f_6thomasheellateral;add04_thomas'heel'lateral;070;;
-sole;heel_round;toggle;l/r;;cr56f_heelrounding;;;;TODO-DSV: addition posterior ao mapa (Hak afronding); atribuir slot A-Shell
-sole;gen_raise;mm;l/r;;cr56f_generalraise;;;;TODO-DSV: addition posterior ao mapa (Generale Verhoging 2-20mm); atribuir slot A-Shell
-sole;gen_raise_add;mm;l/r;gen_raise;cr56f_generalraiseadditional;;;;TODO-DSV: addition posterior ao mapa (Additioneel op Generale Verhoging 20-200mm); atribuir slot A-Shell
+sole;heel_round;toggle;l/r;;cr56f_heelrounding;add04_heel'rounding;093;;DSV 2026-07-14: slot 093 (libertado pelo Aflopend)
+sole;gen_raise;mm;l/r;;cr56f_generalraise;add04_general'raise;098;;DSV 2026-07-14
+sole;gen_raise_add;mm;l/r;gen_raise;cr56f_generalraiseadditional;add0410_gr'additional;099;;DSV 2026-07-14
 others;welt_prot;toggle;l/r;;cr56f_7weltprotector;add05_welt'protector;072;;
 others;prot_toe;toggle;l/r;;cr56f_7protectivetoecap;add05_protective'toe'cap;073;;
 others;xtra_laces;toggle;global;;cr56f_7extrapairoflaces;extra'fields.extra'pair'of'laces$;;;extra'fields (sem numero)

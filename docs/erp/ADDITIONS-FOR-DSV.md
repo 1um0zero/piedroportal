@@ -47,7 +47,12 @@ de uma encomenda pela **`key`** do campo (`explodeAdditions` →
 
 ## CHANGELOG (o que há de novo — mais recente primeiro)
 
-### 2026-07-20 · CREATE · osb · `stiff_cutout`
+### 2026-07-20 · CREATE · osb · `stiff_cutout` — ✅ mapeado no A-Shell (2026-07-23)
+- **DSV:** slot **095** (`add03_stiffener'cutout'achilles`, era `add'livre'095` no
+  additions.stru) + seed `03.04.1` no `addportal.bpi`; toggle L/R tratado pelo
+  caminho genérico (como `toe_puffs_rim`). cl000 226.7(011) / pp0001 226.7(007) /
+  pp0003 226.7(004) compilados e staged no repositório (falta FTP).
+
 - **Nome:** Contrefort uitsparing achillespees (recorte do contraforte para o
   tendão de Aquiles). Secção **Upper** (Schacht aanpassingen), a seguir a
   *Contrefort Hardheid*.
