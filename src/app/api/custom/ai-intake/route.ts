@@ -1,9 +1,10 @@
 // AI-assisted CUSTOM intake (BETA) — POST { prompt, unit } → validated additions patch.
 //
 // Scoping mirrors /gallery/[id]/custom exactly (canon: a new channel never
-// inherits the UI's gate implicitly): logged-in + piedro_admin only, because the
-// CUSTOM channel itself is an admin-only beta. Widen both together when CUSTOM
-// is promoted to clients.
+// inherits the UI's gate implicitly): logged-in + (piedro_admin OR named beta
+// evaluator — src/lib/custom-beta.ts, i.e. Martijn). The route only parses and
+// pre-fills, it never persists anything, so the evaluator's read-only mode is
+// preserved. Widen together with the page when CUSTOM is promoted to clients.
 
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
@@ -13,6 +14,7 @@ import { NextResponse } from 'next/server'
 export const maxDuration = 60
 import { createClient } from '@/lib/supabase/server'
 import { isPiedroAdmin } from '@/lib/roles'
+import { isCustomBetaEvaluator } from '@/lib/custom-beta'
 import { buildFieldCatalog, applyAiItems, type AiItem } from '@/lib/custom/ai-intake'
 
 let _client: Anthropic | null = null
@@ -88,7 +90,8 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!isPiedroAdmin(profile?.role)) return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+  if (!isPiedroAdmin(profile?.role) && !isCustomBetaEvaluator(user.email))
+    return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
 
   let body: { prompt?: string; unit?: string; current?: Record<string, unknown>; attachments?: Attachment[] }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
