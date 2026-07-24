@@ -24,6 +24,13 @@ export interface ViewerOptions {
   showZones?: boolean;
   /** Mostrar bandeiras/alfinetes com legenda. Default: true. */
   showFlags?: boolean;
+  /**
+   * Deslocar a geometria (deformação paramétrica aproximada). Default: true
+   * (bancada do Lab). O fluxo CUSTOM usa `false`: a deformação por janelas
+   * nunca se aproxima do produto fabricado, por isso o modelo fica INTACTO e
+   * as adições são apenas ASSINALADAS no local (tinta de zona + bandeira).
+   */
+  deform?: boolean;
   /** Cor de fundo da cena (hex). Default: 0x0f1419. */
   background?: number;
   /** Callback quando o primeiro render está pronto. */

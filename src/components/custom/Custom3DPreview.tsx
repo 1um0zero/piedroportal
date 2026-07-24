@@ -1,16 +1,20 @@
 'use client';
 
-// Custom3DPreview.tsx — modal que mostra as adições GEOMÉTRICAS da encomenda
-// CUSTOM aplicadas num sapato 3D. Aberto pelo botão do rodapé (Tab2/Tab3).
+// Custom3DPreview.tsx — modal que ASSINALA as adições da encomenda CUSTOM sobre
+// um sapato 3D real. Aberto pelo botão do rodapé (Tab2/Tab3).
 //
-// Base = GLB real das adições pair-by-pair (horma/sapato completo em
-// `products/3d/`), com o lado a seguir o toggle do pé — nunca a forma demo
-// procedural. three.js entra só aqui (next/dynamic ssr:false).
+// Base = GLB real (horma/sapato completo em `products/3d/`), com o lado a
+// seguir o toggle do pé. O modelo fica INTACTO (deform=false): a deformação
+// paramétrica nunca se aproxima do produto fabricado, por isso cada adição é
+// apontada no local com zona colorida + bandeira descritiva. Nunca a forma
+// demo procedural — o palco mostra um loader até o GLB chegar.
+// three.js entra só aqui (next/dynamic ssr:false).
 
 import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { Foot } from '@/components/piedro-visualizer';
 import { customValuesToViewer } from './custom-3d-map';
+import PiedroLogoLoader from '@/components/ui/PiedroLogoLoader';
 
 const PiedroVisualizer = dynamic(
   () => import('@/components/piedro-visualizer').then((m) => m.PiedroVisualizer),
@@ -39,6 +43,7 @@ export default function Custom3DPreview({
   onClose: () => void;
 }) {
   const [foot, setFoot] = useState<Foot>(unit === 'RIGHT' ? 'R' : 'L');
+  const [loading, setLoading] = useState(true);
   const params = useMemo(() => customValuesToViewer(values, foot), [values, foot]);
   const model = `${GLB_BASE}${BASE_MODEL}_${foot.toLowerCase()}.glb`;
   const bothFeet = unit === 'PAIR' || unit === 'LEFT_RIGHT';
@@ -58,7 +63,7 @@ export default function Custom3DPreview({
           <div>
             <h3 className="text-sm font-semibold text-stone-800">3D preview — additions</h3>
             <p className="text-xs text-stone-400">
-              Illustrative — not to the scale of the manufactured product.
+              Additions are marked at their location — the model&apos;s shape is not altered.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -86,10 +91,25 @@ export default function Custom3DPreview({
           </div>
         </div>
 
-        {/* Palco */}
+        {/* Palco. deform=false: o modelo real fica INTACTO — as adições são
+            assinaladas no local (zona colorida + bandeira), nunca "esculpidas":
+            a deformação paramétrica ficava sempre longe do produto fabricado. */}
         <div className="relative flex-1 bg-[#0f1419]">
-          <PiedroVisualizer params={params} model={model} showZones showFlags className="h-full w-full" />
-          {activeCount === 0 && (
+          <PiedroVisualizer
+            params={params}
+            model={model}
+            showZones
+            showFlags
+            deform={false}
+            onLoadingChange={setLoading}
+            className="h-full w-full"
+          />
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#0f1419]">
+              <PiedroLogoLoader label="A carregar o modelo…" />
+            </div>
+          )}
+          {!loading && activeCount === 0 && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <span className="rounded-lg bg-black/60 px-4 py-2 text-sm text-stone-200">
                 Ainda não há adições com forma preenchidas neste pé.
@@ -99,7 +119,7 @@ export default function Custom3DPreview({
         </div>
 
         <div className="border-t border-stone-100 px-5 py-2 text-xs text-stone-400">
-          {activeCount} reflectable addition{activeCount === 1 ? '' : 's'} shown · arraste para rodar
+          {activeCount} addition{activeCount === 1 ? '' : 's'} marked · arraste para rodar
         </div>
       </div>
     </div>

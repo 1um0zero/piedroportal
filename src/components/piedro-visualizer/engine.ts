@@ -90,6 +90,7 @@ export class PiedroViewer {
     this.opts = {
       showZones: options.showZones ?? true,
       showFlags: options.showFlags ?? true,
+      deform: options.deform ?? true,
       background: options.background ?? 0x0f1419,
       onReady: options.onReady,
     };
@@ -155,7 +156,9 @@ export class PiedroViewer {
 
     window.addEventListener('resize', this.onResize);
 
-    this.loadDemo();
+    // NÃO carregar o demo aqui: quando o chamador vai fornecer um GLB real, o
+    // demo aparecia primeiro como uma "aberração" e só depois trocava. Quem não
+    // tem modelo (Lab em modo procedural) chama loadDemo() explicitamente.
     this.animate();
     this.opts.onReady?.();
   }
@@ -443,6 +446,9 @@ export class PiedroViewer {
     const hl = this.opts.showZones;
     const s = this.medialSign();
     const flip = this.flipLen;
+    // deform=false: o modelo fica INTACTO — as janelas por campo continuam a ser
+    // calculadas, mas só para pintar a zona e ancorar a bandeira no local.
+    const deform = this.opts.deform;
 
     // campos ativos (valor != 0)
     const active: ReflectField[] = REFLECT_FIELDS.filter((f) => (vals[f.key] ?? 0) !== 0);
@@ -540,8 +546,8 @@ export class PiedroViewer {
         dy += liftTotal;
 
         const fx = x;
-        const fy = y0 + dy;
-        const fz = z0 + dz;
+        const fy = deform ? y0 + dy : y0;
+        const fz = deform ? z0 + dz : z0;
 
         for (let k = 0; k < A; k++) {
           const rk = best[active[k].key];
@@ -582,7 +588,8 @@ export class PiedroViewer {
       (this.soleSlab.material as THREE.Material).dispose();
       this.soleSlab = null;
     }
-    if (liftTotal <= 0) return;
+    // Sem deformação não há slab: o realce/label da sola chega (o modelo não sobe).
+    if (liftTotal <= 0 || !this.opts.deform) return;
     const box = new THREE.Box3().setFromObject(this.modelGroup);
     const s = new THREE.Vector3();
     box.getSize(s);
@@ -627,12 +634,14 @@ export class PiedroViewer {
       }
     }
 
-    // lift(s): âncora no topo do slab, empilhadas
+    // lift(s): âncora no topo do slab, empilhadas; sem slab (deform=false), o
+    // ponto assinala a base da sola — o local onde a alteração seria feita.
     const lifts = active.filter((f) => f.effect === 'lift');
-    if (liftTotal > 0 && this.soleSlab) {
+    if (liftTotal > 0) {
+      const base = this.soleSlab?.position.clone() ?? mb.getCenter(new THREE.Vector3());
       lifts.forEach((f, idx) => {
-        const pos = this.soleSlab!.position.clone();
-        pos.y = liftTotal;
+        const pos = base.clone();
+        pos.y = this.soleSlab ? liftTotal : mb.min.y;
         pos.x += (idx - (lifts.length - 1) / 2) * 40;
         items.push({ pos, color: f.color, text: `${f.label} ${vals[f.key]} ${f.unit ?? 'mm'}` });
       });
