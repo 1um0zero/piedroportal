@@ -233,8 +233,10 @@ export default function CustomOrderForm({
       {/* ── Tab 2 — Customization ──────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-5">
-          {/* AI Assist calls an admin-gated API — hidden for beta evaluators. */}
-          {!evaluationOnly && <CustomAiPrompt unit={unit} values={values} onChange={onValues} />}
+          {/* AI Assist is available to evaluators too: the /api/custom/ai-intake
+              gate mirrors the page gate (admin OR evaluator) and the route only
+              parses + pre-fills — it never persists anything. */}
+          <CustomAiPrompt unit={unit} values={values} onChange={onValues} />
           <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} articleDefault={product.colour_id} styleName={product.style_name} />
           <div className="flex items-center justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
