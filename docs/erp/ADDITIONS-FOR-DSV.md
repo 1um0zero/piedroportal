@@ -54,8 +54,10 @@ de uma encomenda pela **`key`** do campo (`explodeAdditions` →
   em produção (FTP 23-jul).
 - **2026-07-23 (2ª ronda):** faltava o esqueleto no `additions.fnp` (a linha não
   aparecia no PP0003/ficha) — acrescentado (`03.04.1` "Stiffener Cutout Achilles",
-  toggle): pp0003 226.7(005), icmedref 226.7(004), ic0982 226.7(004),
-  icgstec 226.7(003) compilados e staged (falta FTP destes 4).
+  toggle): a 1ª build tinha um bug de indentação na grelha (err 11, apanhado
+  pelo Jorge); corrigido a 24-jul (nível por pilha de comprimentos de key).
+  Final: pp0003 226.7(006), icmedref 226.7(006), ic0982 226.7(005),
+  icgstec 226.7(004) compilados e staged (falta FTP destes 4).
 
 - **Nome:** Contrefort uitsparing achillespees (recorte do contraforte para o
   tendão de Aquiles). Secção **Upper** (Schacht aanpassingen), a seguir a
