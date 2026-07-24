@@ -1,8 +1,8 @@
 # 3D preview — evaluation brief for Martijn (2026-07-24)
 
 Draft message for Jorge to send (email/Teams, EN). Access is live in production:
-`mloonen@piedro.nl` is allowlisted as CUSTOM-beta **evaluator** (form + 3D open;
-Save draft / Submit / AI Assist disabled — see `src/lib/custom-beta.ts`).
+`mloonen@piedro.nl` is allowlisted as CUSTOM-beta **evaluator** (form + 3D + AI
+Assist open; Save draft / Submit disabled — see `src/lib/custom-beta.ts`).
 
 ---
 
@@ -55,6 +55,11 @@ like?"*.
 
 Nothing you do in the form is saved — feel free to play.
 
+PS — you'll also see an **AI Assist (beta)** box at the top of Tab 2: type the
+customizations in free text (any language — or attach a photo/scan of an
+annotated form) and it pre-fills the form for you to review. Same rules: it
+only fills fields, nothing is saved. Curious what you think of that one too.
+
 Thanks!
 Jorge
 
@@ -64,11 +69,11 @@ Jorge
 
 - Acesso: allowlist em `src/lib/custom-beta.ts` (`isCustomBetaEvaluator`);
   gate na página CUSTOM + `evaluationOnly` no form (save() é no-op, botões
-  substituídos por nota, AI Assist escondido). Server-side continua fail-closed
+  substituídos por nota). Server-side continua fail-closed
   (`insertCustomOrderAction` recusa empresa a que não pertence).
+- **AI Assist incluído** (decisão do Jorge, commit 815b983): a rota
+  `/api/custom/ai-intake` admite evaluators; só parseia e pré-preenche, nunca
+  persiste. Custo: tokens Anthropic por chamada (1 pessoa, aceitável).
 - O botão "Custom-made (beta)" na galeria continua admin-only — o Martijn entra
   pelo link direto (qualquer produto: `/gallery/<id>/custom`).
-- Se o Jorge quiser dar-lhe também o **AI Assist**, é alargar o gate da rota
-  `/api/custom/ai-intake` aos evaluators + remover o `!evaluationOnly` no form
-  (custo: tokens por chamada).
 - Remover o acesso = apagar o email do Set e fazer deploy.
