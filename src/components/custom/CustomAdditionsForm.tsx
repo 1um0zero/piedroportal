@@ -5,6 +5,7 @@ import { useState } from 'react'
 import {
   CUSTOM_SECTIONS, customLabel,
   CUSTOM_ARTICLE_KEY, CUSTOM_SEED_DEFAULTS, CUSTOM_MM_RANGES,
+  customValueActive, customFieldVisible, stripCustomOrphans,
   type CustomField, type CustomSection, type LeatherPiece,
 } from './custom-additions-config'
 import { overrideLabel, type OptionOverrides } from '@/lib/additions/option-tables'
@@ -26,21 +27,14 @@ type Sided = { l?: number | string | ''; r?: number | string | '' }
 type Unit = 'PAIR' | 'LEFT' | 'RIGHT' | 'LEFT_RIGHT'
 
 function isActive(values: Vals, key?: string): boolean {
-  if (!key) return true
-  const v = values[key]
-  if (v == null || v === '' || v === false) return false
-  if (Array.isArray(v)) return v.some((p: LeatherPiece) => p && (p.colour || p.material))
-  if (typeof v === 'object') { const s = v as Sided; return !!(s.l || s.r) }
-  return true
+  return !key || customValueActive(values[key])
 }
 
 /** conditionalOn shows a field while its parent is truthy; hiddenWhen hides it;
- *  conditionalOnValues needs the parent to hold one of the listed values. */
+ *  conditionalOnValues needs the parent to hold one of the listed values.
+ *  Logic lives in custom-additions-config (shared with the orphan scrub). */
 function isVisible(values: Vals, f: CustomField): boolean {
-  if (!isActive(values, f.conditionalOn)) return false
-  if (f.hiddenWhen && isActive(values, f.hiddenWhen)) return false
-  if (f.conditionalOnValues && !f.conditionalOnValues.values.includes(String(values[f.conditionalOnValues.key] ?? ''))) return false
-  return true
+  return customFieldVisible(values, f)
 }
 
 /** ⓘ note toggled next to a group heading. */
@@ -203,10 +197,14 @@ export default function CustomAdditionsForm({
   const showL = unit !== 'RIGHT'
   const showR = unit !== 'LEFT'
 
-  const set = (key: string, v: unknown) => onChange({ ...values, [key]: v })
+  // Every write goes out through the orphan scrub: values whose parent/visibility
+  // condition no longer holds are dropped in the same update, so a hidden field
+  // can never linger in the order (recado-pp-orfaos-pai-filho).
+  const emit = (next: Vals) => onChange(stripCustomOrphans(next))
+  const set = (key: string, v: unknown) => emit({ ...values, [key]: v })
   const setSide = (key: string, side: 'l' | 'r', v: number | string | '') => {
     const cur = (values[key] as Sided) ?? {}
-    onChange({ ...values, [key]: { ...cur, [side]: v } })
+    emit({ ...values, [key]: { ...cur, [side]: v } })
   }
 
   const num = (e: React.ChangeEvent<HTMLInputElement>) => {

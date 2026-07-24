@@ -30,6 +30,7 @@ function getResend(): Resend | null {
 //   order_notify_email / ORDER_NOTIFY_EMAIL — Piedro's order desk recipient
 //   email_from / EMAIL_FROM — a Piedro-owned, Resend-verified sender
 import { OrderPdf, type OrderPdfProps } from '@/components/order/OrderPdf'
+import { stripOrphanChildren } from '@/components/order/additions-config'
 
 
 export type OrderRow = {
@@ -145,6 +146,11 @@ export async function insertOrderAction(
       return { error: 'You do not have access to this company' }
     }
   }
+
+  // Server-side guarantee "sem pai não há filho": never persist a conditional
+  // child whose parent toggle is off (recado-pp-orfaos-pai-filho). The form
+  // already scrubs on change; this catches any other path to the DB.
+  row = { ...row, additions: stripOrphanChildren(row.additions ?? {}) }
 
   // Use service role for DB operations — avoids PGRST116 after INSERT + RLS SELECT mismatch.
   // user_id and status are forced server-side and never trusted from the client.
@@ -384,6 +390,10 @@ export async function updateOrderAction(
     }
   }
 
+  // Same orphan-child guarantee as insertOrderAction (recado-pp-orfaos-pai-filho) —
+  // also heals drafts saved before the form-side scrub existed.
+  row = { ...row, additions: stripOrphanChildren(row.additions ?? {}) }
+
   const service = createServiceClient()
 
   // A draft is PRIVATE to the user who created it — only its owner may update or
@@ -495,9 +505,11 @@ export async function duplicateOrderAction(
     .single()
   if (fetchErr || !src) return { error: 'Order not found or access denied' }
 
+  // Duplicating an old order must not carry orphan children into the new draft
+  // (pre-scrub orders may hold them — recado-pp-orfaos-pai-filho).
   const { data: copy, error: insertErr } = await service
     .from('orders')
-    .insert({ ...src, user_id: user.id, status: 'draft', pdf_url: null })
+    .insert({ ...src, additions: stripOrphanChildren((src.additions as Record<string, unknown>) ?? {}), user_id: user.id, status: 'draft', pdf_url: null })
     .select('id, product_id')
     .single()
   if (insertErr || !copy) return { error: insertErr?.message ?? 'Duplicate failed' }

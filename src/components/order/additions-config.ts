@@ -344,6 +344,35 @@ export function getMissingRequiredAdditions(
   return missing
 }
 
+// ── Orphan-child scrub ──────────────────────────────────────────────────────────
+// "Sem pai não há filho" (docs/erp/recado-pp-orfaos-pai-filho.md): a child value
+// whose parent is off is invisible in the form and the PDF, but would still be
+// exported to production — order 26005831 shipped a sw_taper the client never saw.
+// Applied on every form change AND server-side on save/submit (heals old drafts).
+const CONDITIONAL_CHILDREN: ReadonlyArray<{ key: string; parent: string }> =
+  SECTIONS.flatMap(s => s.fields)
+    .filter(f => f.conditionalOn && f.side !== 'global')
+    .map(f => ({ key: f.key, parent: f.conditionalOn! }))
+
+const hasChildVal = (v: unknown) => v != null && v !== '' && v !== false
+
+/** Clear every conditional child on feet where its parent is inactive.
+ *  Returns the SAME object when nothing changes (no spurious re-renders). */
+export function stripOrphanChildren(additions: Record<string, unknown>): Record<string, unknown> {
+  let out = additions
+  for (const { key, parent } of CONDITIONAL_CHILDREN) {
+    const val = out[key]
+    if (val == null || typeof val !== 'object') continue
+    const sv = val as { l?: unknown; r?: unknown }
+    const clearL = hasChildVal(sv.l) && !isSidedParentActive(out, parent, 'l')
+    const clearR = hasChildVal(sv.r) && !isSidedParentActive(out, parent, 'r')
+    if (!clearL && !clearR) continue
+    if (out === additions) out = { ...additions }
+    out[key] = { ...sv, ...(clearL && { l: null }), ...(clearR && { r: null }) }
+  }
+  return out
+}
+
 /** Filter fields that are excluded for this product, cascading to conditional children. */
 export function filterExcluded(fields: AdditionField[], addsExclude: string | null | undefined): AdditionField[] {
   const ids = parseAddsExclude(addsExclude)

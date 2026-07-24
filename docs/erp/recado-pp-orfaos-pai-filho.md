@@ -75,6 +75,26 @@ alinhar o form com o que o PDF/produção deve entender.
 3. Caso 26005831 documentado como referência (a ficha na consola foi corrigida à
    mão pelo Jorge).
 
+## ✅ Resolução PP (2026-07-24)
+
+Implementado no portal, dos dois lados:
+
+- **Form OSB** (`AdditionsForm`): toda a escrita passa por `stripOrphanChildren`
+  (`additions-config.ts`) — desligar/limpar um pai limpa os filhos **desse pé**
+  no mesmo update. Cobre também os pais não-toggle (`rocker` = option,
+  `gen_raise` = mm): tirar o valor do pai limpa os filhos.
+- **Form CUSTOM** (`CustomAdditionsForm`): `stripCustomOrphans`
+  (`custom-additions-config.ts`) — um valor que o form deixou de mostrar
+  (`conditionalOn`/`hiddenWhen`/`conditionalOnValues`, com cascata
+  avô→pai→filho) é descartado no mesmo update.
+- **Servidor** (belt & braces + cura de drafts antigos): `insertOrderAction`,
+  `updateOrderAction` e `duplicateOrderAction` aplicam o scrub antes de
+  persistir; `insertCustomOrderAction` aplica antes do explode para
+  `order_additions`. O export não mudou (continua espelho fiel da BD).
+- **Decisão rocker** (nota acima): mm sem tipo de rocker escolhido = mesma
+  classe de lixo — o form e o PDF já os escondem sem tipo, portanto limpam-se
+  como os outros filhos.
+
 ## Contexto DSV (para não repetir o susto)
 
 Na consola, um filho órfão aparece na grelha do icmedref como linha solta sem o

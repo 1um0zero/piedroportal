@@ -6,6 +6,7 @@ import { isPiedroAdmin as isPiedroAdminRole } from '@/lib/roles'
 import { getUserCompanyIds } from '@/lib/user-companies'
 import { getBranchAdminCompanyIds } from '@/lib/branch-admin'
 import { explodeCustomAdditions } from '@/lib/custom/custom-explode'
+import { stripCustomOrphans } from '@/components/custom/custom-additions-config'
 
 /** Header for a CUSTOM order. The rich additions live in `order_additions`, not
  *  here — this row only carries the order header (mirrors the OSB OrderRow but
@@ -71,8 +72,10 @@ export async function insertCustomOrderAction(
   }
   const orderId: string = data.id
 
-  // 2) Explode + persist the additions into order_additions.
-  const rows = explodeCustomAdditions(additions).map(r => ({ ...r, order_id: orderId }))
+  // 2) Explode + persist the additions into order_additions. The scrub drops any
+  //    value whose field the form is not showing (parent off / "as model" hidden) —
+  //    server-side guarantee of "sem pai não há filho" (recado-pp-orfaos-pai-filho).
+  const rows = explodeCustomAdditions(stripCustomOrphans(additions)).map(r => ({ ...r, order_id: orderId }))
   if (rows.length) {
     const { error: addErr } = await service.from('order_additions').insert(rows)
     if (addErr) {

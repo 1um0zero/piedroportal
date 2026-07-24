@@ -632,3 +632,45 @@ export function allCustomFields(): CustomField[] {
 export function customLabel(l: CustomI18n, locale: string): string {
   return (l as unknown as Record<string, string>)[locale] || l.en
 }
+
+// ── Orphan scrub ────────────────────────────────────────────────────────────────
+// "Sem pai não há filho" (docs/erp/recado-pp-orfaos-pai-filho.md): a value the
+// form is no longer showing (parent toggled off, hidden by an "as model" switch,
+// or the gating value changed) must not stay in the order — it would reach
+// order_additions and production while being invisible to the client.
+
+/** Truthiness rule shared by the form's visibility logic and the orphan scrub. */
+export function customValueActive(v: unknown): boolean {
+  if (v == null || v === '' || v === false) return false
+  if (Array.isArray(v)) return v.some(p => p && ((p as LeatherPiece).colour || (p as LeatherPiece).material))
+  if (typeof v === 'object') { const s = v as { l?: unknown; r?: unknown }; return !!(s.l || s.r) }
+  return true
+}
+
+/** Mirror of the form's isVisible: conditionalOn / hiddenWhen / conditionalOnValues. */
+export function customFieldVisible(values: Record<string, unknown>, f: CustomField): boolean {
+  if (f.conditionalOn && !customValueActive(values[f.conditionalOn])) return false
+  if (f.hiddenWhen && customValueActive(values[f.hiddenWhen])) return false
+  if (f.conditionalOnValues && !f.conditionalOnValues.values.includes(String(values[f.conditionalOnValues.key] ?? ''))) return false
+  return true
+}
+
+/** Drop values of fields the form is not showing. Iterates because clearing a
+ *  field can hide its own children (cs4.rocker_yn → cs4.rocker_heel → …_mm).
+ *  Returns the SAME object when nothing changes (no spurious re-renders). */
+export function stripCustomOrphans(values: Record<string, unknown>): Record<string, unknown> {
+  const fields = allCustomFields().filter(f => f.conditionalOn || f.hiddenWhen || f.conditionalOnValues)
+  let out = values
+  for (let guard = 0; guard < 10; guard++) {
+    let changed = false
+    for (const f of fields) {
+      if (out[f.key] === undefined) continue
+      if (customFieldVisible(out, f)) continue
+      if (out === values) out = { ...values }
+      delete out[f.key]
+      changed = true
+    }
+    if (!changed) break
+  }
+  return out
+}

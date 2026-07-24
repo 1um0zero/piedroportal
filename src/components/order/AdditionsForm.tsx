@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, MIRROR_KEYS, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
+import { SECTIONS, filterExcluded, isSectionExcluded, countFilled, zsmFieldHidden, stripOrphanChildren, MIRROR_KEYS, type AdditionField, type AdditionSection, type MissingRequired } from './additions-config'
 import { allowedSoleValues, soleFieldHidden } from './sole-profiles'
 import { ZSM_PREFAB_OPTIONS, zsmSheetColours, type ZsmGroup } from './zsm-profiles'
 import { soleImages } from './sole-images'
@@ -520,6 +520,11 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
                     : unit === 'RIGHT' ? 'Right'
                     : ''  // LEFT_RIGHT uses its own labels
 
+  // Every additions write goes out through here: switching a parent off (or
+  // clearing its value) also clears that foot's conditional children, so an
+  // orphan child can never reach the draft/order (recado-pp-orfaos-pai-filho).
+  const emit = useCallback((next: Additions) => onChange(stripOrphanChildren(next)), [onChange])
+
   // Update a single field — handles mirror (PAIR) automatically
   const updateField = useCallback((key: string, side: 'l'|'r', value: unknown) => {
     const existing = additions[key] as SidedVal ?? { l: null, r: null }
@@ -535,13 +540,13 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
     } else {
       next = { ...existing, [side]: value }
     }
-    onChange({ ...additions, [key]: next })
-  }, [additions, onChange, unit, isDouble])
+    emit({ ...additions, [key]: next })
+  }, [additions, emit, unit, isDouble])
 
   const update = useCallback((key: string, side: 'l'|'r'|'global', value: unknown) => {
-    if (side === 'global') { onChange({ ...additions, [key]: value }); return }
+    if (side === 'global') { emit({ ...additions, [key]: value }); return }
     updateField(key, side, value)
-  }, [additions, onChange, updateField])
+  }, [additions, emit, updateField])
 
   // Is a conditional field's parent active?
   function isParentActive(field: AdditionField, side: 'l' | 'r'): boolean {
@@ -571,7 +576,7 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
     const curCol  = (additions['zsm_sheet_colour'] as SidedVal) ?? { l: null, r: null }
     const nextType = unit === 'PAIR' ? { l: value, r: value } : { ...curType, [side]: value }
     const nextCol  = unit === 'PAIR' ? { l: null, r: null }   : { ...curCol,  [side]: null }
-    onChange({ ...additions, zsm_sheet_type: nextType, zsm_sheet_colour: nextCol })
+    emit({ ...additions, zsm_sheet_type: nextType, zsm_sheet_colour: nextCol })
   }
 
   function renderControl(field: AdditionField, side: 'l' | 'r', disabled = false) {
@@ -910,7 +915,7 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
                           onClick={() => {
                             const newValue = !(isCheckedL || isCheckedR)
                             const current = additions[field.key] as SidedVal || { l: false, r: false }
-                            onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
+                            emit({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
                           }}
                           className="flex-1 text-sm text-stone-700 min-w-0 cursor-pointer">
                           {pendingSet.has(field.key) && <SuggestArrow />}{cleanLabel}
@@ -1096,7 +1101,7 @@ const AdditionsForm = forwardRef<AdditionsFormHandle, Props>(function AdditionsF
                                 // If both unchecked, check both; otherwise uncheck both
                                 const newValue = !(isCheckedL || isCheckedR)
                                 const current = additions[field.key] as SidedVal || { l: false, r: false }
-                                onChange({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
+                                emit({ ...additions, [field.key]: { ...current, l: newValue, r: newValue } })
                               }}
                               className="flex-1 text-sm text-stone-700 cursor-pointer">
                               {pendingSet.has(field.key) && <SuggestArrow />}{fieldLabel}
