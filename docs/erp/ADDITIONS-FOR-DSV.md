@@ -57,7 +57,8 @@ de uma encomenda pela **`key`** do campo (`explodeAdditions` →
   toggle): a 1ª build tinha um bug de indentação na grelha (err 11, apanhado
   pelo Jorge); corrigido a 24-jul (nível por pilha de comprimentos de key).
   Final: pp0003 226.7(006), icmedref 226.7(006), ic0982 226.7(005),
-  icgstec 226.7(004) compilados e staged (falta FTP destes 4).
+  icgstec 226.7(004) — **em produção e validado (24-jul)**. Encomendas afetadas
+  pela janela de exposição recuperadas na consola ("Valida Additions" do cl000).
 
 - **Nome:** Contrefort uitsparing achillespees (recorte do contraforte para o
   tendão de Aquiles). Secção **Upper** (Schacht aanpassingen), a seguir a
