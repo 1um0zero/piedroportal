@@ -7,6 +7,10 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+
+// Vision parsing of a scanned form can take well past the default function
+// timeout — give the model room (same ceiling as the cron routes).
+export const maxDuration = 60
 import { createClient } from '@/lib/supabase/server'
 import { isPiedroAdmin } from '@/lib/roles'
 import { buildFieldCatalog, applyAiItems, type AiItem } from '@/lib/custom/ai-intake'
@@ -19,8 +23,22 @@ function getClient(): Anthropic {
 
 const UNITS = new Set(['LEFT_RIGHT', 'LEFT', 'RIGHT'])
 
+type Attachment = { media_type: string; data: string }
+const IMAGE_MEDIA = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+const ALLOWED_MEDIA = new Set([...IMAGE_MEDIA, 'application/pdf'])
+const MAX_FILES = 4
+const MAX_TOTAL_B64 = 5_400_000   // ≈4MB binary — under Vercel's 4.5MB request cap
+
 // Stable system prompt (field catalogue included) → prompt-cached across calls.
-const SYSTEM = `You translate a clinician's free-text description of custom-made orthopaedic shoe requirements into the structured fields of the Piedro CUSTOM order form.
+const SYSTEM = `You translate a clinician's requirements for custom-made orthopaedic shoes into the structured fields of the Piedro CUSTOM order form. The requirements arrive as free text, as photos/scans/PDFs, or both.
+
+# Reading photos, scans and PDFs
+The attachment is typically a hand-annotated document: a printed order form with handwritten notes, a prescription, a sketch, or a photo of a filled-in sheet. Read it exhaustively:
+- Handwriting is often Dutch clinical shorthand — read carefully, including margins and corrections.
+- Ticked/checked boxes, circled options and arrows pointing at printed pictograms (supplement shapes, stiffener drawings, rocker profiles, toe shapes) mean that option is SELECTED. Follow each arrow to its target before deciding what it selects.
+- Crossed-out or struck-through items are NOT selected — never map them.
+- Numbers written next to a body part / drawing are measurements for that field; note "L"/"R" (links/rechts) markings for sides.
+- If a mark is genuinely ambiguous (an arrow whose target is unclear, an unreadable word), describe it briefly in "unmatched" instead of guessing.
 
 The complete catalogue of available fields is below. Rules:
 - Map ONLY what the clinician explicitly states. Never guess or invent values, sides or measurements that are not in the text.
@@ -72,24 +90,46 @@ export async function POST(req: Request) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!isPiedroAdmin(profile?.role)) return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
 
-  let body: { prompt?: string; unit?: string; current?: Record<string, unknown> }
+  let body: { prompt?: string; unit?: string; current?: Record<string, unknown>; attachments?: Attachment[] }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
   const prompt = (body.prompt ?? '').trim()
   const unit = UNITS.has(body.unit ?? '') ? (body.unit as 'LEFT_RIGHT' | 'LEFT' | 'RIGHT') : 'LEFT_RIGHT'
-  if (!prompt) return NextResponse.json({ error: 'Empty prompt' }, { status: 400 })
   if (prompt.length > 2000) return NextResponse.json({ error: 'Prompt too long (max 2000 characters)' }, { status: 400 })
 
+  // Attachments: photos/scans/PDFs of hand-annotated forms. Base64 over JSON —
+  // client downscales images; total capped well under Vercel's 4.5MB body limit.
+  const attachments = (Array.isArray(body.attachments) ? body.attachments : []).slice(0, MAX_FILES)
+  let totalChars = 0
+  for (const a of attachments) {
+    if (!ALLOWED_MEDIA.has(a?.media_type) || typeof a?.data !== 'string')
+      return NextResponse.json({ error: 'Unsupported attachment type — use JPG, PNG, WebP or PDF.' }, { status: 400 })
+    totalChars += a.data.length
+  }
+  if (totalChars > MAX_TOTAL_B64) return NextResponse.json({ error: 'Attachments too large — max ~4MB in total.' }, { status: 400 })
+  if (!prompt && !attachments.length) return NextResponse.json({ error: 'Empty prompt' }, { status: 400 })
+
   try {
+    const unitNote = `Order unit: ${unit}${unit === 'LEFT' ? ' (left shoe only — every sided value goes to side "l")' : unit === 'RIGHT' ? ' (right shoe only — every sided value goes to side "r")' : ' (independent left/right)'}`
+    const textParts = [unitNote]
+    if (attachments.length) textParts.push('The attached photo(s)/document(s) contain the requirements — read every annotation, arrow, tick, circle and handwritten note.')
+    if (prompt) textParts.push(`Clinician's ${attachments.length ? 'additional notes' : 'description'}:\n${prompt}`)
+
+    const content: Anthropic.ContentBlockParam[] = [
+      ...attachments.map((a): Anthropic.ContentBlockParam =>
+        a.media_type === 'application/pdf'
+          ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: a.data } }
+          : { type: 'image', source: { type: 'base64', media_type: a.media_type as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif', data: a.data } },
+      ),
+      { type: 'text', text: textParts.join('\n\n') },
+    ]
+
     const response = await getClient().messages.create({
       model: 'claude-opus-4-8',
       max_tokens: 4000,
       system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
       tools: [TOOL],
       tool_choice: { type: 'tool', name: 'set_additions' },
-      messages: [{
-        role: 'user',
-        content: `Order unit: ${unit}${unit === 'LEFT' ? ' (left shoe only — every sided value goes to side "l")' : unit === 'RIGHT' ? ' (right shoe only — every sided value goes to side "r")' : ' (independent left/right)'}\n\nClinician's description:\n${prompt}`,
-      }],
+      messages: [{ role: 'user', content }],
     })
 
     const toolUse = response.content.find(
@@ -106,6 +146,7 @@ export async function POST(req: Request) {
     // logs so we can build the eval set from real beta usage.
     console.log('[custom-ai-intake]', JSON.stringify({
       user: user.id, unit, prompt,
+      attachments: attachments.map(a => `${a.media_type}:${Math.round(a.data.length * 3 / 4 / 1024)}KB`),
       model: response.model,
       raw: items, unmatched,
       applied: result.applied.map(a => `${a.key}:${a.side}=${a.value}`),
