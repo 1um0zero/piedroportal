@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getUserCompanies } from '@/lib/user-companies'
 import { getBranchAdminCompanies } from '@/lib/branch-admin'
 import { isPiedroAdmin } from '@/lib/roles'
+import { isCustomBetaEvaluator } from '@/lib/custom-beta'
 import CustomOrderForm from '@/components/custom/CustomOrderForm'
 import { getOsbOptionOverrides } from '@/lib/additions/option-seed'
 import type { Product } from '@/types'
@@ -28,14 +29,20 @@ export default async function CustomOrderPage({ params }: Props) {
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   const admin = isPiedroAdmin(profile?.role)
+  // Named Piedro-side evaluators (src/lib/custom-beta.ts) may open the beta in
+  // EVALUATION mode: full form + 3D preview, saving/submitting disabled.
+  const evaluator = !admin && isCustomBetaEvaluator(user.email)
 
-  // CUSTOM is a BETA under construction — admin-only until promoted. Guard the
-  // route server-side so a non-admin can't reach it by typing the URL.
-  if (!admin) notFound()
+  // CUSTOM is a BETA under construction — admin-only until promoted (plus the
+  // evaluator allowlist). Guard the route server-side so nobody else can reach
+  // it by typing the URL.
+  if (!admin && !evaluator) notFound()
 
   let companies: Company[] = []
   let userCompany: Company | null = null
-  if (admin) {
+  if (admin || evaluator) {
+    // Evaluators get the same company picker as admins: they carry no company
+    // of their own, and Tab 1 needs one to advance. Harmless — they cannot save.
     const { data } = await supabase.from('companies').select('id,name,erp_code').order('name')
     companies = (data ?? []) as Company[]
   } else {
@@ -50,5 +57,5 @@ export default async function CustomOrderPage({ params }: Props) {
   const [product, optionOverrides] = await Promise.all([getProduct(id), getOsbOptionOverrides()])
   if (!product) notFound()
 
-  return <CustomOrderForm product={product} userCompany={userCompany} companies={companies} isAdmin={admin} optionOverrides={optionOverrides} />
+  return <CustomOrderForm product={product} userCompany={userCompany} companies={companies} isAdmin={admin} evaluationOnly={evaluator} optionOverrides={optionOverrides} />
 }

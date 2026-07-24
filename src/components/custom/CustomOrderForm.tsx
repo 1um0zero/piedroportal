@@ -33,12 +33,14 @@ type Company = { id: string; name: string; erp_code: string }
 const UNITS = ['LEFT_RIGHT', 'LEFT', 'RIGHT'] as const
 
 export default function CustomOrderForm({
-  product, userCompany, companies, isAdmin, optionOverrides,
+  product, userCompany, companies, isAdmin, evaluationOnly = false, optionOverrides,
 }: {
   product:     Product
   userCompany: Company | null
   companies:   Company[]
   isAdmin:     boolean
+  /** Beta evaluator (src/lib/custom-beta.ts): full form + 3D, saving disabled. */
+  evaluationOnly?: boolean
   optionOverrides?: OptionOverrides
 }) {
   const locale = useLocale()
@@ -120,6 +122,9 @@ export default function CustomOrderForm({
   }
 
   async function save(status: 'draft' | 'submitted') {
+    // Evaluation access never persists anything (the server-side company guard
+    // in insertCustomOrderAction would refuse it anyway — this is just clean UX).
+    if (evaluationOnly) return
     if (status === 'submitted') {
       const miss = missingRequired()
       if (miss.length) { setStep(2); setError(`Please fill the required fields: ${miss.join(', ')}`); return }
@@ -228,7 +233,8 @@ export default function CustomOrderForm({
       {/* ── Tab 2 — Customization ──────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-5">
-          <CustomAiPrompt unit={unit} values={values} onChange={onValues} />
+          {/* AI Assist calls an admin-gated API — hidden for beta evaluators. */}
+          {!evaluationOnly && <CustomAiPrompt unit={unit} values={values} onChange={onValues} />}
           <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} articleDefault={product.colour_id} styleName={product.style_name} />
           <div className="flex items-center justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
@@ -257,10 +263,16 @@ export default function CustomOrderForm({
             <button onClick={() => setStep(2)} className="text-sm text-stone-500">← Back</button>
             <div className="flex items-center gap-3">
               <Preview3DButton n={reflectableCount(values)} onClick={() => setShow3D(true)} />
-              <button disabled={busy} onClick={() => save('draft')}
-                className="rounded-lg border border-stone-300 px-5 py-2.5 text-sm text-stone-600 disabled:opacity-40">Save draft</button>
-              <button disabled={busy} onClick={() => save('submitted')}
-                className="rounded-lg bg-gold px-6 py-2.5 text-sm font-medium text-white disabled:opacity-40">Submit order</button>
+              {evaluationOnly ? (
+                <span className="text-xs text-stone-400">Evaluation access — saving is disabled.</span>
+              ) : (
+                <>
+                  <button disabled={busy} onClick={() => save('draft')}
+                    className="rounded-lg border border-stone-300 px-5 py-2.5 text-sm text-stone-600 disabled:opacity-40">Save draft</button>
+                  <button disabled={busy} onClick={() => save('submitted')}
+                    className="rounded-lg bg-gold px-6 py-2.5 text-sm font-medium text-white disabled:opacity-40">Submit order</button>
+                </>
+              )}
             </div>
           </div>
         </div>
