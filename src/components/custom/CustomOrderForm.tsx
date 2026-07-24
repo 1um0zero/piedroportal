@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/navigation'
 import { productImageUrl } from '@/lib/products/image-url'
 import type { Product } from '@/types'
 import CustomAdditionsForm from './CustomAdditionsForm'
+import CustomAiPrompt from './CustomAiPrompt'
 import {
   CUSTOM_SECTIONS, allCustomFields, customLabel,
   LAST_HEIGHT_KEY, CIRC_BY_HEIGHT, HEEL_HEIGHT_KEY, SOLE_HEIGHT_KEY,
@@ -227,6 +228,7 @@ export default function CustomOrderForm({
       {/* ── Tab 2 — Customization ──────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-5">
+          <CustomAiPrompt unit={unit} values={values} onChange={onValues} />
           <CustomAdditionsForm values={values} onChange={onValues} unit={unit} optionOverrides={optionOverrides} articleDefault={product.colour_id} styleName={product.style_name} />
           <div className="flex items-center justify-between">
             <button onClick={() => setStep(1)} className="text-sm text-stone-500">← Back</button>
